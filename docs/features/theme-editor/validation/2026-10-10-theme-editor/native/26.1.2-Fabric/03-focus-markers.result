@@ -1,0 +1,26 @@
+PASS
+GUI size 480x270
+Tab reaches key list
+Down selects next raw key
+Up selects previous raw key
+selected key row click handled
+click selected key clears selection and hides editor
+Tab skips hidden ARGB
+Tab skips hidden ARGB
+Tab skips hidden ARGB
+Tab skips hidden ARGB
+Tab skips hidden ARGB
+Tab skips hidden ARGB
+Tab skips hidden ARGB
+Tab skips hidden ARGB
+Tab skips hidden ARGB
+Tab skips hidden ARGB
+Tab skips hidden ARGB
+Tab skips hidden ARGB
+Tab skips hidden ARGB
+Tab skips hidden ARGB
+Tab skips hidden ARGB
+Tab skips hidden ARGB
+GUI size 320x240
+wheel scrolls overflowing preview
+wheel scrolls key list

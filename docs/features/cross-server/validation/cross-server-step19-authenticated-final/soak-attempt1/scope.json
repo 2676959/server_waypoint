@@ -1,0 +1,5 @@
+{
+  "result": "FAILED",
+  "reason": "Client exited before joining on seventh attempt; proxy recorded no new connection; next authenticated diagnostic login succeeded; original cause unconfirmed",
+  "proxySha256": "be67bf9998b72b3fb3cb87aa2d402cf944edd2b3dd9d72eed4ba2f830ddd865f"
+}

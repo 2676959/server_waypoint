@@ -27,6 +27,7 @@ public final class WidgetThemeJson {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final String FORMAT_VERSION_PROPERTY = "formatVersion";
     private static final String COLORS_PROPERTY = "colors";
+    private static final String BOOLEANS_PROPERTY = "booleans";
 
     private WidgetThemeJson() {
     }
@@ -37,10 +38,16 @@ public final class WidgetThemeJson {
         root.addProperty(FORMAT_VERSION_PROPERTY, FORMAT_VERSION);
 
         JsonObject colors = new JsonObject();
+        JsonObject booleans = new JsonObject();
         for (WidgetThemeVariable variable : WidgetThemeVariable.values()) {
-            colors.addProperty(variable.getJsonName(), formatColor(theme.getColor(variable)));
+            if (variable.isBoolean()) {
+                booleans.addProperty(variable.getJsonName(), theme.getBoolean(variable));
+            } else {
+                colors.addProperty(variable.getJsonName(), formatColor(theme.getColor(variable)));
+            }
         }
         root.add(COLORS_PROPERTY, colors);
+        root.add(BOOLEANS_PROPERTY, booleans);
         return GSON.toJson(root);
     }
 
@@ -49,6 +56,25 @@ public final class WidgetThemeJson {
     }
 
     public static WidgetTheme fromJson(String json, WidgetTheme fallbackTheme) {
+        return settingsFromJson(json, fallbackTheme).theme();
+    }
+
+    public record Settings(WidgetThemeSelection selection, WidgetTheme customTheme) {
+        public Settings {
+            Objects.requireNonNull(selection, "selection");
+            Objects.requireNonNull(customTheme, "customTheme");
+        }
+
+        public WidgetTheme theme() {
+            return this.selection.resolve(this.customTheme);
+        }
+    }
+
+    public static Settings loadSettings(Path path) throws IOException {
+        return settingsFromJson(Files.readString(path, StandardCharsets.UTF_8), WidgetThemes.DEFAULT);
+    }
+
+    private static Settings settingsFromJson(String json, WidgetTheme fallbackTheme) {
         Objects.requireNonNull(json, "json");
         Objects.requireNonNull(fallbackTheme, "fallbackTheme");
         JsonElement parsed = JsonParser.parseString(json);
@@ -62,24 +88,60 @@ public final class WidgetThemeJson {
             throw new JsonParseException("Unsupported widget theme format version: " + formatVersion);
         }
 
+        WidgetThemeSelection selection = WidgetThemeSelection.CUSTOM;
+        JsonElement selectionElement = root.get("selection");
+        if (selectionElement != null) {
+            if (!selectionElement.isJsonPrimitive() || !selectionElement.getAsJsonPrimitive().isString()) {
+                throw new JsonParseException("Widget theme selection must be a string");
+            }
+            try {
+                selection = WidgetThemeSelection.valueOf(selectionElement.getAsString().toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException exception) {
+                throw new JsonParseException("Unknown widget theme selection", exception);
+            }
+        }
         WidgetTheme.Builder builder = WidgetTheme.builder(fallbackTheme);
         JsonElement colorsElement = root.get(COLORS_PROPERTY);
-        if (colorsElement == null) {
-            return builder.build();
-        }
-        if (!colorsElement.isJsonObject()) {
+        if (colorsElement != null && !colorsElement.isJsonObject()) {
             throw new JsonParseException("Widget theme colors must be a JSON object");
         }
 
-        for (Map.Entry<String, JsonElement> entry : colorsElement.getAsJsonObject().entrySet()) {
-            WidgetThemeVariable.fromJsonName(entry.getKey()).ifPresent(variable ->
-                    builder.setColor(variable, parseColor(entry.getKey(), entry.getValue())));
+        if (colorsElement != null) {
+            for (Map.Entry<String, JsonElement> entry : colorsElement.getAsJsonObject().entrySet()) {
+                WidgetThemeVariable.fromJsonName(entry.getKey()).ifPresent(variable -> {
+                    if (variable.isBoolean()) {
+                        throw new JsonParseException("Boolean widget theme variable in colors: " + entry.getKey());
+                    }
+                    builder.setColor(variable, parseColor(entry.getKey(), entry.getValue()));
+                });
+            }
         }
-        return builder.build();
+        JsonElement booleansElement = root.get(BOOLEANS_PROPERTY);
+        if (booleansElement != null) {
+            if (!booleansElement.isJsonObject()) {
+                throw new JsonParseException("Widget theme booleans must be a JSON object");
+            }
+            for (Map.Entry<String, JsonElement> entry : booleansElement.getAsJsonObject().entrySet()) {
+                WidgetThemeVariable.fromJsonName(entry.getKey()).ifPresent(variable -> {
+                    if (!variable.isBoolean() || !(entry.getValue() instanceof JsonPrimitive primitive)
+                            || !primitive.isBoolean()) {
+                        throw new JsonParseException("Widget theme boolean '" + entry.getKey() + "' must be a boolean");
+                    }
+                    builder.setBoolean(variable, primitive.getAsBoolean());
+                });
+            }
+        }
+        return new Settings(selection, builder.build());
     }
 
     public static void save(Path path, WidgetTheme theme) throws IOException {
+        save(path, new Settings(WidgetThemeSelection.CUSTOM, theme));
+    }
+
+    public static void save(Path path, Settings settings) throws IOException {
         Objects.requireNonNull(path, "path");
+        JsonObject root = JsonParser.parseString(toJson(settings.customTheme())).getAsJsonObject();
+        root.addProperty("selection", settings.selection().getId());
         Path absolutePath = path.toAbsolutePath();
         Path parent = absolutePath.getParent();
         if (parent != null) {
@@ -89,7 +151,7 @@ public final class WidgetThemeJson {
         String temporaryPrefix = fileName.length() >= 3 ? fileName : "theme-" + fileName;
         Path temporaryFile = Files.createTempFile(parent, temporaryPrefix, ".tmp");
         try {
-            Files.writeString(temporaryFile, toJson(theme), StandardCharsets.UTF_8);
+            Files.writeString(temporaryFile, GSON.toJson(root), StandardCharsets.UTF_8);
             try {
                 Files.move(temporaryFile, absolutePath,
                         StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);

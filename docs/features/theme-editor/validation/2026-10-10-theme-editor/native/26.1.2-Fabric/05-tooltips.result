@@ -1,0 +1,5 @@
+PASS
+GUI size 480x270
+handled colorButton
+picker closes preview popup
+picker remains open while controls underneath are hovered

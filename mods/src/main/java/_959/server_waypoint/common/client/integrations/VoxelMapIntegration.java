@@ -1,4 +1,4 @@
-//? if fabric {
+//? if voxelmap {
 package _959.server_waypoint.common.client.integrations;
 
 import _959.server_waypoint.common.client.ClientConfig;
@@ -21,6 +21,22 @@ public final class VoxelMapIntegration implements MapModIntegration {
     @Override
     public boolean isEnabled(ClientConfig clientConfig) {
         return clientConfig.isAutoSyncToVoxelMap();
+    }
+
+    @Override
+    public boolean isInstalled() {
+        return ClientConfig.isVoxelMapLoaded;
+    }
+
+    @Override
+    public boolean isReady() {
+        // Auto sync writes to VoxelMap as soon as waypoints arrive, so being in a world is enough.
+        return true;
+    }
+
+    @Override
+    public void syncAll(WaypointClientMod waypointClientMod) {
+        VoxelMapWaypointHelper.replaceAll(waypointClientMod);
     }
 
     @Override

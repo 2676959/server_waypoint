@@ -2,16 +2,19 @@ package _959.server_waypoint.mixin.xaeros_worldmap;
 
 import _959.server_waypoint.access.XaerosWorldMapWaypointAccess;
 import _959.server_waypoint.common.client.WaypointClientMod;
+import _959.server_waypoint.common.client.integrations.XaerosWorldMapWaypointHelper;
 import _959.server_waypoint.common.client.gui.screens.WaypointAddScreen;
 import _959.server_waypoint.common.client.gui.screens.WaypointEditScreen;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
-import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import _959.server_waypoint.common.util.SyncedWaypointName;
+import _959.server_waypoint.common.util.XaeroMinimapHelper;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.AlertScreen;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -20,6 +23,7 @@ import xaero.map.gui.IRightClickableElement;
 import xaero.map.gui.dropdown.rightclick.RightClickOption;
 import xaero.map.mods.gui.Waypoint;
 import xaero.map.mods.gui.WaypointReader;
+import xaero.map.mods.SupportMods;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -34,34 +38,53 @@ public class XaerosWorldMapWaypointReaderMixin {
         XaerosWorldMapWaypointAccess waypointAccess = (XaerosWorldMapWaypointAccess) element;
         String rawWaypointName = waypointAccess.sw$getRawName();
         String legacySyncedWaypointName = SyncedWaypointName.parseSyncedName(rawWaypointName);
-        String syncedListName = SyncedWaypointName.parseSyncedName(waypointAccess.sw$getRawSetName());
+        String syncedListName = XaeroMinimapHelper.getSyncedWaypointListName(
+                waypointAccess.sw$getRawSetName(), rawWaypointName);
         boolean syncedWaypoint = syncedListName != null;
         String syncedWaypointName = legacySyncedWaypointName == null
                 ? rawWaypointName
                 : legacySyncedWaypointName;
-        rightClickOptions.add(new RightClickOption(syncedWaypoint ? "Edit on server" : "Add to server", rightClickOptions.size(), target) {
+        String dimensionName = XaerosWorldMapWaypointHelper.getWaypointDimensionName(
+                SupportMods.xaeroMinimap == null ? null : SupportMods.xaeroMinimap.getWaypointWorld());
+        if (dimensionName == null) {
+            return;
+        }
+        var editTarget = syncedWaypoint ? XaerosWorldMapWaypointHelper.resolveSyncedEditTarget(
+                dimensionName, waypointAccess.sw$getRawSetName(), rawWaypointName, WaypointClientMod.getInstance()
+        ) : null;
+        rightClickOptions.add(new RightClickOption(Component.translatable(syncedWaypoint ? "server_waypoint.map.edit_on_server" : "server_waypoint.map.add_to_server").getString(), rightClickOptions.size(), target) {
                         {
                             Objects.requireNonNull(pointer);
                         }
                         @Override
                         public void onAction(Screen screen) {
                             Minecraft minecraft = Minecraft.getInstance();
+                            if (syncedWaypoint) {
+                                var currentTarget = XaerosWorldMapWaypointHelper.resolveSyncedEditTarget(
+                                        dimensionName, waypointAccess.sw$getRawSetName(), rawWaypointName,
+                                        WaypointClientMod.getInstance());
+                                if (currentTarget == null) {
+                                    MinecraftClientHelper.setScreen(minecraft, new AlertScreen(
+                                            () -> MinecraftClientHelper.setScreen(minecraft, screen),
+                                            Component.translatable("waypoint.edit.screen.title", syncedWaypointName),
+                                            Component.translatable("waypoint.edit.error.waypoint_not_found")));
+                                    return;
+                                }
+                                MinecraftClientHelper.setScreen(minecraft, new WaypointEditScreen(
+                                        screen,
+                                        currentTarget.dimensionName(),
+                                        currentTarget.listName(),
+                                        currentTarget.listDisplayName(),
+                                        currentTarget.waypoint()
+                                ));
+                                return;
+                            }
                             WaypointPos defaultPos = new WaypointPos(
                                     element.getX(),
                                     resolveWorldMapWaypointY(element.isyIncluded(), element.getY(), sw$getFallbackY(minecraft)),
                                     element.getZ()
                             );
-                            String dimensionName = sw$getCurrentDimensionName();
                             String listName = sw$getListName(element, waypointAccess);
-                            if (syncedWaypoint) {
-                                MinecraftClientHelper.setScreen(minecraft, new WaypointEditScreen(
-                                        screen,
-                                        dimensionName,
-                                        listName,
-                                        sw$toSimpleWaypoint(element, syncedWaypointName, defaultPos)
-                                ));
-                                return;
-                            }
                             MinecraftClientHelper.setScreen(minecraft, new WaypointAddScreen(
                                     screen,
                                     dimensionName,
@@ -69,7 +92,7 @@ public class XaerosWorldMapWaypointReaderMixin {
                                     defaultPos
                             ));
                         }
-                    }
+                    }.setActive(!syncedWaypoint || editTarget != null)
         );
     }
 
@@ -85,11 +108,6 @@ public class XaerosWorldMapWaypointReaderMixin {
         return defaultPos.getY();
     }
 
-    private static String sw$getCurrentDimensionName() {
-        String currentDimensionName = WaypointClientMod.getCurrentDimensionName();
-        return currentDimensionName == null ? "" : currentDimensionName;
-    }
-
     private static String sw$getListName(Waypoint waypoint, XaerosWorldMapWaypointAccess waypointAccess) {
         String setName = SyncedWaypointName.parseSyncedName(waypointAccess.sw$getRawSetName());
         if (setName == null) {
@@ -98,14 +116,4 @@ public class XaerosWorldMapWaypointReaderMixin {
         return setName == null ? "" : setName;
     }
 
-    private static SimpleWaypoint sw$toSimpleWaypoint(Waypoint waypoint, String waypointName, WaypointPos pos) {
-        return new SimpleWaypoint(
-                waypointName,
-                waypoint.getSymbol(),
-                pos,
-                waypoint.getColor(),
-                waypoint.getYaw(),
-                waypoint.isGlobal()
-        );
-    }
 }

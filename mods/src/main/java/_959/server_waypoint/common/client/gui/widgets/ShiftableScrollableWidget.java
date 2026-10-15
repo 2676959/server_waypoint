@@ -1,6 +1,9 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
+import _959.server_waypoint.common.client.gui.layout.VisualPositioning;
+import _959.server_waypoint.common.client.util.ColorHelper;
+import com.mojang.blaze3d.platform.InputConstants;
 import _959.server_waypoint.common.util.MathHelper;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -8,13 +11,13 @@ import net.minecraft.network.chat.Component;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeManager.getColor;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.SCROLLBAR_THUMB;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.SCROLLBAR_THUMB_ACTIVE;
-import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.SCROLLBAR_THUMB_DISABLED;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.SCROLLBAR_TRACK;
 
 public abstract class ShiftableScrollableWidget extends ShiftableClickableWidget {
-    public final int SCROLLBAR_WIDTH = 6;
+    public final int SCROLLBAR_WIDTH = 3;
     private double scrollY;
     private boolean scrolling;
+    private final ScrollbarFade scrollbarFade = new ScrollbarFade();
 
     public ShiftableScrollableWidget(int x, int y, int width, int height, Component text) {
         super(x, y, width, height, text);
@@ -40,24 +43,50 @@ public abstract class ShiftableScrollableWidget extends ShiftableClickableWidget
         return this.getContentHeight() > this.height;
     }
 
-    public boolean checkScrollbarDragged(double mouseX, double mouseY, int button) {
-        if (!this.active || button != 0) {
-            return false;
-        }
-        int x = this.getX();
-        int y = this.getY();
-        int right = x + this.width;
-        int bottom = y + this.height;
-        return mouseX >= (double)(right - SCROLLBAR_WIDTH) && mouseX <= (double)right && mouseY >= (double)y && mouseY <= (double)bottom;
+    /** The screen-space left edge of the scrollbar, shared by drawing and input. */
+    protected int getScrollbarX() {
+        return this.getX() + this.width - SCROLLBAR_WIDTH;
     }
 
-    public void drawScrollbar(GuiGraphicsExtractor context) {
-        if (!this.overflows()) {
+    @Override
+    public boolean isMouseOver(double mouseX, double mouseY) {
+        return super.isMouseOver(mouseX, mouseY)
+                || (this.active && this.visible && this.overflows()
+                && this.checkScrollbarDragged(mouseX, mouseY, InputConstants.MOUSE_BUTTON_LEFT));
+    }
+
+    public boolean checkScrollbarDragged(double mouseX, double mouseY, int button) {
+        if (!this.active || button != InputConstants.MOUSE_BUTTON_LEFT) {
+            return false;
+        }
+        int scrollbarX = this.getScrollbarX();
+        int y = this.getY();
+        int bottom = y + this.height;
+        return mouseX >= scrollbarX && mouseX <= scrollbarX + SCROLLBAR_WIDTH
+                && mouseY >= y && mouseY <= bottom;
+    }
+
+    final float scrollbarOpacity(double mouseX, double mouseY, long now) {
+        if (!this.active || !this.visible || !this.overflows()) {
+            this.scrolling = false;
+            this.scrollbarFade.reset();
+            return 0;
+        }
+        int x = VisualPositioning.getVisualX(this);
+        int y = VisualPositioning.getVisualY(this);
+        boolean hovered = mouseX >= x && mouseX < x + VisualPositioning.getVisualWidth(this)
+                && mouseY >= y && mouseY < y + VisualPositioning.getVisualHeight(this);
+        return this.scrollbarFade.update(this.scrolling || hovered, now);
+    }
+
+    public void drawScrollbar(GuiGraphicsExtractor context, int mouseX, int mouseY) {
+        float opacity = scrollbarOpacity(mouseX, mouseY, System.nanoTime());
+        if (opacity <= 0) {
             return;
         }
-        int x = this.getX();
+        int scrollbarX = this.getScrollbarX();
         int y = this.getY();
-        int right = x + this.width;
+        int right = scrollbarX + SCROLLBAR_WIDTH;
         int bottom = y + this.height;
         int contentHeight = this.getContentHeight();
         int handleHeight = (int)((float)(this.height * this.height) / (float)contentHeight);
@@ -68,12 +97,13 @@ public abstract class ShiftableScrollableWidget extends ShiftableClickableWidget
         }
         
         // Background
-        int trackColor = getColor(SCROLLBAR_TRACK);
-        context.fill(right - SCROLLBAR_WIDTH, y, right, bottom, trackColor);
+        int trackColor = ColorHelper.scaleAlpha(getColor(SCROLLBAR_TRACK), opacity);
+        context.fill(scrollbarX, y, right, bottom, trackColor);
         
         // Handle
-        int handleColor = getColor(!this.active ? SCROLLBAR_THUMB_DISABLED : this.scrolling ? SCROLLBAR_THUMB_ACTIVE : SCROLLBAR_THUMB);
-        context.fill(right - SCROLLBAR_WIDTH, handleY, right, handleY + handleHeight, handleColor);
+        int handleColor = ColorHelper.scaleAlpha(
+                getColor(this.scrolling ? SCROLLBAR_THUMB_ACTIVE : SCROLLBAR_THUMB), opacity);
+        context.fill(scrollbarX, handleY, right, handleY + handleHeight, handleColor);
     }
 
     public void refreshScroll() {
@@ -129,7 +159,7 @@ public abstract class ShiftableScrollableWidget extends ShiftableClickableWidget
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (button == 0) {
+        if (button == InputConstants.MOUSE_BUTTON_LEFT) {
             this.scrolling = false;
         }
         return super.mouseReleased(mouseX, mouseY, button);

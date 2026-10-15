@@ -7,8 +7,12 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.function.Consumer;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-//? if >= 1.21.6 {
+//? if >= 26.3 {
+/*import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+*///?} elif >= 1.21.6 {
 import com.mojang.blaze3d.pipeline.RenderPipeline;
+//?}
+//? if >= 1.21.6 {
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
@@ -16,6 +20,8 @@ import net.minecraft.client.renderer.RenderPipelines;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3x2f;
 //?}
+//? if <= 1.21
+/*import com.mojang.blaze3d.systems.RenderSystem;*/
 //? if < 26.2
 import net.minecraft.client.renderer.MultiBufferSource;
 //? if < 1.21.6
@@ -27,6 +33,11 @@ import net.minecraft.world.item.ItemStack;
 import org.joml.Matrix4f;
 
 public final class DrawContextHelper {
+    /**
+     * A mouse coordinate outside any screen. Pass it as both coordinates to draw widgets with no
+     * hover state or tooltip, as under a dialog.
+     */
+    public static final int NO_MOUSE = -10_000;
     private static final Matrix4f IDENTITY_MATRIX = new Matrix4f();
 
     public static void texture(GuiGraphicsExtractor context,
@@ -39,6 +50,41 @@ public final class DrawContextHelper {
         /*context.blit(RenderType::guiTextured, texture, x, y, u, v, width, height, textureWidth, textureHeight);
         *///?} else {
         /*context.blit(texture, x, y, u, v, width, height, textureWidth, textureHeight);
+        *///?}
+    }
+
+    /** Draws {@code texture} with every pixel multiplied by the ARGB {@code color}, such as a theme color. */
+    public static void texture(GuiGraphicsExtractor context,
+    //$ resource_location_type_swap
+    Identifier
+    texture, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight, int color) {
+        texture(context, texture, x, y, u, v, width, height, width, height, textureWidth, textureHeight, color);
+    }
+
+    /** Draws a tinted source region scaled to the supplied destination dimensions. */
+    public static void texture(GuiGraphicsExtractor context,
+    //$ resource_location_type_swap
+    Identifier
+    texture, int x, int y, float u, float v, int width, int height,
+    int sourceWidth, int sourceHeight, int textureWidth, int textureHeight, int color) {
+        //? if >= 1.21.6 {
+        context.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, u, v, width, height, sourceWidth, sourceHeight, textureWidth, textureHeight, color);
+        //?} elif > 1.21 {
+        /*context.blit(RenderType::guiTextured, texture, x, y, u, v, width, height, sourceWidth, sourceHeight, textureWidth, textureHeight, color);
+        *///?} else {
+        /*context.flush();
+        float[] previous = RenderSystem.getShaderColor().clone();
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.setShaderColor(((color >> 16) & 0xFF) / 255.0F, ((color >> 8) & 0xFF) / 255.0F,
+                (color & 0xFF) / 255.0F, ((color >>> 24) & 0xFF) / 255.0F);
+        try {
+            context.blit(texture, x, y, width, height, u, v, sourceWidth, sourceHeight, textureWidth, textureHeight);
+            context.flush();
+        } finally {
+            RenderSystem.setShaderColor(previous[0], previous[1], previous[2], previous[3]);
+            RenderSystem.disableBlend();
+        }
         *///?}
     }
 
@@ -55,6 +101,7 @@ public final class DrawContextHelper {
     }
 
     public static void drawText(GuiGraphicsExtractor context, Font font, String text, int x, int y, int color, boolean shadow) {
+        shadow = shadow && WidgetThemeManager.getBoolean(WidgetThemeVariable.TEXT_SHADOW);
         //? if >= 26 {
         context.text(font, text, x, y, color, shadow);
         //?} else {
@@ -67,6 +114,7 @@ public final class DrawContextHelper {
     }
 
     public static void drawText(GuiGraphicsExtractor context, Font font, Component text, int x, int y, int color, boolean shadow) {
+        shadow = shadow && WidgetThemeManager.getBoolean(WidgetThemeVariable.TEXT_SHADOW);
         //? if >= 26 {
         context.text(font, text, x, y, color, shadow);
         //?} else {
@@ -79,11 +127,22 @@ public final class DrawContextHelper {
     }
 
     public static void drawText(GuiGraphicsExtractor context, Font font, FormattedCharSequence text, int x, int y, int color, boolean shadow) {
+        shadow = shadow && WidgetThemeManager.getBoolean(WidgetThemeVariable.TEXT_SHADOW);
         //? if >= 26 {
         context.text(font, text, x, y, color, shadow);
         //?} else {
         /*context.drawString(font, text, x, y, color, shadow);
         *///?}
+    }
+
+    /** Draws text at a screen-space anchor with a smaller or larger font scale. */
+    public static void drawScaledText(GuiGraphicsExtractor context, Font font, Component text,
+                                      int x, int y, int color, float textScale) {
+        push(context);
+        translate(context, x, y);
+        scale(context, textScale, textScale);
+        drawText(context, font, text, 0, 0, color, true);
+        pop(context);
     }
 
     public static void push(GuiGraphicsExtractor context) {
@@ -132,6 +191,45 @@ public final class DrawContextHelper {
         *///?}
     }
 
+    /**
+     * Moves later drawing above GUI items drawn earlier, such as a badge over an item icon. Newer
+     * versions start a new render stratum. Older versions translate past the depth of GUI item
+     * models, as vanilla does for item stack counts. Pair each call with
+     * {@link #previousItemOverlayLayer}.
+     */
+    public static void nextItemOverlayLayer(GuiGraphicsExtractor context) {
+        //? if >= 1.21.6 {
+        context.nextStratum();
+        //?} else {
+        /*context.pose().translate(0.0F, 0.0F, 200.0F);
+        *///?}
+    }
+
+    public static void previousItemOverlayLayer(GuiGraphicsExtractor context) {
+        //? if < 1.21.6 {
+        /*context.pose().translate(0.0F, 0.0F, -200.0F);
+        *///?}
+    }
+
+    /**
+     * Moves the tooltip above everything drawn earlier in the frame. Newer versions start a new render
+     * stratum; older versions translate to vanilla's tooltip depth, above GUI item models and the item
+     * overlay layer. Pair each call with {@link #previousTooltipLayer}.
+     */
+    public static void nextTooltipLayer(GuiGraphicsExtractor context) {
+        //? if >= 1.21.6 {
+        context.nextStratum();
+        //?} else {
+        /*context.pose().translate(0.0F, 0.0F, 400.0F);
+        *///?}
+    }
+
+    public static void previousTooltipLayer(GuiGraphicsExtractor context) {
+        //? if < 1.21.6 {
+        /*context.pose().translate(0.0F, 0.0F, -400.0F);
+        *///?}
+    }
+
     public static void renderOutline(GuiGraphicsExtractor context, int x, int y, int width, int height, int color) {
         //? if = 1.21.9 {
         /*renderOutlineWithFill(context, x, y, width, height, color);
@@ -142,6 +240,20 @@ public final class DrawContextHelper {
         /*context.renderOutline(x, y, width, height, color);
         *///?}
         //?}
+    }
+
+    /** Draws a popup row whose top border is supplied by the preceding control or row. */
+    public static void renderOutlineWithoutTop(GuiGraphicsExtractor context, int x, int y, int width, int height, int color) {
+        context.fill(x, y, x + 1, y + height - 1, color);
+        context.fill(x + width - 1, y, x + width, y + height - 1, color);
+        context.fill(x, y + height - 1, x + width, y + height, color);
+    }
+
+    /** Draws a popup row whose bottom border is supplied by the following control or row. */
+    public static void renderOutlineWithoutBottom(GuiGraphicsExtractor context, int x, int y, int width, int height, int color) {
+        context.fill(x, y, x + width, y + 1, color);
+        context.fill(x, y + 1, x + 1, y + height, color);
+        context.fill(x + width - 1, y + 1, x + width, y + height, color);
     }
 
     private static void renderOutlineWithFill(GuiGraphicsExtractor context, int x, int y, int width, int height, int color) {

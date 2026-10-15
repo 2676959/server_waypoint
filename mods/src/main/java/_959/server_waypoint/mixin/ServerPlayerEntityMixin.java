@@ -94,6 +94,11 @@ public abstract class ServerPlayerEntityMixin implements
 
     @Inject(method = "restoreFrom", at = @At("TAIL")/*? if >= 26 {*/, remap = false/*?}*/)
     private void copyNavigationData(ServerPlayer oldPlayer, boolean restoreAll, CallbackInfo ci) {
+        //? if <= 1.20.1 {
+        /*if (this.sw$locale == null) {
+            this.sw$locale = ((PlayerLocaleAccessor) oldPlayer).sw$getLocale();
+        }
+        *///?}
         this.sw$setNavigationMapId(
                 ((PlayerNavigationMapIdAccessor) oldPlayer).sw$getNavigationMapId()
         );
@@ -126,7 +131,7 @@ public abstract class ServerPlayerEntityMixin implements
 
 //? if <= 1.20.1 {
     /*@Unique
-    private String sw$locale;
+    private @Nullable String sw$locale;
 
     @Inject(
             method = "updateOptions",

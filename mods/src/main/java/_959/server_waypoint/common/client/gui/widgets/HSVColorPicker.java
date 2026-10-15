@@ -49,7 +49,7 @@ public class HSVColorPicker extends Abstract3ChannelColorPicker<HSVColorPicker.H
     }
 
     @Override
-    public void onChannel0Update() {
+    protected void onChannel0Update() {
         // Hue component
         int hueColor = getPureHue(this.slider0.getSliderLevel());
         this.slider1.setBaseColor(hueColor);
@@ -57,7 +57,7 @@ public class HSVColorPicker extends Abstract3ChannelColorPicker<HSVColorPicker.H
     }
 
     @Override
-    public void onChannel1Update() {
+    protected void onChannel1Update() {
         // Saturation component
         int saturation = this.slider1.getSliderLevel();
         this.slider0.setVisualSaturation(saturation);
@@ -65,14 +65,14 @@ public class HSVColorPicker extends Abstract3ChannelColorPicker<HSVColorPicker.H
     }
 
     @Override
-    public void onChannel2Update() {
+    protected void onChannel2Update() {
         // Brightness component
         int brightness = this.slider2.getSliderLevel();
         this.slider0.setVisualBrightness(brightness);
         this.slider1.setVisualBrightness(brightness);
     }
 
-    public static abstract class HSVSlider extends AbstractColorBgSlider {
+    public static abstract class HSVSlider extends Abstract3ChannelColorPicker.ColorGradientSlider {
         private int whiteOverlay = 0x00FFFFFF;
         private int blackOverlay = 0x00000000;
 

@@ -4,6 +4,7 @@ import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Direction;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Orientation;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.layouts.LayoutElement;
@@ -20,6 +21,9 @@ import static _959.server_waypoint.common.client.gui.layout.VisualPositioning.se
  * children to the top and bottom respectively. Adding children never changes the pack's dimensions;
  * resize the pack explicitly through {@link Expandable} when its available area changes.
  *
+ * <p>Across the pack's orientation, children touch the top of a horizontal pack or the left of a
+ * vertical pack. {@link #setCrossAxisAlignment} can center them instead.
+ *
  * <p>This class only manages layout. The owning screen or composite remains responsible for
  * registering and rendering the packed widgets.
  */
@@ -30,6 +34,7 @@ public class WidgetPack implements LayoutElement, Expandable {
     private int height;
     private final Orientation orientation;
     private final List<Entry> children = new ArrayList<>();
+    private CrossAxisAlignment crossAxisAlignment = CrossAxisAlignment.START;
 
     public WidgetPack() {
         this(0, 0, 0, 0, Orientation.HORIZONTAL);
@@ -68,6 +73,18 @@ public class WidgetPack implements LayoutElement, Expandable {
      */
     public <T extends LayoutElement> void addChild(T child) {
         this.addChild(child, Direction.FORWARD);
+    }
+
+    /**
+     * Places children across the pack's orientation and lays them out again.
+     */
+    public void setCrossAxisAlignment(CrossAxisAlignment alignment) {
+        this.crossAxisAlignment = Objects.requireNonNull(alignment, "alignment");
+        this.layoutChildren();
+    }
+
+    public CrossAxisAlignment getCrossAxisAlignment() {
+        return this.crossAxisAlignment;
     }
 
     @Override
@@ -168,12 +185,18 @@ public class WidgetPack implements LayoutElement, Expandable {
 
         for (Entry entry : this.children) {
             int childWidth = getVisualWidth(entry.widget());
+            int childX;
             if (entry.anchor() == Direction.FORWARD) {
-                setVisualPosition(entry.widget(), startX, this.y);
+                childX = startX;
                 startX += childWidth;
             } else {
                 endX -= childWidth;
-                setVisualPosition(entry.widget(), endX, this.y);
+                childX = endX;
+            }
+            if (this.crossAxisAlignment == CrossAxisAlignment.CENTER) {
+                VisualPositioning.setCenteredRowPosition(entry.widget(), childX, this.y, this.height);
+            } else {
+                setVisualPosition(entry.widget(), childX, this.y);
             }
         }
     }
@@ -184,14 +207,29 @@ public class WidgetPack implements LayoutElement, Expandable {
 
         for (Entry entry : this.children) {
             int childHeight = getVisualHeight(entry.widget());
+            int childX = this.x + this.crossOffset(this.width, getVisualWidth(entry.widget()));
             if (entry.anchor() == Direction.FORWARD) {
-                setVisualPosition(entry.widget(), this.x, startY);
+                setVisualPosition(entry.widget(), childX, startY);
                 startY += childHeight;
             } else {
                 endY -= childHeight;
-                setVisualPosition(entry.widget(), this.x, endY);
+                setVisualPosition(entry.widget(), childX, endY);
             }
         }
+    }
+
+    private int crossOffset(int space, int size) {
+        return this.crossAxisAlignment == CrossAxisAlignment.CENTER ? Math.floorDiv(space - size, 2) : 0;
+    }
+
+    /**
+     * How children are placed across the pack's orientation.
+     */
+    public enum CrossAxisAlignment {
+        /** At the top of a horizontal pack or the left of a vertical pack. */
+        START,
+        /** Centered by visual bounds, or by visible content in horizontal rows when supplied. */
+        CENTER
     }
 
     private record Entry(LayoutElement widget, Direction anchor) {

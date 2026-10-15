@@ -18,4 +18,16 @@ class TranslucentButtonTest {
         assertEquals(10, AnchorMode.CONTENT.getContentX(10, TranslucentButton.OUTLINE_LEFT_PADDING));
         assertEquals(20, AnchorMode.CONTENT.getContentY(20, TranslucentButton.OUTLINE_TOP_PADDING));
     }
+
+    @Test
+    void fittedButtonsForShortLabelsShareTheMinimumWidth() {
+        assertEquals(50, TranslucentButton.fittedWidth(24));
+        assertEquals(50, TranslucentButton.fittedWidth(40));
+    }
+
+    @Test
+    void fittedButtonsGiveLongerLabelsFivePixelsOnEachSide() {
+        assertEquals(51, TranslucentButton.fittedWidth(41));
+        assertEquals(76, TranslucentButton.fittedWidth(66));
+    }
 }

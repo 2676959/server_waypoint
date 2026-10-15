@@ -6,10 +6,8 @@ import _959.server_waypoint.common.client.gui.api.Colorable;
 import _959.server_waypoint.common.client.gui.layout.Padding;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
-import _959.server_waypoint.common.util.MathHelper;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 //? if >= 1.21.9 {
@@ -25,7 +23,6 @@ import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.
 import static _959.server_waypoint.util.ColorUtils.VANILLA_COLORS;
 
 public class SwatchWidget extends ShiftableClickableWidget implements Colorable, Padding {
-    private static final int SLIDER_BAR_COLOR = 0xFFFFFFFF;
     private ColorPickerCallback confirmCallback;
     private static final int BG_PADDING_X = 10;
     private static final int BG_PADDING_Y = 6;
@@ -150,7 +147,7 @@ public class SwatchWidget extends ShiftableClickableWidget implements Colorable,
 
         RandomColorSquareButton randomColorBtn = new RandomColorSquareButton(0, 0, 10, false, () -> {
         });
-        randomColorBtn.setTooltip(Tooltip.create(Component.nullToEmpty("🎲")));
+        randomColorBtn.setTooltip(Component.nullToEmpty("🎲"));
         colorRow1.addClickable(randomColorBtn);
         randomColorBtn.setCallback(() -> {
             this.setColor(randomColorBtn.getColor());
@@ -159,8 +156,8 @@ public class SwatchWidget extends ShiftableClickableWidget implements Colorable,
 
         this.currentColorButton.setYOffset(-12);
         this.previousColorButton.setYOffset(-12);
-        this.currentColorButton.setTooltip(Tooltip.create(Component.translatable("waypoint.edit.screen.current_color.hover")));
-        this.previousColorButton.setTooltip(Tooltip.create(Component.translatable("waypoint.edit.screen.previous_color.hover")));
+        this.currentColorButton.setTooltip(Component.translatable("waypoint.edit.screen.current_color.hover"));
+        this.previousColorButton.setTooltip(Component.translatable("waypoint.edit.screen.previous_color.hover"));
         this.currentColorButton.setCallback(() -> {
             updateFocused(this.currentColorButton);
             int currentColor = this.currentColorButton.getColor();
@@ -482,23 +479,7 @@ public class SwatchWidget extends ShiftableClickableWidget implements Colorable,
             //$ render_method_swap
             extractRenderState
                     (context, mouseX, mouseY, deltaTicks);
-            this.renderWhiteSliderBars(context);
         }
-    }
-
-    private void renderWhiteSliderBars(GuiGraphicsExtractor context) {
-        renderWhiteSliderBar(context, this.hsvColorPicker.slider0);
-        renderWhiteSliderBar(context, this.hsvColorPicker.slider1);
-        renderWhiteSliderBar(context, this.hsvColorPicker.slider2);
-        renderWhiteSliderBar(context, this.rgbColorPicker.slider0);
-        renderWhiteSliderBar(context, this.rgbColorPicker.slider1);
-        renderWhiteSliderBar(context, this.rgbColorPicker.slider2);
-    }
-
-    private static void renderWhiteSliderBar(GuiGraphicsExtractor context, AbstractColorBgSlider slider) {
-        // Swatch gradients need a fixed high-contrast marker instead of a theme-dependent color.
-        int sliderX = slider.getX() + MathHelper.clamp((int)slider.sliderCenter, 0, slider.getWidth() - 1);
-        context.fill(sliderX, slider.getY(), sliderX + 1, slider.getY() + slider.getHeight(), SLIDER_BAR_COLOR);
     }
 
     @Override

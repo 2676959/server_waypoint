@@ -6,6 +6,7 @@ import _959.server_waypoint.core.edit.WaypointListPatch;
 import _959.server_waypoint.core.edit.WaypointPatch;
 import _959.server_waypoint.core.network.WaypointListSyncIdentifier;
 import _959.server_waypoint.util.GsonUtils;
+import _959.server_waypoint.util.NamespacedId;
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -235,7 +236,8 @@ public class WaypointList {
             int yaw,
             boolean global,
             List<String> keywords,
-            String description
+            String description,
+            PatchField<NamespacedId> iconPatch
     ) {
         this.requireMutationAuthority(authority);
         if (this.simpleWaypoints.isEmpty()) {
@@ -255,7 +257,9 @@ public class WaypointList {
                     this.syncNum
             );
         }
-        if (waypoint.compareProperties(newName, displayName, initials, waypointPos, rgb, yaw, global, keywords, description)) {
+        NamespacedId newIcon = iconPatch.isClear() ? null
+                : iconPatch.isSet() ? WaypointIconPolicy.validate(iconPatch.requiredValue()) : waypoint.icon();
+        if (waypoint.compareProperties(newName, displayName, initials, waypointPos, rgb, yaw, global, keywords, description, newIcon)) {
             SimpleWaypoint snapshot = new SimpleWaypoint(waypoint);
             return new ServerUpdateResult(
                     ServerUpdateStatus.IDENTICAL,
@@ -266,7 +270,7 @@ public class WaypointList {
             );
         }
         SimpleWaypoint before = new SimpleWaypoint(waypoint);
-        waypoint.updateProperties(newName, displayName, initials, waypointPos, rgb, yaw, global, keywords, description);
+        waypoint.updateProperties(newName, displayName, initials, waypointPos, rgb, yaw, global, keywords, description, newIcon);
         this.syncNum++;
         return new ServerUpdateResult(
                 ServerUpdateStatus.UPDATED,
@@ -340,6 +344,9 @@ public class WaypointList {
         String newDescription = patch.description().isClear()
                 ? ""
                 : resolveRequired(waypoint.description(), patch.description());
+        NamespacedId newIcon = patch.icon().isClear() ? null
+                : patch.icon().isSet() ? WaypointIconPolicy.validate(patch.icon().requiredValue())
+                : waypoint.icon();
         if (waypoint.compareProperties(
                 newIdentifier,
                 newDisplayName,
@@ -349,7 +356,8 @@ public class WaypointList {
                 newYaw,
                 newVisibility,
                 newKeywords,
-                newDescription
+                newDescription,
+                newIcon
         )) {
             SimpleWaypoint snapshot = new SimpleWaypoint(waypoint);
             return new ServerUpdateResult(
@@ -370,7 +378,8 @@ public class WaypointList {
                 newYaw,
                 newVisibility,
                 newKeywords,
-                newDescription
+                newDescription,
+                newIcon
         );
         this.syncNum++;
         return new ServerUpdateResult(

@@ -1,13 +1,13 @@
 package _959.server_waypoint.core.network;
 
+import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.network.buffer.MessageChunkBuffer;
-import _959.server_waypoint.core.network.message.WaypointModificationMessage;
 import _959.server_waypoint.core.network.codec.ChunkedMessageManager;
 import _959.server_waypoint.core.network.codec.ChunkedMessageManager.PreparedMessage;
 import _959.server_waypoint.core.network.codec.ChunkedMessageManager.ReceiveFailure;
 import _959.server_waypoint.core.network.codec.ChunkedMessageManager.ReceiveLimits;
-import _959.server_waypoint.core.waypoint.WaypointModificationType;
+import _959.server_waypoint.text.chat.Chat;
 import net.kyori.adventure.text.Component;
 
 import java.util.List;
@@ -17,11 +17,44 @@ import java.util.function.Consumer;
 
 import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 
-import static _959.server_waypoint.text.WaypointTextHelper.waypointTextNoTp;
-import static _959.server_waypoint.text.WaypointTextHelper.waypointTextWithTp;
-import static _959.server_waypoint.text.FormattedTextHelper.parse;
-
 public interface PlatformMessageSender<S, P> {
+    /**
+     * A screen ({@link Chat#screen}) ends with one newline, which the game draws as a blank line
+     * before the next message. Every other message reaches the player as it is. Platforms apply this
+     * when they send; builders never end with a newline.
+     */
+    static Component forPlayer(Component message) {
+        return Chat.isScreen(message) ? Component.empty().append(message).appendNewline() : message;
+    }
+
+    /**
+     * The copy of a player's view that goes to the commander who ran a command as that player with
+     * /execute as: the "Viewed as" line, then the view itself. The player gets the view alone. Pass
+     * the view as {@link #forPlayer} makes it, with a screen's trailing newline, for a player
+     * commander, and as the builder made it for the console, RCON and command blocks.
+     */
+    static Component forCommander(Component viewedAsLine, Component view) {
+        return Component.empty().append(viewedAsLine).appendNewline().append(view);
+    }
+
+    /**
+     * Whether this source's feedback is written for a plain-text viewer such as the console, RCON or
+     * a command block. The feedback is the view of the player a command runs as, so /execute as a
+     * player from the console is that player's view, not plain text; the console reads a copy of it
+     * ({@link #forCommander}). Without such a player it is the view of whoever the source is.
+     */
+    boolean isPlainTextReceiver(S source);
+
+    /**
+     * The source whose permissions decide what this source's feedback shows, such as which help
+     * lines and buttons appear. It is the source itself unless a commander ran the command as a
+     * player with /execute as: then it is that player's own source, so the view carries what the
+     * player may do, not what the commander may.
+     */
+    default S viewingSource(S source) {
+        return source;
+    }
+
     void sendMessage(S source, Component component);
     void sendPlayerMessage(P player, Component component);
     void sendError(S source, Component component);
@@ -34,6 +67,9 @@ public interface PlatformMessageSender<S, P> {
         return List.of(player);
     }
     Component getSenderName(S source);
+    PlayerActionLog.Actor playerActor(P player);
+    /** Identity of the original sender, independent of the stack's /execute as executor. */
+    PlayerActionLog.Actor commandSenderActor(S source);
 
     default ChunkedMessageSendResult sendPlayerChunkedMessage(P player, ChunkedMessage message) {
         return this.sendPlayerChunkedMessageTracked(player, message).admissionResult();
@@ -221,32 +257,7 @@ public interface PlatformMessageSender<S, P> {
         return ChunkedMessageManagerRegistry.get(this);
     }
 
-    default void broadcastWaypointModification(S source, WaypointModificationMessage modification) {
-        Component info = this.getModificationMessage(this.getSenderName(source), modification);
-        Iterable<? extends P> recipients = this.getBroadcastPlayers(source);
-        for (P player : recipients) {
-            this.sendPlayerMessage(player, info);
-        }
-        this.broadcastChunkedMessage(recipients, modification);
-    }
-
     default void broadcastChunkedMessageFromPlayer(P player, ChunkedMessage message) {
         this.broadcastChunkedMessage(this.getBroadcastPlayersFromPlayer(player), message);
-    }
-
-    default Component getModificationMessage(Component senderName, WaypointModificationMessage modification) {
-        return switch (modification.type()) {
-            case ADD, REMOVE, UPDATE -> {
-                Component waypointText;
-                if (modification.type() == WaypointModificationType.REMOVE) {
-                    waypointText = waypointTextNoTp(modification.waypoint(), modification.dimensionName());
-                } else {
-                    waypointText = waypointTextWithTp(modification.waypoint(), modification.dimensionName(), modification.listName());
-                }
-                yield Component.translatable("waypoint.modification.broadcast.player", senderName, modification.type().toTranslatable(), waypointText);
-            }
-            case ADD_LIST, REMOVE_LIST ->
-                Component.translatable("waypoint_list.modification.broadcast.player", senderName, modification.type().toTranslatable(), parse(modification.listDisplayName()));
-        };
     }
 }

@@ -1,6 +1,7 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
+import _959.server_waypoint.common.client.gui.layout.VerticalAlignment;
 import java.util.function.Consumer;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -8,7 +9,12 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 
-public class IntegerSlider extends ShiftableClickableWidget {
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.pop;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.push;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.scale;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.translate;
+
+public class IntegerSlider extends ShiftableClickableWidget implements VerticalAlignment {
     private static final int padding = 5;
     private final Consumer<Integer> onChange;
     private final IntegerField integerField;
@@ -20,14 +26,27 @@ public class IntegerSlider extends ShiftableClickableWidget {
     }
 
     public IntegerSlider(int x, int y, int sliderWidth, int fieldWidth, int min, int max, int defaultValue, Consumer<Integer> onChange, Font textRenderer) {
-        super(x, y, sliderWidth + fieldWidth + padding, 0, Component.nullToEmpty("Integer Slider"));
-        this.onChange = onChange;
-        this.integerField = new IntegerField(x + sliderWidth + padding, y, fieldWidth, min, max, defaultValue, Component.empty(), textRenderer);
-        this.integerField.setYOffset(2);
-        this.slider = new Slider(x, y, sliderWidth, this.integerField.getVisualHeight(), max - min);
-        this.height = this.integerField.getVisualHeight();
+        this(x, y, sliderWidth, fieldWidth, min, max, defaultValue, onChange, textRenderer, 1.0F);
+    }
 
-        this.slider.setSliderLevel(defaultValue - min);
+    /** Scales the number field and track height while retaining the requested track width. */
+    public IntegerSlider(int x, int y, int sliderWidth, int fieldWidth, int min, int max, int defaultValue,
+                         Consumer<Integer> onChange, Font textRenderer, float controlScale) {
+        this(x, y, sliderWidth, numberField(x + sliderWidth + padding, y, fieldWidth, min, max, defaultValue,
+                textRenderer, controlScale), onChange);
+        this.setValue(defaultValue);
+    }
+
+    /**
+     * A slider around {@code integerField}, which sits right of the track and gives it its range and
+     * height, and which typing goes to first. It doesn't set a value; call {@link #setValue}.
+     */
+    protected IntegerSlider(int x, int y, int sliderWidth, IntegerField integerField, Consumer<Integer> onChange) {
+        super(x, y, sliderWidth + integerField.getWidth() + padding, integerField.getVisualHeight(), Component.nullToEmpty("Integer Slider"));
+        this.onChange = onChange;
+        this.integerField = integerField;
+        int min = integerField.minValue;
+        this.slider = new Slider(x, y, sliderWidth, this.height, integerField.maxValue - min);
 
         this.integerField.setValueEnteredCallback(value -> {
             this.slider.setSliderLevelWithNoUpdate(value - min);
@@ -40,7 +59,13 @@ public class IntegerSlider extends ShiftableClickableWidget {
             this.onChange.accept(value);
         });
         this.focused = this.integerField;
-        this.setValue(defaultValue);
+    }
+
+    private static IntegerField numberField(int x, int y, int width, int min, int max, int defaultValue,
+                                             Font textRenderer, float controlScale) {
+        IntegerField field = new ScaledIntegerField(x, y, width, min, max, defaultValue, textRenderer, controlScale);
+        field.setYOffset(2);
+        return field;
     }
 
     public void updateFocused(GuiEventListener focused) {
@@ -64,6 +89,19 @@ public class IntegerSlider extends ShiftableClickableWidget {
         super.setFocused(focused);
         if (focused) updateFocused(this.focused);
         else this.focused.setFocused(false);
+    }
+
+    /**
+     * Whether typing goes to the number field: the slider has focus, and its field rather than its
+     * track was selected last.
+     */
+    public boolean isEditingNumber() {
+        return this.integerField.isFocused();
+    }
+
+    @Override
+    public float getVerticalAlignmentCenter() {
+        return this.integerField.getVisualY() - this.getY() + this.integerField.getVerticalAlignmentCenter();
     }
 
     @Override
@@ -99,7 +137,7 @@ public class IntegerSlider extends ShiftableClickableWidget {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (!this.active) {
+        if (!this.isActive()) {
             return false;
         }
         if (this.integerField.mouseClicked(mouseX, mouseY, button)) {
@@ -117,7 +155,7 @@ public class IntegerSlider extends ShiftableClickableWidget {
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        if (!this.active) {
+        if (!this.isActive()) {
             return false;
         }
         if (this.focused == this.slider) {
@@ -129,7 +167,7 @@ public class IntegerSlider extends ShiftableClickableWidget {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
-        if (!this.active) {
+        if (!this.isActive()) {
             return false;
         }
         if (mouseX >= this.slider.getX() && mouseX <= this.slider.getX() + this.slider.getWidth() &&
@@ -142,12 +180,12 @@ public class IntegerSlider extends ShiftableClickableWidget {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        return this.active && this.integerField.keyPressed(keyCode, scanCode, modifiers);
+        return this.isActive() && this.integerField.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override
     public boolean charTyped(char chr, int modifiers) {
-        return this.active && this.integerField.charTyped(chr, modifiers);
+        return this.isActive() && this.integerField.charTyped(chr, modifiers);
     }
 
     @Override
@@ -169,6 +207,116 @@ public class IntegerSlider extends ShiftableClickableWidget {
     @Override
     protected void updateWidgetNarration(NarrationElementOutput builder) {
         this.integerField.updateNarration(builder);
+    }
+
+    /** The field's geometry and pointer coordinates follow the same transform as its rendering. */
+    static class ScaledIntegerField extends IntegerField {
+        private float controlScale = 1.0F;
+        private boolean nativeCoordinates;
+
+        ScaledIntegerField(int x, int y, int width, int min, int max, int defaultValue, Font font, float controlScale) {
+            super(x, y, width, min, max, defaultValue, Component.empty(), font);
+            if (!Float.isFinite(controlScale) || controlScale <= 0) {
+                throw new IllegalArgumentException("controlScale must be finite and positive");
+            }
+            this.controlScale = controlScale;
+        }
+
+        @Override
+        public int getWidth() {
+            return this.nativeCoordinates ? super.getWidth() : Math.round(super.getWidth() * this.controlScale);
+        }
+
+        @Override
+        public int getHeight() {
+            return this.nativeCoordinates ? super.getHeight() : Math.round(super.getHeight() * this.controlScale);
+        }
+
+        @Override
+        public int getVisualWidth() {
+            return Math.round(super.getVisualWidth() * this.controlScale);
+        }
+
+        @Override
+        public int getVisualHeight() {
+            return Math.round(super.getVisualHeight() * this.controlScale);
+        }
+
+        @Override
+        public float getVerticalAlignmentCenter() {
+            return super.getVerticalAlignmentCenter() * this.controlScale + this.textRoundingOffset();
+        }
+
+        private float textRoundingOffset() {
+            float inset = OUTLINE_PADDING * this.controlScale;
+            return Math.round(inset) - inset;
+        }
+
+        @Override
+        public void renderTextField(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+            // Scaling the whole field makes its native text inset fractional. Standalone scaled
+            // labels start on a whole GUI pixel; use the same origin for the number and its caret.
+            push(context);
+            translate(context, 0, this.textRoundingOffset() / this.controlScale);
+            try {
+                super.renderTextField(context, mouseX, mouseY, deltaTicks);
+            } finally {
+                pop(context);
+            }
+        }
+
+        @Override
+        public boolean isMouseOver(double mouseX, double mouseY) {
+            if (this.nativeCoordinates) {
+                return super.isMouseOver(mouseX, mouseY);
+            }
+            return this.visible && mouseX >= this.getVisualX() && mouseY >= this.getVisualY()
+                    && mouseX < this.getVisualX() + this.getVisualWidth()
+                    && mouseY < this.getVisualY() + this.getVisualHeight();
+        }
+
+        @Override
+        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            if (!this.isMouseOver(mouseX, mouseY)) {
+                return false;
+            }
+            this.nativeCoordinates = true;
+            try {
+                return this.clickUnscaled(this.getVisualX() + (mouseX - this.getVisualX()) / this.controlScale,
+                        this.getVisualY() + (mouseY - this.getVisualY()) / this.controlScale, button);
+            } finally {
+                this.nativeCoordinates = false;
+            }
+        }
+
+        /** Vanilla click dispatch, separate from the coordinate transform for sound-free probes. */
+        protected boolean clickUnscaled(double mouseX, double mouseY, int button) {
+            return super.mouseClicked(mouseX, mouseY, button);
+        }
+
+        @Override
+        public void
+        //$ render_widget_method_swap
+        extractWidgetRenderState
+                (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+            int x = this.getVisualX();
+            int y = this.getVisualY();
+            push(context);
+            translate(context, x, y);
+            scale(context, this.controlScale, this.controlScale);
+            translate(context, -x, -y);
+            this.nativeCoordinates = true;
+            try {
+                super.
+                //$ render_widget_method_swap
+                extractWidgetRenderState
+                        (context, x + Math.round((mouseX - x) / this.controlScale),
+                                y + Math.round((mouseY - y) / this.controlScale), deltaTicks);
+            } finally {
+                this.nativeCoordinates = false;
+                pop(context);
+            }
+        }
     }
 
     public static class Slider extends AbstractColorBgSlider {

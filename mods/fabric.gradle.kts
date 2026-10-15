@@ -11,6 +11,7 @@ val targetJavaVersion = if (stonecutter.eval(stonecutter.current.version, ">=1.2
 val mcVersionRange: String by project
 val mod_id: String by project
 val mod_name: String by project
+val mod_description: String by project
 val mod_version: String by project
 val maven_group: String by project
 
@@ -26,6 +27,7 @@ loom {
 
 stonecutter {
     constants.match(loader, "fabric", "neoforge", "forge")
+    constants.put("voxelmap", project.hasProperty("voxelmap_fabric"))
     val usesTwentySixApi = eval(current.version, ">=26")
     val usesResourceLocation = eval(current.version, "<1.21.11")
 
@@ -198,6 +200,7 @@ dependencies {
     val xaeros_minimap_fabric: String by project
     val xaeros_world_map_fabric: String by project
     val voxelmap_fabric: String by project
+    val modmenu: String by project
 
     modImplementation("net.fabricmc:fabric-loader:$fabric_loader")
     modImplementation("net.fabricmc.fabric-api:fabric-api:$fabric_api")
@@ -223,6 +226,9 @@ dependencies {
     // Use Modrinth version IDs because some VoxelMap version numbers collide with Forge uploads.
     modImplementation("maven.modrinth:voxelmap-updated:$voxelmap_fabric")
 
+    // Mod Menu loads ServerWaypointModMenu only when it's installed, so it's needed only to compile.
+    modCompileOnly("maven.modrinth:modmenu:$modmenu")
+
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
@@ -230,6 +236,7 @@ dependencies {
 tasks.processResources {
     inputs.property("id", mod_id)
     inputs.property("name", mod_name)
+    inputs.property("description", mod_description)
     inputs.property("version", mod_version)
     inputs.property("java_version", targetJavaVersion)
 
@@ -243,6 +250,7 @@ tasks.processResources {
         expand(mapOf(
             "id" to mod_id,
             "name" to mod_name,
+            "description" to mod_description,
             "version" to mod_version,
             "fabricloader_dependency" to ">=0.16.10",
             "minecraft_dependency" to mcVersionFabric,
@@ -271,12 +279,24 @@ tasks.named("processResources") {
 }
 
 tasks.shadowJar {
+    relocate("com.southernstorm.noise", "_959.server_waypoint.internal.noisekk")
+    dependencies {
+        include(dependency("org.signal.forks:noise-java:.*"))
+    }
     dependencies {
         include(project(":common"))
+        include(project(":cross-server"))
         include(dependency("net.kyori:.*"))
         exclude("mappings/*")
     }
     archiveClassifier.set("dev-shadow")
+}
+
+// Sprite objects in chat exist from 1.21.9; older targets never read the sprite table.
+if (stonecutter.eval(stonecutter.current.version, "<1.21.9")) {
+    tasks.shadowJar {
+        exclude("assets/server_waypoint/chat-sprites.json", "_959/server_waypoint/text/chat/VanillaChatSprites.class")
+    }
 }
 
 tasks.remapJar {
@@ -320,3 +340,5 @@ fun DependencyHandlerScope.addAdventureSerializerDependency() {
     }
     implementation("net.kyori:adventure-text-serializer-gson:$version")
 }
+
+apply(from = rootProject.file("gradle/noise-packaging.gradle.kts"))

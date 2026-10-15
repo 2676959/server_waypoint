@@ -21,6 +21,7 @@ import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.util.NamespacedId;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.junit.jupiter.api.Test;
@@ -178,6 +179,24 @@ class NetworkCodecTest {
     }
 
     @Test
+    void selectedIconAndIconPatchRoundTrip() {
+        SimpleWaypoint waypoint = new SimpleWaypoint("Home", "Home", "H",
+                new WaypointPos(1, 2, 3), 0x123456, 0, true, List.of(), "",
+                NamespacedId.parse("examplemod:gem"));
+        ByteBuf waypointBytes = Unpooled.buffer();
+        SimpleWaypointCodec.encode(waypointBytes, waypoint, encoding());
+        assertEquals(waypoint.icon(), SimpleWaypointCodec.decode(waypointBytes, decoding()).icon());
+
+        WaypointPatch patch = new WaypointPatch(PatchField.unchanged(), PatchField.unchanged(),
+                PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
+                PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
+                PatchField.unchanged(), PatchField.set(NamespacedId.parse("minecraft:diamond")));
+        ByteBuf patchBytes = Unpooled.buffer();
+        WaypointPatchCodec.encode(patchBytes, patch, encoding());
+        assertEquals(patch, WaypointPatchCodec.decode(patchBytes, decoding()));
+    }
+
+    @Test
     void logicalMessageCodecsRoundTripCanonicalSnapshots() {
         WaypointModificationMessage modification = new WaypointModificationMessage(
                 "minecraft:overworld",
@@ -204,8 +223,7 @@ class NetworkCodecTest {
                 PatchField.set(90),
                 PatchField.set(false),
                 PatchField.clear(),
-                PatchField.clear()
-        );
+                PatchField.clear(), PatchField.unchanged());
         WaypointEditRequestMessage request = new WaypointEditRequestMessage(
                 42L,
                 "minecraft:overworld",
@@ -245,6 +263,39 @@ class NetworkCodecTest {
                 WaypointListUpdateMessageCodec.decode(updateBuffer, decoding());
         assertEquals("old list", decodedUpdate.previousListIdentifier());
         assertEquals(9, decodedUpdate.waypointList().getSyncNum());
+    }
+
+    @Test
+    void manualWaypointSnapshotRoundTripsWithoutBecomingAnIncrementalUpdate() {
+        SimpleWaypoint waypoint = waypoint("Spawn");
+        WaypointList list = new WaypointList("Bases", "Server bases", 17, List.of(waypoint));
+        ByteBuf buffer = Unpooled.buffer();
+        WaypointDataCodec.encode(buffer, WaypointData.waypoint("minecraft:overworld", list, waypoint), encoding());
+
+        WaypointData decoded = WaypointDataCodec.decode(buffer, decoding());
+
+        assertEquals(WaypointData.Type.WAYPOINT, decoded.type());
+        assertEquals("minecraft:overworld", decoded.singleDimension().dimensionName());
+        WaypointList decodedList = decoded.singleDimension().waypointLists().get(0);
+        assertEquals("Bases", decodedList.name());
+        assertEquals("Server bases", decodedList.displayName());
+        assertEquals(17, decodedList.getSyncNum());
+        assertEquals(1, decodedList.size());
+        assertEquals("Spawn", decodedList.simpleWaypoints().get(0).name());
+    }
+
+    @Test
+    void manualWaypointSnapshotRejectsIncompleteOrWidenedScopes() {
+        for (List<WaypointList> lists : List.of(
+                List.<WaypointList>of(),
+                List.of(WaypointList.build("empty", 17)),
+                List.of(new WaypointList("two", 17, List.of(waypoint("first"), waypoint("second")))),
+                List.of(new WaypointList("first", 17, List.of(waypoint("first"))),
+                        new WaypointList("second", 17, List.of(waypoint("second"))))
+        )) {
+            assertThrows(IllegalArgumentException.class, () -> new WaypointData(
+                    WaypointData.Type.WAYPOINT, List.of(new DimensionWaypointData("minecraft:overworld", lists)), null));
+        }
     }
 
     @Test

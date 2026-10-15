@@ -1,5 +1,6 @@
 package _959.server_waypoint.core.network;
 
+import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.command.permission.PermissionKeys;
 import _959.server_waypoint.command.permission.PermissionManager;
 import _959.server_waypoint.core.WaypointServerCore;
@@ -7,6 +8,9 @@ import _959.server_waypoint.core.edit.EditTarget;
 import _959.server_waypoint.core.edit.EditResultStatus;
 import _959.server_waypoint.core.edit.WaypointEditResult;
 import _959.server_waypoint.core.edit.WaypointPatch;
+import _959.server_waypoint.core.edit.PatchField;
+import _959.server_waypoint.core.waypoint.WaypointList;
+import _959.server_waypoint.util.NamespacedId;
 import _959.server_waypoint.core.network.message.WaypointEditRequestMessage;
 import _959.server_waypoint.core.network.message.WaypointEditResultMessage;
 import _959.server_waypoint.core.network.message.WaypointModificationMessage;
@@ -52,6 +56,58 @@ class C2SPacketHandlerTest {
     private Path tempDir;
 
     @Test
+    void guiEditLogsActorAndPersistenceOutcome() {
+        for (boolean failSave : List.of(false, true)) {
+            TestSender sender = new TestSender();
+            WaypointServerCore server = new WaypointServerCore(this.tempDir) {
+                @Override
+                public void saveWaypointFile(_959.server_waypoint.core.WaypointFileManager manager) throws java.io.IOException {
+                    if (failSave) throw new java.io.IOException("simulated disk failure");
+                    super.saveWaypointFile(manager);
+                }
+            };
+            server.putWaypointList("minecraft:overworld", new WaypointList("list", 1, List.of(
+                    new SimpleWaypoint("waypoint", "W", new WaypointPos(0, 64, 0), 0, 0, true))));
+            var handler = new C2SPacketHandler<>(sender, server, new TestPermissionManager(true),
+                    navigationService(), uploadCoordinator(server));
+            var patch = new WaypointPatch(PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
+                    PatchField.unchanged(), PatchField.unchanged(), PatchField.set(90), PatchField.unchanged(),
+                    PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged());
+            org.slf4j.impl.StaticLoggerBinder.clear();
+            handler.onWaypointEditRequest("player", new WaypointEditRequestMessage(17L, "minecraft:overworld",
+                    "list", "waypoint", 1, patch));
+            var events = org.slf4j.impl.StaticLoggerBinder.events().stream()
+                    .filter(e -> e.startsWith("server_waypoint.actions ")).toList();
+            assertEquals(1, events.size());
+            assertTrue(events.get(0).contains("player_id=" + UUID.nameUUIDFromBytes("player".getBytes(java.nio.charset.StandardCharsets.UTF_8))));
+            assertTrue(events.get(0).contains("via=gui"));
+            assertTrue(events.get(0).contains("outcome=" + (failSave ? "save_failed" : "success")));
+        }
+        org.slf4j.impl.StaticLoggerBinder.clear();
+    }
+
+    @Test
+    void remoteSynchronizationRequiresCompatibleHandshakeAndCurrentPermission() {
+        TestSender sender = new TestSender();
+        WaypointServerCore server = new WaypointServerCore(this.tempDir) { };
+        var handler = new C2SPacketHandler<>(sender, server, new TestPermissionManager(false),
+                navigationService(), uploadCoordinator(server));
+        var request = new _959.server_waypoint.core.network.message.RemoteCatalogRequestMessage(UUID.randomUUID());
+        handler.onClientHandshake("player", new ClientHandshakeBuffer(_959.server_waypoint.ProtocolVersion.PROTOCOL_VERSION - 1));
+        int before = sender.packets.size();
+        handler.onRemoteCatalogRequest("player", request);
+        assertEquals(before, sender.packets.size());
+        handler.onClientHandshake("player", new ClientHandshakeBuffer(_959.server_waypoint.ProtocolVersion.PROTOCOL_VERSION));
+        handler.onRemoteCatalogRequest("player", request);
+        var response = (_959.server_waypoint.core.network.message.RemoteCatalogMessage) sender.packets.get(sender.packets.size() - 1);
+        assertEquals(_959.server_waypoint.crossserver.RemoteCatalogState.UNAUTHORIZED, response.state());
+        assertTrue(response.servers().isEmpty());
+        before = sender.packets.size(); handler.onRemoteCatalogRequest("player", request);
+        assertEquals(before, sender.packets.size());
+        assertTrue(server.getFileManagerMap().isEmpty());
+    }
+
+    @Test
     void editPermissionDenialDoesNotResolveOrMutateTheTarget() {
         TestSender sender = new TestSender();
         WaypointServerCore server = new WaypointServerCore(this.tempDir) {
@@ -68,6 +124,30 @@ class C2SPacketHandlerTest {
 
         assertEquals(EditResultStatus.PERMISSION_DENIED, sender.lastResult().status());
         assertNull(server.getWaypointFileManager("minecraft:overworld"));
+    }
+
+    @Test
+    void editPacketsRejectUnknownIconsWithoutMutatingOrBroadcasting() {
+        TestSender sender = new TestSender();
+        WaypointServerCore server = new WaypointServerCore(this.tempDir) { };
+        server.putWaypointList("minecraft:overworld", new WaypointList("list", 1, List.of(
+                new SimpleWaypoint("waypoint", "W", new WaypointPos(0, 64, 0), 0, 0, true, List.of(), ""))));
+        var handler = new C2SPacketHandler<>(sender, server, new TestPermissionManager(true),
+                navigationService(), uploadCoordinator(server));
+        for (String icon : List.of("minecraft:missing_item", "minecraft:air", "mod:missing_item", "voxelmap:missing_icon")) {
+            var patch = new WaypointPatch(PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
+                    PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
+                    PatchField.unchanged(), PatchField.unchanged(), PatchField.set(NamespacedId.parse(icon)));
+            var request = new WaypointEditRequestMessage(17L, "minecraft:overworld", "list", "waypoint", 1, patch);
+            for (MessageChunkBuffer frame : frames(request)) {
+                handler.onMessageChunk("player", frame);
+            }
+            assertEquals(EditResultStatus.INVALID_VALUE, sender.lastResult().status());
+            var list = server.getWaypointFileManager("minecraft:overworld").getWaypointListByName("list");
+            assertEquals(1, list.getSyncNum());
+            assertNull(list.getWaypointByName("waypoint").icon());
+            assertTrue(sender.packets.stream().noneMatch(WaypointModificationMessage.class::isInstance));
+        }
     }
 
     @Test
@@ -148,7 +228,7 @@ class C2SPacketHandlerTest {
                 2
         );
 
-        sender.broadcastWaypointModification("source", modification);
+        sender.broadcastChunkedMessage(sender.getBroadcastPlayers("source"), modification);
 
         assertEquals(List.of("first", "second"), sender.attemptedRecipients);
         assertEquals(1, sender.prepareCalls);
@@ -415,7 +495,7 @@ class C2SPacketHandlerTest {
                 List.of("minecraft:overworld"),
                 null,
                 null
-        );
+        , new PlayerActionLog.Actor(null, "TestSender"));
         assertEquals(UploadCoordinator.BeginStatus.STARTED, result.status());
         return result.request();
     }
@@ -512,7 +592,7 @@ class C2SPacketHandlerTest {
                 player -> true,
                 player -> true,
                 navigationService(),
-                player -> UUID.nameUUIDFromBytes(player.getBytes(java.nio.charset.StandardCharsets.UTF_8))
+                player -> new PlayerActionLog.Actor(UUID.nameUUIDFromBytes(player.getBytes(java.nio.charset.StandardCharsets.UTF_8)), player)
         );
     }
 
@@ -575,6 +655,16 @@ class C2SPacketHandlerTest {
         protected PermissionKey createUploadDeletePermissionKey() {
             return new PermissionKey("upload.delete");
         }
+
+        @Override
+        protected PermissionKey createRemoteListPermissionKey() {
+            return new PermissionKey("remote.list");
+        }
+
+        @Override
+        protected PermissionKey createRemoteTpPermissionKey() {
+            return new PermissionKey("remote.tp");
+        }
     }
 
     private record HandlerFixture(
@@ -602,6 +692,11 @@ class C2SPacketHandlerTest {
 
         @Override
         public void sendError(String source, Component component) {
+        }
+
+        @Override
+        public boolean isPlainTextReceiver(String source) {
+            return false;
         }
 
         @Override
@@ -686,6 +781,16 @@ class C2SPacketHandlerTest {
         @Override
         public Iterable<? extends String> getBroadcastPlayers(String source) {
             return List.of(source);
+        }
+
+        @Override
+        public PlayerActionLog.Actor playerActor(String player) {
+            return new PlayerActionLog.Actor(UUID.nameUUIDFromBytes(player.getBytes(java.nio.charset.StandardCharsets.UTF_8)), player);
+        }
+
+        @Override
+        public PlayerActionLog.Actor commandSenderActor(String source) {
+            return new PlayerActionLog.Actor(null, source);
         }
 
         @Override

@@ -5,6 +5,7 @@ import net.kyori.adventure.text.flattener.ComponentFlattener;
 import net.kyori.adventure.text.flattener.FlattenerListener;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -62,6 +63,24 @@ public final class FormattedTextHelper {
             }
         }
         return false;
+    }
+
+    /**
+     * Splits comma-separated keywords, trimming each and dropping empty entries, the way {@code /wp add}
+     * reads its keywords argument.
+     */
+    public static List<String> parseKeywords(String rawKeywords) {
+        if (rawKeywords == null || rawKeywords.trim().isEmpty()) {
+            return List.of();
+        }
+        List<String> keywords = new ArrayList<>();
+        for (String keyword : rawKeywords.split(",", -1)) {
+            String trimmed = keyword.trim();
+            if (!trimmed.isEmpty()) {
+                keywords.add(trimmed);
+            }
+        }
+        return List.copyOf(keywords);
     }
 
     private static boolean looksLikeJson(String rawText) {

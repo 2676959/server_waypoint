@@ -807,8 +807,18 @@ public class ColorUtils {
         int g = (rgb >> 8) & 0xFF;
         int b = rgb & 0xFF;
 
-        double bgLuminance = calculateRelativeLuminance(r >> 1, g >> 1, b >> 1);
+        return blackOrWhiteOver(calculateRelativeLuminance(r >> 1, g >> 1, b >> 1));
+    }
 
+    /**
+     * get black or white, whichever contrasts more with the color, from the color's exact luminance.
+     * Unlike {@link #getSafeTextColor(int)} it does not favor white, so the contrast is at least 4.5:1
+     * */
+    public static int getContrastColor(int rgb) {
+        return blackOrWhiteOver(calculateRelativeLuminance((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF));
+    }
+
+    private static int blackOrWhiteOver(double bgLuminance) {
         // WCAG contrast formula ratios
         double contrastWhite = 1.05 / (bgLuminance + 0.05);
         double contrastBlack = (bgLuminance + 0.05) / 0.05;

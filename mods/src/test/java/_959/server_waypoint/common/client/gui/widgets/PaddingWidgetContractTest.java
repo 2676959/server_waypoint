@@ -21,6 +21,8 @@ class PaddingWidgetContractTest {
         assertPadding(ConfirmationDialog.class);
         assertPadding(DimensionListWidget.class);
         assertPadding(TreeViewWidget.class);
+        assertPadding(SettingsListWidget.class);
+        assertPadding(TranslucentTooltip.class);
     }
 
     private static void assertPadding(Class<?> widgetClass) {

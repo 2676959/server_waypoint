@@ -56,13 +56,12 @@ import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 
 @Mod(ModInfo.MOD_ID)
 public class ServerWaypointNeoForge implements IPlatformConfigPath {
-    private static final String NETWORK_PROTOCOL_VERSION = Integer.toString(ProtocolVersion.PROTOCOL_VERSION);
 //? if = 1.20.2 {
     /^public static final SimpleChannel PACKET_CHANNEL = NetworkRegistry.newSimpleChannel(
             modId("main"),
-            () -> NETWORK_PROTOCOL_VERSION,
-            NETWORK_PROTOCOL_VERSION::equals,
-            NETWORK_PROTOCOL_VERSION::equals
+            () -> ProtocolVersion.PROTOCOL_VERSION_STRING,
+            ProtocolVersion.PROTOCOL_VERSION_STRING::equals,
+            ProtocolVersion.PROTOCOL_VERSION_STRING::equals
     );
     ^///?}
 
@@ -83,7 +82,7 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
                 player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.upload(), CONFIG.CommandPermission().upload()),
                 player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.uploadDelete(), CONFIG.CommandPermission().uploadDelete()),
                 this.waypointServer.navigation().service(),
-                ServerPlayer::getUUID
+                messageSender::playerActor
         );
         this.c2sPacketHandler = new C2SPacketHandler<>(
                 messageSender,
@@ -93,6 +92,7 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
                 uploadCoordinator
         );
         this.waypointCommand = new WaypointCommand(this.waypointServer, messageSender, permissionManager, uploadCoordinator);
+        this.waypointServer.configureCrossServer(this.waypointCommand, permissionManager);
 
         this.configureLoadedMods();
 //? if = 1.20.2 {
@@ -151,6 +151,7 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
         if (event.getEntity() instanceof ServerPlayer player) {
             ModMessageSender.getInstance().disconnectChunkedMessages(player);
             this.waypointServer.navigation().onPlayerJoin(player);
+            this.waypointServer.crossServerArrival(player);
         }
     }
 
@@ -173,7 +174,7 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
 
 //? if >= 1.20.5 {
     private void registerPayloads(RegisterPayloadHandlersEvent event) {
-        final PayloadRegistrar registrar = event.registrar(NETWORK_PROTOCOL_VERSION);
+        final PayloadRegistrar registrar = event.registrar(ProtocolVersion.PROTOCOL_VERSION_STRING);
         // S2C
         if (isClientDist()) {
             ServerWaypointNeoForgeClient.registerClientPayloadHandlers(registrar);
@@ -195,7 +196,7 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
                 context.enqueueWork(() -> ServerWaypointNeoForgeClient.handleMessageChunk(payload));
             }
         };
-        //? if >=1.21.9 {
+        //? if >=1.21.7 {
         registrar.playBidirectional(MessageChunkPayload.ID, MessageChunkPayload.PACKET_CODEC, serverChunkHandler, clientChunkHandler);
         //?} else {
         /^registrar.playBidirectional(MessageChunkPayload.ID, MessageChunkPayload.PACKET_CODEC, (payload, context) -> {
@@ -212,7 +213,7 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
     }
 //?} elif = 1.20.4 {
     /^private void registerPayloads(RegisterPayloadHandlerEvent event) {
-        final IPayloadRegistrar registrar = event.registrar(ModInfo.MOD_ID).versioned(NETWORK_PROTOCOL_VERSION);
+        final IPayloadRegistrar registrar = event.registrar(ModInfo.MOD_ID).versioned(ProtocolVersion.PROTOCOL_VERSION_STRING);
         if (isClientDist()) {
             ServerWaypointNeoForgeClient.registerClientPayloadHandlers(registrar);
         } else {

@@ -5,7 +5,7 @@ plugins {
     id("net.minecraftforge.gradle") version "[7.0.11,8.0)" apply false
     id("net.minecraftforge.jarjar") version "0.2.3" apply false
     id("net.minecraftforge.renamer") version "1.1.0" apply false
-    id("net.neoforged.moddev") version "2.0.141" apply false
+    id("net.neoforged.moddev") version "2.0.147" apply false
     id("net.neoforged.gradle.userdev") version "7.1.27" apply false
     id("com.gradleup.shadow") version "9.4.1" apply false
 }

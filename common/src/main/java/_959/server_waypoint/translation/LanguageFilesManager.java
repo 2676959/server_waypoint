@@ -12,12 +12,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
-import java.nio.file.FileSystemAlreadyExistsException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -199,6 +197,18 @@ public class LanguageFilesManager {
     }
 
     private List<Path> getInternalLanguageFiles() {
+        // Development loaders can group classes and resources from different projects
+        // under one code source. Locate the resource itself before inspecting that source.
+        URL fallbackLanguage = LanguageFilesManager.class.getClassLoader()
+                .getResource(ASSETS_PATH + FALL_BACK_LANGUAGE + ".json");
+        if (fallbackLanguage != null && "file".equals(fallbackLanguage.getProtocol())) {
+            try {
+                return getInternalLanguageFilesFromDirectory(Path.of(fallbackLanguage.toURI()).getParent());
+            } catch (URISyntaxException e) {
+                LOGGER.error("Failed to get path of internal language resource: {}", e.getMessage());
+            }
+        }
+
         Path codeSourcePath;
         try {
             URL location = getCodeSourceLocation();
@@ -272,8 +282,8 @@ public class LanguageFilesManager {
     }
 
     private List<Path> getInternalLanguageFilesFromJar(Path jarPath) {
-        URI uri = URI.create("jar:" + jarPath.toUri());
-        try (FileSystem fileSystem = getOrCreateFileSystem(uri)) {
+        // The path overload creates an independent filesystem instead of borrowing the loader's.
+        try (FileSystem fileSystem = FileSystems.newFileSystem(jarPath)) {
             try (Stream<Path> paths = walk(fileSystem.getPath(ASSETS_PATH), 1)) {
                 return paths.filter((file) -> isRegularFile(file) && file.getFileName().toString().endsWith(".json"))
                         .collect(Collectors.toList());
@@ -300,14 +310,6 @@ public class LanguageFilesManager {
 
     public void reloadExternalLanguages() {
         loadAllExternalLanguageFiles();
-    }
-
-    private FileSystem getOrCreateFileSystem(URI uri) throws IOException {
-        try {
-            return FileSystems.newFileSystem(uri, Collections.emptyMap());
-        } catch (FileSystemAlreadyExistsException e) {
-            return FileSystems.getFileSystem(uri);
-        }
     }
 
     @Nullable

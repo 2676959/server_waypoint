@@ -1,0 +1,140 @@
+[18:52:18 INFO]: Booting up Velocity 4.1.1...
+[18:52:23 INFO]: Connections will use kqueue channels, libdeflate (macOS ARM64 / Apple Silicon) compression, native (macOS ARM64 / Apple Silicon) ciphers
+[18:52:23 INFO]: The forwarding-secret-file does not exist. A new file has been created at forwarding.secret
+[18:52:23 WARN]: The proxy is running in offline mode! This is a security risk and you will NOT receive any support!
+[18:52:23 WARN]: Player info forwarding is disabled! All players will appear to be connecting from the proxy and will have offline-mode UUIDs.
+[18:52:23 INFO]: Loading localizations...
+[18:52:23 INFO]: Loading plugins...
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::staticFieldBase has been called by com.google.inject.internal.aop.HiddenClassDefiner (file:/private/tmp/server-waypoint-step19-folia/proxy/velocity.jar)
+WARNING: Please consider reporting this to the maintainers of class com.google.inject.internal.aop.HiddenClassDefiner
+WARNING: sun.misc.Unsafe::staticFieldBase will be removed in a future release
+[18:52:24 INFO]: Loaded plugin server_waypoint 3.1.0 by 2676959
+[18:52:24 INFO]: Loaded 2 plugins
+[18:52:24 INFO]: Listening on /127.0.0.1:25980
+[18:52:24 INFO]: Velocity and some of its plugins collect metrics and send them to bStats (https://bStats.org).
+[18:52:24 INFO]: bStats collects some basic information for plugin authors, like how many people use
+[18:52:24 INFO]: their plugin and their total player count. It's recommended to keep bStats enabled, but
+[18:52:24 INFO]: if you're not comfortable with this, you can opt-out by editing the config.txt file in
+[18:52:24 INFO]: the '/plugins/bStats/' folder and setting enabled to false.
+[18:52:24 INFO]: Done (7.64s)!
+[18:52:24 INFO] [server_waypoint]: Server Waypoint coordinator startup: SUCCESS
+> >
+[18:53:00 INFO]: Shutting down the proxy...
+[18:53:00 INFO]: Closing endpoint /127.0.0.1:25980
+[18:53:00 INFO] [server_waypoint]: Server Waypoint coordinator stopped: SUCCESS
+> [18:53:22 INFO]: Booting up Velocity 4.1.1...
+[18:53:25 INFO]: Connections will use kqueue channels, libdeflate (macOS ARM64 / Apple Silicon) compression, native (macOS ARM64 / Apple Silicon) ciphers
+[18:53:25 WARN]: The proxy is running in offline mode! This is a security risk and you will NOT receive any support!
+[18:53:25 WARN]: Player info forwarding is disabled! All players will appear to be connecting from the proxy and will have offline-mode UUIDs.
+[18:53:25 INFO]: Loading localizations...
+[18:53:25 INFO]: Loading plugins...
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::staticFieldBase has been called by com.google.inject.internal.aop.HiddenClassDefiner (file:/private/tmp/server-waypoint-step19-folia/proxy/velocity.jar)
+WARNING: Please consider reporting this to the maintainers of class com.google.inject.internal.aop.HiddenClassDefiner
+WARNING: sun.misc.Unsafe::staticFieldBase will be removed in a future release
+[18:53:25 INFO]: Loaded plugin server_waypoint 3.1.0 by 2676959
+[18:53:25 INFO]: Loaded 2 plugins
+[18:53:25 INFO] [server_waypoint]: Server Waypoint coordinator startup: SUCCESS
+[18:53:25 INFO]: Listening on /127.0.0.1:25980
+[18:53:25 INFO]: Done (7.52s)!
+[18:53:40 INFO]: [connected player] CodexStep19 (/127.0.0.1:57835) has connected
+[18:53:40 INFO]: [server connection] CodexStep19 -> alpha has connected
+[18:53:51 INFO]: [server connection] CodexStep19 -> beta has connected
+[18:53:51 INFO]: [server connection] CodexStep19 -> alpha has disconnected
+[18:54:08 INFO]: [server connection] CodexStep19 -> alpha has connected
+[18:54:08 INFO]: [server connection] CodexStep19 -> beta has disconnected
+[18:54:27 INFO]: [server connection] CodexStep19 -> beta has connected
+[18:54:27 INFO]: [server connection] CodexStep19 -> alpha has disconnected
+> >
+[18:54:41 INFO]: Shutting down the proxy...
+[18:54:41 INFO]: Closing endpoint /127.0.0.1:25980
+[18:54:41 INFO]: [connected player] CodexStep19 (/127.0.0.1:57835) has disconnected: Proxy shutting down.
+[18:54:41 INFO]: [server connection] CodexStep19 -> beta has disconnected
+[18:54:41 INFO] [server_waypoint]: Server Waypoint coordinator stopped: SUCCESS
+> [18:56:05 INFO]: Booting up Velocity 4.1.1...
+[18:56:08 INFO]: Connections will use kqueue channels, libdeflate (macOS ARM64 / Apple Silicon) compression, native (macOS ARM64 / Apple Silicon) ciphers
+[18:56:08 WARN]: The proxy is running in offline mode! This is a security risk and you will NOT receive any support!
+[18:56:08 WARN]: Player info forwarding is disabled! All players will appear to be connecting from the proxy and will have offline-mode UUIDs.
+[18:56:08 INFO]: Loading localizations...
+[18:56:08 INFO]: Loading plugins...
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::staticFieldBase has been called by com.google.inject.internal.aop.HiddenClassDefiner (file:/private/tmp/server-waypoint-step19-folia/proxy/velocity.jar)
+WARNING: Please consider reporting this to the maintainers of class com.google.inject.internal.aop.HiddenClassDefiner
+WARNING: sun.misc.Unsafe::staticFieldBase will be removed in a future release
+[18:56:08 INFO]: Loaded plugin server_waypoint 3.1.0 by 2676959
+[18:56:08 INFO]: Loaded 2 plugins
+[18:56:08 INFO] [server_waypoint]: Server Waypoint coordinator startup: SUCCESS
+[18:56:08 INFO]: Listening on /127.0.0.1:25980
+[18:56:08 INFO]: Done (7.47s)!
+[18:56:27 INFO]: [connected player] CodexStep19 (/127.0.0.1:57882) has connected
+[18:56:27 INFO]: [server connection] CodexStep19 -> alpha has connected
+[18:56:35 INFO]: [server connection] CodexStep19 -> beta has connected
+[18:56:35 INFO]: [server connection] CodexStep19 -> alpha has disconnected
+[18:56:40 INFO]: [server connection] CodexStep19 -> alpha has connected
+[18:56:40 INFO]: [server connection] CodexStep19 -> beta has disconnected
+> >
+[18:56:57 INFO]: Shutting down the proxy...
+[18:56:57 INFO]: Closing endpoint /127.0.0.1:25980
+[18:56:57 INFO]: [connected player] CodexStep19 (/127.0.0.1:57882) has disconnected: Proxy shutting down.
+[18:56:57 INFO]: [server connection] CodexStep19 -> alpha has disconnected
+[18:56:57 INFO] [server_waypoint]: Server Waypoint coordinator stopped: SUCCESS
+> [18:57:15 INFO]: Booting up Velocity 4.1.1...
+[18:57:18 INFO]: Connections will use kqueue channels, libdeflate (macOS ARM64 / Apple Silicon) compression, native (macOS ARM64 / Apple Silicon) ciphers
+[18:57:18 WARN]: The proxy is running in offline mode! This is a security risk and you will NOT receive any support!
+[18:57:18 WARN]: Player info forwarding is disabled! All players will appear to be connecting from the proxy and will have offline-mode UUIDs.
+[18:57:18 INFO]: Loading localizations...
+[18:57:18 INFO]: Loading plugins...
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::staticFieldBase has been called by com.google.inject.internal.aop.HiddenClassDefiner (file:/private/tmp/server-waypoint-step19-folia/proxy/velocity.jar)
+WARNING: Please consider reporting this to the maintainers of class com.google.inject.internal.aop.HiddenClassDefiner
+WARNING: sun.misc.Unsafe::staticFieldBase will be removed in a future release
+[18:57:18 INFO]: Loaded plugin server_waypoint 3.1.0 by 2676959
+[18:57:18 INFO]: Loaded 2 plugins
+[18:57:18 INFO]: Listening on /127.0.0.1:25980
+[18:57:18 INFO]: Done (7.48s)!
+[18:57:18 INFO] [server_waypoint]: Server Waypoint coordinator startup: SUCCESS
+[18:57:26 INFO]: [connected player] CodexStep19 (/127.0.0.1:57925) has connected
+[18:57:26 ERROR]: [connected player] CodexStep19 (/127.0.0.1:57925): unable to connect to server alpha
+io.netty.channel.AbstractChannel$AnnotatedConnectException: finishConnect(..) failed with error(-61): Connection refused: /127.0.0.1:25981
+Caused by: java.net.ConnectException: finishConnect(..) failed with error(-61): Connection refused
+    at io.netty.channel.unix.Errors.newConnectException0(Errors.java:166) ~[velocity.jar:4.1.1]
+    at io.netty.channel.unix.Errors.handleConnectErrno(Errors.java:131) ~[velocity.jar:4.1.1]
+    at io.netty.channel.unix.Socket.finishConnect(Socket.java:361) ~[velocity.jar:4.1.1]
+    at io.netty.channel.kqueue.AbstractKQueueChannel$AbstractKQueueUnsafe.doFinishConnect(AbstractKQueueChannel.java:689) ~[velocity.jar:4.1.1]
+    at io.netty.channel.kqueue.AbstractKQueueChannel$AbstractKQueueUnsafe.finishConnect(AbstractKQueueChannel.java:669) ~[velocity.jar:4.1.1]
+    at io.netty.channel.kqueue.AbstractKQueueChannel$AbstractKQueueUnsafe.shutdownInput(AbstractKQueueChannel.java:478) ~[velocity.jar:4.1.1]
+    at io.netty.channel.kqueue.AbstractKQueueChannel$AbstractKQueueUnsafe.readEOF(AbstractKQueueChannel.java:520) ~[velocity.jar:4.1.1]
+    at io.netty.channel.kqueue.AbstractKQueueChannel$AbstractKQueueUnsafe.handle(AbstractKQueueChannel.java:418) ~[velocity.jar:4.1.1]
+    at io.netty.channel.kqueue.KQueueIoHandler$DefaultKqueueIoRegistration.handle(KQueueIoHandler.java:474) ~[velocity.jar:4.1.1]
+    at io.netty.channel.kqueue.KQueueIoHandler.processReady(KQueueIoHandler.java:216) ~[velocity.jar:4.1.1]
+    at io.netty.channel.kqueue.KQueueIoHandler.run(KQueueIoHandler.java:277) ~[velocity.jar:4.1.1]
+    at io.netty.channel.SingleThreadIoEventLoop.runIo(SingleThreadIoEventLoop.java:225) ~[velocity.jar:4.1.1]
+    at io.netty.channel.SingleThreadIoEventLoop.run(SingleThreadIoEventLoop.java:196) ~[velocity.jar:4.1.1]
+    at io.netty.util.concurrent.SingleThreadEventExecutor$5.run(SingleThreadEventExecutor.java:1204) ~[velocity.jar:4.1.1]
+    at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[velocity.jar:4.1.1]
+    at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[velocity.jar:4.1.1]
+    at java.base/java.lang.Thread.run(Thread.java:1474) [?:?]
+[18:57:26 INFO]: [connected player] CodexStep19 (/127.0.0.1:57925) has disconnected: Unable to connect you to alpha. Please try again later.
+[18:57:30 INFO]: [connected player] CodexStep19 (/127.0.0.1:57931) has connected
+[18:57:30 INFO]: [server connection] CodexStep19 -> alpha has connected
+[18:57:35 INFO]: STEP19_ROUTE expected=RemoteServerId[value=a] actual=Optional[ProxyPlayerSnapshot[playerId=7cf408b7-3218-334b-8f94-04d13c8e9231, currentServer=Optional[RemoteServerId[value=a]]]]
+[18:57:35 INFO]: STEP19_ROUTE expected=RemoteServerId[value=a] actual=Optional[ProxyPlayerSnapshot[playerId=7cf408b7-3218-334b-8f94-04d13c8e9231, currentServer=Optional[RemoteServerId[value=a]]]]
+[18:57:35 INFO]: [server connection] CodexStep19 -> beta has connected
+[18:57:35 INFO]: [server connection] CodexStep19 -> alpha has disconnected
+[18:57:36 INFO]: STEP19_ROUTE expected=RemoteServerId[value=b] actual=Optional[ProxyPlayerSnapshot[playerId=7cf408b7-3218-334b-8f94-04d13c8e9231, currentServer=Optional[RemoteServerId[value=b]]]]
+[18:57:40 INFO]: STEP19_ROUTE expected=RemoteServerId[value=b] actual=Optional[ProxyPlayerSnapshot[playerId=7cf408b7-3218-334b-8f94-04d13c8e9231, currentServer=Optional[RemoteServerId[value=b]]]]
+[18:57:40 INFO]: STEP19_ROUTE expected=RemoteServerId[value=b] actual=Optional[ProxyPlayerSnapshot[playerId=7cf408b7-3218-334b-8f94-04d13c8e9231, currentServer=Optional[RemoteServerId[value=b]]]]
+[18:57:40 INFO]: [server connection] CodexStep19 -> alpha has connected
+[18:57:40 INFO]: [server connection] CodexStep19 -> beta has disconnected
+[18:57:41 INFO]: STEP19_ROUTE expected=RemoteServerId[value=a] actual=Optional[ProxyPlayerSnapshot[playerId=7cf408b7-3218-334b-8f94-04d13c8e9231, currentServer=Optional.empty]]
+[18:57:44 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:57956) has connected
+[18:57:44 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+> >
+[18:59:00 INFO]: Shutting down the proxy...
+[18:59:00 INFO]: Closing endpoint /127.0.0.1:25980
+[18:59:00 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:57956) has disconnected: Proxy shutting down.
+[18:59:00 INFO]: [connected player] CodexStep19 (/127.0.0.1:57931) has disconnected: Proxy shutting down.
+[18:59:00 INFO]: [server connection] CodexStep19 -> alpha has disconnected
+[18:59:00 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[18:59:00 INFO] [server_waypoint]: Server Waypoint coordinator stopped: SUCCESS

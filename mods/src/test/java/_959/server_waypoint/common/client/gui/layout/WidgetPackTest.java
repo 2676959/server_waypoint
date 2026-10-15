@@ -1,13 +1,76 @@
 package _959.server_waypoint.common.client.gui.layout;
 
+import _959.server_waypoint.common.client.gui.TestFont;
+import _959.server_waypoint.common.client.gui.widgets.ComboBoxWidget;
+import _959.server_waypoint.common.client.gui.widgets.ScalableText;
+import _959.server_waypoint.common.client.gui.widgets.TranslucentTextField;
+import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.layouts.LayoutElement;
+import net.minecraft.network.chat.Component;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class WidgetPackTest {
+    @Test
+    void centeredPackAlignsUncompensatedComboboxTextWithLabels() {
+        TestFont font = new TestFont();
+        ScalableText label = new ScalableText(0, 0, Component.literal("Icon"), 0xFFFFFFFF, font);
+        ComboBoxWidget menu = new ComboBoxWidget(0, 0, 100, Component.empty(), font,
+                List.of("minecraft:oak_boat"), "minecraft:oak_boat", value -> { });
+        WidgetPack pack = new WidgetPack(10, 30, 140, 13, LayoutFlow.Orientation.HORIZONTAL);
+        pack.setCrossAxisAlignment(WidgetPack.CrossAxisAlignment.CENTER);
+        pack.addChild(label);
+        pack.addChild(menu, LayoutFlow.Direction.REVERSE);
+
+        assertEquals(50, menu.getX());
+        assertEquals(label.getY(), menu.getY() + 2);
+        pack.setDimensions(180, 20);
+        pack.setPosition(20, 50);
+        assertEquals(100, menu.getX());
+        assertEquals(label.getY(), menu.getY() + 2);
+        menu.setHeight(15);
+        pack.setHeight(22);
+        assertEquals(label.getY(), menu.getY() + 2, "the input inset stays two pixels when the control grows");
+    }
+
+    @Test
+    void centeredRowAlignsLabelTextWithFieldTextAfterResizeAndReposition() {
+        TestFont font = new TestFont();
+        ScalableText label = new ScalableText(0, 0, Component.literal("Name"), 0xFFFFFFFF, font);
+        TranslucentTextField field = new TranslucentTextField(0, 0, 40, Component.empty(), font);
+        WidgetPack pack = new WidgetPack(0, 10, 100, 11, LayoutFlow.Orientation.HORIZONTAL);
+        pack.setCrossAxisAlignment(WidgetPack.CrossAxisAlignment.CENTER);
+        pack.addChild(label);
+        pack.addChild(field, LayoutFlow.Direction.REVERSE);
+
+        assertEquals(field.getY(), label.getY());
+        pack.setHeight(13);
+        pack.setPosition(20, 30);
+        assertEquals(field.getY(), label.getY());
+        assertEquals(31, field.getVisualY());
+        for (int height = 11; height <= 22; height++) {
+            pack.setHeight(height);
+            assertEquals(field.getY(), label.getY(), "row height " + height);
+        }
+    }
+
+    @Test
+    void centeredRowKeepsTwoTextLabelsAligned() {
+        TestFont font = new TestFont();
+        ScalableText label = new ScalableText(0, 0, Component.literal("Map mod"), 0xFFFFFFFF, font);
+        ScalableText value = new ScalableText(0, 0, Component.literal("Not installed"), 0xFFFFFFFF, font);
+        WidgetPack pack = new WidgetPack(100, 11);
+        pack.setCrossAxisAlignment(WidgetPack.CrossAxisAlignment.CENTER);
+        pack.addChild(label);
+        pack.addChild(value, LayoutFlow.Direction.REVERSE);
+
+        assertEquals(value.getY(), label.getY());
+        assertEquals(9, label.getHeight());
+    }
+
     @Test
     void horizontalChildrenStackInwardFromTheirAnchoredSides() {
         WidgetPack pack = new WidgetPack(10, 20, 100, 30, LayoutFlow.Orientation.HORIZONTAL);
@@ -94,6 +157,71 @@ class WidgetPackTest {
         assertEquals(80, nested.getX());
         assertEquals(20, nested.getY());
         assertPosition(nestedEnd, 80, 34);
+    }
+
+    @Test
+    void startIsTheDefaultAlignment() {
+        assertEquals(WidgetPack.CrossAxisAlignment.START, new WidgetPack().getCrossAxisAlignment());
+    }
+
+    @Test
+    void centerAlignmentCentersChildrenAcrossAHorizontalPack() {
+        WidgetPack pack = new WidgetPack(10, 20, 100, 21, LayoutFlow.Orientation.HORIZONTAL);
+        pack.setCrossAxisAlignment(WidgetPack.CrossAxisAlignment.CENTER);
+        TestElement label = new TestElement(40, 9);
+        TestElement control = new TestElement(50, 13);
+
+        pack.addChild(label, LayoutFlow.Direction.FORWARD);
+        pack.addChild(control, LayoutFlow.Direction.REVERSE);
+
+        assertPosition(label, 10, 26);
+        assertPosition(control, 60, 24);
+    }
+
+    @Test
+    void centerAlignmentCentersChildrenAcrossAVerticalPack() {
+        WidgetPack pack = new WidgetPack(5, 7, 40, 90, LayoutFlow.Orientation.VERTICAL);
+        pack.setCrossAxisAlignment(WidgetPack.CrossAxisAlignment.CENTER);
+        TestElement child = new TestElement(11, 20);
+
+        pack.addChild(child, LayoutFlow.Direction.FORWARD);
+
+        assertPosition(child, 19, 7);
+    }
+
+    @Test
+    void centerAlignmentUsesTheVisualBoundsOfPaddedChildren() {
+        WidgetPack pack = new WidgetPack(0, 0, 60, 20, LayoutFlow.Orientation.HORIZONTAL);
+        pack.setCrossAxisAlignment(WidgetPack.CrossAxisAlignment.CENTER);
+        PaddedElement padded = new PaddedElement(10, 9, 2, 3);
+
+        pack.addChild(padded, LayoutFlow.Direction.FORWARD);
+
+        assertEquals(0, padded.getVisualX());
+        assertEquals(4, padded.getVisualY());
+    }
+
+    @Test
+    void centerAlignmentRoundsTowardTheStartWhenAChildIsTallerThanThePack() {
+        WidgetPack pack = new WidgetPack(0, 10, 50, 10, LayoutFlow.Orientation.HORIZONTAL);
+        pack.setCrossAxisAlignment(WidgetPack.CrossAxisAlignment.CENTER);
+        TestElement child = new TestElement(10, 13);
+
+        pack.addChild(child, LayoutFlow.Direction.FORWARD);
+
+        assertPosition(child, 0, 8);
+    }
+
+    @Test
+    void changingTheAlignmentLaysExistingChildrenOutAgain() {
+        WidgetPack pack = new WidgetPack(0, 0, 50, 20, LayoutFlow.Orientation.HORIZONTAL);
+        TestElement child = new TestElement(10, 10);
+        pack.addChild(child, LayoutFlow.Direction.FORWARD);
+        assertPosition(child, 0, 0);
+
+        pack.setCrossAxisAlignment(WidgetPack.CrossAxisAlignment.CENTER);
+
+        assertPosition(child, 0, 5);
     }
 
     private static void assertPosition(TestElement element, int x, int y) {

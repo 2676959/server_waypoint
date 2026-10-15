@@ -5,13 +5,25 @@ import _959.server_waypoint.core.waypoint.WaypointSorting;
 import com.google.gson.annotations.Expose;
 
 public class ClientConfig {
-    @Expose private boolean enableWaypointRender = true;
-    @Expose private int waypointScalingFactor = 100; // in percent
-    @Expose private int waypointVerticalOffset = 0; // [-100, 100] in percent
-    @Expose private int waypointBackgroundAlpha = 0x80; // [0, 255]
-    @Expose private int viewDistance = 12;
-    @Expose private boolean autoSyncToXaerosMinimap = true;
-    @Expose private boolean autoSyncToVoxelMap = true;
+    public static final boolean DEFAULT_ENABLE_WAYPOINT_RENDER = true;
+    public static final boolean DEFAULT_RENDER_WAYPOINTS_UNDER_F1 = false;
+    public static final int DEFAULT_WAYPOINT_SCALING_FACTOR = 100;
+    public static final int DEFAULT_WAYPOINT_VERTICAL_OFFSET = 0;
+    public static final int DEFAULT_WAYPOINT_BACKGROUND_ALPHA = 128;
+    public static final int DEFAULT_VIEW_DISTANCE = 12;
+    public static final boolean DEFAULT_AUTO_SYNC_TO_XAEROS_MINIMAP = true;
+    public static final boolean DEFAULT_XAERO_DEFAULT_LIST_DIRECT_SYNC = false;
+    public static final boolean DEFAULT_AUTO_SYNC_TO_VOXELMAP = true;
+
+    @Expose private boolean enableWaypointRender = DEFAULT_ENABLE_WAYPOINT_RENDER;
+    @Expose private boolean renderWaypointsUnderF1 = DEFAULT_RENDER_WAYPOINTS_UNDER_F1;
+    @Expose private int waypointScalingFactor = DEFAULT_WAYPOINT_SCALING_FACTOR; // in percent
+    @Expose private int waypointVerticalOffset = DEFAULT_WAYPOINT_VERTICAL_OFFSET; // [-100, 100] in percent
+    @Expose private int waypointBackgroundAlpha = DEFAULT_WAYPOINT_BACKGROUND_ALPHA; // [0, 255]
+    @Expose private int viewDistance = DEFAULT_VIEW_DISTANCE;
+    @Expose private boolean autoSyncToXaerosMinimap = DEFAULT_AUTO_SYNC_TO_XAEROS_MINIMAP;
+    @Expose private boolean xaeroDefaultListDirectSync = DEFAULT_XAERO_DEFAULT_LIST_DIRECT_SYNC;
+    @Expose private boolean autoSyncToVoxelMap = DEFAULT_AUTO_SYNC_TO_VOXELMAP;
     @Expose private WaypointSorting.SortMode waypointManagerSortMode = WaypointSorting.SortMode.DEFAULT;
     @Expose private boolean waypointManagerSortReversed = false;
     @Expose private boolean waypointManagerGroupByLists = true;
@@ -30,12 +42,28 @@ public class ClientConfig {
         OptimizedWaypointRenderer.enableRendering(enableWaypointRender);
     }
 
+    public boolean isRenderWaypointsUnderF1() {
+        return renderWaypointsUnderF1;
+    }
+
+    public void setRenderWaypointsUnderF1(boolean renderWaypointsUnderF1) {
+        this.renderWaypointsUnderF1 = renderWaypointsUnderF1;
+    }
+
     public boolean isAutoSyncToXaerosMinimap() {
         return isXaerosMinimapLoaded && autoSyncToXaerosMinimap;
     }
 
     public void setAutoSyncToXaerosMinimap(boolean autoSyncToXaerosMinimap) {
         this.autoSyncToXaerosMinimap = autoSyncToXaerosMinimap;
+    }
+
+    public boolean isXaeroDefaultListDirectSync() {
+        return xaeroDefaultListDirectSync;
+    }
+
+    public void setXaeroDefaultListDirectSync(boolean directSync) {
+        this.xaeroDefaultListDirectSync = directSync;
     }
 
     public boolean isAutoSyncToVoxelMap() {

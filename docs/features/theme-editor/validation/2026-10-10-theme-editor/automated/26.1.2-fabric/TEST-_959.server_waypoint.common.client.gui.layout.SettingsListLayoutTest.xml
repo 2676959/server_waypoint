@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="_959.server_waypoint.common.client.gui.layout.SettingsListLayoutTest" tests="16" skipped="0" failures="0" errors="0" timestamp="2026-10-10T22:30:09.699Z" hostname="Mac-mini.local" time="0.005">
+  <properties/>
+  <testcase name="entryTopsRejectArraysOfDifferentLengths()" classname="_959.server_waypoint.common.client.gui.layout.SettingsListLayoutTest" time="0.001"/>
+  <testcase name="headersAfterTheFirstEntryGetASectionGap()" classname="_959.server_waypoint.common.client.gui.layout.SettingsListLayoutTest" time="0.001"/>
+  <testcase name="wideRowsKeepThreePixelsAboveAndBelowAndAtLeastSeventeen()" classname="_959.server_waypoint.common.client.gui.layout.SettingsListLayoutTest" time="0.0"/>
+  <testcase name="labelGetsTheWidthLeftAfterTheControlTheColumnsAndTheGap()" classname="_959.server_waypoint.common.client.gui.layout.SettingsListLayoutTest" time="0.0"/>
+  <testcase name="revealScrollsUpJustEnoughToShowThePreviousRow()" classname="_959.server_waypoint.common.client.gui.layout.SettingsListLayoutTest" time="0.001"/>
+  <testcase name="fullVisibilityIncludesBothEdges()" classname="_959.server_waypoint.common.client.gui.layout.SettingsListLayoutTest" time="0.0"/>
+  <testcase name="revealKeepsTheScrollWhenTheRowAndItsNeighborsAreVisible()" classname="_959.server_waypoint.common.client.gui.layout.SettingsListLayoutTest" time="0.0"/>
+  <testcase name="aRowTallerThanTheViewportShowsItsTop()" classname="_959.server_waypoint.common.client.gui.layout.SettingsListLayoutTest" time="0.0"/>
+  <testcase name="revealNeverScrollsPastTheContent()" classname="_959.server_waypoint.common.client.gui.layout.SettingsListLayoutTest" time="0.0"/>
+  <testcase name="rowsKeepTheirPaddingAndMinimumHeight()" classname="_959.server_waypoint.common.client.gui.layout.SettingsListLayoutTest" time="0.0"/>
+  <testcase name="revealScrollsDownJustEnoughToShowTheNextRow()" classname="_959.server_waypoint.common.client.gui.layout.SettingsListLayoutTest" time="0.001"/>
+  <testcase name="revealingTheFirstRowShowsTheHeaderAboveIt()" classname="_959.server_waypoint.common.client.gui.layout.SettingsListLayoutTest" time="0.0"/>
+  <testcase name="neighborsThatDoNotFitGiveWayToTheFocusedRow()" classname="_959.server_waypoint.common.client.gui.layout.SettingsListLayoutTest" time="0.0"/>
+  <testcase name="labelWidthNeverDropsBelowTheMinimum()" classname="_959.server_waypoint.common.client.gui.layout.SettingsListLayoutTest" time="0.0"/>
+  <testcase name="emptyColumnsTakeNoSpaceOrGap()" classname="_959.server_waypoint.common.client.gui.layout.SettingsListLayoutTest" time="0.0"/>
+  <testcase name="preferredRowWidthFitsTheLabelOnOneLine()" classname="_959.server_waypoint.common.client.gui.layout.SettingsListLayoutTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

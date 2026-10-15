@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="_959.server_waypoint.common.client.gui.screens.WidgetThemeConfigScreenKeyListTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-10-10T22:30:14.050Z" hostname="Mac-mini.local" time="0.001">
+  <properties/>
+  <testcase name="valuesAreWrittenAsInWidgetThemeJson()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeConfigScreenKeyListTest" time="0.0"/>
+  <testcase name="revealScrollsTheLeastThatShowsTheWholeRow()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeConfigScreenKeyListTest" time="0.001"/>
+  <testcase name="aLeftClickOnARowReportsItsKey()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeConfigScreenKeyListTest" time="0.0"/>
+  <testcase name="upAndDownAreReportedWhileTheListIsActive()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeConfigScreenKeyListTest" time="0.0"/>
+  <testcase name="aRowLeavesOutThePanelPaddingAndTheScrollbar()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeConfigScreenKeyListTest" time="0.0"/>
+  <testcase name="theWidestKeyAndValueAreMeasuredAtTheRowScale()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeConfigScreenKeyListTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

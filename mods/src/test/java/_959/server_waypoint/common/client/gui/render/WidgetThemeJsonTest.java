@@ -13,6 +13,40 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class WidgetThemeJsonTest {
+    @Test
+    void independentIconColorsRoundTripThroughJson() {
+        WidgetThemeVariable primary = WidgetThemeVariable.fromJsonName("icon.primary").orElseThrow();
+        WidgetThemeVariable disabled = WidgetThemeVariable.fromJsonName("icon.disabled").orElseThrow();
+        WidgetTheme theme = WidgetThemeJson.fromJson("""
+                {"formatVersion": 1, "colors": {
+                  "icon.primary": "#FF123456", "icon.disabled": "#80456789"
+                }}
+                """);
+        WidgetTheme restored = WidgetThemeJson.fromJson(WidgetThemeJson.toJson(theme));
+
+        assertEquals(0xFF123456, restored.getColor(primary));
+        assertEquals(0x80456789, restored.getColor(disabled));
+    }
+
+    @Test
+    void textShadowRoundTripsAsABoolean() {
+        WidgetTheme theme = WidgetThemeJson.fromJson("""
+                {"formatVersion": 1, "colors": {}, "booleans": {"text.shadow": false}}
+                """);
+
+        String json = WidgetThemeJson.toJson(theme);
+        assertTrue(json.contains("\"text.shadow\": false"));
+        assertEquals(theme, WidgetThemeJson.fromJson(json));
+    }
+
+    @Test
+    void textShadowRejectsStringAndNumericValues() {
+        for (String value : new String[]{"\"false\"", "0", "null"}) {
+            assertThrows(JsonParseException.class, () -> WidgetThemeJson.fromJson(
+                    "{\"formatVersion\":1,\"booleans\":{\"text.shadow\":" + value + "}}"));
+        }
+    }
+
     @TempDir
     Path tempDirectory;
 

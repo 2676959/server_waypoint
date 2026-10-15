@@ -1,0 +1,371 @@
+[
+  {
+    "project": "mods:1.20.1-fabric",
+    "loader": "fabric",
+    "artifact": "artifacts/mods/1.20.1-fabric/server_waypoint-3.1.0-fabric-mc1.20-1.20.1.jar",
+    "sha256": "58f24854d13de0e652a1b8a19b2bf8b78cfd494afdccde2a96831cbd1731681b",
+    "bytes": 1658617,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-fabric-mc1.20-1.20.1.jar"
+  },
+  {
+    "project": "mods:1.20.1-forge",
+    "loader": "forge",
+    "artifact": "artifacts/mods/1.20.1-forge/server_waypoint-3.1.0-forge-mc1.20-1.20.1.jar",
+    "sha256": "b6568430b6fed5601d62044075ead284c711cc9636109315c543e5a603866cd6",
+    "bytes": 2268605,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-forge-mc1.20-1.20.1.jar"
+  },
+  {
+    "project": "mods:1.20.2-fabric",
+    "loader": "fabric",
+    "artifact": "artifacts/mods/1.20.2-fabric/server_waypoint-3.1.0-fabric-mc1.20.2.jar",
+    "sha256": "c2cdbb6e2d1acc06718126ee965ea6137820fd5e1400ef6b8b35de92c4ef8983",
+    "bytes": 1658331,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-fabric-mc1.20.2.jar"
+  },
+  {
+    "project": "mods:1.20.2-forge",
+    "loader": "forge",
+    "artifact": "artifacts/mods/1.20.2-forge/server_waypoint-3.1.0-forge-mc1.20.2.jar",
+    "sha256": "ecaf6be7f6c651f6e7d3773cf7077245f20afc4848f07f0cd351dea245e8f09b",
+    "bytes": 2267732,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-forge-mc1.20.2.jar"
+  },
+  {
+    "project": "mods:1.20.2-neoforge",
+    "loader": "neoforge",
+    "artifact": "artifacts/mods/1.20.2-neoforge/server_waypoint-3.1.0-neoforge-mc1.20.2.jar",
+    "sha256": "be754863fdcdbf730513730f08d831aefd0c760fab751f0b967de1674d37fb2e",
+    "bytes": 1630661,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-neoforge-mc1.20.2.jar"
+  },
+  {
+    "project": "mods:1.20.4-fabric",
+    "loader": "fabric",
+    "artifact": "artifacts/mods/1.20.4-fabric/server_waypoint-3.1.0-fabric-mc1.20.3-1.20.4.jar",
+    "sha256": "a9ca81c2642650d77e602b9831239a432e3b0a0fe56acba162fbb9b709816239",
+    "bytes": 1660333,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-fabric-mc1.20.3-1.20.4.jar"
+  },
+  {
+    "project": "mods:1.20.4-forge",
+    "loader": "forge",
+    "artifact": "artifacts/mods/1.20.4-forge/server_waypoint-3.1.0-forge-mc1.20.3-1.20.4.jar",
+    "sha256": "e5b571bc6e2838e2e1711a13dcb4730ecb31df3eb7a2e80a3a8317fab966e589",
+    "bytes": 2269845,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-forge-mc1.20.3-1.20.4.jar"
+  },
+  {
+    "project": "mods:1.20.4-neoforge",
+    "loader": "neoforge",
+    "artifact": "artifacts/mods/1.20.4-neoforge/server_waypoint-3.1.0-neoforge-mc1.20.3-1.20.4.jar",
+    "sha256": "ba2773b49e5322a6d175d310e2780729b079885cb180d66883a3bc81e621662b",
+    "bytes": 1632702,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-neoforge-mc1.20.3-1.20.4.jar"
+  },
+  {
+    "project": "mods:1.20.6-fabric",
+    "loader": "fabric",
+    "artifact": "artifacts/mods/1.20.6-fabric/server_waypoint-3.1.0-fabric-mc1.20.5-1.20.6.jar",
+    "sha256": "e62fc8a87b32f679e6b54f0e764698c621932ff846f036d25fd8d12b4af24098",
+    "bytes": 1697799,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-fabric-mc1.20.5-1.20.6.jar"
+  },
+  {
+    "project": "mods:1.20.6-forge",
+    "loader": "forge",
+    "artifact": "artifacts/mods/1.20.6-forge/server_waypoint-3.1.0-forge-mc1.20.6.jar",
+    "sha256": "e85651ea7a2291be070f9ae3d5a545bd0856fcd5b4584960ba00d3a5ac5a33f1",
+    "bytes": 2286863,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-forge-mc1.20.6.jar"
+  },
+  {
+    "project": "mods:1.20.6-neoforge",
+    "loader": "neoforge",
+    "artifact": "artifacts/mods/1.20.6-neoforge/server_waypoint-3.1.0-neoforge-mc1.20.5-1.20.6.jar",
+    "sha256": "4d0d793f9fcb694ad3ae26ac5d210b0de01f659df8d0038cfa44687245416e2b",
+    "bytes": 1669912,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-neoforge-mc1.20.5-1.20.6.jar"
+  },
+  {
+    "project": "mods:1.21-fabric",
+    "loader": "fabric",
+    "artifact": "artifacts/mods/1.21-fabric/server_waypoint-3.1.0-fabric-mc1.21-1.21.1.jar",
+    "sha256": "bfad598ab1a666c0f41f5db51d05cef98a698cce339e22f6b5aaf632feece2ab",
+    "bytes": 1697933,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-fabric-mc1.21-1.21.1.jar"
+  },
+  {
+    "project": "mods:1.21-forge",
+    "loader": "forge",
+    "artifact": "artifacts/mods/1.21-forge/server_waypoint-3.1.0-forge-mc1.21-1.21.1.jar",
+    "sha256": "ad67e9889f12894cbc5a0f321ea04480c477eb43a36783268a5124858a1ea0a0",
+    "bytes": 2287022,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-forge-mc1.21-1.21.1.jar"
+  },
+  {
+    "project": "mods:1.21-neoforge",
+    "loader": "neoforge",
+    "artifact": "artifacts/mods/1.21-neoforge/server_waypoint-3.1.0-neoforge-mc1.21-1.21.1.jar",
+    "sha256": "dcc0dfdb2077b9904ace649aec796642b8ccc6836ecbe26ba452f9472060a678",
+    "bytes": 1670070,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-neoforge-mc1.21-1.21.1.jar"
+  },
+  {
+    "project": "mods:1.21.11-fabric",
+    "loader": "fabric",
+    "artifact": "artifacts/mods/1.21.11-fabric/server_waypoint-3.1.0-fabric-mc1.21.11.jar",
+    "sha256": "918d1cd587338aff5092a0a6f4fb345eb3595644ccb45515b52fb97c2a0298c7",
+    "bytes": 1791391,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-fabric-mc1.21.11.jar"
+  },
+  {
+    "project": "mods:1.21.11-forge",
+    "loader": "forge",
+    "artifact": "artifacts/mods/1.21.11-forge/server_waypoint-3.1.0-forge-mc1.21.11.jar",
+    "sha256": "ce4c05314451d28510bb526bb61a1d80292ed6986c354eccdb88f3a792a6fd9d",
+    "bytes": 1750647,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-forge-mc1.21.11.jar"
+  },
+  {
+    "project": "mods:1.21.11-neoforge",
+    "loader": "neoforge",
+    "artifact": "artifacts/mods/1.21.11-neoforge/server_waypoint-3.1.0-neoforge-mc1.21.11.jar",
+    "sha256": "4656e0512717436d7ff901d1fddb03fcc373acde9298b060d3eb994a9661b20d",
+    "bytes": 1768321,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-neoforge-mc1.21.11.jar"
+  },
+  {
+    "project": "mods:1.21.2-fabric",
+    "loader": "fabric",
+    "artifact": "artifacts/mods/1.21.2-fabric/server_waypoint-3.1.0-fabric-mc1.21.2-1.21.4.jar",
+    "sha256": "3632a12b2fceb8f4ec31d72a1a0c78af22a608a0ef9e4bcb62ae3baf625555d0",
+    "bytes": 1664662,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-fabric-mc1.21.2-1.21.4.jar"
+  },
+  {
+    "project": "mods:1.21.2-neoforge",
+    "loader": "neoforge",
+    "artifact": "artifacts/mods/1.21.2-neoforge/server_waypoint-3.1.0-neoforge-mc1.21.2-1.21.4.jar",
+    "sha256": "3e1d845f70178bf3b2d0c5115b1649a5fea5ba21f10fc3a31d320c8a5d206252",
+    "bytes": 1637069,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-neoforge-mc1.21.2-1.21.4.jar"
+  },
+  {
+    "project": "mods:1.21.3-fabric",
+    "loader": "fabric",
+    "artifact": "artifacts/mods/1.21.3-fabric/server_waypoint-3.1.0-fabric-mc1.21.3-1.21.4.jar",
+    "sha256": "ce3facf010d91939053fb7363f23c86940fcb7f91be09acb93e4dd9e95d28852",
+    "bytes": 1742957,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-fabric-mc1.21.3-1.21.4.jar"
+  },
+  {
+    "project": "mods:1.21.3-forge",
+    "loader": "forge",
+    "artifact": "artifacts/mods/1.21.3-forge/server_waypoint-3.1.0-forge-mc1.21.3-1.21.4.jar",
+    "sha256": "4e21a52819d2644530562b90ff20bcf3e6dad029cb9fb2a819cf11707984242e",
+    "bytes": 2335983,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-forge-mc1.21.3-1.21.4.jar"
+  },
+  {
+    "project": "mods:1.21.3-neoforge",
+    "loader": "neoforge",
+    "artifact": "artifacts/mods/1.21.3-neoforge/server_waypoint-3.1.0-neoforge-mc1.21.3-1.21.4.jar",
+    "sha256": "64fdc9a5b1a3f1e5eedbfafa06fbf7fcce43c62ee29ef09c932c2381ed0134ef",
+    "bytes": 1719645,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-neoforge-mc1.21.3-1.21.4.jar"
+  },
+  {
+    "project": "mods:1.21.5-fabric",
+    "loader": "fabric",
+    "artifact": "artifacts/mods/1.21.5-fabric/server_waypoint-3.1.0-fabric-mc1.21.5.jar",
+    "sha256": "f14e30cfbcc10c94e2d544a96692040804de5331eb6b6b8cbcad56b4f144408c",
+    "bytes": 1764717,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-fabric-mc1.21.5.jar"
+  },
+  {
+    "project": "mods:1.21.5-forge",
+    "loader": "forge",
+    "artifact": "artifacts/mods/1.21.5-forge/server_waypoint-3.1.0-forge-mc1.21.5.jar",
+    "sha256": "fe63aeaf070bfb18d7793ce7bdac43bf882ca7c60d9f4875b9ed824f955b122e",
+    "bytes": 2357710,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-forge-mc1.21.5.jar"
+  },
+  {
+    "project": "mods:1.21.5-neoforge",
+    "loader": "neoforge",
+    "artifact": "artifacts/mods/1.21.5-neoforge/server_waypoint-3.1.0-neoforge-mc1.21.5.jar",
+    "sha256": "79b7fb5b1d303a97fcee8b9801fe7929d53e96b6574bbf78682104c928f462ba",
+    "bytes": 1741634,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-neoforge-mc1.21.5.jar"
+  },
+  {
+    "project": "mods:1.21.6-fabric",
+    "loader": "fabric",
+    "artifact": "artifacts/mods/1.21.6-fabric/server_waypoint-3.1.0-fabric-mc1.21.6-1.21.8.jar",
+    "sha256": "9b1d0be2ed6ca3bdc9bb2f6a6ca35309ffa89bb63db289a6a748c5161b091c91",
+    "bytes": 1789531,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-fabric-mc1.21.6-1.21.8.jar"
+  },
+  {
+    "project": "mods:1.21.6-forge",
+    "loader": "forge",
+    "artifact": "artifacts/mods/1.21.6-forge/server_waypoint-3.1.0-forge-mc1.21.6-1.21.8.jar",
+    "sha256": "300a08291ef4c864f3990dbd483b86b1bd1a3ea910ae651fe93bed822e5a7d2c",
+    "bytes": 2382595,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-forge-mc1.21.6-1.21.8.jar"
+  },
+  {
+    "project": "mods:1.21.6-neoforge",
+    "loader": "neoforge",
+    "artifact": "artifacts/mods/1.21.6-neoforge/server_waypoint-3.1.0-neoforge-mc1.21.6-1.21.8.jar",
+    "sha256": "172a977b0c04720b4a83d33edd04e0d20c26e48ab9c63a67d455c0b95a9f53af",
+    "bytes": 1766695,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-neoforge-mc1.21.6-1.21.8.jar"
+  },
+  {
+    "project": "mods:1.21.9-fabric",
+    "loader": "fabric",
+    "artifact": "artifacts/mods/1.21.9-fabric/server_waypoint-3.1.0-fabric-mc1.21.9-1.21.10.jar",
+    "sha256": "56e5e2b4852165b4e5a91d5e2f7be2c549e64b659eb7121c97a0a16b0f7c8409",
+    "bytes": 1791275,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-fabric-mc1.21.9-1.21.10.jar"
+  },
+  {
+    "project": "mods:1.21.9-forge",
+    "loader": "forge",
+    "artifact": "artifacts/mods/1.21.9-forge/server_waypoint-3.1.0-forge-mc1.21.9-1.21.10.jar",
+    "sha256": "394d441478ff8bd5adf52ce66a031163ff54d2651bb3cc4867948fb5efe839f6",
+    "bytes": 2384074,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-forge-mc1.21.9-1.21.10.jar"
+  },
+  {
+    "project": "mods:1.21.9-neoforge",
+    "loader": "neoforge",
+    "artifact": "artifacts/mods/1.21.9-neoforge/server_waypoint-3.1.0-neoforge-mc1.21.9-1.21.10.jar",
+    "sha256": "15f0d5c6c8259c9fb8c832630a1464a2d6c58de3e938f7dde1a688c896da2d54",
+    "bytes": 1768174,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-neoforge-mc1.21.9-1.21.10.jar"
+  },
+  {
+    "project": "mods:26.1.2-fabric",
+    "loader": "fabric",
+    "artifact": "artifacts/mods/26.1.2-fabric/server_waypoint-3.1.0-fabric-mc26.1-26.1.2.jar",
+    "sha256": "e99f992d8bd42d31db29445fd120ea45afa6ca6ff5f860026d873a55bf784ecf",
+    "bytes": 1786320,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-fabric-mc26.1-26.1.2.jar"
+  },
+  {
+    "project": "mods:26.1.2-forge",
+    "loader": "forge",
+    "artifact": "artifacts/mods/26.1.2-forge/server_waypoint-3.1.0-forge-mc26.1-26.1.2.jar",
+    "sha256": "1173068982f81cbf309b83131c4e8d6f3fc1b30974899702d0b2c40a224fb433",
+    "bytes": 1753379,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-forge-mc26.1-26.1.2.jar"
+  },
+  {
+    "project": "mods:26.1.2-neoforge",
+    "loader": "neoforge",
+    "artifact": "artifacts/mods/26.1.2-neoforge/server_waypoint-3.1.0-neoforge-mc26.1-26.1.2.jar",
+    "sha256": "716d451f8c057ec4c0aea4bc38c1f392061a5ff70fd82e395908aeb4224c146d",
+    "bytes": 1771152,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-neoforge-mc26.1-26.1.2.jar"
+  },
+  {
+    "project": "mods:26.2-fabric",
+    "loader": "fabric",
+    "artifact": "artifacts/mods/26.2-fabric/server_waypoint-3.1.0-fabric-mc26.2.jar",
+    "sha256": "0d6b74b088117763719fd99627d8ba84cd17321c997b91c3be8c3d98457e7573",
+    "bytes": 1786338,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-fabric-mc26.2.jar"
+  },
+  {
+    "project": "mods:26.2-forge",
+    "loader": "forge",
+    "artifact": "artifacts/mods/26.2-forge/server_waypoint-3.1.0-forge-mc26.2.jar",
+    "sha256": "3a939b4fd372cafef7aa5a76ebebbf4d8cab13cc00babc8235b31412ac4f2ab1",
+    "bytes": 1753405,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-forge-mc26.2.jar"
+  },
+  {
+    "project": "mods:26.2-neoforge",
+    "loader": "neoforge",
+    "artifact": "artifacts/mods/26.2-neoforge/server_waypoint-3.1.0-neoforge-mc26.2.jar",
+    "sha256": "03cbe0500094594d0683d2379130992bbf919ef3eeb2a6f278dd10f7805d12e9",
+    "bytes": 1771171,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-neoforge-mc26.2.jar"
+  },
+  {
+    "project": "paper:1.21-paper",
+    "loader": "paper",
+    "artifact": "artifacts/paper/1.21-paper/server_waypoint-3.1.0-paper-mc1.21-1.21.10.jar",
+    "sha256": "1547378ee73e83f2acff21631b493010e8608c3d0ab65e38f507a59c41bc9866",
+    "bytes": 751394,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-paper-mc1.21-1.21.10.jar"
+  },
+  {
+    "project": "paper:1.21.11-paper",
+    "loader": "paper",
+    "artifact": "artifacts/paper/1.21.11-paper/server_waypoint-3.1.0-paper-mc1.21.11-26.1.2.jar",
+    "sha256": "15b4165b0e7d216439ebe887ca331818ee2dffeb5d01e145625cbae23f0fee10",
+    "bytes": 751400,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-paper-mc1.21.11-26.1.2.jar"
+  },
+  {
+    "project": "paper:26.2-paper",
+    "loader": "paper",
+    "artifact": "artifacts/paper/26.2-paper/server_waypoint-3.1.0-paper-mc26.2.jar",
+    "sha256": "471bb38e9bd6ed442bb86b5d55a98d8ebe05c8f3251dc2ec64e947b7d3703a1d",
+    "bytes": 751380,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-paper-mc26.2.jar"
+  },
+  {
+    "project": "velocity",
+    "loader": "velocity",
+    "artifact": "artifacts/velocity/server_waypoint-3.1.0-velocity.jar",
+    "sha256": "770ac33d05e7179622557da56481938d279010a784e41920c6445f02f17de283",
+    "bytes": 650920,
+    "noise_classes": 30,
+    "isolated_classloader": "SW_NOISE_ARTIFACT PASS server_waypoint-3.1.0-velocity.jar"
+  }
+]

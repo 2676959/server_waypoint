@@ -1,5 +1,6 @@
 package _959.server_waypoint.core.network.upload;
 
+import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointFilesManagerCore;
 import _959.server_waypoint.core.WaypointServerCore;
@@ -11,6 +12,7 @@ import _959.server_waypoint.core.network.data.WaypointData;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.util.NamespacedId;
 import _959.server_waypoint.navigation.NavigationPlatform;
 import _959.server_waypoint.navigation.NavigationMethod;
 import _959.server_waypoint.navigation.NavigationMethodHandler;
@@ -50,6 +52,41 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class UploadCoordinatorTest {
+    @Test
+    void uploadAuditSummarizesChangesWithTheRequestAndPlayerIdentity() {
+        UploadCoordinator<String> coordinator = coordinator(server());
+        org.slf4j.impl.StaticLoggerBinder.clear();
+        var request = coordinator.begin("player", UploadTarget.XAERO, UploadScope.WORLD,
+                UploadConflictPolicy.LOCAL, false, List.of("minecraft:overworld"), null, null, new PlayerActionLog.Actor(null, "TestSender")).request();
+        coordinator.onUpload("player", WaypointData.upload(request.requestId(), UploadStatus.SUCCESS,
+                List.of(new DimensionWaypointData("minecraft:overworld",
+                        List.of(new WaypointList("list", 1, List.of(waypoint("home", 0), waypoint("mine", 1))))))));
+        var events = org.slf4j.impl.StaticLoggerBinder.events().stream()
+                .filter(e -> e.startsWith("server_waypoint.actions ")).toList();
+        assertEquals(2, events.size(), "one request and one summary, not an event per uploaded waypoint");
+        assertTrue(events.get(0).contains("outcome=requested"));
+        assertTrue(events.get(1).contains("outcome=success"));
+        assertTrue(events.get(1).contains("added=2"));
+        assertTrue(events.get(1).contains("player_id=" + UUID.nameUUIDFromBytes("player".getBytes(StandardCharsets.UTF_8))));
+        assertTrue(events.get(1).contains("request=" + request.requestId()));
+        assertTrue(events.get(0).contains("sender=TestSender sender_id=non-player"));
+        assertTrue(events.get(1).contains("sender=TestSender sender_id=non-player"));
+        org.slf4j.impl.StaticLoggerBinder.clear();
+    }
+
+    @Test
+    void mergePreservesExistingIconUnlessNativeUploadSelectsOne() {
+        SimpleWaypoint server = new SimpleWaypoint("home", "home", "H", new WaypointPos(1, 2, 3),
+                0xFFFFFF, 0, true, List.of(), "", NamespacedId.parse("minecraft:diamond"));
+        SimpleWaypoint xaero = new SimpleWaypoint("home", "H", new WaypointPos(1, 2, 3),
+                0xFFFFFF, 0, true);
+        SimpleWaypoint voxelmap = new SimpleWaypoint("home", "home", "H", new WaypointPos(1, 2, 3),
+                0xFFFFFF, 0, true, List.of(), "", NamespacedId.parse("voxelmap:star"));
+
+        assertEquals(server.icon(), UploadCoordinator.mergeXaeroProperties(server, xaero).icon());
+        assertEquals(voxelmap.icon(), UploadCoordinator.mergeXaeroProperties(server, voxelmap).icon());
+        assertFalse(UploadCoordinator.hasSameXaeroProperties(server, voxelmap));
+    }
     @TempDir
     private Path tempDir;
 
@@ -65,7 +102,7 @@ class UploadCoordinatorTest {
                 List.of("minecraft:overworld"),
                 null,
                 null
-        );
+        , new PlayerActionLog.Actor(null, "TestSender"));
 
         UploadCoordinator.BeginResult second = coordinator.begin(
                 "second",
@@ -76,7 +113,7 @@ class UploadCoordinatorTest {
                 List.of("minecraft:overworld"),
                 null,
                 null
-        );
+        , new PlayerActionLog.Actor(null, "TestSender"));
 
         assertEquals(UploadCoordinator.BeginStatus.STARTED, first.status());
         assertEquals(UploadCoordinator.BeginStatus.BUSY, second.status());
@@ -94,7 +131,7 @@ class UploadCoordinatorTest {
                 List.of("minecraft:overworld"),
                 null,
                 null
-        );
+        , new PlayerActionLog.Actor(null, "TestSender"));
         assertEquals(UploadCoordinator.BeginStatus.STARTED, afterRelease.status());
         coordinator.onDisconnect("second");
     }
@@ -113,7 +150,7 @@ class UploadCoordinatorTest {
                 List.of("minecraft:overworld"),
                 null,
                 null
-        );
+        , new PlayerActionLog.Actor(null, "TestSender"));
         assertEquals(UploadCoordinator.BeginStatus.BUSY, blocked.status());
 
         coordinator.finishEditRequest();
@@ -126,7 +163,7 @@ class UploadCoordinatorTest {
                 List.of("minecraft:overworld"),
                 null,
                 null
-        );
+        , new PlayerActionLog.Actor(null, "TestSender"));
         assertEquals(UploadCoordinator.BeginStatus.STARTED, started.status());
         coordinator.onDisconnect("player");
     }
@@ -323,7 +360,7 @@ class UploadCoordinatorTest {
                 List.of("minecraft:overworld"),
                 null,
                 null
-        );
+        , new PlayerActionLog.Actor(null, "TestSender"));
 
         assertEquals(UploadTarget.VOXELMAP, result.request().target());
         coordinator.onDisconnect("player");
@@ -342,7 +379,7 @@ class UploadCoordinatorTest {
                 List.of("minecraft:overworld"),
                 null,
                 null
-        ));
+        , new PlayerActionLog.Actor(null, "TestSender")));
     }
 
     @Test
@@ -394,7 +431,7 @@ class UploadCoordinatorTest {
                 List.of("minecraft:overworld"),
                 "",
                 ""
-        ).request();
+        , new PlayerActionLog.Actor(null, "TestSender")).request();
         SimpleWaypoint clientWaypoint = new SimpleWaypoint(
                 "",
                 "Injected display name",
@@ -436,7 +473,7 @@ class UploadCoordinatorTest {
                 List.of("minecraft:overworld"),
                 "list",
                 null
-        ).request();
+        , new PlayerActionLog.Actor(null, "TestSender")).request();
 
         coordinator.onUpload(
                 "player",
@@ -468,7 +505,7 @@ class UploadCoordinatorTest {
                 List.of("minecraft:overworld"),
                 "list",
                 null
-        ).request();
+        , new PlayerActionLog.Actor(null, "TestSender")).request();
 
         coordinator.onDisconnect("player");
         coordinator.onUpload(
@@ -499,7 +536,7 @@ class UploadCoordinatorTest {
                 List.of("minecraft:overworld"),
                 null,
                 null
-        ).request();
+        , new PlayerActionLog.Actor(null, "TestSender")).request();
         server.addWaypoint(
                 "minecraft:overworld",
                 "list",
@@ -548,7 +585,7 @@ class UploadCoordinatorTest {
                 List.of("minecraft:overworld"),
                 "list",
                 "target"
-        ).request();
+        , new PlayerActionLog.Actor(null, "TestSender")).request();
 
         coordinator.onUpload(
                 "player",
@@ -581,17 +618,17 @@ class UploadCoordinatorTest {
         List<String> feedback = new ArrayList<>();
         UploadCoordinator<String> coordinator = new UploadCoordinator<>(
                 server,
-                (player, message) -> feedback.add(((net.kyori.adventure.text.TranslatableComponent) message).key()),
+                (player, message) -> feedback.add(firstKey(message)),
                 update -> {
                     ChunkedMessageManager.validateEncodable(update);
                     broadcasts.add(update);
                 },
-                player -> true, player -> true, navigationService(), player -> playerUuid()
+                player -> true, player -> true, navigationService(), player -> new PlayerActionLog.Actor(playerUuid(), player)
         );
         UploadRequestBuffer request = coordinator.begin(
                 "player", UploadTarget.XAERO, UploadScope.WORLD, UploadConflictPolicy.LOCAL,
                 false, dimensions, null, null
-        ).request();
+        , new PlayerActionLog.Actor(null, "TestSender")).request();
         coordinator.onUpload("player", WaypointData.upload(
                 request.requestId(), UploadStatus.SUCCESS,
                 dimensions.stream().map(dimension -> new DimensionWaypointData(
@@ -606,9 +643,9 @@ class UploadCoordinatorTest {
         assertEquals(1, broadcasts.size());
         assertEquals(List.of("minecraft:overworld"), broadcasts.get(0).dimensions()
                 .stream().map(DimensionWaypointData::dimensionName).toList());
-        assertTrue(feedback.contains("waypoint.network.encoding_failed"));
-        assertTrue(feedback.contains("waypoint.upload.partial"));
-        assertFalse(feedback.contains("waypoint.upload.complete"));
+        assertTrue(feedback.contains("wp.error.encoding"));
+        assertTrue(feedback.contains("wp.upload.partial"));
+        assertFalse(feedback.contains("wp.upload.done"));
     }
 
     @Test
@@ -626,6 +663,7 @@ class UploadCoordinatorTest {
     }
 
     private void assertLaterDimensionFailurePublishesCommittedResult(RuntimeException failure) {
+        org.slf4j.impl.StaticLoggerBinder.clear();
         WaypointServerCore server = new WaypointServerCore(this.tempDir) {
             @Override
             public <T> WaypointFilesManagerCore.RevisionedDimensionMutationResult<T> applyDimensionMutationIfRevision(
@@ -651,23 +689,28 @@ class UploadCoordinatorTest {
         List<String> feedback = new ArrayList<>();
         UploadCoordinator<String> coordinator = new UploadCoordinator<>(
                 server,
-                (player, message) -> feedback.add(((net.kyori.adventure.text.TranslatableComponent) message).key()),
+                (player, message) -> feedback.add(firstKey(message)),
                 broadcasts::add,
                 player -> true,
                 player -> true,
                 navigation,
-                player -> playerUuid()
+                player -> new PlayerActionLog.Actor(playerUuid(), player)
         );
         UploadRequestBuffer request = coordinator.begin(
                 "player", UploadTarget.XAERO, UploadScope.WORLD, UploadConflictPolicy.LOCAL, false,
                 List.of("minecraft:overworld", "minecraft:the_nether"), null, null
-        ).request();
+        , new PlayerActionLog.Actor(null, "TestSender")).request();
         coordinator.onUpload("player", WaypointData.upload(
                 request.requestId(), UploadStatus.SUCCESS,
                 request.dimensionNames().stream().map(dimension -> new DimensionWaypointData(
                         dimension, List.of(new WaypointList("list", WaypointList.SERVER_N, List.of(waypoint("target", 25))))
                 )).toList()
         ));
+
+        var audit = org.slf4j.impl.StaticLoggerBinder.events().stream()
+                .filter(e -> e.contains("action=upload") && e.contains("outcome=partial")).toList();
+        assertEquals(1, audit.size());
+        assertTrue(audit.get(0).contains("replaced=1"));
 
         assertEquals(25, server.getWaypointFileManager("minecraft:overworld")
                 .getWaypointListByName("list").getWaypointByName("target").x());
@@ -676,11 +719,26 @@ class UploadCoordinatorTest {
         assertEquals(25, broadcasts.get(0).dimensions().get(0).waypointLists().get(0)
                 .getWaypointByName("target").x());
         assertEquals(25, navigation.findSession(playerUuid()).orElseThrow().target().position().x());
-        assertTrue(feedback.contains("waypoint.upload.partial"));
-        assertFalse(feedback.contains("waypoint.upload.complete"));
+        assertTrue(feedback.contains("wp.upload.partial"));
+        assertFalse(feedback.contains("wp.upload.done"));
         assertNull(server.getWaypointFileManager("minecraft:the_nether"));
         assertTrue(coordinator.tryBeginEditRequest());
         coordinator.finishEditRequest();
+    }
+
+    /** The first wp. translation key of a message, depth first: its result or error line. */
+    private static String firstKey(net.kyori.adventure.text.Component message) {
+        if (message instanceof net.kyori.adventure.text.TranslatableComponent translatable
+                && translatable.key().startsWith("wp.")) {
+            return translatable.key();
+        }
+        for (net.kyori.adventure.text.Component child : message.children()) {
+            String key = firstKey(child);
+            if (!key.isEmpty()) {
+                return key;
+            }
+        }
+        return "";
     }
 
     private static SimpleWaypoint waypoint(String name, int x) {
@@ -738,7 +796,7 @@ class UploadCoordinatorTest {
                 permissionChecker,
                 player -> true,
                 navigationService,
-                player -> UUID.nameUUIDFromBytes(player.getBytes(StandardCharsets.UTF_8)),
+                player -> new PlayerActionLog.Actor(UUID.nameUUIDFromBytes(player.getBytes(StandardCharsets.UTF_8)), player),
                 clock,
                 requestTimeout,
                 cooldown
@@ -758,7 +816,7 @@ class UploadCoordinatorTest {
                 List.of("minecraft:overworld"),
                 null,
                 null
-        );
+        , new PlayerActionLog.Actor(null, "TestSender"));
     }
 
     private static void await(CountDownLatch latch) {

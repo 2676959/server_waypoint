@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="_959.server_waypoint.common.client.gui.widgets.SettingsListWidgetTabTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-10-10T22:30:12.086Z" hostname="Mac-mini.local" time="0.003">
+  <properties/>
+  <testcase name="tabSkipsRowsWhoseWidgetsAreInactive()" classname="_959.server_waypoint.common.client.gui.widgets.SettingsListWidgetTabTest" time="0.001"/>
+  <testcase name="tabFromDoneWrapsAroundToTheFirstWideRowWhileTheListIsScrolledToTheEnd()" classname="_959.server_waypoint.common.client.gui.widgets.SettingsListWidgetTabTest" time="0.0"/>
+  <testcase name="shiftTabFromTheFirstRowWrapsAroundToDoneWithoutScrolling()" classname="_959.server_waypoint.common.client.gui.widgets.SettingsListWidgetTabTest" time="0.0"/>
+  <testcase name="tabReachesTheNextRowWhenAClickFocusedTheLastRowInView()" classname="_959.server_waypoint.common.client.gui.widgets.SettingsListWidgetTabTest" time="0.0"/>
+  <testcase name="tabWithNothingFocusedStartsAtTheFirstRowWhileTheListIsScrolledToTheEnd()" classname="_959.server_waypoint.common.client.gui.widgets.SettingsListWidgetTabTest" time="0.0"/>
+  <testcase name="shiftTabFromTheFooterReachesTheLastRowWhileTheListIsAtTheTop()" classname="_959.server_waypoint.common.client.gui.widgets.SettingsListWidgetTabTest" time="0.0"/>
+  <testcase name="tabFromDoneWrapsAroundToTheFirstRowWhileTheListIsScrolledToTheEnd()" classname="_959.server_waypoint.common.client.gui.widgets.SettingsListWidgetTabTest" time="0.001"/>
+  <testcase name="tabFromTheLastRowMovesToTheFooterWithoutScrolling()" classname="_959.server_waypoint.common.client.gui.widgets.SettingsListWidgetTabTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

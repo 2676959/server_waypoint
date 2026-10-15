@@ -18,4 +18,11 @@ class ToggleButtonTest {
         assertEquals(10, AnchorMode.CONTENT.getContentX(10, ToggleButton.OUTLINE_LEFT_PADDING));
         assertEquals(20, AnchorMode.CONTENT.getContentY(20, ToggleButton.OUTLINE_TOP_PADDING));
     }
+
+    @Test
+    void fixedStateColorIsUsedAsGivenWithoutForcingAnAlpha() {
+        assertEquals(0xCF0043A9, ToggleButton.fixedStateColor(0xCF0043A9).getAsInt());
+        assertEquals(0x40123456, ToggleButton.fixedStateColor(0x40123456).getAsInt());
+        assertEquals(0xFF03A900, ToggleButton.fixedStateColor(0xFF03A900).getAsInt());
+    }
 }

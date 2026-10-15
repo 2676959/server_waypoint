@@ -23,6 +23,14 @@ public final class WidgetThemeManager {
         return getTheme().getColor(variable);
     }
 
+    public static boolean getBoolean(WidgetThemeVariable variable) {
+        return getTheme().getBoolean(variable);
+    }
+
+    public static void setBoolean(WidgetThemeVariable variable, boolean value) {
+        updateTheme(theme -> theme.withBoolean(variable, value));
+    }
+
     public static void setTheme(WidgetTheme theme) {
         ACTIVE_THEME.set(Objects.requireNonNull(theme, "theme"));
     }

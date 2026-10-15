@@ -9,6 +9,7 @@ import _959.server_waypoint.core.edit.WaypointEditResult;
 import _959.server_waypoint.core.edit.WaypointListEditResult;
 import _959.server_waypoint.core.edit.WaypointListPatch;
 import _959.server_waypoint.core.edit.WaypointPatch;
+import _959.server_waypoint.core.edit.PatchField;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
@@ -91,6 +92,29 @@ public class WaypointFilesManagerCore {
 
     public @Nullable WaypointFileManager getWaypointFileManager(String dimensionName) {
         return this.readLifecycle(() -> this.fileManagerMap.get(dimensionName));
+    }
+
+    /** Atomic detached capture across dimensions. No encoding, I/O or external callbacks under locks. */
+    public Map<String, List<WaypointList>> snapshotWaypointData(int maximumObjects) {
+        if (maximumObjects < 1 || maximumObjects > 65_536) throw new IllegalArgumentException("Invalid snapshot budget");
+        CallbackDispatchContext context = DimensionMutationLane.callbackContext();
+        if (this.lifecycleLock.getReadHoldCount() > 0 || context != null && context.isExecutingCallback()) {
+            throw new IllegalStateException("Cannot capture a global snapshot from a mutation or callback");
+        }
+        this.mutationAdmissionLock.writeLock().lock();
+        try {
+            this.lifecycleLock.writeLock().lock();
+            try {
+                if (this.waypointFilesDir == null) throw new IllegalStateException("Waypoint source unavailable");
+                int remaining = maximumObjects - this.fileManagerMap.size();
+                if (remaining < 0) throw new IllegalArgumentException("Waypoint snapshot budget exceeded");
+                for (WaypointFileManager manager : this.fileManagerMap.values()) remaining -= manager.snapshotObjectCount(remaining);
+                Map<String, List<WaypointList>> snapshot = new HashMap<>();
+                this.fileManagerMap.forEach((dimension, manager) -> snapshot.put(dimension,
+                        manager.toDimensionWaypointData().waypointLists()));
+                return Map.copyOf(snapshot);
+            } finally { this.lifecycleLock.writeLock().unlock(); }
+        } finally { this.mutationAdmissionLock.writeLock().unlock(); }
     }
 
     public DimensionRevision captureDimensionRevision(String dimensionName) {
@@ -414,7 +438,8 @@ public class WaypointFilesManagerCore {
                                     yaw,
                                     global,
                                     keywords,
-                                    description
+                                    description,
+                                    PatchField.unchanged()
                             );
                 },
                 resultAction

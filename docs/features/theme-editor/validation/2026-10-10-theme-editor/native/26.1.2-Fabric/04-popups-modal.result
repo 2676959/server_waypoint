@@ -1,0 +1,23 @@
+PASS
+GUI size 480x270
+preview combobox click handled
+combobox popup opens
+combobox popup receives wheel first
+popup wheel leaves preview scroll unchanged
+combobox popup choice receives click
+combobox choice changes without clicking underlying control
+preview dropdown click handled
+dropdown popup opens
+dropdown popup receives wheel
+dropdown popup choice receives click
+dropdown choice selected
+GUI size 378x245
+resize closes preview popup
+theme popup opens
+Escape dismisses focused theme popup
+handled colorButton
+GUI size 320x240
+picker survives resize after keyboard input
+modal keeps footer/header inactive
+Escape closes picker without changing theme
+picker dismissal restores color-button focus

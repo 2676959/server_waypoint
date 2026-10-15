@@ -1,0 +1,31 @@
+Downloading Minecraft server
+Installing Fabric Loader 0.19.3(26.2) on the server
+Downloading required files
+Downloading library org.ow2.asm:asm:9.10.1
+Downloading library org.ow2.asm:asm-analysis:9.10.1
+Downloading library org.ow2.asm:asm-commons:9.10.1
+Downloading library org.ow2.asm:asm-tree:9.10.1
+Downloading library org.ow2.asm:asm-util:9.10.1
+Downloading library net.fabricmc:sponge-mixin:0.17.3+mixin.0.8.7
+Downloading library net.fabricmc:fabric-loader:0.19.3
+Generating server launch JAR
+Starting net.fabricmc.loader.impl.game.minecraft.BundlerClassPathCapture
+[21:53:39] [main/INFO]: Loading Minecraft 26.2 with Fabric Loader 0.19.3
+[21:53:39] [main/INFO]: Mappings not present!
+[21:53:39] [main/WARN]: Mod resolution failed
+[21:53:39] [main/INFO]: Immediate reason: [HARD_DEP_NO_CANDIDATE server_waypoint 3.1.0 {depends fabric-api @ [*]}, ROOT_FORCELOAD_SINGLE server_waypoint 3.1.0]
+[21:53:39] [main/INFO]: Reason: [HARD_DEP server_waypoint 3.1.0 {depends fabric-api @ [*]}]
+[21:53:39] [main/INFO]: Fix: add [add:fabric-api 1 ([(-∞,∞)])], remove [], replace []
+[21:53:39] [main/ERROR]: Incompatible mods found!
+net.fabricmc.loader.impl.FormattedException: Some of your mods are incompatible with the game or each other!
+A potential solution has been determined, this may resolve your problem:
+     - Install fabric-api, any version.
+More details:
+     - Mod 'Server Waypoint' (server_waypoint) 3.1.0 requires any version of fabric-api, which is missing!
+    at net.fabricmc.loader.impl.FormattedException.ofLocalized(FormattedException.java:51)
+    at net.fabricmc.loader.impl.FabricLoaderImpl.load(FabricLoaderImpl.java:202)
+    at net.fabricmc.loader.impl.launch.knot.Knot.init(Knot.java:142)
+    at net.fabricmc.loader.impl.launch.knot.Knot.launch(Knot.java:66)
+    at net.fabricmc.loader.impl.launch.knot.KnotServer.main(KnotServer.java:23)
+    at net.fabricmc.loader.impl.launch.server.FabricServerLauncher.main(FabricServerLauncher.java:69)
+    at net.fabricmc.installer.ServerLauncher.main(ServerLauncher.java:69)

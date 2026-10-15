@@ -1,6 +1,7 @@
 package _959.server_waypoint.util;
 
 import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
+import _959.server_waypoint.core.network.upload.UploadConflictPolicy;
 import _959.server_waypoint.core.network.upload.UploadScope;
 import _959.server_waypoint.core.network.upload.UploadTarget;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
@@ -78,6 +79,17 @@ class StringCommandBuilderTest {
     }
 
     @Test
+    void addCommandIncludesIconAfterEmptyMetadataSlots() {
+        SimpleWaypoint waypoint = new SimpleWaypoint(
+                "Home", "Home", "H", new WaypointPos(1, 2, 3), 0x123456,
+                0, true, List.of(), "", NamespacedId.parse("minecraft:diamond")
+        );
+
+        assertEquals("/wp add minecraft:overworld list 1 2 3 Home H 123456 0 true \"\" \"\" icon minecraft:diamond",
+                StringCommandBuilder.addCmd("minecraft:overworld", "list", waypoint));
+    }
+
+    @Test
     void forceLocalUploadCommandPreservesVoxelMapSource() {
         UploadRequestBuffer request = new UploadRequestBuffer(
                 UUID.randomUUID(),
@@ -89,8 +101,14 @@ class StringCommandBuilderTest {
 
         assertEquals(
                 "/wp upload voxelmap force local minecraft:overworld \"Local list\"",
-                StringCommandBuilder.uploadLocalCmd(UploadScope.LIST, request)
+                StringCommandBuilder.uploadCmd(UploadScope.LIST, request, UploadConflictPolicy.LOCAL, false)
         );
+        assertEquals(
+                "/wp upload voxelmap force local delete minecraft:overworld \"Local list\"",
+                StringCommandBuilder.uploadCmd(UploadScope.LIST, request, UploadConflictPolicy.LOCAL, true)
+        );
+        assertEquals("/wp upload voxelmap",
+                StringCommandBuilder.uploadCmd(UploadScope.WORLD, request, UploadConflictPolicy.SERVER, false));
     }
 
     private static SimpleWaypoint waypoint(String identifier) {

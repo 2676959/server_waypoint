@@ -1,0 +1,11 @@
+PREPARED 1.20.1-fabric
+PREPARED 26.1.2-fabric
+Prepared profiles: 2 in /private/tmp/claude-501/-Volumes-ssd-fabric-mods-repo-server-waypoint/44c0b42f-f8ff-4ce2-87c8-d4334802674d/scratchpad/theme-live-7/prepared
+PASS 26.1.2-Fabric errors=0 warnings=45
+  WARN Compatibility level JAVA_25 specified by fabric-api-lookup-api-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13). (game/logs/latest.log:54)
+  WARN Compatibility level JAVA_17 specified by server_waypoint-common.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13). (game/logs/latest.log:56)
+  WARN Compatibility level JAVA_17 specified by server_waypoint-voxelmap.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13). (game/logs/latest.log:57)
+PASS 1.20.1-Fabric errors=0 warnings=134
+  WARN Compatibility level JAVA_16 specified by fabric-api-lookup-api-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13). (game/logs/latest.log:65)
+  WARN Compatibility level JAVA_17 specified by fabric-block-api-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13). (game/logs/latest.log:67)
+  WARN Compatibility level JAVA_16 specified by fabric-blockrenderlayer-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13). (game/logs/latest.log:69)

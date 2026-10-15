@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="_959.server_waypoint.common.client.gui.screens.RemoteBrowserModelTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-09-09T05:12:07.743Z" hostname="Mac-mini.local" time="0.008">
+  <properties/>
+  <testcase name="staleDataIsBrowsableButNotActionableAndUnavailableHasNoRows()" classname="_959.server_waypoint.common.client.gui.screens.RemoteBrowserModelTest" time="0.001"/>
+  <testcase name="duplicateLabelsRetainServerAndExactIdentityThroughFilteringAndReverseSort()" classname="_959.server_waypoint.common.client.gui.screens.RemoteBrowserModelTest" time="0.001"/>
+  <testcase name="confirmationRejectsRevisionChangeRemovalRevocationAndSessionReplacement()" classname="_959.server_waypoint.common.client.gui.screens.RemoteBrowserModelTest" time="0.003"/>
+  <testcase name="quotedEmptyAndUnicodeArgumentsRoundTripWithoutUsingLabels()" classname="_959.server_waypoint.common.client.gui.screens.RemoteBrowserModelTest" time="0.0"/>
+  <testcase name="emptyAvailableServerRemainsDistinctFromUnavailableAndDenied()" classname="_959.server_waypoint.common.client.gui.screens.RemoteBrowserModelTest" time="0.0"/>
+  <testcase name="unsafeOrOversizeChatIdentitiesAreNeverTruncatedOrSent()" classname="_959.server_waypoint.common.client.gui.screens.RemoteBrowserModelTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

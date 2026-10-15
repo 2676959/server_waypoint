@@ -1,0 +1,113 @@
+{
+  "status": "Folia representative checks passed after proxy fix; full Step 19 remains open",
+  "base_commit": "2fcce72c75c4069bed50ff0516533998eca9ad6f",
+  "runtime": {
+    "folia": "1.21.11-14-ver/1.21.11@529aabc",
+    "java": "21.0.11 (Folia), 25.0.3 (Velocity)",
+    "velocity": "4.1.1",
+    "mcc": "26.2 build 499 protocol 774",
+    "folia_tick_threads": 2,
+    "transport": "PLAINTEXT loopback",
+    "forwarding": "NONE",
+    "accounts": "offline"
+  },
+  "artifact_sha256": {
+    "folia": "f52c408490a0225611e67907a3ca19f7e6da2c6bc899e715d5f46844e7103c39",
+    "paper_release": "34c9bf5bfc5a3be8d1a11a7b5b5ee390f3d00f1f2589161ae72b298969d0f728",
+    "velocity_fixed": "a41ff6feadd30bae8adf231685622645d8a7b54cb8d305ce09d5262f08d14273",
+    "velocity_original": "0acad515c24ccd904a21f6b6d85d986d4c4f77c7662f97f0520cdc53cb72eed7",
+    "audit_v3": "7c4e97b2e07713a8e9a4ae4d362e00c594ba2835e57291935769367c4eb98d20",
+    "velocity_diagnostic": "df1c73a15c74098bb6807eb4c8693d85ab86b94b3cae8bc28c1919330c4baaf0"
+  },
+  "logs": {
+    "a-diagnostic.log": {
+      "raw_sha256": "3be9f215e75c575cc29681ab43412da9689af29cd80ab5da7dcb0cd7a2a6ab7c",
+      "sha256": "6bd080b02f312b738aa30072e9d926f5802f4cbd84b1174b0f0a0a52d8f95361"
+    },
+    "a-fixed-transfers.log": {
+      "raw_sha256": "2904d5b1eee8d1a1fe34f6e78685f69f91e06e0d4055a7bc5dd09de73daeaa06",
+      "sha256": "1cfd7ddb51d67d82812692d65dd3c295601593e06f404b207bfcfb4e32f8a7b2"
+    },
+    "a-live.log": {
+      "raw_sha256": "10b9efa31d8feeecedcf249442f6a0d549238364b7455ba36d3466daae29e850",
+      "sha256": "af1d9f00ed06242dfd2e0e1381d5a16b929ae8d21669b32d7d1b68aa69935d68"
+    },
+    "a-release-baseline.log": {
+      "raw_sha256": "c13ff38294ef25832e786065e4b44c7b1c13079640b7ac3f9c52dc2eb4b65ced",
+      "sha256": "85c11440a702657ef7ea8792a1016151d8754e7ecb2487e2aa3a1129fd41b2e7"
+    },
+    "b-diagnostic.log": {
+      "raw_sha256": "8642690fffd1a49ca6bd0139a8db77a04474fa7523762dc553adcc8383416fa3",
+      "sha256": "5b281e3dba2945815a6b8cd34fed3440b626504161cf10f56f377ad1bf402a29"
+    },
+    "b-fixed-transfers.log": {
+      "raw_sha256": "833337cbeb4add3f6913301707bcd993d364ca7495eaf2e3bbc2073d61b621f9",
+      "sha256": "4598442669b1d22f2e1f7fb565e00689cc73b2cc9f1b4e737de49be5f77d12b3"
+    },
+    "b-live.log": {
+      "raw_sha256": "19cedf5cd6a915a95583dc6295803f90333aa66871e9ee671029d534fc7d3cea",
+      "sha256": "dd6e708e8234b22448d5ae262fe378c6e618c5c1bcbb53cdbe248a2ef7e4811b"
+    },
+    "b-release-baseline.log": {
+      "raw_sha256": "11c8343ac176309d3a3152c057f90263ca4ea4a58ac4f87f03bb2fc745eebd6c",
+      "sha256": "876ec5737e88dd0f99e742c0e0743b9404e89118f23a6f562bd40ecaf920b344"
+    },
+    "m-diagnostic.log": {
+      "raw_sha256": "dedf141f72e897db09aacb4a621105a1684183cdc47b275958c08b0f07d7500a",
+      "sha256": "e0b56774b0393f0ffd6354c459a1761826b746a490b17750d04201ef823b32aa"
+    },
+    "m-fixed-transfers.log": {
+      "raw_sha256": "45e08aea8df4e1f8186c68f91273a427e49348c9a4b1e25f6afdd1f899933df8",
+      "sha256": "6451bea9d9f4bf2f018129cc027c22348766f3c3e05072419c8e0bf650b2c4be"
+    },
+    "m-live.log": {
+      "raw_sha256": "db2687ed6b88366ae00e2ab5924534457d977371b794d6a8f194f118c892756c",
+      "sha256": "9c63d850b922cbfd6daf2cbe965112ac6201ccd3ae9df7beedb91a8a5fc06dff"
+    },
+    "m-release-baseline.log": {
+      "raw_sha256": "560fae42cc886c90bfa97a9edc3e90b327f0eae411fe699015f8043d267c06c7",
+      "sha256": "560fae42cc886c90bfa97a9edc3e90b327f0eae411fe699015f8043d267c06c7"
+    },
+    "proxy-diagnostic.log": {
+      "raw_sha256": "f6dde81cf1461163a5ccf8531f8a60e802369d2df5dff5a3794ee72127575a74",
+      "sha256": "7115259bba530c79efa6399459025379d19a23c195b78981c0f3b46b8635e4d7"
+    },
+    "proxy-fixed-transfers.log": {
+      "raw_sha256": "6f99d8b243d4b406f71f8b23495769f346ca360758cc221f12ead6004ff67fa2",
+      "sha256": "f80fec8090086c3ba6a11521eeadafd94b3140e11d4633f850da961f9c466d02"
+    },
+    "proxy-live.log": {
+      "raw_sha256": "36dcc97b54a6c31e1f16619e504c173dfc0d6964d43bbef323af39ebd96b8b9c",
+      "sha256": "3f495309efd82faad09213a7b4f62540d08eac948983af2dee28e595df017a62"
+    },
+    "proxy-release-baseline.log": {
+      "raw_sha256": "697f204d1ce5d5214c3a9dde3b54f0fba85153219e38b4e9c2473837c6cc9513",
+      "sha256": "76cda35c94c634da24b30b320174352a0788688bcab495dd838a9754b783f849"
+    }
+  },
+  "assertions": {
+    "baseline": "first transfer succeeded; repeated return arrivals denied; diagnostic observed empty proxy currentServer at claim",
+    "fixed": "bidirectional repeat transfers, two players in separate regions, owner/current/online snapshots and coordinates, command-time disconnect, next-tick destination kick plus audit retirement, marker removal recovery, post-arrival disconnect/reconnect and fresh transfer",
+    "limitations": [
+      "No direct native production callback or exactly-once teleport-event counter; Folia did not emit the audit PLUGIN teleport event.",
+      "This short representative run is not soak evidence.",
+      "Offline identities and plaintext do not satisfy authenticated-forwarding or native KK gates."
+    ]
+  },
+  "finalCandidateValidation": {
+    "testsLog": "final-tests.log",
+    "artifactAudit": "final-artifact-audit.log",
+    "note": "Final single-scan pending-transfer cleanup refinement passes focused common/proxy/Velocity checks and 39-JAR audit; original Folia native logs retain their tested artifact hashes.",
+    "sha256": {
+      "final-tests.log": "8c770cfb9ea4b054b0f3734a51b60cc984ea0bc62bcac72a297fdc56fcfb7953",
+      "final-artifact-audit.log": "3c1649a0781c5aebe34ebf7ca0ff37d10b387e8b7dd95d81b3805bdd034a078b"
+    }
+  },
+  "identityRedaction": {
+    "profileLabel": "AuthenticatedTestPlayer",
+    "onlineUuidLabel": "00000000-0000-4000-8000-000000000019",
+    "offlineUuidLabel": "00000000-0000-3000-8000-000000000019",
+    "note": "Personal profile name and online/offline UUIDs are replaced consistently with synthetic labels. These labels are not login accounts. Raw source hashes refer to private originals; archived hashes cover redacted evidence."
+  },
+  "archiveNormalization": "Archived logs remove ANSI formatting where captured, console-only prompts and empty lines, expand tabs, normalize line endings and trim trailing whitespace; raw source hashes retain the original private evidence identity."
+}

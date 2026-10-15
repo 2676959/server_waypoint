@@ -202,14 +202,21 @@ public abstract class AbstractColorBgSlider implements LayoutElement, Renderable
         return 0xFF000000 | color;
     }
 
+    /**
+     * the color of the slider handle, subclasses may override it to draw the handle in another color
+     * */
+    protected int getHandleColor() {
+        return getColor(this.active ? ACCENT : SLIDER_THUMB_DISABLED);
+    }
+
     protected void drawSlider(GuiGraphicsExtractor context) {
-        int sliderColor = getColor(this.active ? ACCENT : SLIDER_THUMB_DISABLED);
+        int sliderColor = getHandleColor();
         //? if = 26.1.2 {
         int sliderX = MathHelper.clamp((int) this.sliderCenter, 0, this.slotWidth - 1);
         drawSolidColor(context, sliderX, sliderX + 1, sliderColor);
         //?} else {
-        
-        /*drawSolidColor(context, this.sliderLeft, this.sliderRight, sliderColor);
+        /*float handleLeft = MathHelper.clamp(this.sliderLeft, 0F, this.slotWidth - this.sliderHalfWidth * 2F);
+        drawSolidColor(context, handleLeft, handleLeft + this.sliderHalfWidth * 2F, sliderColor);
         *///?}
     }
 

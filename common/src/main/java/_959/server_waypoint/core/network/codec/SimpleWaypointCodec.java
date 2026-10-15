@@ -4,6 +4,8 @@ import _959.server_waypoint.core.network.DecodingContext;
 import _959.server_waypoint.core.network.EncodingContext;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.core.waypoint.WaypointIconPolicy;
+import _959.server_waypoint.util.NamespacedId;
 import io.netty.buffer.ByteBuf;
 
 import java.util.List;
@@ -29,6 +31,11 @@ public final class SimpleWaypointCodec {
         buf.writeBoolean(snapshot.global());
         ListCodec.encode(buf, snapshot.keywords(), UtfStringCodec::encode, context);
         UtfStringCodec.encode(buf, snapshot.description(), context);
+        NamespacedId icon = snapshot.icon();
+        buf.writeBoolean(icon != null);
+        if (icon != null) {
+            UtfStringCodec.encode(buf, icon.toString(), context);
+        }
     }
 
     public static SimpleWaypoint decode(ByteBuf byteBuf, DecodingContext context) {
@@ -50,6 +57,8 @@ public final class SimpleWaypointCodec {
         boolean global = byteBuf.readBoolean();
         List<String> keywords = ListCodec.decode(byteBuf, UtfStringCodec::decode, context);
         String description = UtfStringCodec.decode(byteBuf, context);
+        NamespacedId icon = byteBuf.readBoolean()
+                ? WaypointIconPolicy.validate(NamespacedId.parse(UtfStringCodec.decode(byteBuf, context))) : null;
         return new SimpleWaypoint(
                 name,
                 displayName,
@@ -59,7 +68,8 @@ public final class SimpleWaypointCodec {
                 yaw,
                 global,
                 keywords,
-                description
+                description,
+                icon
         );
     }
 }

@@ -8,10 +8,13 @@ plugins {
 
 val minecraft = stonecutter.current.version
 val loader = "neoforge"
+// VoxelMap-Updated publishes NeoForge builds only for some Minecraft versions; a pinned build enables the integration.
+val voxelmapSupported = project.hasProperty("voxelmap_neoforge")
 val targetJavaVersion = 17
 val mcVersionRange: String by project
 val mod_id: String by project
 val mod_name: String by project
+val mod_description: String by project
 val mod_version: String by project
 val maven_group: String by project
 
@@ -28,6 +31,7 @@ val shadedDependencies by configurations.creating {
 
 stonecutter {
     constants.match(loader, "fabric", "neoforge", "forge")
+    constants.put("voxelmap", voxelmapSupported)
     val usesTwentySixApi = eval(current.version, ">=26")
     val usesResourceLocation = eval(current.version, "<1.21.11")
 
@@ -57,6 +61,9 @@ sourceSets.main {
         exclude("META-INF/mods.toml")
         exclude("pack.mcmeta")
         exclude("server_waypoint-official.accesswidener")
+        if (!voxelmapSupported) {
+            exclude("server_waypoint-voxelmap.mixins.json")
+        }
     }
 }
 
@@ -115,6 +122,7 @@ runs {
 tasks.processResources {
     inputs.property("id", mod_id)
     inputs.property("name", mod_name)
+    inputs.property("description", mod_description)
     inputs.property("version", mod_version)
     inputs.property("java_version", targetJavaVersion)
     val resourcePackFormat = 18
@@ -126,12 +134,15 @@ tasks.processResources {
 
     val mcVersionForge: String by project
     inputs.property("minecraft_dependency", mcVersionForge)
+    inputs.property("voxelmap", voxelmapSupported)
     filesMatching("META-INF/neoforge.mods.toml") {
         expand(mapOf(
             "id" to mod_id,
             "name" to mod_name,
+            "description" to mod_description,
             "version" to mod_version,
             "minecraft_dependency" to mcVersionForge,
+            "voxelmap" to voxelmapSupported,
         ))
     }
 
@@ -197,14 +208,21 @@ tasks.withType<Jar>().configureEach {
 }
 
 tasks.shadowJar {
+    relocate("com.southernstorm.noise", "_959.server_waypoint.internal.noisekk")
+    dependencies {
+        include(dependency("org.signal.forks:noise-java:.*"))
+    }
     configurations = listOf(shadedDependencies)
     addMultiReleaseAttribute.set(false)
     dependencies {
         include(project(":common"))
+        include(project(":cross-server"))
         include(dependency("net.kyori:.*"))
         exclude("mappings/*")
     }
     archiveClassifier.set("")
+    // Sprite objects in chat exist from 1.21.9; older targets never read the sprite table.
+    exclude("assets/server_waypoint/chat-sprites.json", "_959/server_waypoint/text/chat/VanillaChatSprites.class")
 }
 
 val prepareRunMods by tasks.registering(Copy::class) {
@@ -234,3 +252,5 @@ tasks.register<Copy>("buildAndCollect") {
     into(rootProject.layout.buildDirectory.file("libs/$mod_version"))
     dependsOn("build")
 }
+
+apply(from = rootProject.file("gradle/noise-packaging.gradle.kts"))

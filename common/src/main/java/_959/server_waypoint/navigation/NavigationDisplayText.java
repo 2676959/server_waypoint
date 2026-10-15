@@ -1,12 +1,15 @@
 package _959.server_waypoint.navigation;
 
+import _959.server_waypoint.text.chat.DimensionStyle;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import static _959.server_waypoint.text.WaypointTextHelper.dimensionNameWithColor;
 import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.text;
@@ -30,17 +33,60 @@ public final class NavigationDisplayText {
     }
 
     public static Component buildItemName(NavigationTarget target) {
-        return parse(target.waypointDisplayName())
+        Component name = target.waypointDisplayName().isEmpty()
+                || target.waypointDisplayName().equals(target.waypointName())
+                ? text(target.waypointName()) : parse(target.waypointDisplayName());
+        return name
                 .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
                 .colorIfAbsent(TextColor.color(target.rgb()));
     }
 
+    /** The navigation item's first tooltip line, with independently styled list and waypoint names. */
+    public static Component buildItemTooltipName(NavigationTarget target) {
+        return empty().decoration(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+                .append(text(target.listName(), NamedTextColor.WHITE))
+                .append(text(" › ", NamedTextColor.WHITE))
+                .append(buildItemName(target));
+    }
+
     public static List<Component> buildItemLore(NavigationTarget target) {
-        if (target.waypointDescription().isEmpty()) {
-            return List.of(dimensionNameWithColor(target.dimensionName()).decoration(TextDecoration.ITALIC, TextDecoration.State.FALSE));
+        List<Component> lore = new ArrayList<>();
+        lore.add(dimensionName(target).decoration(TextDecoration.ITALIC, TextDecoration.State.FALSE));
+        if (!target.waypointKeywords().isEmpty()) {
+            lore.add(text(String.join(", ", target.waypointKeywords()), TextColor.color(0x447FFF))
+                    .decoration(TextDecoration.ITALIC, TextDecoration.State.FALSE));
         }
-        return List.of(dimensionNameWithColor(target.dimensionName()).decoration(TextDecoration.ITALIC, TextDecoration.State.FALSE),
-                parse(target.waypointDescription()).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE));
+        if (!target.waypointDescription().isEmpty()) {
+            lore.addAll(splitLoreLines(parse(target.waypointDescription())
+                    .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)));
+        }
+        return List.copyOf(lore);
+    }
+
+    /** Item lore needs separate components for newlines, retaining each component's inherited style. */
+    private static List<Component> splitLoreLines(Component component) {
+        List<Component> lines = new ArrayList<>();
+        if (component instanceof TextComponent textComponent) {
+            for (String part : textComponent.content().split("\\R|\\\\n", -1)) {
+                lines.add(textComponent.content(part).children(List.of()));
+            }
+        } else {
+            lines.add(component.children(List.of()));
+        }
+        for (Component child : component.children()) {
+            List<Component> childLines = splitLoreLines(child);
+            int lastLine = lines.size() - 1;
+            lines.set(lastLine, lines.get(lastLine).append(childLines.get(0)));
+            for (int index = 1; index < childLines.size(); index++) {
+                lines.add(empty().style(component.style()).append(childLines.get(index)));
+            }
+        }
+        return lines;
+    }
+
+    /** The dimension ID in its colour for item lore. */
+    private static Component dimensionName(NavigationTarget target) {
+        return text(target.dimensionName()).color(DimensionStyle.colorOf(target.dimensionName()));
     }
 
     public static Component build(NavigationSession session, NavigationSnapshot snapshot) {
@@ -52,7 +98,8 @@ public final class NavigationDisplayText {
                     .append(text(" — "))
                     .append(translatable(
                             "waypoint.navigation.wrong_dimension",
-                            text(target.dimensionName())
+                            DimensionStyle.displayName(target.dimensionName())
+                                    .color(DimensionStyle.colorOf(target.dimensionName()))
                     ));
         }
 
@@ -79,7 +126,8 @@ public final class NavigationDisplayText {
                     .append(newline())
                     .append(translatable(
                             "waypoint.navigation.wrong_dimension",
-                            text(target.dimensionName())
+                            DimensionStyle.displayName(target.dimensionName())
+                                    .color(DimensionStyle.colorOf(target.dimensionName()))
                     ));
         }
 

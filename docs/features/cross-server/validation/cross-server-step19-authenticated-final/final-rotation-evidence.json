@@ -1,0 +1,10 @@
+{
+  "oldCoordinatorPublicPinSha256": "42045ec9794a9306e31854484ad5381a26e320e09f9aaff8e7571ddb17ba38a2",
+  "revocationUnderLoad": "One authenticated AuthenticatedTestPlayer session on b at coordinator shutdown; restarted with b disabled; new source session denied stale destination",
+  "newCoordinatorPublicPinSha256": "7eb64707a5a9dcccbec7b4ba5a2d0f875c66e1f74cf5069ca9cecf83a13a9416",
+  "oldCoordinatorPinDenied": true,
+  "oldBackendBPublicPinSha256": "fe934aac145c0ddb817bee19ea3764ba978bd41acf25a5ff255191ad60a2beca",
+  "newBackendBPublicPinSha256": "4b28c37e0ddb4d94b7bd850903c576ebcabb3762d2b9628ccdbd3f66da00d756",
+  "oldBackendPinDenied": true,
+  "coordinatorRotationUnderLoad": "One authenticated source player connected at shutdown; old coordinator pins reject catalog access after restart; new trusted pins installed on both stopped backends"
+}

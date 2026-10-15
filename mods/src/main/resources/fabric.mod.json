@@ -3,12 +3,13 @@
     "id": "server_waypoint",
     "version": "${version}",
     "name": "Server Waypoint",
-    "description": "Manage waypoints and sync them to other player's client automatically. Compatible with Xaero's minimap.",
+    "description": "${description}",
     "authors": [
         "2676959"
     ],
     "contact": {
-        "homepage": "https://github.com/2676959/server_waypoint",
+        "homepage": "https://modrinth.com/plugin/server_waypoint",
+        "issues": "https://github.com/2676959/server_waypoint/issues",
         "sources": "https://github.com/2676959/server_waypoint"
     },
     "license": "MIT",
@@ -20,6 +21,9 @@
         ],
         "client": [
             "_959.server_waypoint.fabric.ServerWaypointFabricClient"
+        ],
+        "modmenu": [
+            "_959.server_waypoint.fabric.ServerWaypointModMenu"
         ]
     },
     "mixins": [
@@ -34,8 +38,10 @@
         "fabric-api": "*"
     },
     "suggests": {
-        "xaerominimap": "~25.2.6",
+        "xaerominimap": ">=25.2.6",
         "xaeroworldmap": "*",
-        "voxelmap": "*"
+        "voxelmap": "*",
+        "modmenu": "*",
+        "luckperms": "*"
     }
 }

@@ -2,7 +2,7 @@ package _959.server_waypoint.common.client.gui.widgets;
 
 import java.util.function.Consumer;
 
-import _959.server_waypoint.util.MathUtils;
+import _959.server_waypoint.common.client.util.MathUtils;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
 

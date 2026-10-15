@@ -1,0 +1,664 @@
+{
+    "date": "2026-09-09",
+    "step": 19,
+    "status": "hardening-implemented-native-production-gates-open",
+    "sourceHead": "4fe1a9b5106e0f9a576f65e5f83019520eb212bf",
+    "uncommittedChanges": true,
+    "host": "macOS-26.5-arm64-arm-64bit-Mach-O",
+    "activeVersions": {
+        "mods": "26.1.2-fabric",
+        "paper": "26.2-paper"
+    },
+    "build": {
+        "command": "./gradlew build --continue --max-workers=2 --console=plain",
+        "passed": true,
+        "versionProjects": 40
+    },
+    "testSuites": [
+        {
+            "project": "common",
+            "tests": 539,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        {
+            "project": "proxy-common",
+            "tests": 106,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        {
+            "project": "velocity",
+            "tests": 6,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        {
+            "project": "mods/versions/1.20.1-fabric",
+            "tests": 211,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        {
+            "project": "mods/versions/1.20.1-forge",
+            "tests": 204,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 1
+        },
+        {
+            "project": "mods/versions/1.20.2-fabric",
+            "tests": 211,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        {
+            "project": "mods/versions/1.20.2-forge",
+            "tests": 204,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        {
+            "project": "mods/versions/1.20.2-neoforge",
+            "tests": 204,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        {
+            "project": "mods/versions/1.20.4-fabric",
+            "tests": 211,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        {
+            "project": "mods/versions/1.20.4-forge",
+            "tests": 204,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        {
+            "project": "mods/versions/1.20.4-neoforge",
+            "tests": 206,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        {
+            "project": "mods/versions/1.20.6-fabric",
+            "tests": 211,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        {
+            "project": "mods/versions/1.20.6-forge",
+            "tests": 204,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        {
+            "project": "mods/versions/1.20.6-neoforge",
+            "tests": 206,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        {
+            "project": "mods/versions/1.21-fabric",
+            "tests": 211,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        {
+            "project": "mods/versions/1.21-forge",
+            "tests": 204,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 1
+        },
+        {
+            "project": "mods/versions/1.21-neoforge",
+            "tests": 206,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        {
+            "project": "mods/versions/1.21.11-fabric",
+            "tests": 211,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        {
+            "project": "mods/versions/1.21.11-forge",
+            "tests": 204,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        {
+            "project": "mods/versions/1.21.11-neoforge",
+            "tests": 206,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 1
+        },
+        {
+            "project": "mods/versions/1.21.2-fabric",
+            "tests": 211,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        {
+            "project": "mods/versions/1.21.2-neoforge",
+            "tests": 206,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        {
+            "project": "mods/versions/1.21.3-fabric",
+            "tests": 211,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        {
+            "project": "mods/versions/1.21.3-forge",
+            "tests": 204,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 1
+        },
+        {
+            "project": "mods/versions/1.21.3-neoforge",
+            "tests": 206,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 1
+        },
+        {
+            "project": "mods/versions/1.21.5-fabric",
+            "tests": 211,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        {
+            "project": "mods/versions/1.21.5-forge",
+            "tests": 204,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 1
+        },
+        {
+            "project": "mods/versions/1.21.5-neoforge",
+            "tests": 206,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 1
+        },
+        {
+            "project": "mods/versions/1.21.6-fabric",
+            "tests": 211,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        {
+            "project": "mods/versions/1.21.6-forge",
+            "tests": 204,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 1
+        },
+        {
+            "project": "mods/versions/1.21.6-neoforge",
+            "tests": 206,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 1
+        },
+        {
+            "project": "mods/versions/1.21.9-fabric",
+            "tests": 211,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        {
+            "project": "mods/versions/1.21.9-forge",
+            "tests": 204,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        {
+            "project": "mods/versions/1.21.9-neoforge",
+            "tests": 206,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 1
+        },
+        {
+            "project": "mods/versions/26.1.2-fabric",
+            "tests": 211,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        {
+            "project": "mods/versions/26.1.2-forge",
+            "tests": 204,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        {
+            "project": "mods/versions/26.1.2-neoforge",
+            "tests": 206,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 1
+        },
+        {
+            "project": "mods/versions/26.2-fabric",
+            "tests": 211,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        {
+            "project": "mods/versions/26.2-forge",
+            "tests": 204,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        {
+            "project": "mods/versions/26.2-neoforge",
+            "tests": 206,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 1
+        },
+        {
+            "project": "paper/versions/1.21-paper",
+            "tests": 5,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        {
+            "project": "paper/versions/1.21.11-paper",
+            "tests": 5,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        {
+            "project": "paper/versions/26.2-paper",
+            "tests": 5,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        }
+    ],
+    "totals": {
+        "tests": 8327,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 12
+    },
+    "skips": [
+        {
+            "project": "mods/versions/1.20.1-forge",
+            "class": "_959.server_waypoint.common.network.ModMessageSenderTest",
+            "test": "convertsDetailsForDescriptionContainingLineBreak()"
+        },
+        {
+            "project": "mods/versions/1.21-forge",
+            "class": "_959.server_waypoint.common.network.ModMessageSenderTest",
+            "test": "convertsDetailsForDescriptionContainingLineBreak()"
+        },
+        {
+            "project": "mods/versions/1.21.11-neoforge",
+            "class": "_959.server_waypoint.common.network.ModMessageSenderTest",
+            "test": "convertsDetailsForDescriptionContainingLineBreak()"
+        },
+        {
+            "project": "mods/versions/1.21.3-forge",
+            "class": "_959.server_waypoint.common.network.ModMessageSenderTest",
+            "test": "convertsDetailsForDescriptionContainingLineBreak()"
+        },
+        {
+            "project": "mods/versions/1.21.3-neoforge",
+            "class": "_959.server_waypoint.common.network.ModMessageSenderTest",
+            "test": "convertsDetailsForDescriptionContainingLineBreak()"
+        },
+        {
+            "project": "mods/versions/1.21.5-forge",
+            "class": "_959.server_waypoint.common.network.ModMessageSenderTest",
+            "test": "convertsDetailsForDescriptionContainingLineBreak()"
+        },
+        {
+            "project": "mods/versions/1.21.5-neoforge",
+            "class": "_959.server_waypoint.common.network.ModMessageSenderTest",
+            "test": "convertsDetailsForDescriptionContainingLineBreak()"
+        },
+        {
+            "project": "mods/versions/1.21.6-forge",
+            "class": "_959.server_waypoint.common.network.ModMessageSenderTest",
+            "test": "convertsDetailsForDescriptionContainingLineBreak()"
+        },
+        {
+            "project": "mods/versions/1.21.6-neoforge",
+            "class": "_959.server_waypoint.common.network.ModMessageSenderTest",
+            "test": "convertsDetailsForDescriptionContainingLineBreak()"
+        },
+        {
+            "project": "mods/versions/1.21.9-neoforge",
+            "class": "_959.server_waypoint.common.network.ModMessageSenderTest",
+            "test": "convertsDetailsForDescriptionContainingLineBreak()"
+        },
+        {
+            "project": "mods/versions/26.1.2-neoforge",
+            "class": "_959.server_waypoint.common.network.ModMessageSenderTest",
+            "test": "convertsDetailsForDescriptionContainingLineBreak()"
+        },
+        {
+            "project": "mods/versions/26.2-neoforge",
+            "class": "_959.server_waypoint.common.network.ModMessageSenderTest",
+            "test": "convertsDetailsForDescriptionContainingLineBreak()"
+        }
+    ],
+    "noiseKk": {
+        "tests": 35,
+        "failures": 0,
+        "rerunTasks": true
+    },
+    "releaseToolTests": {
+        "tests": 8,
+        "failures": 0
+    },
+    "artifacts": [
+        {
+            "path": "builds/server_waypoint-3.1.0-fabric-mc1.20-1.20.1.jar",
+            "bytes": 1939332,
+            "sha256": "e1905b950249d5da37a1f290ccbf20f29bd41e32906b31e6cef657b200ed8834"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-fabric-mc1.20.2.jar",
+            "bytes": 1939046,
+            "sha256": "74056ad00d2b36beb8ccadea508f5df4ebc912d3a986e379a9179cb12015f417"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-fabric-mc1.20.3-1.20.4.jar",
+            "bytes": 1941048,
+            "sha256": "1e07e96000236f57a75cf338b255bd3c25f848bd7c64570d06da57518fc75fd3"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-fabric-mc1.20.5-1.20.6.jar",
+            "bytes": 1978527,
+            "sha256": "244ea6ee7f0a25e34986e00691834ab084312587289e7eb3cbb2fefcc9a330cf"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-fabric-mc1.21-1.21.1.jar",
+            "bytes": 1978661,
+            "sha256": "40e7feb7bfe1a25f71260113dfc3032520d20843df091686c5c65d84840e4f88"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-fabric-mc1.21.11.jar",
+            "bytes": 2072128,
+            "sha256": "05af063c4280c96afe764cd27a5a4d2bd79c3deddc0323d3d63e59af5adb77fd"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-fabric-mc1.21.2-1.21.4.jar",
+            "bytes": 1945398,
+            "sha256": "42e5b4f0d983a9fdd4aeca2f902bee936f2736def822733a7cf6e35655d5a05d"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-fabric-mc1.21.5.jar",
+            "bytes": 2045453,
+            "sha256": "d38fd140424d5ca59812ddcd02301335c4cea3aeaf6b79dd03f1bdb668f8fd6d"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-fabric-mc1.21.6-1.21.8.jar",
+            "bytes": 2070267,
+            "sha256": "f519c3e8a39bb681dc6bdb7fc5b7f420fca810c727d3f53647195779457c691d"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-fabric-mc1.21.9-1.21.10.jar",
+            "bytes": 2072014,
+            "sha256": "731e0bd0ed61bcdd31c99d6e93a73cdf8472d65c535ee6978d90cdd529c4754e"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-fabric-mc26.1-26.1.2.jar",
+            "bytes": 2065036,
+            "sha256": "bcbf8177fd3cff571d7ef00f56959f1f5b050cbb7ac1311159914068de23b02e"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-fabric-mc26.2.jar",
+            "bytes": 2065057,
+            "sha256": "bb3f1e42ed7ca636eea608c7924b958eda2a39b8233f688194193523d8b0fbe1"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-forge-mc1.20-1.20.1.jar",
+            "bytes": 2546134,
+            "sha256": "6cf0082d51b023cd03245cbfd126dd638aa0df02ff726fc225182255fffe3b3a"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-forge-mc1.20.2.jar",
+            "bytes": 2545242,
+            "sha256": "ae63ac47b020ab6baa023c9c42077dbaf33556fa0862d65d79e402c0f54e9df7"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-forge-mc1.20.3-1.20.4.jar",
+            "bytes": 2547367,
+            "sha256": "0c6d466391d0673830cf65232a14bc7b1dab2b469dd46c4e05e1a4bf6d031fe4"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-forge-mc1.20.6.jar",
+            "bytes": 2562950,
+            "sha256": "0ea5dbbbaabc9861a8d3301c8f5ea3a73524b39b537d1b24d66fc83de7472a14"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-forge-mc1.21-1.21.1.jar",
+            "bytes": 2563109,
+            "sha256": "f408f52f2bed302ea7f1ddf73b3db0a6801602ebc0e2010cb072f0065cf35be3"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-forge-mc1.21.11.jar",
+            "bytes": 2026760,
+            "sha256": "cc9e799ba1a3f7736fcca5c14f01616695b4fab0c49e7fc8f21d6b6762aa0d9f"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-forge-mc1.21.3-1.21.4.jar",
+            "bytes": 2612079,
+            "sha256": "80c8f4e21a942498a7aaddcc18195367d4521294c59b55e4353cc4ae18962945"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-forge-mc1.21.5.jar",
+            "bytes": 2633806,
+            "sha256": "bb2ca7004b9fe23100eb99e85431c481048507f04555b7993ec34e8e2c922fc3"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-forge-mc1.21.6-1.21.8.jar",
+            "bytes": 2658692,
+            "sha256": "a95e99acb9c84e4c1ba914f645ae568e644a982baa56237f9bc004a634cc198d"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-forge-mc1.21.9-1.21.10.jar",
+            "bytes": 2660181,
+            "sha256": "0e70fe87f1d7c573b3bb4cb51f60ca87c2480af6fe9155caac4ee017479120e8"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-forge-mc26.1-26.1.2.jar",
+            "bytes": 2029580,
+            "sha256": "dd3c420cfa06176139ed021fc7338b7735b0fbb55dec2cdf67b008d69144de6b"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-forge-mc26.2.jar",
+            "bytes": 2029606,
+            "sha256": "7049524f982a59d7ed03eb65c56b74fe69aa4ca729f9854e001ea22277007f89"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-neoforge-mc1.20.2.jar",
+            "bytes": 1908802,
+            "sha256": "61daa2e0ccb45dad835245c06c245c562241d51e43bceebc76915f76cb11b3d3"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-neoforge-mc1.20.3-1.20.4.jar",
+            "bytes": 1912495,
+            "sha256": "4fa1abb1f4b36f6dcb967c6b71cd3b2808a01a3726dbe1f5f480735df8010fe6"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-neoforge-mc1.20.5-1.20.6.jar",
+            "bytes": 1951291,
+            "sha256": "ddc428019b125b1636562bf09ab17914760161f4db93aa01b29524ca26faa669"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-neoforge-mc1.21-1.21.1.jar",
+            "bytes": 1951449,
+            "sha256": "334c947842c9bc35188a858ec02df30b00cdedb4423e71cbcacd96c48db83bb7"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-neoforge-mc1.21.11.jar",
+            "bytes": 2049532,
+            "sha256": "33bc5a5cb216e22a56a86d8d1e253dcabb44b4e058caaad8d574f2e04a1230cf"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-neoforge-mc1.21.2-1.21.4.jar",
+            "bytes": 1918453,
+            "sha256": "661ef634b777b6093abdea5c94dc891a4ea28b54d3124308236ce54ecc494b5f"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-neoforge-mc1.21.5.jar",
+            "bytes": 2023022,
+            "sha256": "3bdd40f768a1877089cd1d4b8d5a2c0c4c57ef28c4102463484690ab1211f410"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-neoforge-mc1.21.6-1.21.8.jar",
+            "bytes": 2048083,
+            "sha256": "3217ab60156e28d359bf5520870f8250cb13f16c8f997e1184edf80f135dc2ff"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-neoforge-mc1.21.9-1.21.10.jar",
+            "bytes": 2049376,
+            "sha256": "316f0aacf4fbceffa7d329374849146cb66c3647e86a6638c3065c7358095a0d"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-neoforge-mc26.1-26.1.2.jar",
+            "bytes": 2052453,
+            "sha256": "6c236584b113d19492cef53d40ab336e730f63045820306ecb0f4c69cfd8966b"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-neoforge-mc26.2.jar",
+            "bytes": 2052472,
+            "sha256": "fc9e81efe00d8acaa8cb3535ce3cf77b7ec39136588a28a9690a0a71cb00f3fb"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-paper-mc1.21-1.21.10.jar",
+            "bytes": 1006182,
+            "sha256": "bd738574f60097c6af3b65d0062387729c379e1f032ecd5351bf1e33b5ec6126"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-paper-mc1.21.11-26.1.2.jar",
+            "bytes": 1006188,
+            "sha256": "34c9bf5bfc5a3be8d1a11a7b5b5ee390f3d00f1f2589161ae72b298969d0f728"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-paper-mc26.2.jar",
+            "bytes": 1006205,
+            "sha256": "f0f1b7b61618efe5a19a37d034ea553f6ccf8fc9e85774836d856ebb62ff17d1"
+        },
+        {
+            "path": "builds/server_waypoint-3.1.0-velocity.jar",
+            "bytes": 964257,
+            "sha256": "0acad515c24ccd904a21f6b6d85d986d4c4f77c7662f97f0520cdc53cb72eed7"
+        }
+    ],
+    "native": {
+        "paper": "26.2-24",
+        "fabricMinecraft": "26.2",
+        "fabricLoader": "0.19.3",
+        "fabricApi": "0.152.1+26.2",
+        "velocity": "4.1.1",
+        "java": "25.0.3",
+        "mcc": "26.2 build 499",
+        "minecraftProtocol": 776,
+        "identityMode": "disposable offline account; forwarding NONE",
+        "runtimeArtifacts": [
+            {
+                "path": "a/plugins/server_waypoint-3.1.0-paper-mc26.2.jar",
+                "sha256": "f0f1b7b61618efe5a19a37d034ea553f6ccf8fc9e85774836d856ebb62ff17d1",
+                "matchesStagedRelease": true
+            },
+            {
+                "path": "b/mods/server_waypoint-3.1.0-fabric-mc26.2.jar",
+                "sha256": "bb3f1e42ed7ca636eea608c7924b958eda2a39b8233f688194193523d8b0fbe1",
+                "matchesStagedRelease": true
+            },
+            {
+                "path": "proxy/plugins/server_waypoint-3.1.0-velocity.jar",
+                "sha256": "7d0b57efd1a7aae23e945ea30e97efe966d4812117485d825c502255f424dc99",
+                "matchesStagedRelease": false
+            },
+            {
+                "path": "a/server.jar",
+                "sha256": "668ca744350ff08c27b5f51d2c929a1dc2b3c4b7cdc1408295c61211e6e924fc",
+                "matchesStagedRelease": false
+            },
+            {
+                "path": "b/server.jar",
+                "sha256": "301f83aac36b23f2bc64cc58560edf98533cfaa30e53af002ba950c75f4100b4",
+                "matchesStagedRelease": false
+            },
+            {
+                "path": "b/mods/fabric-api.jar",
+                "sha256": "1083ce79231f9d358d7b172dd43553234e2f3834993a3ae42a1ec976af5ce418",
+                "matchesStagedRelease": false
+            },
+            {
+                "path": "proxy/velocity.jar",
+                "sha256": "846411d2d0560fed0f23496ffb89681be528d2c0650ecdcf21724d2d7bd9c1ee",
+                "matchesStagedRelease": false
+            }
+        ],
+        "assertions": {
+            "kkBidirectionalArrival": true,
+            "remoteCommandLinkageFixed": true,
+            "catalogEditRepublished": true,
+            "destinationPermissionDeniedWithoutPositionChange": true,
+            "coordinatorRestartRepublishAndFreshTransfer": true,
+            "plaintextBidirectionalArrival": true,
+            "plaintextPrivateKeyFilesUnchanged": true,
+            "destinationShutdownStaleRequestRejectedWithSourceRetention": true,
+            "allFixtureProcessesStopped": true
+        },
+        "limits": [
+            "No native modded protocol-11 GUI/proxy session",
+            "No native Folia, Forge or NeoForge cross-server transfer",
+            "No authenticated online forwarding",
+            "No native exactly-once event counter for Fabric",
+            "Native failure-timing, key-rotation/revocation and soak matrix incomplete"
+        ],
+        "velocityJarChangedEntries": [
+            "_959/server_waypoint/command/RemoteWaypointCommand.class"
+        ]
+    },
+    "productionReleaseApproved": false
+}

@@ -1,6 +1,6 @@
 # 服务器路径点 Server Waypoint
 
-[中文](README_zh.md) [English](README.md)
+[English](README.md) · [中文](README_zh.md)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](https://opensource.org/licenses/MIT)
 ![Modrinth Version](https://img.shields.io/modrinth/v/server_waypoint?style=flat-square&label=Version)
@@ -8,229 +8,155 @@
 [![Modrinth Downloads](https://img.shields.io/modrinth/dt/server_waypoint?style=flat-square&logo=modrinth&logoColor=%2300AF5C&label=Modrinth%20Downloads&color=%2300AF5C)](https://modrinth.com/plugin/server_waypoint)
 [![CurseForge Downloads](https://img.shields.io/curseforge/dt/1416929?style=flat-square&logo=curseforge&logoColor=%23F16436&label=CurseForge%20Downloads&color=%23F16436)](https://www.curseforge.com/minecraft/mc-mods/server-waypoint)
 
-[![Fabric](https://img.shields.io/badge/1.20.x%20%201.21.x%20%2026.1--26.2-555555?style=flat-square&label=Fabric&labelColor=dbb69b)](https://modrinth.com/plugin/server_waypoint/versions?l=fabric)
+[![Fabric](https://img.shields.io/badge/1.20.x%20%201.21.x%20%2026.1--26.3-555555?style=flat-square&label=Fabric&labelColor=dbb69b)](https://modrinth.com/plugin/server_waypoint/versions?l=fabric)
 [![Forge](https://img.shields.io/badge/1.20.x%20%201.21.x%20%2026.1--26.2-555555?style=flat-square&label=Forge&labelColor=959eef)](https://modrinth.com/plugin/server_waypoint/versions?l=forge)
-[![NeoForge](https://img.shields.io/badge/1.20.2--1.20.6%20%201.21.x%20%2026.1--26.2-555555?style=flat-square&label=NeoForge&labelColor=f99e6b)](https://modrinth.com/plugin/server_waypoint/versions?l=neoforge)
-[![Paper](https://img.shields.io/badge/1.21.x%20%2026.1--26.2-555555?style=flat-square&label=Paper&labelColor=eeaaaa)](https://modrinth.com/plugin/server_waypoint/versions?l=paper)
+[![NeoForge](https://img.shields.io/badge/1.20.2--1.20.6%20%201.21.x%20%2026.1--26.3-555555?style=flat-square&label=NeoForge&labelColor=f99e6b)](https://modrinth.com/plugin/server_waypoint/versions?l=neoforge)
+[![Paper](https://img.shields.io/badge/1.21.x%20%2026.1--26.3-555555?style=flat-square&label=Paper&labelColor=eeaaaa)](https://modrinth.com/plugin/server_waypoint/versions?l=paper)
+[![Velocity](https://img.shields.io/badge/1.20.x%20%201.21.x%20%2026.1--26.3-555555?style=flat-square&label=Velocity&labelColor=8ec9ea)](https://modrinth.com/plugin/server_waypoint/versions?l=velocity)
 
 [![discord-singular](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/social/discord-singular_vector.svg)](https://discord.com/invite/tKtSSYDkHx)
-[![crowdin](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/translate/crowdin_vector.svg)](https://crowdin.com/project/server-waypoint)
 
-管理路径点并自动将其同步到其他玩家的客户端，兼容 Xaero 小地图 (Xaero's Minimap)。
+保存常用地点，与其他玩家分享，轻松找到回去的路。Server Waypoint 支持 Fabric、Forge、NeoForge、Paper、Folia 和 Purpur。可选的 Velocity 插件让你跨服务器使用路径点。
+
+**玩家无需安装客户端模组，即可使用命令、可点击的聊天菜单和导航。** 安装客户端模组后，还能使用路径点管理界面、世界内标记和地图模组集成。你也可以在单人游戏中使用本模组。
+
+本指南适用于 **4.0.0**。新增功能和升级注意事项请参阅[更新日志（英文）](CHANGELOG.md)。
 
 ## 主要功能
-- 从服务端自动同步路径点。
-- 自定义路径点渲染。
-- 允许玩家通过图形界面（需要安装客户端）和命令（只需安装服务器）管理路径点。
-- 命令自动补全。
-- `/wp <选项>` 命令支持自定义权限。兼容 [LuckPerms](https://modrinth.com/plugin/luckperms)。
-- 支持从 Xaero 小地图的聊天分享消息中便捷添加路径点，无需在客户端安装本模组。
 
-## 依赖项
-必需：
-  - [Fabric API](https://modrinth.com/mod/fabric-api)
-  
-可选：
-  - [LuckPerms](https://modrinth.com/plugin/luckperms)
-  - [Xaero's Minimap](https://modrinth.com/mod/xaeros-minimap)
+- 将共享路径点保存在命名列表中，并设置颜色、图标和描述。
+- 通过可点击的聊天菜单或客户端路径点管理界面浏览、添加和编辑路径点。
+- 使用指南针、地图、Boss 栏、动作栏或悬浮文字导航。
+- 将路径点同步到 Xaero 小地图或受支持的 VoxelMap 版本，并将自己的地图路径点上传到服务器。
+- 通过 Xaero 世界地图的菜单添加或编辑服务器路径点。
+- 管理员启用 Velocity 支持后，浏览其他服务器的路径点并传送前往。
 
-## 快捷键
-- 按下 `右 Shift` 或使用 `/wp_gui` 打开路径点管理界面。
-- 在路径点管理界面按下 `T` 可传送至鼠标悬停的路径点（需要`/wp tp`命令权限）。
-- 在路径点管理界面按下 `C` 可打开客户端配置界面。
+## 各 Minecraft 版本的功能支持
 
-## 命令
-- `/wp add` 添加新路径点。无法添加同名路径点。会提示用户使用 `/wp edit` 替换现有路径点。
-  - `/wp add <维度> <列表>` 添加一个路径点列表。
-- `/wp download` 下载路径点并添加到 Xaero 小地图（需客户端安装本模组才生效）。
-- `/wp upload <xaero|voxelmap>` 从执行玩家客户端上所选的地图模组导入路径点。冲突、强制覆盖和删除行为详见[从客户端地图模组上传](#从客户端地图模组上传)。
-- `/wp edit` 编辑路径点。
-- `/wp list` 列出当前维度中的路径点。可使用 `all`、维度，或维度加列表名称来更改范围。结果按照服务端配置的每页数量分页（默认 10 个），并提供可点击的排序和翻页按钮。
-  - 添加 `search <查询内容>` 可按路径点名称筛选。
-  - 添加 `sort <default|name|distance|color>`；使用非默认排序时，还可选用 `order <ascending|descending>` 对结果排序。
-  - 添加 `page <页码>` 和/或 `limit <1-100>` 可选择页码或更改每页数量。选项顺序为 `search`、`sort`、`order`、`page`、`limit`；包含空格的值，以及与选项名称相同的列表名称，需要加引号。
-- `/wp reload` 重载 `config.json` 和 `\config\server_waypoint\lang` 目录下的翻译文件。`sendXaerosWorldId` 特性需要重启服务器才能生效。
-- `/wp remove` 按名称删除路径点。显示已删除的路径点，点击该消息可恢复该路径点。
-  - `/wp remove <维度> <列表>` 删除一个空的路径点列表。
-- `/wp tp` 将执行该命令的玩家传送至指定路径点。
+以下范围适用于受支持的 **4.0.0** 构建。请始终使用与你的 Minecraft 版本和平台对应的 JAR 文件；即使某版本处于某项功能的适用范围内，也仍需有对应的构建才能使用。
 
-## 从客户端地图模组上传
+| 功能 | 平台 | 可用的 Minecraft 版本 | 不可用的版本或限制 |
+| --- | --- | --- | --- |
+| 聊天中的路径点物品图标 | Fabric、Forge、NeoForge、Paper/Folia/Purpur | 各平台支持范围内的 1.21.9 及以上版本 | 1.21.9 之前使用文字或缩写。只有已建立映射的原版物品/方块纹理可显示为聊天图标；自定义图标和 VoxelMap 图标使用文字或缩写。 |
+| 聊天反馈中的玩家头像 | Fabric、Forge、NeoForge、Paper/Folia/Purpur | 各平台支持范围内的 1.21.9 及以上版本 | 1.21.9 之前仅显示文字，不显示玩家头像。 |
+| 文本展示实体导航（`text_display`，即悬浮文字） | Fabric、Forge、NeoForge、Paper/Folia/Purpur | 所有受支持的版本：Fabric 1.20–26.3、Forge 1.20–26.2、NeoForge 1.20.2–26.3、Paper/Folia/Purpur 1.21–26.3 | 在受支持的版本中没有额外的版本限制。 |
+| VoxelMap 同步、上传和编辑 | Fabric 客户端 | 所有受支持的 Fabric 版本，1.20–26.3 | 需要对应版本的 VoxelMap-Updated 和 Server Waypoint 客户端模组。 |
+| VoxelMap 同步、上传和编辑 | Forge 客户端 | 1.21.11、26.1–26.1.2、26.2 | 受支持的 Forge 版本中，1.21.11 之前不可用。需要 VoxelMap-Updated 和 Server Waypoint 客户端模组。 |
+| VoxelMap 同步、上传和编辑 | NeoForge 客户端 | 1.21.2–1.21.4、1.21.11、26.1–26.1.2、26.2、26.3 | 1.20.2–1.21.1 和 1.21.5–1.21.10 不可用。需要 VoxelMap-Updated 和 Server Waypoint 客户端模组。 |
 
-上传由服务器发起，但读取的是执行命令玩家客户端中的地图模组数据。必填的 `<source>` 为 `xaero` 或 `voxelmap`；客户端必须已安装并正确加载 Server Waypoint 和所选地图模组。服务器只接受命令所选维度以及可选列表/路径点范围内的数据。
+聊天图标、玩家头像和悬浮文字导航无需客户端模组。路径点管理界面、世界内客户端标记和 Xaero 集成适用于所有受支持的客户端模组版本；Xaero 世界地图中的操作还需要安装 Xaero 小地图。这些客户端功能可以连接任何受支持的服务端，包括 Paper、Folia 和 Purpur。
 
-Xaero 只导入普通、已启用且非临时的路径点，并同步名称、缩写、坐标、颜色、yaw 和本地/全局可见性。VoxelMap 会跳过已禁用和坐标高亮路径点；服务器同步的名称会还原为原始列表和路径点名称，其他本地路径点会放入固定的 `VoxelMap` 列表，坐标会从维度缩放中还原，缩写和 yaw 使用空值/零值且可见性为本地。更新已有路径点时会保留服务器专有的显示名称、关键词和描述。
+## 创建你的第一个路径点
 
-VoxelMap 上传使用当前子世界。如果某个请求维度的坐标缩放比例不可用，整个导出会中止；请先进入该维度后重试。上传按维度依次提交。如果后续维度处理失败，之前的更改仍会保留并同步，命令会报告部分完成的结果。
+1. 加入服务器或打开单人世界，然后运行 `/wp`。
+2. 使用聊天按钮浏览路径点，或在当前位置添加一个路径点。如果还没有路径点列表，请先创建列表。例如，在主世界中运行：
 
-所有模式都支持相同的可选范围：
+    ```text
+    /wp add minecraft:overworld Public
+    /wp add 100 64 200 Public Home
+    ```
 
-- 不指定选择器：命令执行者可用的所有服务器维度。
-- `<维度>`：该维度中地图模组的所有路径点。
-- `<维度> <列表>`：一个路径点列表（VoxelMap 本地路径点使用 `VoxelMap`）。
-- `<维度> <列表> <路径点>`：一个路径点。
+3. 运行 `/wp list`，选择 **Home**，然后使用导航按钮找到它。拥有相应权限时，也可以直接传送。
+4. 使用路径点的编辑按钮修改名称、颜色、描述或图标。删除路径点后，会出现一个 **恢复** 链接，可在 10 分钟内使用一次。
 
-### 普通上传 / force server
+名称中有空格时，请加上引号，例如 `"Village square"`。需要命令示例时，可随时运行 `/wp help`。
 
-`/wp upload <source> [<维度> [<列表> [<路径点>]]]` 与 `/wp upload <source> force server [<维度> [<列表> [<路径点>]]]` 行为相同：添加服务器上缺少的路径点；相同路径点保持不变；如果同名路径点中地图模组支持的属性不同，则保留服务器版本并报告冲突。不会删除任何数据。
+## 使用客户端路径点管理界面
 
-### Force local
+安装客户端模组后，按 **右 Shift** 或运行 `/wp_gui` 打开管理界面。你可以在 Minecraft 的控制设置中更改快捷键。
 
-`/wp upload <source> force local [<维度> [<列表> [<路径点>]]]` 会添加缺少的路径点，并用客户端值替换冲突路径点中地图模组支持的属性。服务器专有的显示名称、关键词和描述会被保留。不会删除任何数据。
+选择维度，再选择路径点即可查看详情。你可以搜索、排序或分组显示列表，然后使用按钮添加、编辑、导航或传送。传送需要服务器授予相应权限。
 
-### Force local delete
+在管理界面中按 **C** 打开客户端设置。你可以调整标记的大小、范围和不透明度，选择颜色主题，或更改地图同步设置。将鼠标悬停在设置上可查看说明；使用重置按钮可恢复默认值。Fabric 用户也可通过 [Mod Menu](https://modrinth.com/mod/modmenu) 打开设置，Forge 和 NeoForge 用户则可通过模组列表打开。
 
-`/wp upload <source> force local delete [<维度> [<列表> [<路径点>]]]` 会先执行 `force local`，然后删除所选地图模组中不存在的服务器数据，使所选范围与本地数据一致：
+启用跨服务器支持后，切换到 **远程服务器路径点** 并选择服务器。你可以浏览其共享路径点并传送前往；编辑操作需在路径点所属的服务器上进行。
 
-- 世界范围：在所有所选维度中删除缺少的路径点集和路径点。
-- 维度范围：在该维度中删除缺少的路径点集和路径点。
-- 列表范围：从该路径点列表中删除缺少的路径点；如果地图模组列表不存在，则删除整个服务器列表。
-- 路径点范围：仅在本地不存在时删除所选服务器路径点。
+## 使用地图模组
 
-地图模组中被跳过的路径点在 `force local delete` 中会被视为不存在，并可能导致对应服务器路径点被删除。仅当所选来源范围应作为权威副本时使用此模式。
+地图模组是可选的，需要与 Server Waypoint 一起安装在客户端：
 
-上传使用 `server_waypoint.command.upload`（默认原版权限等级 2）。破坏性的删除模式还需要 `server_waypoint.command.upload.delete`（默认等级 4）。
+- [Xaero 小地图（Xaero's Minimap）](https://modrinth.com/mod/xaeros-minimap)：显示共享路径点，并允许上传你的地图路径点。
+- [Xaero 世界地图（Xaero's World Map）](https://modrinth.com/mod/xaeros-world-map)：在右键菜单中添加 Server Waypoint 操作。此集成还需要安装 Xaero 小地图。
+- [VoxelMap-Updated](https://modrinth.com/mod/voxelmap-updated)：在下列版本中支持共享路径点同步和上传。
 
-## 翻译
-此模组发送的消息和命令反馈将根据玩家客户端的语言设置自动翻译。此功能完全在服务器端运行；玩家无需在客户端安装此模组即可看到翻译后的消息。目前，该模组支持英语和简体中文翻译。如果您有兴趣，可以在 [Crowdin](https://crowdin.com/project/server-waypoint) 上添加翻译，帮助我们完善翻译。
+| VoxelMap 集成 | 4.0.0 支持的 Minecraft 版本 |
+| --- | --- |
+| Fabric | 所有受支持的 Fabric 版本 |
+| Forge | 1.21.11、26.1–26.1.2、26.2 |
+| NeoForge | 1.21.2–1.21.4、1.21.11、26.1–26.1.2、26.2、26.3 |
 
-- ### 添加翻译
-  将语言文件放置在目录 `<minecraft_root>\config\server_waypoint\lang\` 下。模组将在服务器启动时加载它们，如果服务器已运行，请使用 `/wp reload`。
-  
-- ### 创建语言文件
-  请遵循 [`en_us.json`](./common/src/main/resources/lang/en_us.json) 或 [`zh_cn.json`](./common/src/main/resources/lang/zh_cn.json) 中的格式。
+在多人服务器中，自动同步会让共享路径点保持最新。你的个人地图路径点会单独保留。在单人游戏中，打开世界不会自动替换地图已保存的路径点；需要完整刷新时，请使用客户端设置中的 **立即同步**。已同步的路径点可通过 Server Waypoint 的界面编辑。
 
-  使用[有效的语言代码](https://minecraft.wiki/w/Language#Languages)命名语言文件。
-  
-- ### 翻译顺序
-  如果您添加的翻译文件使用的语言代码与内置语言相同，此模组会首先尝试在您添加的文件中查找翻译键。如果找不到该键，则会回退到使用内置翻译。如果您想使用自己的翻译版本，只需添加您自己的文件并覆盖内置翻译即可轻松实现。
+**Xaero 的默认路径点集合：** `gui.xaero_default` 是 Xaero 小地图 **默认** 集合的翻译键和内部名称。上传该集合后，会创建一个名为 `gui.xaero_default` 的 Server Waypoint 列表。在 4.0.0 中，将此列表同步回地图时，会创建一个由服务器管理的独立集合，不会合并到你的个人默认集合中。
 
-社区翻译者署名与署名 pull request 指南请见 [`TRANSLATOR_CREDITS.md`](./TRANSLATOR_CREDITS.md)。
+要将自己的地图路径点复制到服务器，请运行 `/wp upload xaero` 或 `/wp upload voxelmap`。上传需要管理员授予权限。普通上传会添加缺失的路径点，发生冲突时保留服务器上的版本。使用覆盖或删除选项前，请先阅读[上传指南（英文）](docs/tips/server-guide.md#uploading-from-client-map-mods)。
 
-## 翻译鸣谢
-感谢社区翻译者帮助 Server Waypoint 支持更多语言，让更多玩家可以使用本模组。
+## 从 MCDR 插件迁移路径点
 
-以下示例条目是占位内容，应在之后替换为真实的翻译贡献者。
+如果你使用 MCDReforged（MCDR）的 **Locations** 或 **LocationMarker** 插件，可以使用 [`locations2waypoints.py`](locations2waypoints.py) 转换其 `locations.json`。需要 Python 3，无需安装额外的软件包。
 
-- Example Translator
-- Sample Localizer https://example.com/sample-localizer
-- Demo Contributor https://example.com/demo-contributor
+1. 备份插件的 `locations.json` 和现有的 Server Waypoint 文件，然后停止服务器。
+2. 下载脚本，在脚本所在文件夹打开终端，并指定地点文件的路径运行：
 
-## 路径点
-- #### 保存路径
-  服务端：
-  
-  `<minecraft_root>\config\server_waypoint\waypoints\`
+    ```sh
+    python3 locations2waypoints.py "/path/to/locations.json"
+    ```
 
-  客户端：
+    也可以直接运行 `python3 locations2waypoints.py`，再按提示输入文件路径。
+3. 检查输出中是否有被跳过的条目。脚本会在 `locations.json` 旁创建 `waypoints/` 文件夹，每个维度生成一个 JSON 文件，例如 `minecraft$overworld.json`。每个文件包含一个名为 `locations` 的列表。名称和描述会保留，坐标会向下取整为方块坐标，路径点对所有玩家共享。
+4. 将生成的 JSON 文件复制到服务器的路径点文件夹。以下路径均相对于服务器根目录：
 
-  `<minecraft_root>\saves\<world_name>\server_waypoint\waypoints\`
-- #### 文件格式
-  所有路径点均保存在 JSON 文件中。每个 JSON 文件包含一个维度的所有路径点，文件名为该维度转换后的完整注册名。
-  例如，主世界的所有路径点存储在 `minecraft$overworld.json` 中。
+    | 服务端平台 | 路径点文件夹 |
+    | --- | --- |
+    | Fabric | `config/server_waypoint/waypoints/` |
+    | Forge 或 NeoForge | `defaultconfigs/server_waypoint/waypoints/` |
+    | Paper、Folia 或 Purpur | `plugins/ServerWaypoint/waypoints/` |
 
-## 服务端配置
-配置文件存储在 `<minecraft_root>\config\server_waypoint\config.json`。
+    如果目标文件已经存在，请手动将生成的 `locations` 列表合并到其 JSON 数组中；如果已有名为 `locations` 的列表，请使用其他列表名称。直接替换文件会删除其中现有的路径点列表。转换脚本不会合并文件，也会拒绝覆盖它自己已生成的文件。
+5. 启动服务器，运行 `/wp list` 查看导入的 `locations` 列表。`/wp reload` 不会重新加载路径点文件。
 
-部分对 `config.json` 的更改将在服务器重启后生效。
+无效条目和同一维度中的重复名称会被跳过，并输出提示。完成迁移前，请保留源文件并检查这些提示。
 
-- ### 默认每页数量 Default Page Limit
-  设置 `/wp list` 命令未指定 `limit` 时每页显示的路径点数量。有效范围为 `1-100`，默认值为 `10`。使用 `/wp reload` 后此设置即可生效。
+## 常用命令
 
-  ```json5
-  {
-    "defaultPageLimit": 10
-  }
-  ```
-- ### 默认导航方式 Default Navigation Methods
-  设置新会话在使用 `/wp navigate <dimension> <list> <waypoint>` 且未指定 `using` 时启用的一种或多种导航方式。该值必须是非空数组，其中可填写 `compass`、`map`、`bossbar`、`actionbar` 或 `text_display`。默认值为 `actionbar`。
+`/waypoint` 和 `/wp` 可以互换使用。大多数操作都可以通过 `/wp` 菜单完成。
 
-  ```json5
-  {
-    "defaultNavigationMethods": [
-      "actionbar"
-    ]
-  }
-  ```
-- ### 命令权限 Command Permission
-  修改执行命令所需的[原版权限等级](https://minecraft.wiki/w/Permission_level)。
-  
-  这将被 [LuckPerms](https://modrinth.com/plugin/luckperms) 设置的权限覆盖。
+| 命令 | 功能 |
+| --- | --- |
+| `/wp list` | 浏览路径点 |
+| `/wp add` | 在当前位置添加路径点 |
+| `/wp navigate` | 查看导航目标并切换引导方式 |
+| `/wp upload` | 打开地图上传菜单；需要客户端模组 |
+| `/wp remote` | 启用跨服务器支持后，浏览已连接的服务器 |
+| `/wp help` | 查看命令帮助和示例 |
 
-  上传默认需要等级 2。具有破坏性的 `force local delete` 需要等级 4，也可通过 `server_waypoint.command.upload.delete` 单独授予；普通上传使用 `server_waypoint.command.upload`。
-  
-  默认值：
-  ```json5
-  {
-    "CommandPermission": {
-      // /wp add
-      "add": 0,
-      // /wp edit
-      "edit": 0,
-      // /wp remove
-      "remove": 0,
-      // /wp navigate
-      "navigate": 0,
-      // /wp tp
-      "tp": 2,
-      // /wp reload
-      "reload": 2,
-      // /wp upload xaero
-      "upload": 2,
-      // /wp upload xaero force local delete
-      "uploadDelete": 4
-    }
-  }
-- ### 功能 Features
-  - #### addWaypointFromChatSharing
-    默认值：`true`
-    
-    提示用户添加他们在聊天中分享的路径点。需要`/wp add`权限。
-    
-    示例：
-    ```json5
-     {
-       "Features": {
-         "addWaypointFromChatSharing": true
-       }
-     }
-     ```
-  - #### sendXaerosWorldId
-    默认值：`true`
-    
-    向客户端发送数据包，以帮助 Xaero 地图模组识别服务器。
+完整命令格式请参阅[命令参考（英文）](docs/tips/server-guide.md#commands)。
 
-    **如果在[Leaves](https://leavesmc.org/)服务端上启用了 `xaero-map-protocol` 或其他插件/模组提供了类似功能，则应将此项设置为 `false`。**
-    Example:
-    ```json5
-     {
-       "Features": {
-         "sendXaerosWorldId": true
-       }
-     }
-     ```
+## 服务器管理员指南
 
-## 客户端配置
-- #### 启用路径点渲染
-  默认值：`true`
-- #### 路径点缩放比例（百分比）
-  默认值：`100`
-- #### 路径点垂直偏移（百分比）
-  默认值：`0`
-- #### 路径点背景透明度
-  默认值：`128`
-- #### 局部路径点渲染视距（区块）
-  默认值：`12`
-- #### 自动同步至Xaero的小地图模组
-  默认值：`true`
-  
-  需要安装Xaero的小地图模组。服务端管理的 Xaero 路径点集合使用内部 `sw␟` 前缀，因此自动同步仅更新这些集合并保留个人集合；上传时会将这些管理名称映射回服务端的列表和路径点名称。
-- #### 手动同步至Xaero的小地图模组
-  默认值：`无`
+默认设置允许玩家添加、编辑、删除路径点以及使用导航。传送和上传默认需要管理员级别的权限；通过上传删除服务器路径点需要单独授予更高的权限。你可以在 `config.json` 中或通过受支持的权限管理工具修改权限。[LuckPerms](https://modrinth.com/plugin/luckperms) 是 Fabric 和 Paper 上的可选依赖；Forge 和 NeoForge 使用配置中的权限等级。
 
-  手动触发，需要安装Xaero的小地图模组。
-  
-  此操作将替换Xaero的小地图中所有与服务器列表同名的路径点集合。
-  - 保留的内容：
-  名称唯一、且在服务器上不存在的集合。
-  - 丢失的内容：
-  您在与服务器同名的集合中添加的所有路径点。您自行创建的、但恰好与服务器列表重名的集合。
+| 服务端平台 | 设置文件 |
+| --- | --- |
+| Fabric | `config/server_waypoint/config.json` |
+| Forge 或 NeoForge | `defaultconfigs/server_waypoint/config.json` |
+| Paper、Folia 或 Purpur | `plugins/ServerWaypoint/config.json` |
+
+首次启动时会生成这些文件。修改普通设置或自定义翻译后，请运行 `/wp reload`。跨服务器设置需要重启才能生效。权限、备份和需要重启的设置请参阅[服务端参考（英文）](docs/tips/server-guide.md#server-configurations)。
+
+### 跨服务器传送配置
+
+跨服务器路径点是可选功能，且 **默认关闭**。需要 Velocity、至少两个安装了 Server Waypoint 的独立服务器，以及各端相互匹配的版本。Velocity 插件需要 **Java 25**。玩家无需客户端模组即可使用远程聊天命令。
+
+请按照[分步配置指南（英文）](docs/tips/server-guide.md#cross-server-teleport-setup)连接服务器。指南涵盖同一台机器上的配置，以及不同机器之间的加密连接。[管理员指南（英文）](docs/features/cross-server/cross-server-admin.md)介绍了权限和故障排查。
+
+## 语言与帮助
+
+即使没有安装客户端模组，消息也会按每位玩家的 Minecraft 语言设置显示。内置语言包括英语、简体中文、繁体中文、香港中文、西班牙语和希伯来语。部分消息会回退为英语。
+
+4.0.0 的许多翻译由 AI 生成，可能存在错误。早期社区译者因过去的贡献而获得署名，不对这些错误负责。详情请参阅[翻译致谢与审核状态（英文）](TRANSLATOR_CREDITS.md)，也欢迎在 [Crowdin](https://crowdin.com/project/server-waypoint) 上帮助翻译。
+
+- [Discord](https://discord.com/invite/tKtSSYDkHx) — 提问和寻求社区帮助。
+- [GitHub issues](https://github.com/2676959/server_waypoint/issues) — 报告问题时，请提供 Minecraft 版本、平台和 Server Waypoint 版本。
+- [服务器配置与命令参考（英文）](docs/tips/server-guide.md) — 面向管理员的详细说明。
+- [开发者文档（英文）](docs/README.md) — 功能规格与验证记录。

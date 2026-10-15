@@ -17,9 +17,8 @@ public final class WaypointListDisplayModel {
 
     public static Display build(WaypointQueryEngine.QueryResult result, boolean requestedGroupByLists) {
         WaypointSorting.SortMode sortMode = result.query().sortMode();
-        boolean groupByLists = sortMode == WaypointSorting.SortMode.DEFAULT || requestedGroupByLists;
         List<DisplayList> lists = createDisplayLists(result, sortMode);
-        if (groupByLists) {
+        if (requestedGroupByLists) {
             return new Display(true, Collections.unmodifiableList(lists), List.of());
         }
 

@@ -2,6 +2,7 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.gui.layout.Expandable;
+import _959.server_waypoint.common.client.gui.layout.VerticalAlignment;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeColors;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import java.util.List;
@@ -18,7 +19,7 @@ import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.pu
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.scale;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.translate;
 
-public class ScalableText extends ShiftableWidget implements Expandable {
+public class ScalableText extends ShiftableWidget implements Expandable, VerticalAlignment {
     private final Font textRenderer;
     private Component text;
     private float scale;
@@ -93,6 +94,25 @@ public class ScalableText extends ShiftableWidget implements Expandable {
     public int getHeight() {
         int lineCount = this.maxWidth == -1 ? 1 : Math.max(1, this.warpLines.size());
         return Math.round(lineCount * this.textRenderer.lineHeight * this.scale);
+    }
+
+    @Override
+    public float getVerticalAlignmentCenter() {
+        // The font's line box includes two trailing pixels below its glyphs.
+        int lineCount = this.maxWidth == -1 ? 1 : Math.max(1, this.warpLines.size());
+        return (lineCount * this.textRenderer.lineHeight - 2) * this.scale / 2.0F;
+    }
+
+    /** The width of the widest wrapped line, scaled like {@link #getWidth()}; the whole text without a maximum width, and 0 with no lines. */
+    public int getTextWidth() {
+        if (this.maxWidth == -1) {
+            return Math.round(this.textRenderer.width(this.text) * this.scale);
+        }
+        int widest = 0;
+        for (FormattedCharSequence line : this.warpLines) {
+            widest = Math.max(widest, this.textRenderer.width(line));
+        }
+        return Math.round(widest * this.scale);
     }
 
     public void setText(Component text) {

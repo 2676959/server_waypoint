@@ -15,5 +15,16 @@ public class WaypointSearchBarWidget extends TranslucentTextField {
         this.searchQueryConsumer = Objects.requireNonNull(searchQueryConsumer);
         this.setMaxLength(64);
         this.setResponder(this.searchQueryConsumer);
+        // The themed placeholder, not vanilla's fixed dark gray hint, which is unreadable on the bare panel.
+        this.setPlaceholder(() -> Component.translatable("waypoint.search.hint"));
+    }
+
+    /**
+     * The manager's list panel behind the search field already paints a fill, so at rest the field
+     * paints none of its own; a second fill would stack on the panel. Hover and the disabled look still fill.
+     */
+    @Override
+    protected int surfaceColor() {
+        return WidgetThemeState.controlBackground(this.active, isHovered(), false);
     }
 }

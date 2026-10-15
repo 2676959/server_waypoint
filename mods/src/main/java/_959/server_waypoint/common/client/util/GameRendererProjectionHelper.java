@@ -4,14 +4,18 @@ package _959.server_waypoint.common.client.util;
 import _959.server_waypoint.mixin.GameRendererAccessor;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.DeltaTracker;
+//? if < 26.3 {
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.effect.MobEffects;
+//?} else {
+/*import net.minecraft.client.renderer.state.level.PlayerRenderState;
+*///?}
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.state.GameRenderState;
 import net.minecraft.client.renderer.state.OptionsRenderState;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.util.Mth;
-import net.minecraft.world.effect.MobEffects;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 //?}
@@ -35,22 +39,32 @@ public final class GameRendererProjectionHelper {
         }
 
         projectionMatrix.mul(bobStack.last().pose());
+        float screenEffectScale = optionsState.screenEffectScale;
+        //? if >= 26.3 {
+        /*PlayerRenderState playerState = gameRenderState.levelRenderState.playerRenderState;
+        float portalIntensity = playerState.portalEffectIntensity;
+        float nauseaIntensity = playerState.nauseaEffectIntensity;
+        *///?} else {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) {
             return projectionMatrix;
         }
 
         float worldPartialTicks = deltaTracker.getGameTimeDeltaPartialTick(false);
-        float screenEffectScale = optionsState.screenEffectScale;
         float portalIntensity = Mth.lerp(worldPartialTicks, player.oPortalEffectIntensity, player.portalEffectIntensity);
         float nauseaIntensity = player.getEffectBlendFactor(MobEffects.NAUSEA, worldPartialTicks);
+        //?}
         float spinningEffectIntensity = Math.max(portalIntensity, nauseaIntensity) * screenEffectScale * screenEffectScale;
         if (spinningEffectIntensity > 0.0F) {
             float skew = 5.0F / (spinningEffectIntensity * spinningEffectIntensity + 5.0F) - spinningEffectIntensity * 0.04F;
             skew *= skew;
             Vector3f axis = new Vector3f(0.0F, Mth.SQRT_OF_TWO / 2.0F, Mth.SQRT_OF_TWO / 2.0F);
+            //? if >= 26.3 {
+            /*float angle = playerState.spinningEffectAngle * ((float) Math.PI / 180F);
+            *///?} else {
             float angle = (accessor.serverWaypoint$getSpinningEffectTime() + worldPartialTicks * accessor.serverWaypoint$getSpinningEffectSpeed())
                     * ((float) Math.PI / 180F);
+            //?}
             projectionMatrix.rotate(angle, axis);
             projectionMatrix.scale(1.0F / skew, 1.0F, 1.0F);
             projectionMatrix.rotate(-angle, axis);

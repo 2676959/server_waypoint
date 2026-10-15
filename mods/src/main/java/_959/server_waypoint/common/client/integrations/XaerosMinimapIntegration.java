@@ -19,7 +19,22 @@ public final class XaerosMinimapIntegration implements MapModIntegration {
 
     @Override
     public boolean isEnabled(ClientConfig clientConfig) {
-        return clientConfig.isAutoSyncToXaerosMinimap() && WaypointClientMod.isXaerosMinimapReady;
+        return clientConfig.isAutoSyncToXaerosMinimap() && this.isReady();
+    }
+
+    @Override
+    public boolean isInstalled() {
+        return ClientConfig.isXaerosMinimapLoaded;
+    }
+
+    @Override
+    public boolean isReady() {
+        return WaypointClientMod.isXaerosMinimapReady;
+    }
+
+    @Override
+    public void syncAll(WaypointClientMod waypointClientMod) {
+        XaerosMinimapWaypointHelper.replaceAll(waypointClientMod);
     }
 
     @Override

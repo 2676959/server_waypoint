@@ -1,7 +1,7 @@
 package _959.server_waypoint.mixin;
 
 import _959.server_waypoint.common.network.ModMessageSender;
-import _959.server_waypoint.core.network.buffer.XaerosWorldIdBuffer;
+import _959.server_waypoint.common.network.XaerosWorldIdBuffer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
@@ -15,7 +15,7 @@ import static _959.server_waypoint.core.WaypointServerCore.getWorldId;
 
 @Mixin(PlayerList.class)
 public class PlayerManagerMixin {
-    @Inject(method = "sendLevelInfo", at = @At(value = "TAIL")/*? if >= 26 {*/, remap = false/*?}*/)
+    @Inject(method = "sendLevelInfo", at = @At(value = "HEAD")/*? if >= 26 {*/, remap = false/*?}*/)
     private void onSendWorldInfo(ServerPlayer player, ServerLevel world, CallbackInfo ci) {
         if (CONFIG.Features().sendXaerosWorldId()) {
             ModMessageSender.getInstance().sendPlayerPacket(player, new XaerosWorldIdBuffer(getWorldId()));

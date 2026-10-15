@@ -5,11 +5,12 @@ import _959.server_waypoint.common.client.gui.api.ToggleButtonCallback;
 import _959.server_waypoint.common.client.gui.layout.AnchorMode;
 import _959.server_waypoint.common.client.gui.layout.Expandable;
 import _959.server_waypoint.common.client.gui.layout.Padding;
+import _959.server_waypoint.common.client.gui.layout.VerticalAlignment;
 import _959.server_waypoint.common.client.gui.layout.VisualBounds;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 
-import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.drawText;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.drawScaledText;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
 import static _959.server_waypoint.common.client.gui.screens.MovementAllowedScreen.centered;
 
@@ -21,7 +22,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 
-public class ToggleButton extends ShiftableClickableWidget implements Expandable, Padding {
+public class ToggleButton extends ShiftableButtonWidget implements Expandable, Padding, VerticalAlignment {
     private static final int DEFAULT_Y_OFFSET = -1;
     private static final VisualBounds VISUAL_BOUNDS = new VisualBounds(0, 1, 0, -1);
     static final int OUTLINE_LEFT_PADDING = 1;
@@ -33,11 +34,21 @@ public class ToggleButton extends ShiftableClickableWidget implements Expandable
     private int anchorX;
     private int anchorY;
     private boolean state;
+    private float textScale = 1.0F;
+
+    /** Changes the label scale; the caller owns the toggle's dimensions. */
+    public void setTextScale(float textScale) {
+        this.textScale = textScale;
+    }
     private final Component state0Text;
     private final Component state1Text;
     private final IntSupplier state0Color;
     private final IntSupplier state1Color;
 
+    /**
+     * A toggle whose two state fills are fixed ARGB colors, used as given: they never follow the theme.
+     * Pass the alpha you want, because the toggle paints this one layer and nothing under it.
+     */
     public ToggleButton(int x, int y, int width, int height, Component state0Text,
                         Component state1Text, int state0color, int state1color,
                         ToggleButtonCallback callback) {
@@ -96,13 +107,13 @@ public class ToggleButton extends ShiftableClickableWidget implements Expandable
         }
     }
 
-    private static IntSupplier fixedStateColor(int color) {
-        int translucentColor = 0x99000000 | (0x00FFFFFF & color);
-        return () -> translucentColor;
+    /** A state fill that never follows the theme: the ARGB value is used as given. */
+    static IntSupplier fixedStateColor(int color) {
+        return () -> color;
     }
 
     @Override
-    public void onClick(double mouseX, double mouseY) {
+    protected void onPress() {
         this.state = !this.state;
         this.callback.onToggle(this.state);
     }
@@ -174,6 +185,12 @@ public class ToggleButton extends ShiftableClickableWidget implements Expandable
     }
 
     @Override
+    public float getVerticalAlignmentCenter() {
+        return VISUAL_BOUNDS.topPadding() + centered(this.height, Math.round(this.textRenderer.lineHeight * this.textScale))
+                + (this.textRenderer.lineHeight - 2) * this.textScale / 2.0F;
+    }
+
+    @Override
     public void
     //$ render_widget_method_swap
     extractWidgetRenderState
@@ -188,9 +205,10 @@ public class ToggleButton extends ShiftableClickableWidget implements Expandable
         renderOutline(context, x, fixedY, width, height, WidgetThemeState.border(this.active, isFocused(), isHovered()));
         Component text = this.state ? state1Text : state0Text;
         int textWidth = textRenderer.width(text);
-        int centerX = centered(this.width, textWidth);
-        int centerY = centered(this.height, textRenderer.lineHeight);
-        drawText(context, textRenderer, text, x + centerX, y + centerY, WidgetThemeState.textOnAccent(this.active), true);
+        int centerX = centered(this.width, Math.round(textWidth * this.textScale));
+        int centerY = centered(this.height, Math.round(textRenderer.lineHeight * this.textScale));
+        drawScaledText(context, textRenderer, text, x + centerX, y + centerY,
+                WidgetThemeState.textOnAccent(this.active), this.textScale);
     }
 
     @Override

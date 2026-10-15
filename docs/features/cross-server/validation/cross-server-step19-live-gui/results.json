@@ -1,0 +1,50 @@
+{
+  "date": "2026-09-10",
+  "result": "PASS",
+  "minecraft": "26.2",
+  "client": "Fabric Loader 0.19.5, Fabric API 0.152.1+26.2, protocol 11",
+  "backends": "Paper 26.2 and Fabric 26.2",
+  "proxy": "Velocity 4.1.1 build 24",
+  "assertions": [
+    "Real protocol-11 synchronization",
+    "Native click from local manager to remote browser",
+    "Remote backend adds Test/Added while browser stays open",
+    "Actual network catalog replacement contains Added",
+    "Native click selects exact b/minecraft:overworld/Test/Added",
+    "Native teleport click opens confirmation modal",
+    "Native Yes click issues production teleport request",
+    "Proxy transfer and fresh client synchronization at (45.5,80,30.5)",
+    "Client exits cleanly after success"
+  ],
+  "limitations": [
+    "LWJGL stubs and dummy assets: no screenshot or visual appearance approval",
+    "Offline identity, forwarding NONE, plaintext loopback coordinator transport",
+    "Probe opens initial local manager programmatically, then uses actual screen mouse dispatch; it never injects catalogs or network state"
+  ],
+  "logs": {
+    "step19-gui-client-ready.log": {
+      "rawSha256": "fb98775ea6d7ae8a87c0d0db8ae33a9735df6e32bb93e36629962977bebf31a9",
+      "archivedSha256": "cfa223b7719d4c9b15737a6c16d51622b81e82cbe9d256903a46e36cec689051"
+    },
+    "a-live.log": {
+      "rawSha256": "c41c49b0a88706cad81684a5b86f089c44a08a401a558e8d7d6e854734e31794",
+      "archivedSha256": "7ab9c4dfc95c1606760b84c6900e34bb8eaecc57638b4580a0f4518f22f55955"
+    },
+    "b-live.log": {
+      "rawSha256": "413a371332ff6ed54b6f08d9ef16d7bcb19f35cd68aac15be14f46ba1f3515e7",
+      "archivedSha256": "895777ad3afd1ad62b06f8725d2a21f6084d29d3e15068d6284c92e87d2f0be6"
+    },
+    "proxy-live.log": {
+      "rawSha256": "247b11977f86e882f88dfd126c213c4ade6148e5b6a9a23bd75f68ef148bf170",
+      "archivedSha256": "d30bf760d2d79381b1de0049e927ee6914124380cdb27bbd98a625dc5a3d5c61"
+    }
+  },
+  "artifacts": {
+    "fabric-api-0.152.1+26.2.jar": "1083ce79231f9d358d7b172dd43553234e2f3834993a3ae42a1ec976af5ce418",
+    "fabric-permissions-api-0.7.0.jar": "444c8752bf3fc40a452074106fd02d3341b7d350ff006254f59ea1fd17f1272b",
+    "live-remote-gui-probe.jar": "6cf402db9df12fe66660694835b9bc0c6b5e483ef60abf285177aef315e69522",
+    "server_waypoint-3.1.0-fabric-mc26.2.jar": "bb3f1e42ed7ca636eea608c7924b958eda2a39b8233f688194193523d8b0fbe1",
+    "server_waypoint-3.1.0-velocity.jar": "be67bf9998b72b3fb3cb87aa2d402cf944edd2b3dd9d72eed4ba2f830ddd865f"
+  },
+  "archiveNormalization": "Archived logs remove ANSI formatting where captured, console-only prompts and empty lines, expand tabs, normalize line endings and trim trailing whitespace; raw source hashes retain the original private evidence identity."
+}

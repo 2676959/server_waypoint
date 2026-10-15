@@ -1,6 +1,10 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
+import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
+import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
+import _959.server_waypoint.common.client.gui.render.WidgetThemes;
+import com.mojang.blaze3d.platform.InputConstants;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -60,7 +64,7 @@ class TreeViewWidgetTest {
         TestTreeView tree = new TestTreeView(10);
         tree.updateRoots(List.of(root));
 
-        boolean handled = tree.mouseClicked(5, 5, 0);
+        boolean handled = tree.mouseClicked(5, 5, InputConstants.MOUSE_BUTTON_LEFT);
 
         assertTrue(handled);
         assertFalse(root.expanded);
@@ -85,6 +89,70 @@ class TreeViewWidgetTest {
         assertEquals(5, range.endRow());
     }
 
+    @Test
+    void aTreeOnItsOwnPaintsThePanelFill() {
+        // The theme editor's variable list stands on no other panel, so it keeps the fill that trees
+        // paint by default. Only a tree on a panel that already paints it overrides backgroundColor().
+        try {
+            WidgetThemeManager.setTheme(WidgetThemes.CLASSIC.withColor(WidgetThemeVariable.PANEL_BACKGROUND, 0x81234567));
+
+            assertEquals(0x81234567, new TestTreeView(10).backgroundColor());
+        } finally {
+            WidgetThemeManager.resetTheme();
+        }
+    }
+
+    @Test
+    void scrollbarShowsOverAllPanelPaddingButNotOutside() {
+        TestTreeView tree = overflowingTree();
+        for (int[] point : new int[][] {{-3, 20}, {102, 20}, {20, -3}, {20, 62}, {20, 20}}) {
+            tree.active = false;
+            tree.scrollbarOpacity(0, 0, 0);
+            tree.active = true;
+            assertEquals(0, tree.scrollbarOpacity(point[0], point[1], 0));
+            assertEquals(1, tree.scrollbarOpacity(point[0], point[1], 150_000_000L));
+        }
+        tree.active = false;
+        tree.scrollbarOpacity(0, 0, 0);
+        tree.active = true;
+        assertEquals(0, tree.scrollbarOpacity(-5, 20, 0));
+        assertEquals(0, tree.scrollbarOpacity(-5, 20, 1_000_000_000L));
+    }
+
+    @Test
+    void disablingImmediatelyHidesAnAlreadyVisibleScrollbar() {
+        TestTreeView tree = overflowingTree();
+        tree.scrollbarOpacity(20, 20, 0);
+        assertEquals(1, tree.scrollbarOpacity(20, 20, 150_000_000L));
+        tree.active = false;
+        assertEquals(0, tree.scrollbarOpacity(20, 20, 200_000_000L));
+    }
+
+    @Test
+    void draggingKeepsScrollbarVisibleOutsideUntilRelease() {
+        TestTreeView tree = overflowingTree();
+        tree.scrollbarOpacity(20, 20, 0);
+        assertTrue(tree.mouseClicked(99, 20, InputConstants.MOUSE_BUTTON_LEFT));
+        assertEquals(1, tree.scrollbarOpacity(200, 200, 150_000_000L));
+        assertEquals(1, tree.scrollbarOpacity(200, 200, 1_000_000_000L));
+        tree.mouseReleased(200, 200, InputConstants.MOUSE_BUTTON_LEFT);
+        assertEquals(1, tree.scrollbarOpacity(200, 200, 1_000_000_000L));
+        assertEquals(0, tree.scrollbarOpacity(200, 200, 1_800_000_000L));
+    }
+
+    @Test
+    void nonOverflowingTreeHasNoScrollbar() {
+        TestTreeView tree = new TestTreeView(20);
+        tree.scrollbarOpacity(20, 20, 0);
+        assertEquals(0, tree.scrollbarOpacity(20, 20, 1_000_000_000L));
+    }
+
+    private static TestTreeView overflowingTree() {
+        TestTreeView tree = new TestTreeView(20);
+        tree.updateRoots(List.of(new Node("a"), new Node("b"), new Node("c"), new Node("d")));
+        return tree;
+    }
+
     private static void assertRow(TestTreeView tree, int index, Node node, int depth) {
         TreeViewWidget.TreeEntry<Node> entry = tree.visibleEntry(index);
         assertEquals(node, entry.value());
@@ -94,7 +162,10 @@ class TreeViewWidgetTest {
 
     private static final class TestTreeView extends TreeViewWidget<Node> {
         private TestTreeView(int rowHeight) {
-            super(0, 0, 100, 60, rowHeight, Component.literal("test"));
+            super(0, 0, 100, 60, rowHeight, Component.literal("test"),
+                    4, 4, 4, 4,
+                    _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.PANEL_BACKGROUND,
+                    _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.BORDER, false);
         }
 
         private int visibleRowCount() {

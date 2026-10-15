@@ -4,7 +4,6 @@ package _959.server_waypoint.common.client.gui.widgets;
 import _959.server_waypoint.common.client.gui.api.ColorPickerCallback;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.network.chat.Component;
 
 public class RGBColorPicker extends Abstract3ChannelColorPicker<RGBColorPicker.RGBChannelSlider> {
@@ -17,7 +16,7 @@ public class RGBColorPicker extends Abstract3ChannelColorPicker<RGBColorPicker.R
     }
 
     @Override
-    public void onChannel0Update() {
+    protected void onChannel0Update() {
         int color = getColor();
         this.slider1.setStartColor(color & 0xFFFF00FF);
         this.slider1.setEndColor(color | 0xFF00FF00);
@@ -26,7 +25,7 @@ public class RGBColorPicker extends Abstract3ChannelColorPicker<RGBColorPicker.R
     }
 
     @Override
-    public void onChannel1Update() {
+    protected void onChannel1Update() {
         int color = getColor();
         this.slider0.setStartColor(color & 0xFF00FFFF);
         this.slider0.setEndColor(color | 0xFFFF0000);
@@ -35,7 +34,7 @@ public class RGBColorPicker extends Abstract3ChannelColorPicker<RGBColorPicker.R
     }
 
     @Override
-    public void onChannel2Update() {
+    protected void onChannel2Update() {
         int color = getColor();
         this.slider0.setStartColor(color & 0xFF00FFFF);
         this.slider0.setEndColor(color | 0xFFFF0000);
@@ -64,7 +63,7 @@ public class RGBColorPicker extends Abstract3ChannelColorPicker<RGBColorPicker.R
         this.slider2.setSliderLevel((rgb & 0x000000FF));
     }
 
-    public static class RGBChannelSlider extends AbstractColorBgSlider implements Renderable {
+    public static class RGBChannelSlider extends Abstract3ChannelColorPicker.ColorGradientSlider {
         public RGBChannelSlider(int x, int y, int width, int height, int startColor, int endColor) {
             super(x, y, width, height, 255);
             this.setStartColor(startColor);

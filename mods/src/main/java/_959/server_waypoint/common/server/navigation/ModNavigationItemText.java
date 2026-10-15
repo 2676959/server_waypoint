@@ -23,7 +23,7 @@ final class ModNavigationItemText {
     }
 
     static void apply(ItemStack item, NavigationTarget target) {
-        Component name = TextHelper.toMinecraft(NavigationDisplayText.buildItemName(target));
+        Component name = TextHelper.toMinecraft(NavigationDisplayText.buildItemTooltipName(target));
         List<Component> lore = NavigationDisplayText.buildItemLore(target).stream()
                 .map(TextHelper::toMinecraft)
                 .toList();

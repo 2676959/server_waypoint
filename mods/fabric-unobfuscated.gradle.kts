@@ -11,6 +11,7 @@ val targetJavaVersion = 25
 val mcVersionRange: String by project
 val mod_id: String by project
 val mod_name: String by project
+val mod_description: String by project
 val mod_version: String by project
 val maven_group: String by project
 
@@ -26,6 +27,7 @@ loom {
 
 stonecutter {
     constants.match(loader, "fabric", "neoforge", "forge")
+    constants.put("voxelmap", project.hasProperty("voxelmap_fabric"))
     val usesTwentySixApi = eval(current.version, ">=26")
     val usesResourceLocation = eval(current.version, "<1.21.11")
 
@@ -90,6 +92,7 @@ dependencies {
     val xaeros_minimap_fabric: String by project
     val xaeros_world_map_fabric: String by project
     val voxelmap_fabric: String by project
+    val modmenu: String by project
 
     implementation("net.fabricmc:fabric-loader:$fabric_loader")
     implementation("net.fabricmc.fabric-api:fabric-api:$fabric_api")
@@ -110,6 +113,9 @@ dependencies {
     // Use Modrinth version IDs because some VoxelMap version numbers collide with Forge uploads.
     implementation("maven.modrinth:voxelmap-updated:$voxelmap_fabric")
 
+    // Mod Menu loads ServerWaypointModMenu only when it's installed, so it's needed only to compile.
+    compileOnly("maven.modrinth:modmenu:$modmenu")
+
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
@@ -117,6 +123,7 @@ dependencies {
 tasks.processResources {
     inputs.property("id", mod_id)
     inputs.property("name", mod_name)
+    inputs.property("description", mod_description)
     inputs.property("version", mod_version)
     inputs.property("java_version", targetJavaVersion)
 
@@ -141,6 +148,7 @@ tasks.processResources {
         expand(mapOf(
             "id" to mod_id,
             "name" to mod_name,
+            "description" to mod_description,
             "version" to mod_version,
             "fabricloader_dependency" to ">=$fabric_loader",
             "minecraft_dependency" to mcVersionFabric,
@@ -173,8 +181,13 @@ tasks.jar {
 }
 
 tasks.shadowJar {
+    relocate("com.southernstorm.noise", "_959.server_waypoint.internal.noisekk")
+    dependencies {
+        include(dependency("org.signal.forks:noise-java:.*"))
+    }
     dependencies {
         include(project(":common"))
+        include(project(":cross-server"))
         include(dependency("net.kyori:.*"))
         exclude("mappings/*")
     }
@@ -215,3 +228,5 @@ tasks.register<Copy>("buildAndCollect") {
 fun DependencyHandlerScope.addAdventureSerializerDependency() {
     implementation("net.kyori:adventure-text-serializer-gson:4.25.0")
 }
+
+apply(from = rootProject.file("gradle/noise-packaging.gradle.kts"))

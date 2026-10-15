@@ -1,6 +1,6 @@
 # Server Waypoint
 
-[English](README.md) [中文](README_zh.md)
+[English](README.md) · [中文](README_zh.md)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](https://opensource.org/licenses/MIT)
 ![Modrinth Version](https://img.shields.io/modrinth/v/server_waypoint?style=flat-square&label=Version)
@@ -8,255 +8,155 @@
 [![Modrinth Downloads](https://img.shields.io/modrinth/dt/server_waypoint?style=flat-square&logo=modrinth&logoColor=%2300AF5C&label=Modrinth%20Downloads&color=%2300AF5C)](https://modrinth.com/plugin/server_waypoint)
 [![CurseForge Downloads](https://img.shields.io/curseforge/dt/1416929?style=flat-square&logo=curseforge&logoColor=%23F16436&label=CurseForge%20Downloads&color=%23F16436)](https://www.curseforge.com/minecraft/mc-mods/server-waypoint)
 
-[![Fabric](https://img.shields.io/badge/1.20.x%20%201.21.x%20%2026.1--26.2-555555?style=flat-square&label=Fabric&labelColor=dbb69b)](https://modrinth.com/plugin/server_waypoint/versions?l=fabric)
+[![Fabric](https://img.shields.io/badge/1.20.x%20%201.21.x%20%2026.1--26.3-555555?style=flat-square&label=Fabric&labelColor=dbb69b)](https://modrinth.com/plugin/server_waypoint/versions?l=fabric)
 [![Forge](https://img.shields.io/badge/1.20.x%20%201.21.x%20%2026.1--26.2-555555?style=flat-square&label=Forge&labelColor=959eef)](https://modrinth.com/plugin/server_waypoint/versions?l=forge)
-[![NeoForge](https://img.shields.io/badge/1.20.2--1.20.6%20%201.21.x%20%2026.1--26.2-555555?style=flat-square&label=NeoForge&labelColor=f99e6b)](https://modrinth.com/plugin/server_waypoint/versions?l=neoforge)
-[![Paper](https://img.shields.io/badge/1.21.x%20%2026.1--26.2-555555?style=flat-square&label=Paper&labelColor=eeaaaa)](https://modrinth.com/plugin/server_waypoint/versions?l=paper)
+[![NeoForge](https://img.shields.io/badge/1.20.2--1.20.6%20%201.21.x%20%2026.1--26.3-555555?style=flat-square&label=NeoForge&labelColor=f99e6b)](https://modrinth.com/plugin/server_waypoint/versions?l=neoforge)
+[![Paper](https://img.shields.io/badge/1.21.x%20%2026.1--26.3-555555?style=flat-square&label=Paper&labelColor=eeaaaa)](https://modrinth.com/plugin/server_waypoint/versions?l=paper)
+[![Velocity](https://img.shields.io/badge/1.20.x%20%201.21.x%20%2026.1--26.3-555555?style=flat-square&label=Velocity&labelColor=8ec9ea)](https://modrinth.com/plugin/server_waypoint/versions?l=velocity)
 
 [![discord-singular](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/social/discord-singular_vector.svg)](https://discord.com/invite/tKtSSYDkHx)
-[![crowdin](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/translate/crowdin_vector.svg)](https://crowdin.com/project/server-waypoint)
 
-Manage waypoints and sync them to other players' clients automatically. Compatible with Xaero's minimap.
+Save useful places, share them with other players and find your way back. Server Waypoint works on Fabric, Forge, NeoForge, Paper, Folia and Purpur. An optional Velocity plugin connects waypoints across servers.
 
-## Features
-- Syncing waypoints from the server automatically.
-- Customizable waypoints rendering. 
-- Allow players to manage waypoints by both GUI (need client installation) and commands (only need server installation).
-- Commands auto-completion.
-- Custom permission for `/wp <options>` commands. Compatible with [LuckPerms](https://modrinth.com/plugin/luckperms).
-- Support adding waypoint conveniently from Xaero's minimap waypoint chat sharing message without requiring client side installation.
+**Players can use commands, clickable chat and navigation without installing a client mod.** Install the client mod for a waypoint manager, in-world markers and map mod integration. You can also use it in singleplayer.
 
-## Dependencies
-Required:
-  - [Fabric API](https://modrinth.com/mod/fabric-api)
-  
-Optional:
-  - [LuckPerms](https://modrinth.com/plugin/luckperms)
-  - [Xaero's Minimap](https://modrinth.com/mod/xaeros-minimap)
+This guide covers **4.0.0**. Read the [changelog](CHANGELOG.md) for new features and upgrade notes.
 
-## Keybinds
-- Press `Right Shift` (default keybind) or use `/wp_gui` to open the waypoint manager screen in game.
-- In the waypoint manager screen, hover over a waypoint and press `T` to teleport (requires `/wp tp` command permission). 
-- In the waypoint manager screen, press `C` to open client configuration screen.
+## What you can do
 
-## Commands
-- `/wp add` adds a new waypoint. Identifiers must be unique within their list.
-  - `/wp add <dimension> <list-identifier>` adds a waypoint list.
-- `/wp download` download waypoints and add to Xaero's Minimap (will not work without client installation).
-- `/wp details list <dimension> <list-identifier>` and `/wp details waypoint <dimension> <list-identifier> <waypoint-identifier>` show every property and its available actions.
-- `/wp edit list ...` and `/wp edit waypoint ...` set one property at a time or clear an optional property. Run `/wp help edit` for the complete grammar.
-- `/wp upload <xaero|voxelmap>` imports waypoints from the selected map mod on the executing player’s client. See [Uploading from client map mods](#uploading-from-client-map-mods) for conflict, force, and delete behavior.
-- `/wp list` lists waypoints in the current dimension. Use `all`, a dimension, or a dimension plus list name to change the scope. Results are split using the server's configured page limit (10 by default), with clickable sorting and page controls.
-  - Add `search <query>` to filter by waypoint name.
-  - Add `sort <default|name|distance|color>` and, for non-default sorts, optionally `order <ascending|descending>` to sort the result.
-  - Add `page <number>` and/or `limit <1-100>` to choose a page or change its size. Options follow the order `search`, `sort`, `order`, `page`, `limit`; quote multi-word values and list names that match an option word.
-- `/wp reload` reload `config.json` and translation files in `/config/server_waypoint/lang`, feature `sendXaerosWorldId` requires restarting to take effect.
-- `/wp remove` removes a waypoint by identifier and returns a temporary, single-use restore action.
-  - `/wp remove <dimension> <list-identifier>` removes an empty waypoint list.
-- `/wp restore <token>` restores a recently removed waypoint while its temporary token remains valid.
-- `/wp tp` teleport the executor player to a waypoint
+- Keep shared waypoints in named lists, with colours, icons and descriptions.
+- Browse, add and edit waypoints through clickable chat or the client waypoint manager.
+- Navigate with a compass, map, boss bar, action bar or floating label.
+- Sync waypoints to Xaero's Minimap or supported VoxelMap builds, and upload your own map waypoints to the server.
+- Use Xaero's World Map menus to add or edit server waypoints.
+- Browse and teleport to waypoints on other servers when the administrator enables Velocity support.
 
-## Uploading from client map mods
+## Feature availability by Minecraft version
 
-Upload is initiated by the server but reads map data from the executing player’s client. The required `<source>` is `xaero` or `voxelmap`; the client must have both Server Waypoint and the selected map mod installed and ready. The server accepts only the dimensions and optional list/waypoint selected by the command.
+These ranges apply to the supported **4.0.0** builds. Always use the JAR for your Minecraft version and platform; a feature's range does not add support for versions without a matching build.
 
-In singleplayer (integrated-server mode), the host uses the same `/wp upload xaero` and `/wp upload voxelmap` commands. Waypoints are collected on the Minecraft client thread and passed directly to the server thread for validation and application, without upload request packets or chunked upload transport. This also applies to the host of a world opened to LAN; joining players still upload from their own clients over the network. Permissions, scope, conflict policies, and deletion rules remain the same.
+| Feature | Platform | Available Minecraft versions | Unavailable versions or limitations |
+| --- | --- | --- | --- |
+| Waypoint item icons in chat | Fabric, Forge, NeoForge, Paper/Folia/Purpur | 1.21.9 and later, within each platform's supported versions | Before 1.21.9, waypoints use text or initials. Only mapped vanilla item/block textures appear as chat icons; custom and VoxelMap icons use text or initials. |
+| Player heads in chat feedback | Fabric, Forge, NeoForge, Paper/Folia/Purpur | 1.21.9 and later, within each platform's supported versions | Before 1.21.9, feedback uses text without player heads. |
+| Text-display entity navigation (`text_display`, the floating label) | Fabric, Forge, NeoForge, Paper/Folia/Purpur | Every supported target: Fabric 1.20–26.3, Forge 1.20–26.2, NeoForge 1.20.2–26.3, Paper/Folia/Purpur 1.21–26.3 | No version exclusions within the supported targets. |
+| VoxelMap sync, upload and editing | Fabric client | Every supported Fabric version, 1.20–26.3 | Requires a matching VoxelMap-Updated build and the Server Waypoint client mod. |
+| VoxelMap sync, upload and editing | Forge client | 1.21.11, 26.1–26.1.2, 26.2 | Unavailable on supported Forge versions before 1.21.11. Requires VoxelMap-Updated and the Server Waypoint client mod. |
+| VoxelMap sync, upload and editing | NeoForge client | 1.21.2–1.21.4, 1.21.11, 26.1–26.1.2, 26.2, 26.3 | Unavailable on 1.20.2–1.21.1 and 1.21.5–1.21.10. Requires VoxelMap-Updated and the Server Waypoint client mod. |
 
-For Xaero, only normal, enabled, non-temporary waypoints are imported. Upload synchronizes the waypoint name, initials, coordinates, Xaero color, yaw, and local/global visibility. For VoxelMap, disabled and coordinate-highlight waypoints are skipped. Server-synced VoxelMap names are restored to their original list and waypoint identifiers; other VoxelMap waypoints are imported into a fixed `VoxelMap` list. VoxelMap coordinates are converted back from its dimension scale, while initials and yaw use empty/zero values and visibility is local. Server-only display names, keywords, and descriptions are preserved when an existing waypoint is updated.
+Chat icons, player heads and text-display navigation do not require the client mod. The waypoint manager, in-world client markers and Xaero integrations are available on every supported client-mod target; Xaero's World Map actions also require Xaero's Minimap. These client features can connect to a server running any supported backend, including Paper, Folia or Purpur.
 
-VoxelMap uploads use the active subworld. If a requested dimension's coordinate scale is unavailable, the entire export is aborted; visit that dimension before retrying. Uploads commit one dimension at a time. If a later dimension fails, earlier changes remain applied and synchronized, and the command reports a partial result.
+## Your first waypoint
 
-Every mode accepts the same optional scope:
+1. Join your server or open a singleplayer world, then run `/wp`.
+2. Use the chat buttons to browse waypoints or add one where you stand. If you have no waypoint list yet, create a list first. For example, in the Overworld:
 
-- No selector: every server dimension available to the command executor.
-- `<dimension>`: every map-mod waypoint in that dimension.
-- `<dimension> <list>`: one waypoint list (`VoxelMap` for local VoxelMap waypoints).
-- `<dimension> <list> <waypoint>`: one waypoint.
+    ```text
+    /wp add minecraft:overworld Public
+    /wp add 100 64 200 Public Home
+    ```
 
-### Normal upload / force server
+3. Run `/wp list`, choose **Home** and use its navigation button to find it. Teleport is available when you have permission.
+4. Use the waypoint's edit buttons to change its name, colour, description or icon. Removing a waypoint gives you a **Restore** link that works once within 10 minutes.
 
-`/wp upload <source> [<dimension> [<list> [<waypoint>]]]` and `/wp upload <source> force server [<dimension> [<list> [<waypoint>]]]` have identical behavior. Missing server waypoints are added. Matching waypoints are left unchanged. If the same name exists with different map-supported properties, the server version wins and the command reports a conflict. Nothing is deleted.
+Use quotes for names with spaces, such as `"Village square"`. Run `/wp help` whenever you need examples.
 
-### Force local
+## Use the client waypoint manager
 
-`/wp upload <source> force local [<dimension> [<list> [<waypoint>]]]` adds missing waypoints and replaces conflicting map-supported properties with the client values. Server-only display names, keywords, and descriptions are preserved. Nothing is deleted.
+With the client mod installed, press **Right Shift** or run `/wp_gui` to open the manager. You can change the keybind in Minecraft's Controls settings.
 
-### Force local delete
+Choose a dimension and select a waypoint to see its details. Search, sort or group the list, then add, edit, navigate or teleport using the buttons. Teleporting requires the server's permission.
 
-`/wp upload <source> force local delete [<dimension> [<list> [<waypoint>]]]` first applies `force local`, then mirrors the selected scope by deleting server data that is absent from the selected map mod:
+Press **C** in the manager to open client settings. Adjust marker size, range and opacity, choose a colour theme, or change map sync settings. Hover over a setting for help; use its reset button to restore the default. Fabric users can also open settings through [Mod Menu](https://modrinth.com/mod/modmenu), and Forge and NeoForge users through the Mods screen.
 
-- World scope removes absent waypoint sets and waypoints across all selected dimensions.
-- Dimension scope removes absent waypoint sets and waypoints in that dimension.
-- List scope removes absent waypoints from that list, or removes the server list if the map-mod list is absent.
-- Waypoint scope removes only the selected server waypoint if it is absent locally.
+When cross-server support is enabled, switch to **Remote server waypoints** and choose a server. You can browse and teleport to its shared waypoints; editing stays on the server that owns them.
 
-Skipped map-mod waypoints count as absent in `force local delete` and can therefore cause the corresponding server waypoint to be deleted. Use this mode only when the selected source scope is intended to be the authoritative copy.
+## Use a map mod
 
-Upload uses `server_waypoint.command.upload` (vanilla permission level 2 by default). The destructive delete mode additionally requires `server_waypoint.command.upload.delete` (level 4 by default).
+Map mods are optional and go on your client alongside Server Waypoint:
 
-### Identifiers and display names
+- [Xaero's Minimap](https://modrinth.com/mod/xaeros-minimap): shows shared waypoints and lets you upload your map waypoints.
+- [Xaero's World Map](https://modrinth.com/mod/xaeros-world-map): adds Server Waypoint actions to its right-click menus. Install Xaero's Minimap as well for this integration.
+- [VoxelMap-Updated](https://modrinth.com/mod/voxelmap-updated): syncs shared waypoints and supports uploads on the versions below.
 
-List and waypoint identifiers are exact lookup keys. Commands preserve them verbatim: they may be empty (`""`), contain whitespace when quoted, start with option-like text, or look like Minecraft JSON. Add commands create no display-name override and never parse an identifier as formatted text.
+| VoxelMap integration | Supported Minecraft versions in 4.0.0 |
+| --- | --- |
+| Fabric | Every supported Fabric target |
+| Forge | 1.21.11, 26.1–26.1.2, 26.2 |
+| NeoForge | 1.21.2–1.21.4, 1.21.11, 26.1–26.1.2, 26.2, 26.3 |
 
-Display names are optional presentation overrides edited separately with `/wp edit ... set display-name`. Clearing a display name restores the identifier fallback; setting it to an empty string creates an intentionally empty override. Command suggestions insert identifiers, while a display name may appear only as tooltip context.
+On multiplayer servers, automatic sync keeps shared waypoints up to date. Your personal map waypoints are kept separately. In singleplayer, opening a world does not automatically replace the map's saved waypoints; use **Sync now** in client settings when you want a full refresh. Synced waypoints can be edited through Server Waypoint's screens.
 
-## Server-side Translations
-Messages and command feedbacks sent by this mod will be automatically translated based on the language setting on the receiver's client. This works entirely on the server-side; players can see the translated message without client-side installation of this mod. Right now, the mod comes with translations for English and Simplified Chinese. If you’re interested, you can help out by adding translations on [Crowdin](https://crowdin.com/project/server-waypoint)!
+**Xaero's default waypoint set:** `gui.xaero_default` is the translation key and internal name of Xaero's Minimap's **Default** set. Uploading that set creates a Server Waypoint list named `gui.xaero_default`. In 4.0.0, syncing this list back creates a separate server-owned set; it does not merge into your personal Default set.
 
-- ### Add translations
-  Place the lang files under the directory: `<config-path>/server_waypoint/lang/`. This mod will load them on server starting, use `/wp reload` if the server is already running.
-  
-- ### Create a lang file
-  Follow the format used in [`en_us.json`](./common/src/main/resources/lang/en_us.json), [`zh_cn.json`](./common/src/main/resources/lang/zh_cn.json).
+To copy your map waypoints to the server, run `/wp upload xaero` or `/wp upload voxelmap`. Upload needs permission from the administrator. A normal upload adds missing waypoints and keeps the server's version when there is a conflict. See the [upload guide](docs/tips/server-guide.md#uploading-from-client-map-mods) before using overwrite or delete options.
 
-  Name the lang file with a [valid language code](https://minecraft.wiki/w/Language#Languages).
+## Migrate waypoints from MCDR plugins
 
-- ### Translation order
-  If the translation you’ve added uses the same language code as the built-in language, this mod will try to find the translation key in the file you added first. If that key isn’t there, it’ll fall back to the built-in translation. So, if you’d like to use your own translation version, you can easily do that by adding your own file and overriding the built-in translation.
+If you use the MCDReforged (MCDR) plugins **Locations** or **LocationMarker**, you can convert their `locations.json` with [`locations2waypoints.py`](locations2waypoints.py). You need Python 3; no extra packages are required.
 
-Community translator credits and credit pull request guidelines are documented in [`TRANSLATOR_CREDITS.md`](./TRANSLATOR_CREDITS.md).
+1. Back up your plugin's `locations.json` and any existing Server Waypoint files, then stop the server.
+2. Download the script, open a terminal in its folder and run it with the path to your locations file:
 
-## Translation Credits
-Thank you to the community translators who help make Server Waypoint available to more players in more languages.
+    ```sh
+    python3 locations2waypoints.py "/path/to/locations.json"
+    ```
 
-- #### Hebrew
-  [hotspotty](https://discord.com/users/575744894593663006)
-- #### Spanish
-  shimonsolo
-- #### Traditional Chinese
-  Ymaomi
-- #### Traditional Chinese (Hong Kong)
-  Ymaomi
+    You can also run `python3 locations2waypoints.py` without an argument and enter the file path when prompted.
+3. Check the output for skipped entries. The script creates a `waypoints/` folder beside `locations.json`, with one JSON file per dimension, such as `minecraft$overworld.json`. Each file contains a list named `locations`. Names and descriptions are kept, coordinates are rounded down to block positions, and the waypoints are shared with all players.
+4. Copy the generated JSON files into your server's waypoint folder, relative to the server root:
 
-## Waypoints
-- #### Location
-  For a dedicated server:
-  
-  `<config-path>/server_waypoint/waypoints/`
+    | Server platform | Waypoint folder |
+    | --- | --- |
+    | Fabric | `config/server_waypoint/waypoints/` |
+    | Forge or NeoForge | `defaultconfigs/server_waypoint/waypoints/` |
+    | Paper, Folia or Purpur | `plugins/ServerWaypoint/waypoints/` |
 
-  For a single player world:
+    If a destination file already exists, merge the generated `locations` list into its JSON array manually, using a different list name if `locations` is already taken. Replacing the file would remove its existing waypoint lists. The converter does not merge files and refuses to overwrite its own existing output files.
+5. Start the server and run `/wp list` to find the imported `locations` lists. `/wp reload` does not reload waypoint files.
 
-  `<minecraft-root>/saves/<world-name>/server_waypoint/waypoints/`
-- #### File Format
-  All waypoints are saved in json files. Each json file contains all waypoints in one dimension and the filename is the converted full registry name of that dimension.
-  For example, all waypoints in the overworld is stored in `minecraft$overworld.json`.
+Invalid entries and duplicate names within the same dimension are skipped with a message. Keep your source file and review these messages before finishing the migration.
 
-## Server Configurations
-Fabric, Quilt:
+## Useful commands
 
-`<minecraft-root>/config/server_waypoint/config.json` 
+`/waypoint` and `/wp` are interchangeable. Most actions are available from the `/wp` menu.
 
-NeoForge, Forge:
+| Command | What it does |
+| --- | --- |
+| `/wp list` | Browse waypoints |
+| `/wp add` | Add a waypoint where you stand |
+| `/wp navigate` | View your navigation target and change guidance methods |
+| `/wp upload` | Open the map upload menu; requires the client mod |
+| `/wp remote` | Browse connected servers when cross-server support is enabled |
+| `/wp help` | Get command help and examples |
 
-`<minecraft-root>/defaultconfigs/server_waypoint/config.json`
+For full command syntax, read the [command reference](docs/tips/server-guide.md#commands).
 
-Paper, Purpur:
+## For server owners
 
-`<server-root>/plugins/ServerWaypoint/config.json`
+The default settings let players add, edit, remove and navigate to waypoints. Teleporting and uploading require operator-level permission by default; deleting server waypoints through an upload needs a separate, higher permission. Change these in `config.json` or with a supported permission provider. [LuckPerms](https://modrinth.com/plugin/luckperms) is optional on Fabric and Paper; Forge and NeoForge use the configured permission levels.
 
-Some changes made in `config.json` may take effects after server restarts.
+| Server platform | Settings file |
+| --- | --- |
+| Fabric | `config/server_waypoint/config.json` |
+| Forge or NeoForge | `defaultconfigs/server_waypoint/config.json` |
+| Paper, Folia or Purpur | `plugins/ServerWaypoint/config.json` |
 
-- ### Default Page Limit
-  Sets the number of waypoints shown on each `/wp list` page when the command does not include `limit`. Values are constrained to `1-100`, and the default is `10`. This setting takes effect after `/wp reload`.
+The files are created on first startup. Run `/wp reload` after changing ordinary settings or custom translations. Cross-server settings need a restart. Read the [server reference](docs/tips/server-guide.md#server-configurations) for permissions, backups and settings that require a restart.
 
-  ```json5
-  {
-    "defaultPageLimit": 10
-  }
-  ```
-- ### Default Navigation Methods
-  Sets one or more methods enabled when `/wp navigate <dimension> <list> <waypoint>` starts a new session without `using`. The value must be a non-empty array containing `compass`, `map`, `bossbar`, `actionbar`, or `text_display`. The default is `actionbar`.
+### Cross-server teleport setup
 
-  ```json5
-  {
-    "defaultNavigationMethods": [
-      "actionbar"
-    ]
-  }
-  ```
-- ### Command Permission
-  Changes the vanilla [permission level](https://minecraft.wiki/w/Permission_level) required to execute the command.
-  
-  This will be overridden by the permission set by [LuckPerms](https://modrinth.com/plugin/luckperms).
+Cross-server waypoints are optional and **disabled by default**. They require Velocity, at least two dedicated servers with Server Waypoint, and matching versions throughout. The Velocity plugin requires **Java 25**. Players can use remote chat commands without the client mod.
 
-  Upload defaults to level 2. The destructive `force local delete` mode requires level 4 and can be granted separately with `server_waypoint.command.upload.delete`; normal upload uses `server_waypoint.command.upload`.
-  
-  Default value:
-  ```json5
-  {
-    "CommandPermission": {
-      // /wp add
-      "add": 0,
-      // /wp edit
-      "edit": 0,
-      // /wp remove
-      "remove": 0,
-      // /wp navigate
-      "navigate": 0,
-      // /wp tp
-      "tp": 2,
-      // /wp reload
-      "reload": 2,
-      // /wp upload xaero
-      "upload": 2,
-      // /wp upload xaero force local delete
-      "uploadDelete": 4
-    }
-  }
-  ```
-- ### Features
-  - #### addWaypointFromChatSharing
-    Default value: `true`
-    
-    Prompts the user to add the waypoint they shared in chat. Requires `/wp add` permission.
-    
-    Example:
-    ```json5
-     {
-       "Features": {
-         "addWaypointFromChatSharing": true
-       }
-     }
-     ```
-  - #### sendXaerosWorldId
-    Default value: `true`
-    
-    Send world id to client to help Xaero's map mod recognize the server.
+Follow the [step-by-step setup guide](docs/tips/server-guide.md#cross-server-teleport-setup) to connect your servers. It covers a same-machine setup and encrypted connections between machines. The [administrator guide](docs/features/cross-server/cross-server-admin.md) covers permissions and troubleshooting.
 
-    **This should be set to `false` if `xaero-map-protocol` on the [Leaves](https://leavesmc.org/) server or some similar features provided by other plugin or mod is enabled.**
+## Languages and help
 
-    Example:
-    ```json5
-     {
-       "Features": {
-         "sendXaerosWorldId": true
-       }
-     }
-     ```
+Messages follow each player's Minecraft language setting, even without the client mod. Bundled languages include English, Simplified Chinese, Traditional Chinese, Hong Kong Chinese, Spanish and Hebrew. Some messages fall back to English.
 
-## Client Configurations
-- #### Enable Waypoint Rendering
-  Default value: `true`
-- #### Waypoint Rendering Scaling Factor (Percentage)
-  Default value: `100`
-- #### Waypoint Background Transparence
-  Default value: `128`
-- #### Waypoint Vertical Offset (Percentage)
-  Default value: `0`
-- #### Local Waypoint View Distance (Chunks)
-  Default value: `12`
-- #### Auto Sync to Xaero's Minimap
-  Default value: `true`
+Many 4.0.0 translations were generated by AI and may contain mistakes. Earlier community translators are credited for their past contributions and are not responsible for those errors. See [translation credits and review status](TRANSLATOR_CREDITS.md), or help translate on [Crowdin](https://crowdin.com/project/server-waypoint).
 
-  Requires Xaero's Minimap mod installed.
-  Server-managed Xaero waypoint sets use an internal `sw␟` prefix, so automatic sync updates only those sets and preserves personal Xaero waypoint sets. Upload maps these managed names back to their server list and waypoint names.
-- #### Manually Sync to Xaero's Minimap
-  Default value: `None`
-  
-  Triggered manually, requires Xaero's Minimap mod installed.
-  
-  This will replace any waypoint sets on Xaeros' Minimap that has the same name as a list on the server.
-  - What stays:
-  Waypoint sets with unique names that do not exist on the server.
-  - What is lost:
-  Any waypoints you added to these shared lists. Any list you created that happens to share a name with a server list.
+- [Discord](https://discord.com/invite/tKtSSYDkHx) — questions and community help.
+- [GitHub issues](https://github.com/2676959/server_waypoint/issues) — report a bug with your Minecraft version, platform and Server Waypoint version.
+- [Server setup and command reference](docs/tips/server-guide.md) — detailed instructions for administrators.
+- [Developer documentation](docs/README.md) — feature specifications and validation records.

@@ -1,0 +1,49 @@
+[
+    {
+        "list_name": "Bases",
+        "display_name": "Display Bases",
+        "n": 4,
+        "waypoints": [
+            {
+                "name": "map-fixture",
+                "display_name": "Fancy map-fixture",
+                "initials": "FX",
+                "pos": [
+                    31,
+                    76,
+                    -42
+                ],
+                "color": "#33AA55",
+                "yaw": 135,
+                "global": true,
+                "keywords": [
+                    "alpha",
+                    "beta"
+                ],
+                "description": "Preserve full metadata",
+                "icon": "minecraft:diamond"
+            },
+            {
+                "name": "voxel-fixture",
+                "display_name": "Fancy voxel-fixture",
+                "initials": "FX",
+                "pos": [
+                    31,
+                    75,
+                    -42
+                ],
+                "color": "#33AA55",
+                "yaw": 135,
+                "global": true,
+                "keywords": [
+                    "alpha",
+                    "beta"
+                ],
+                "description": "Preserve full metadata",
+                "icon": "minecraft:diamond"
+            }
+        ],
+        "show": true,
+        "expand": true
+    }
+]

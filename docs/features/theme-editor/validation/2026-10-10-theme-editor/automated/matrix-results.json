@@ -1,0 +1,162 @@
+{
+  "1.20.1-fabric": {
+    "compileJava": "UP-TO-DATE",
+    "compileTestJava": "UP-TO-DATE"
+  },
+  "1.20.1-forge": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "1.20.2-fabric": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "1.20.2-forge": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "1.20.2-neoforge": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "1.20.4-fabric": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "1.20.4-forge": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "1.20.4-neoforge": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "1.20.6-fabric": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "1.20.6-forge": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "1.20.6-neoforge": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "1.21-fabric": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "1.21-forge": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "1.21-neoforge": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "1.21.11-fabric": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "1.21.11-forge": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "1.21.11-neoforge": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "1.21.2-fabric": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "1.21.2-neoforge": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "1.21.3-fabric": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "1.21.3-forge": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "1.21.3-neoforge": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "1.21.5-fabric": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "1.21.5-forge": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "1.21.5-neoforge": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "1.21.6-fabric": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "1.21.6-forge": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "1.21.6-neoforge": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "1.21.7-neoforge": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "1.21.9-fabric": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "1.21.9-forge": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "1.21.9-neoforge": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "26.1.2-fabric": {
+    "compileJava": "UP-TO-DATE",
+    "compileTestJava": "UP-TO-DATE"
+  },
+  "26.1.2-forge": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "26.1.2-neoforge": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "26.2-fabric": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "26.2-forge": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "26.2-neoforge": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "26.3-fabric": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  },
+  "26.3-neoforge": {
+    "compileJava": "executed",
+    "compileTestJava": "executed"
+  }
+}

@@ -1,0 +1,1534 @@
+Starting org.bukkit.craftbukkit.Main
+[01:52:06 INFO]: [bootstrap] Running Java 25 (OpenJDK 64-Bit Server VM 25.0.3+9-LTS; Eclipse Adoptium Temurin-25.0.3+9) on Mac OS X 26.5 (aarch64)
+[01:52:06 INFO]: [bootstrap] Loading Paper 26.2-24-dev/26.2@1e3ffb9 (2026-06-19T12:57:50Z) for Minecraft 26.2
+[01:52:08 INFO]: [PluginInitializerManager] Initializing plugins...
+[01:52:08 INFO]: [PluginInitializerManager] Initialized 1 plugin
+[01:52:08 INFO]: [PluginInitializerManager] Paper plugins (1):
+ - ServerWaypoint (3.1.0)
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.joml.MemUtil$MemUtilUnsafe (file:/private/tmp/server-waypoint-step19-live/a/libraries/org/joml/joml/1.10.8/joml-1.10.8.jar)
+WARNING: Please consider reporting this to the maintainers of class org.joml.MemUtil$MemUtilUnsafe
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[01:52:11 INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, profilesHost=https://api.mojang.com, name=PROD]
+[01:52:11 INFO]: Found new data pack file/bukkit, loading it automatically
+[01:52:11 INFO]: Found new data pack paper, loading it automatically
+[01:52:11 INFO]: No existing world data, creating new world
+[01:52:11 ERROR]: No key layers in MapLike[{}]
+[01:52:11 INFO]: Loaded 1585 recipes
+[01:52:11 INFO]: Loaded 1688 advancements
+[01:52:12 INFO]: Starting minecraft server version 26.2
+[01:52:12 INFO]: Loading properties
+[01:52:12 INFO]: This server is running Paper version 26.2-24-dev/26.2@1e3ffb9 (2026-06-19T12:57:50Z) (Implementing API version 26.2.build.24-alpha)
+[01:52:12 INFO]: [spark] This server bundles the spark profiler. For more information please visit https://docs.papermc.io/paper/profiling
+[01:52:12 INFO]: Server Ping Player Sample Count: 12
+[01:52:12 INFO]: Using 4 threads for Netty based IO
+[01:52:12 INFO]: [MoonriseCommon] Paper is using 2 worker threads, 1 I/O threads
+[01:52:12 INFO]: Default game type: CREATIVE
+[01:52:12 INFO]: Generating keypair
+> >
+
+[01:52:12 INFO]: Starting Minecraft server on 127.0.0.1:25971
+>
+
+[01:52:16 INFO]: Paper: Using libdeflate (macOS ARM64 / Apple Silicon) compression from Velocity.
+>
+
+[01:52:16 INFO]: Paper: Using native (macOS ARM64 / Apple Silicon) cipher from Velocity.
+>
+
+[01:52:16 INFO]: [server_waypoint_plugin] Loading server plugin ServerWaypoint v3.1.0
+>
+
+[01:52:16 INFO]: Server permissions file permissions.yml is empty, ignoring it
+>
+
+[01:52:16 WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+>
+
+[01:52:16 WARN]: The server will make no attempt to authenticate usernames. Beware.
+>
+
+[01:52:16 WARN]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+>
+
+[01:52:16 WARN]: To change this, set "online-mode" to "true" in the server.properties file.
+>
+
+[01:52:16 INFO]: Preparing level "world"
+>
+
+[01:52:16 INFO]: Selecting spawn point for level 'minecraft:overworld'...
+>
+
+[01:52:17 INFO]: Selecting spawn point for level 'minecraft:the_nether'...
+>
+
+[01:52:17 INFO]: Selecting spawn point for level 'minecraft:the_end'...
+>
+
+[01:52:17 INFO]: Loading 0 persistent chunks for level 'minecraft:overworld'...
+>
+
+[01:52:17 INFO]: Preparing spawn area: 100%
+>
+
+[01:52:17 INFO]: Prepared spawn area in 547 ms
+>
+
+[01:52:17 INFO]: Loading 0 persistent chunks for level 'minecraft:the_nether'...
+>
+
+[01:52:17 INFO]: Preparing spawn area: 100%
+>
+
+[01:52:17 INFO]: Prepared spawn area in 388 ms
+>
+
+[01:52:17 INFO]: Loading 0 persistent chunks for level 'minecraft:the_end'...
+>
+
+[01:52:17 INFO]: Preparing spawn area: 100%
+>
+
+[01:52:17 INFO]: Prepared spawn area in 86 ms
+>
+
+[01:52:17 INFO]: Done preparing level "world" (0.618s)
+>
+
+[01:52:17 INFO]: [server_waypoint_plugin] Enabling ServerWaypoint v3.1.0
+>
+
+[01:52:17 INFO]: [server_waypoint_translator] Internal translations: zh_tw, es_es, he_il, zh_cn, en_us, zh_hk
+>
+
+[01:52:17 INFO]: [server_waypoint_core] Loaded config Config{serverId=1536161626, defaultPageLimit=10, defaultNavigationMethods=[ACTIONBAR], CommandPermission=CommandPermission{add=0, edit=0, remove=0, navigate=0, tp=2, reload=2, upload=2, uploadDelete=4, remoteList=0, remoteTp=2}, Features={addWaypointFromChatSharing=true, sendXaerosWorldId=true, compressChunkedMessages=true}}
+>
+
+[01:52:17 INFO]: [server_waypoint_core] Loaded 0 languages:
+>
+
+[01:52:17 INFO]: [server_waypoint_core] Loaded 1 lists and 1 waypoints from file: plugins/ServerWaypoint/waypoints/minecraft$overworld.json
+>
+
+[01:52:17 INFO]: [server_waypoint_core] Cross-server backend startup: INVALID_CONFIGURATION
+>
+
+[01:52:17 INFO]: [spark] Starting background profiler...
+>
+
+[01:52:19 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+>
+
+[01:52:19 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+>
+
+[01:52:19 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+>
+
+[01:52:19 INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+>
+
+[01:52:19 INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+>
+
+[01:52:19 INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+>
+
+[01:52:19 INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+>
+
+[01:52:19 INFO]: Running delayed init tasks
+>
+
+[01:52:19 INFO]: Done (16.556s)! For help, type "help"
+>
+
+[01:52:19 ERROR]: Command exception: /stop
+java.lang.NullPointerException: Cannot invoke "net.minecraft.server.level.ServerLevel.getGameRules()" because the return value of "net.minecraft.commands.CommandSourceStack.getLevel()" is null
+	at net.minecraft.commands.Commands.executeCommandInContext(Commands.java:463) ~[paper-26.2.jar:26.2-24-1e3ffb9]
+	at net.minecraft.commands.Commands.performCommand(Commands.java:378) ~[paper-26.2.jar:26.2-24-1e3ffb9]
+	at net.minecraft.commands.Commands.performCommand(Commands.java:366) ~[paper-26.2.jar:26.2-24-1e3ffb9]
+	at net.minecraft.commands.Commands.performPrefixedCommand(Commands.java:357) ~[paper-26.2.jar:26.2-24-1e3ffb9]
+	at net.minecraft.server.dedicated.DedicatedServer.handleConsoleInputs(DedicatedServer.java:574) ~[paper-26.2.jar:26.2-24-1e3ffb9]
+	at net.minecraft.server.dedicated.DedicatedServer.tickConnection(DedicatedServer.java:530) ~[paper-26.2.jar:26.2-24-1e3ffb9]
+	at net.minecraft.server.MinecraftServer.tickChildren(MinecraftServer.java:1861) ~[paper-26.2.jar:26.2-24-1e3ffb9]
+	at net.minecraft.server.MinecraftServer.tickServer(MinecraftServer.java:1644) ~[paper-26.2.jar:26.2-24-1e3ffb9]
+	at net.minecraft.server.dedicated.DedicatedServer.tickServer(DedicatedServer.java:404) ~[paper-26.2.jar:26.2-24-1e3ffb9]
+	at net.minecraft.server.MinecraftServer.processPacketsAndTick(MinecraftServer.java:1702) ~[paper-26.2.jar:26.2-24-1e3ffb9]
+	at net.minecraft.server.MinecraftServer.runServer(MinecraftServer.java:1372) ~[paper-26.2.jar:26.2-24-1e3ffb9]
+	at net.minecraft.server.MinecraftServer.lambda$spin$0(MinecraftServer.java:302) ~[paper-26.2.jar:26.2-24-1e3ffb9]
+	at java.base/java.lang.Thread.run(Thread.java:1474) ~[?:?]
+>
+
+[01:52:19 INFO]: An unexpected error occurred while trying to execute that command
+>
+
+[01:52:19 INFO]: *** Currently you are 97 builds behind ***
+>
+
+[01:52:19 INFO]: *** It is highly recommended to download the latest build from https://papermc.io/downloads/paper ***
+>
+
+[01:52:27 INFO]: Stopping server
+>
+
+[01:52:27 INFO]: [server_waypoint_plugin] Disabling ServerWaypoint v3.1.0
+>
+
+[01:52:27 INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/waypoints/minecraft$overworld.json
+>
+
+[01:52:27 INFO]: [server_waypoint_core] Saved config file: plugins/ServerWaypoint/config.json
+>
+
+[01:52:27 INFO]: Saving players
+>
+
+[01:52:27 INFO]: Saving worlds
+>
+
+[01:52:27 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+>
+
+[01:52:27 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:overworld'
+>
+
+[01:52:27 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:overworld'
+>
+
+[01:52:27 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:overworld'
+>
+
+[01:52:27 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'minecraft:overworld' in 0.02s
+>
+
+[01:52:27 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:overworld'
+>
+
+[01:52:27 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:overworld'
+>
+
+[01:52:27 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+>
+
+[01:52:27 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:the_nether'
+>
+
+[01:52:27 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:the_nether'
+>
+
+[01:52:27 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:the_nether'
+>
+
+[01:52:27 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'minecraft:the_nether' in 0.01s
+>
+
+[01:52:27 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:the_nether'
+>
+
+[01:52:27 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:the_nether'
+>
+
+[01:52:27 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+>
+
+[01:52:27 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:the_end'
+>
+
+[01:52:27 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:the_end'
+>
+
+[01:52:27 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:the_end'
+>
+
+[01:52:27 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'minecraft:the_end' in 0.01s
+>
+
+[01:52:27 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:the_end'
+>
+
+[01:52:27 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:the_end'
+>
+
+[01:52:27 INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+>
+
+[01:52:27 INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+>
+
+[01:52:27 INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+>
+
+[01:52:27 INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+>
+
+[01:52:27 INFO]: Waiting for all RegionFile I/O tasks to complete...
+>
+
+[01:52:27 INFO]: All RegionFile I/O tasks to complete
+>
+
+[01:52:27 INFO]: [MoonriseCommon] Awaiting termination of worker pool for up to 60s...
+>
+
+[01:52:27 INFO]: [MoonriseCommon] Awaiting termination of I/O pool for up to 60s...
+> Starting org.bukkit.craftbukkit.Main
+[01:52:57 INFO]: [bootstrap] Running Java 25 (OpenJDK 64-Bit Server VM 25.0.3+9-LTS; Eclipse Adoptium Temurin-25.0.3+9) on Mac OS X 26.5 (aarch64)
+[01:52:57 INFO]: [bootstrap] Loading Paper 26.2-24-dev/26.2@1e3ffb9 (2026-06-19T12:57:50Z) for Minecraft 26.2
+[01:52:59 INFO]: [PluginInitializerManager] Initializing plugins...
+[01:52:59 INFO]: [PluginInitializerManager] Initialized 1 plugin
+[01:52:59 INFO]: [PluginInitializerManager] Paper plugins (1):
+ - ServerWaypoint (3.1.0)
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.joml.MemUtil$MemUtilUnsafe (file:/private/tmp/server-waypoint-step19-live/a/libraries/org/joml/joml/1.10.8/joml-1.10.8.jar)
+WARNING: Please consider reporting this to the maintainers of class org.joml.MemUtil$MemUtilUnsafe
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[01:53:01 INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, profilesHost=https://api.mojang.com, name=PROD]
+[01:53:02 INFO]: Loaded 1585 recipes
+[01:53:02 INFO]: Loaded 1688 advancements
+[01:53:02 INFO]: Starting minecraft server version 26.2
+[01:53:02 INFO]: Loading properties
+[01:53:02 INFO]: This server is running Paper version 26.2-24-dev/26.2@1e3ffb9 (2026-06-19T12:57:50Z) (Implementing API version 26.2.build.24-alpha)
+[01:53:02 INFO]: [spark] This server bundles the spark profiler. For more information please visit https://docs.papermc.io/paper/profiling
+[01:53:02 INFO]: Server Ping Player Sample Count: 12
+[01:53:02 INFO]: Using 4 threads for Netty based IO
+[01:53:02 INFO]: [MoonriseCommon] Paper is using 2 worker threads, 1 I/O threads
+[01:53:02 INFO]: Default game type: CREATIVE
+[01:53:02 INFO]: Generating keypair
+>
+
+[01:53:02 INFO]: Starting Minecraft server on 127.0.0.1:25971
+>
+
+[01:53:07 INFO]: Paper: Using libdeflate (macOS ARM64 / Apple Silicon) compression from Velocity.
+>
+
+[01:53:07 INFO]: Paper: Using native (macOS ARM64 / Apple Silicon) cipher from Velocity.
+>
+
+[01:53:07 INFO]: [server_waypoint_plugin] Loading server plugin ServerWaypoint v3.1.0
+>
+
+[01:53:07 INFO]: Server permissions file permissions.yml is empty, ignoring it
+>
+
+[01:53:07 WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+>
+
+[01:53:07 WARN]: The server will make no attempt to authenticate usernames. Beware.
+>
+
+[01:53:07 WARN]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+>
+
+[01:53:07 WARN]: To change this, set "online-mode" to "true" in the server.properties file.
+>
+
+[01:53:07 INFO]: Preparing level "world"
+>
+
+[01:53:07 INFO]: Loading 0 persistent chunks for level 'minecraft:overworld'...
+>
+
+[01:53:07 INFO]: Prepared spawn area in 0 ms
+>
+
+[01:53:07 INFO]: Loading 0 persistent chunks for level 'minecraft:the_nether'...
+>
+
+[01:53:07 INFO]: Prepared spawn area in 0 ms
+>
+
+[01:53:07 INFO]: Loading 0 persistent chunks for level 'minecraft:the_end'...
+>
+
+[01:53:07 INFO]: Prepared spawn area in 0 ms
+>
+
+[01:53:07 INFO]: Done preparing level "world" (0.112s)
+>
+
+[01:53:07 INFO]: [server_waypoint_plugin] Enabling ServerWaypoint v3.1.0
+>
+
+[01:53:07 INFO]: [server_waypoint_translator] Internal translations: zh_cn, en_us, zh_hk, zh_tw, es_es, he_il
+>
+
+[01:53:07 INFO]: [server_waypoint_core] Loaded config Config{serverId=1536161626, defaultPageLimit=10, defaultNavigationMethods=[ACTIONBAR], CommandPermission=CommandPermission{add=0, edit=0, remove=0, navigate=0, tp=2, reload=2, upload=2, uploadDelete=4, remoteList=0, remoteTp=2}, Features={addWaypointFromChatSharing=true, sendXaerosWorldId=true, compressChunkedMessages=true}}
+>
+
+[01:53:07 INFO]: [server_waypoint_core] Loaded 0 languages:
+>
+
+[01:53:07 INFO]: [server_waypoint_core] Loaded 1 lists and 1 waypoints from file: plugins/ServerWaypoint/waypoints/minecraft$overworld.json
+>
+
+[01:53:07 INFO]: [server_waypoint_core] Cross-server backend startup: INVALID_CONFIGURATION
+>
+
+[01:53:07 INFO]: [spark] Starting background profiler...
+>
+
+[01:53:08 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+>
+
+[01:53:08 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+>
+
+[01:53:08 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+>
+
+[01:53:08 INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+>
+
+[01:53:08 INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+>
+
+[01:53:08 INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+>
+
+[01:53:08 INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+>
+
+[01:53:08 INFO]: Running delayed init tasks
+>
+
+[01:53:08 INFO]: Done (13.835s)! For help, type "help"
+>
+
+[01:53:09 INFO]: *** Currently you are 97 builds behind ***
+>
+
+[01:53:09 INFO]: *** It is highly recommended to download the latest build from https://papermc.io/downloads/paper ***
+> >
+
+[01:53:42 INFO]: Stopping the server
+>
+
+[01:53:42 INFO]: Stopping server
+>
+
+[01:53:42 INFO]: [server_waypoint_plugin] Disabling ServerWaypoint v3.1.0
+>
+
+[01:53:42 INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/waypoints/minecraft$overworld.json
+>
+
+[01:53:42 INFO]: [server_waypoint_core] Saved config file: plugins/ServerWaypoint/config.json
+>
+
+[01:53:42 INFO]: Saving players
+>
+
+[01:53:42 INFO]: Saving worlds
+>
+
+[01:53:42 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+>
+
+[01:53:42 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:overworld'
+>
+
+[01:53:42 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:overworld'
+>
+
+[01:53:42 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:overworld'
+>
+
+[01:53:42 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'minecraft:overworld' in 0.00s
+>
+
+[01:53:42 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:overworld'
+>
+
+[01:53:42 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:overworld'
+>
+
+[01:53:42 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+>
+
+[01:53:42 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:the_nether'
+>
+
+[01:53:42 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:the_nether'
+>
+
+[01:53:42 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:the_nether'
+>
+
+[01:53:42 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'minecraft:the_nether' in 0.00s
+>
+
+[01:53:42 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:the_nether'
+>
+
+[01:53:42 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:the_nether'
+>
+
+[01:53:42 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+>
+
+[01:53:42 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:the_end'
+>
+
+[01:53:42 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:the_end'
+>
+
+[01:53:42 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:the_end'
+>
+
+[01:53:42 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'minecraft:the_end' in 0.00s
+>
+
+[01:53:42 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:the_end'
+>
+
+[01:53:42 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:the_end'
+>
+
+[01:53:42 INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+>
+
+[01:53:42 INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+>
+
+[01:53:42 INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+>
+
+[01:53:42 INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+>
+
+[01:53:42 INFO]: Waiting for all RegionFile I/O tasks to complete...
+>
+
+[01:53:42 INFO]: All RegionFile I/O tasks to complete
+>
+
+[01:53:42 INFO]: [MoonriseCommon] Awaiting termination of worker pool for up to 60s...
+>
+
+[01:53:42 INFO]: [MoonriseCommon] Awaiting termination of I/O pool for up to 60s...
+> Starting org.bukkit.craftbukkit.Main
+[01:54:12 INFO]: [bootstrap] Running Java 25 (OpenJDK 64-Bit Server VM 25.0.3+9-LTS; Eclipse Adoptium Temurin-25.0.3+9) on Mac OS X 26.5 (aarch64)
+[01:54:12 INFO]: [bootstrap] Loading Paper 26.2-24-dev/26.2@1e3ffb9 (2026-06-19T12:57:50Z) for Minecraft 26.2
+[01:54:15 INFO]: [PluginInitializerManager] Initializing plugins...
+[01:54:15 INFO]: [PluginInitializerManager] Initialized 1 plugin
+[01:54:15 INFO]: [PluginInitializerManager] Paper plugins (1):
+ - ServerWaypoint (3.1.0)
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.joml.MemUtil$MemUtilUnsafe (file:/private/tmp/server-waypoint-step19-live/a/libraries/org/joml/joml/1.10.8/joml-1.10.8.jar)
+WARNING: Please consider reporting this to the maintainers of class org.joml.MemUtil$MemUtilUnsafe
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[01:54:19 INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, profilesHost=https://api.mojang.com, name=PROD]
+[01:54:20 INFO]: Loaded 1585 recipes
+[01:54:20 INFO]: Loaded 1688 advancements
+[01:54:20 INFO]: Starting minecraft server version 26.2
+[01:54:20 INFO]: Loading properties
+[01:54:20 INFO]: This server is running Paper version 26.2-24-dev/26.2@1e3ffb9 (2026-06-19T12:57:50Z) (Implementing API version 26.2.build.24-alpha)
+[01:54:20 INFO]: [spark] This server bundles the spark profiler. For more information please visit https://docs.papermc.io/paper/profiling
+[01:54:20 INFO]: Server Ping Player Sample Count: 12
+[01:54:20 INFO]: Using 4 threads for Netty based IO
+[01:54:20 INFO]: [MoonriseCommon] Paper is using 2 worker threads, 1 I/O threads
+[01:54:21 INFO]: Default game type: CREATIVE
+[01:54:21 INFO]: Generating keypair
+>
+
+[01:54:21 INFO]: Starting Minecraft server on 127.0.0.1:25971
+>
+
+[01:54:25 INFO]: Paper: Using libdeflate (macOS ARM64 / Apple Silicon) compression from Velocity.
+>
+
+[01:54:25 INFO]: Paper: Using native (macOS ARM64 / Apple Silicon) cipher from Velocity.
+>
+
+[01:54:25 INFO]: [server_waypoint_plugin] Loading server plugin ServerWaypoint v3.1.0
+>
+
+[01:54:25 INFO]: Server permissions file permissions.yml is empty, ignoring it
+>
+
+[01:54:25 WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+>
+
+[01:54:25 WARN]: The server will make no attempt to authenticate usernames. Beware.
+>
+
+[01:54:25 WARN]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+>
+
+[01:54:25 WARN]: To change this, set "online-mode" to "true" in the server.properties file.
+>
+
+[01:54:25 INFO]: Preparing level "world"
+>
+
+[01:54:25 INFO]: Loading 0 persistent chunks for level 'minecraft:overworld'...
+>
+
+[01:54:25 INFO]: Prepared spawn area in 1 ms
+>
+
+[01:54:25 INFO]: Loading 0 persistent chunks for level 'minecraft:the_nether'...
+>
+
+[01:54:25 INFO]: Prepared spawn area in 0 ms
+>
+
+[01:54:25 INFO]: Loading 0 persistent chunks for level 'minecraft:the_end'...
+>
+
+[01:54:25 INFO]: Prepared spawn area in 1 ms
+>
+
+[01:54:25 INFO]: Done preparing level "world" (0.186s)
+>
+
+[01:54:25 INFO]: [server_waypoint_plugin] Enabling ServerWaypoint v3.1.0
+>
+
+[01:54:25 INFO]: [server_waypoint_translator] Internal translations: es_es, he_il, zh_cn, en_us, zh_hk, zh_tw
+>
+
+[01:54:25 INFO]: [server_waypoint_core] Loaded config Config{serverId=1536161626, defaultPageLimit=10, defaultNavigationMethods=[ACTIONBAR], CommandPermission=CommandPermission{add=0, edit=0, remove=0, navigate=0, tp=2, reload=2, upload=2, uploadDelete=4, remoteList=0, remoteTp=2}, Features={addWaypointFromChatSharing=true, sendXaerosWorldId=true, compressChunkedMessages=true}}
+>
+
+[01:54:25 INFO]: [server_waypoint_core] Loaded 0 languages:
+>
+
+[01:54:25 INFO]: [server_waypoint_core] Loaded 1 lists and 1 waypoints from file: plugins/ServerWaypoint/waypoints/minecraft$overworld.json
+>
+
+[01:54:25 INFO]: [server_waypoint_core] Cross-server backend startup: SUCCESS
+>
+
+[01:54:25 INFO]: [spark] Starting background profiler...
+>
+
+[01:54:27 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+>
+
+[01:54:27 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+>
+
+[01:54:27 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+>
+
+[01:54:27 INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+>
+
+[01:54:27 INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+>
+
+[01:54:27 INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+>
+
+[01:54:27 INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+>
+
+[01:54:27 INFO]: Running delayed init tasks
+>
+
+[01:54:27 INFO]: Done (18.939s)! For help, type "help"
+>
+
+[01:54:27 INFO]: *** Currently you are 97 builds behind ***
+>
+
+[01:54:27 INFO]: *** It is highly recommended to download the latest build from https://papermc.io/downloads/paper ***
+> >
+
+[01:55:19 INFO]: Stopping the server
+>
+
+[01:55:19 INFO]: Stopping server
+>
+
+[01:55:19 INFO]: [server_waypoint_plugin] Disabling ServerWaypoint v3.1.0
+>
+
+[01:55:19 INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/waypoints/minecraft$overworld.json
+>
+
+[01:55:19 INFO]: [server_waypoint_core] Saved config file: plugins/ServerWaypoint/config.json
+>
+
+[01:55:19 INFO]: Saving players
+>
+
+[01:55:19 INFO]: Saving worlds
+>
+
+[01:55:19 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+>
+
+[01:55:19 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:overworld'
+>
+
+[01:55:19 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:overworld'
+>
+
+[01:55:19 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:overworld'
+>
+
+[01:55:19 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'minecraft:overworld' in 0.00s
+>
+
+[01:55:19 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:overworld'
+>
+
+[01:55:19 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:overworld'
+>
+
+[01:55:19 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+>
+
+[01:55:19 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:the_nether'
+>
+
+[01:55:19 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:the_nether'
+>
+
+[01:55:19 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:the_nether'
+>
+
+[01:55:19 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'minecraft:the_nether' in 0.00s
+>
+
+[01:55:19 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:the_nether'
+>
+
+[01:55:19 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:the_nether'
+>
+
+[01:55:19 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+>
+
+[01:55:19 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:the_end'
+>
+
+[01:55:19 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:the_end'
+>
+
+[01:55:19 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:the_end'
+>
+
+[01:55:19 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'minecraft:the_end' in 0.00s
+>
+
+[01:55:19 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:the_end'
+>
+
+[01:55:19 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:the_end'
+>
+
+[01:55:19 INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+>
+
+[01:55:19 INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+>
+
+[01:55:19 INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+>
+
+[01:55:19 INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+>
+
+[01:55:19 INFO]: Waiting for all RegionFile I/O tasks to complete...
+>
+
+[01:55:19 INFO]: All RegionFile I/O tasks to complete
+>
+
+[01:55:19 INFO]: [MoonriseCommon] Awaiting termination of worker pool for up to 60s...
+>
+
+[01:55:19 INFO]: [MoonriseCommon] Awaiting termination of I/O pool for up to 60s...
+> Starting org.bukkit.craftbukkit.Main
+[01:55:33 INFO]: [bootstrap] Running Java 25 (OpenJDK 64-Bit Server VM 25.0.3+9-LTS; Eclipse Adoptium Temurin-25.0.3+9) on Mac OS X 26.5 (aarch64)
+[01:55:33 INFO]: [bootstrap] Loading Paper 26.2-24-dev/26.2@1e3ffb9 (2026-06-19T12:57:50Z) for Minecraft 26.2
+[01:55:35 INFO]: [PluginInitializerManager] Initializing plugins...
+[01:55:35 INFO]: [PluginInitializerManager] Initialized 1 plugin
+[01:55:35 INFO]: [PluginInitializerManager] Paper plugins (1):
+ - ServerWaypoint (3.1.0)
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.joml.MemUtil$MemUtilUnsafe (file:/private/tmp/server-waypoint-step19-live/a/libraries/org/joml/joml/1.10.8/joml-1.10.8.jar)
+WARNING: Please consider reporting this to the maintainers of class org.joml.MemUtil$MemUtilUnsafe
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[01:55:37 INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, profilesHost=https://api.mojang.com, name=PROD]
+[01:55:38 INFO]: Loaded 1585 recipes
+[01:55:38 INFO]: Loaded 1688 advancements
+[01:55:38 INFO]: Starting minecraft server version 26.2
+[01:55:38 INFO]: Loading properties
+[01:55:38 INFO]: This server is running Paper version 26.2-24-dev/26.2@1e3ffb9 (2026-06-19T12:57:50Z) (Implementing API version 26.2.build.24-alpha)
+[01:55:38 INFO]: [spark] This server bundles the spark profiler. For more information please visit https://docs.papermc.io/paper/profiling
+[01:55:38 INFO]: Server Ping Player Sample Count: 12
+[01:55:38 INFO]: Using 4 threads for Netty based IO
+[01:55:38 INFO]: [MoonriseCommon] Paper is using 2 worker threads, 1 I/O threads
+[01:55:38 INFO]: Default game type: CREATIVE
+[01:55:38 INFO]: Generating keypair
+[01:55:38 INFO]: Starting Minecraft server on 127.0.0.1:25971
+>
+
+[01:55:43 INFO]: Paper: Using libdeflate (macOS ARM64 / Apple Silicon) compression from Velocity.
+>
+
+[01:55:43 INFO]: Paper: Using native (macOS ARM64 / Apple Silicon) cipher from Velocity.
+>
+
+[01:55:43 INFO]: [server_waypoint_plugin] Loading server plugin ServerWaypoint v3.1.0
+>
+
+[01:55:43 INFO]: Server permissions file permissions.yml is empty, ignoring it
+>
+
+[01:55:43 WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+>
+
+[01:55:43 WARN]: The server will make no attempt to authenticate usernames. Beware.
+>
+
+[01:55:43 WARN]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+>
+
+[01:55:43 WARN]: To change this, set "online-mode" to "true" in the server.properties file.
+>
+
+[01:55:43 INFO]: Preparing level "world"
+>
+
+[01:55:43 INFO]: Loading 0 persistent chunks for level 'minecraft:overworld'...
+>
+
+[01:55:43 INFO]: Preparing spawn area: 100%
+>
+
+[01:55:43 INFO]: Prepared spawn area in 1 ms
+>
+
+[01:55:43 INFO]: Loading 0 persistent chunks for level 'minecraft:the_nether'...
+>
+
+[01:55:43 INFO]: Prepared spawn area in 0 ms
+>
+
+[01:55:43 INFO]: Loading 0 persistent chunks for level 'minecraft:the_end'...
+>
+
+[01:55:43 INFO]: Prepared spawn area in 0 ms
+>
+
+[01:55:43 INFO]: Done preparing level "world" (0.126s)
+>
+
+[01:55:43 INFO]: [server_waypoint_plugin] Enabling ServerWaypoint v3.1.0
+>
+
+[01:55:43 INFO]: [server_waypoint_translator] Internal translations: he_il, zh_cn, en_us, zh_hk, zh_tw, es_es
+>
+
+[01:55:43 INFO]: [server_waypoint_core] Loaded config Config{serverId=1536161626, defaultPageLimit=10, defaultNavigationMethods=[ACTIONBAR], CommandPermission=CommandPermission{add=0, edit=0, remove=0, navigate=0, tp=2, reload=2, upload=2, uploadDelete=4, remoteList=0, remoteTp=2}, Features={addWaypointFromChatSharing=true, sendXaerosWorldId=true, compressChunkedMessages=true}}
+>
+
+[01:55:43 INFO]: [server_waypoint_core] Loaded 0 languages:
+>
+
+[01:55:43 INFO]: [server_waypoint_core] Loaded 1 lists and 1 waypoints from file: plugins/ServerWaypoint/waypoints/minecraft$overworld.json
+>
+
+[01:55:43 INFO]: [server_waypoint_core] Cross-server backend startup: SUCCESS
+>
+
+[01:55:43 INFO]: [spark] Starting background profiler...
+>
+
+[01:55:44 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+>
+
+[01:55:44 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+>
+
+[01:55:44 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+>
+
+[01:55:44 INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+>
+
+[01:55:44 INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+>
+
+[01:55:44 INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+>
+
+[01:55:44 INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+>
+
+[01:55:44 INFO]: Running delayed init tasks
+>
+
+[01:55:44 INFO]: Done (13.726s)! For help, type "help"
+>
+
+[01:55:44 INFO]: *** Currently you are 97 builds behind ***
+>
+
+[01:55:44 INFO]: *** It is highly recommended to download the latest build from https://papermc.io/downloads/paper ***
+>
+
+[01:56:15 INFO]: UUID of player CodexStep19 is 7cf408b7-3218-334b-8f94-04d13c8e9231
+>
+
+[01:56:16 INFO]: CodexStep19 joined the game
+>
+
+[01:56:16 INFO]: CodexStep19[/127.0.0.1:51960] logged in with entity id 1 at ([minecraft:overworld]1.5, -60.0, 9.5)
+>
+
+[01:56:25 INFO]: CodexStep19 issued server command: /wp remote servers
+>
+
+[01:56:26 ERROR]: Command exception: /wp remote servers
+java.lang.NoSuchMethodError: 'net.kyori.adventure.text.BuildableComponent net.kyori.adventure.text.TextComponent$Builder.build()'
+	at server_waypoint-3.1.0-paper-mc26.2.jar//_959.server_waypoint.command.RemoteWaypointCommand.servers(RemoteWaypointCommand.java:200) ~[?:?]
+	at com.mojang.brigadier.context.ContextChain.runExecutable(ContextChain.java:73) ~[brigadier-1.3.10.jar:?]
+	at net.minecraft.commands.execution.tasks.ExecuteCommand.execute(ExecuteCommand.java:30) ~[paper-26.2.jar:26.2-24-1e3ffb9]
+	at net.minecraft.commands.execution.tasks.ExecuteCommand.execute(ExecuteCommand.java:13) ~[paper-26.2.jar:26.2-24-1e3ffb9]
+	at net.minecraft.commands.execution.UnboundEntryAction.lambda$bind$0(UnboundEntryAction.java:8) ~[paper-26.2.jar:26.2-24-1e3ffb9]
+	at net.minecraft.commands.execution.CommandQueueEntry.execute(CommandQueueEntry.java:5) ~[paper-26.2.jar:26.2-24-1e3ffb9]
+	at net.minecraft.commands.execution.ExecutionContext.runCommandQueue(ExecutionContext.java:104) ~[paper-26.2.jar:26.2-24-1e3ffb9]
+	at net.minecraft.commands.Commands.executeCommandInContext(Commands.java:470) ~[paper-26.2.jar:26.2-24-1e3ffb9]
+	at net.minecraft.commands.Commands.performCommand(Commands.java:378) ~[paper-26.2.jar:26.2-24-1e3ffb9]
+	at net.minecraft.commands.Commands.performCommand(Commands.java:366) ~[paper-26.2.jar:26.2-24-1e3ffb9]
+	at net.minecraft.server.network.ServerGamePacketListenerImpl.performUnsignedChatCommand(ServerGamePacketListenerImpl.java:2400) ~[paper-26.2.jar:26.2-24-1e3ffb9]
+	at net.minecraft.server.network.ServerGamePacketListenerImpl.lambda$handleChatCommand$0(ServerGamePacketListenerImpl.java:2373) ~[paper-26.2.jar:26.2-24-1e3ffb9]
+	at net.minecraft.server.TickTask.run(TickTask.java:18) ~[paper-26.2.jar:26.2-24-1e3ffb9]
+	at net.minecraft.util.thread.BlockableEventLoop.doRunTask(BlockableEventLoop.java:207) ~[paper-26.2.jar:26.2-24-1e3ffb9]
+	at net.minecraft.util.thread.ReentrantBlockableEventLoop.doRunTask(ReentrantBlockableEventLoop.java:24) ~[paper-26.2.jar:26.2-24-1e3ffb9]
+	at net.minecraft.server.MinecraftServer.doRunTask(MinecraftServer.java:1558) ~[paper-26.2.jar:26.2-24-1e3ffb9]
+	at net.minecraft.server.MinecraftServer.doRunTask(MinecraftServer.java:192) ~[paper-26.2.jar:26.2-24-1e3ffb9]
+	at net.minecraft.util.thread.BlockableEventLoop.pollTask(BlockableEventLoop.java:182) ~[paper-26.2.jar:26.2-24-1e3ffb9]
+	at net.minecraft.server.MinecraftServer.pollTaskInternal(MinecraftServer.java:1538) ~[paper-26.2.jar:26.2-24-1e3ffb9]
+	at net.minecraft.server.MinecraftServer.pollTask(MinecraftServer.java:1532) ~[paper-26.2.jar:26.2-24-1e3ffb9]
+	at net.minecraft.server.MinecraftServer.recordTaskExecutionTimeWhileWaiting(MinecraftServer.java:1262) ~[paper-26.2.jar:26.2-24-1e3ffb9]
+	at net.minecraft.server.MinecraftServer.runServer(MinecraftServer.java:1378) ~[paper-26.2.jar:26.2-24-1e3ffb9]
+	at net.minecraft.server.MinecraftServer.lambda$spin$0(MinecraftServer.java:302) ~[paper-26.2.jar:26.2-24-1e3ffb9]
+	at java.base/java.lang.Thread.run(Thread.java:1474) ~[?:?]
+>
+
+[01:56:27 INFO]: CodexStep19 issued server command: /wp remote tp b "minecraft:overworld" Test Target
+>
+
+[01:56:27 INFO]: CodexStep19 lost connection: Disconnected
+>
+
+[01:56:27 INFO]: CodexStep19 left the game
+>
+
+[01:56:55 INFO]: UUID of player CodexStep19 is 7cf408b7-3218-334b-8f94-04d13c8e9231
+>
+
+[01:56:55 INFO]: CodexStep19 joined the game
+>
+
+[01:56:55 INFO]: CodexStep19[/127.0.0.1:51967] logged in with entity id 2 at ([minecraft:overworld]1.5, -60.0, 9.5)
+> >
+
+[01:57:07 INFO]: CodexStep19 has the following entity data: [1.5d, -60.0d, 9.5d]
+> >
+
+[02:00:08 INFO]: CodexStep19 lost connection: Disconnected
+>
+
+[02:00:09 INFO]: CodexStep19 left the game
+>
+
+[02:00:09 INFO]: Stopping the server
+>
+
+[02:00:09 INFO]: Stopping server
+>
+
+[02:00:09 INFO]: [server_waypoint_plugin] Disabling ServerWaypoint v3.1.0
+>
+
+[02:00:09 INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/waypoints/minecraft$overworld.json
+>
+
+[02:00:09 INFO]: [server_waypoint_core] Saved config file: plugins/ServerWaypoint/config.json
+>
+
+[02:00:09 INFO]: Saving players
+>
+
+[02:00:09 INFO]: Saving worlds
+>
+
+[02:00:09 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+>
+
+[02:00:09 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:overworld'
+>
+
+[02:00:09 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:overworld'
+>
+
+[02:00:09 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:overworld'
+>
+
+[02:00:09 INFO]: [ChunkHolderManager] Saved 121 block chunks, 121 entity chunks, 0 poi chunks in world 'minecraft:overworld' in 0.05s
+>
+
+[02:00:09 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:overworld'
+>
+
+[02:00:09 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:overworld'
+>
+
+[02:00:09 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+>
+
+[02:00:09 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:the_nether'
+>
+
+[02:00:09 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:the_nether'
+>
+
+[02:00:09 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:the_nether'
+>
+
+[02:00:09 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'minecraft:the_nether' in 0.00s
+>
+
+[02:00:09 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:the_nether'
+>
+
+[02:00:09 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:the_nether'
+>
+
+[02:00:09 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+>
+
+[02:00:09 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:the_end'
+>
+
+[02:00:09 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:the_end'
+>
+
+[02:00:09 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:the_end'
+>
+
+[02:00:09 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'minecraft:the_end' in 0.00s
+>
+
+[02:00:09 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:the_end'
+>
+
+[02:00:09 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:the_end'
+>
+
+[02:00:09 INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+>
+
+[02:00:09 INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+>
+
+[02:00:09 INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+>
+
+[02:00:09 INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+>
+
+[02:00:09 INFO]: Waiting for all RegionFile I/O tasks to complete...
+>
+
+[02:00:09 INFO]: All RegionFile I/O tasks to complete
+>
+
+[02:00:09 INFO]: [MoonriseCommon] Awaiting termination of worker pool for up to 60s...
+>
+
+[02:00:09 INFO]: [MoonriseCommon] Awaiting termination of I/O pool for up to 60s...
+> Starting org.bukkit.craftbukkit.Main
+[02:01:05 INFO]: [bootstrap] Running Java 25 (OpenJDK 64-Bit Server VM 25.0.3+9-LTS; Eclipse Adoptium Temurin-25.0.3+9) on Mac OS X 26.5 (aarch64)
+[02:01:05 INFO]: [bootstrap] Loading Paper 26.2-24-dev/26.2@1e3ffb9 (2026-06-19T12:57:50Z) for Minecraft 26.2
+[02:01:07 INFO]: [PluginInitializerManager] Initializing plugins...
+[02:01:07 INFO]: [PluginInitializerManager] Initialized 1 plugin
+[02:01:07 INFO]: [PluginInitializerManager] Paper plugins (1):
+ - ServerWaypoint (3.1.0)
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.joml.MemUtil$MemUtilUnsafe (file:/private/tmp/server-waypoint-step19-live/a/libraries/org/joml/joml/1.10.8/joml-1.10.8.jar)
+WARNING: Please consider reporting this to the maintainers of class org.joml.MemUtil$MemUtilUnsafe
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[02:01:10 INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, profilesHost=https://api.mojang.com, name=PROD]
+[02:01:11 INFO]: Loaded 1585 recipes
+[02:01:11 INFO]: Loaded 1688 advancements
+[02:01:11 INFO]: Starting minecraft server version 26.2
+[02:01:11 INFO]: Loading properties
+[02:01:11 INFO]: This server is running Paper version 26.2-24-dev/26.2@1e3ffb9 (2026-06-19T12:57:50Z) (Implementing API version 26.2.build.24-alpha)
+[02:01:11 INFO]: [spark] This server bundles the spark profiler. For more information please visit https://docs.papermc.io/paper/profiling
+[02:01:11 INFO]: Server Ping Player Sample Count: 12
+[02:01:11 INFO]: Using 4 threads for Netty based IO
+[02:01:11 INFO]: [MoonriseCommon] Paper is using 2 worker threads, 1 I/O threads
+[02:01:11 INFO]: Default game type: CREATIVE
+[02:01:11 INFO]: Generating keypair
+[02:01:11 INFO]: Starting Minecraft server on 127.0.0.1:25971
+>
+
+[02:01:15 INFO]: Paper: Using libdeflate (macOS ARM64 / Apple Silicon) compression from Velocity.
+>
+
+[02:01:15 INFO]: Paper: Using native (macOS ARM64 / Apple Silicon) cipher from Velocity.
+>
+
+[02:01:15 INFO]: [server_waypoint_plugin] Loading server plugin ServerWaypoint v3.1.0
+>
+
+[02:01:15 INFO]: Server permissions file permissions.yml is empty, ignoring it
+>
+
+[02:01:15 WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+>
+
+[02:01:15 WARN]: The server will make no attempt to authenticate usernames. Beware.
+>
+
+[02:01:15 WARN]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+>
+
+[02:01:15 WARN]: To change this, set "online-mode" to "true" in the server.properties file.
+>
+
+[02:01:15 INFO]: Preparing level "world"
+>
+
+[02:01:15 INFO]: Loading 0 persistent chunks for level 'minecraft:overworld'...
+>
+
+[02:01:15 INFO]: Prepared spawn area in 0 ms
+>
+
+[02:01:15 INFO]: Loading 0 persistent chunks for level 'minecraft:the_nether'...
+>
+
+[02:01:15 INFO]: Prepared spawn area in 0 ms
+>
+
+[02:01:15 INFO]: Loading 0 persistent chunks for level 'minecraft:the_end'...
+>
+
+[02:01:15 INFO]: Prepared spawn area in 0 ms
+>
+
+[02:01:15 INFO]: Done preparing level "world" (0.121s)
+>
+
+[02:01:15 INFO]: [server_waypoint_plugin] Enabling ServerWaypoint v3.1.0
+>
+
+[02:01:15 INFO]: [server_waypoint_translator] Internal translations: zh_cn, he_il, es_es, zh_tw, zh_hk, en_us
+>
+
+[02:01:15 INFO]: [server_waypoint_core] Loaded config Config{serverId=1536161626, defaultPageLimit=10, defaultNavigationMethods=[ACTIONBAR], CommandPermission=CommandPermission{add=0, edit=0, remove=0, navigate=0, tp=2, reload=2, upload=2, uploadDelete=4, remoteList=0, remoteTp=2}, Features={addWaypointFromChatSharing=true, sendXaerosWorldId=true, compressChunkedMessages=true}}
+>
+
+[02:01:15 INFO]: [server_waypoint_core] Loaded 0 languages:
+>
+
+[02:01:15 INFO]: [server_waypoint_core] Loaded 1 lists and 1 waypoints from file: plugins/ServerWaypoint/waypoints/minecraft$overworld.json
+>
+
+[02:01:15 INFO]: [server_waypoint_core] Cross-server backend startup: SUCCESS
+>
+
+[02:01:15 INFO]: [spark] Starting background profiler...
+>
+
+[02:01:16 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+>
+
+[02:01:16 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+>
+
+[02:01:16 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+>
+
+[02:01:16 INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+>
+
+[02:01:16 INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+>
+
+[02:01:16 INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+>
+
+[02:01:16 INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+>
+
+[02:01:16 INFO]: Running delayed init tasks
+>
+
+[02:01:16 INFO]: Done (14.237s)! For help, type "help"
+>
+
+[02:01:16 INFO]: *** Currently you are 97 builds behind ***
+>
+
+[02:01:16 INFO]: *** It is highly recommended to download the latest build from https://papermc.io/downloads/paper ***
+>
+
+[02:01:24 INFO]: UUID of player CodexStep19 is 7cf408b7-3218-334b-8f94-04d13c8e9231
+>
+
+[02:01:25 INFO]: CodexStep19 joined the game
+>
+
+[02:01:25 INFO]: CodexStep19[/127.0.0.1:52429] logged in with entity id 13 at ([minecraft:overworld]1.5, -60.0, 9.5)
+Starting org.bukkit.craftbukkit.Main
+[10:44:39 INFO]: [bootstrap] Running Java 25 (OpenJDK 64-Bit Server VM 25.0.3+9-LTS; Eclipse Adoptium Temurin-25.0.3+9) on Mac OS X 26.5 (aarch64)
+[10:44:39 INFO]: [bootstrap] Loading Paper 26.2-24-dev/26.2@1e3ffb9 (2026-06-19T12:57:50Z) for Minecraft 26.2
+[10:44:41 INFO]: [PluginInitializerManager] Initializing plugins...
+[10:44:42 INFO]: [PluginInitializerManager] Initialized 1 plugin
+[10:44:42 INFO]: [PluginInitializerManager] Paper plugins (1):
+ - ServerWaypoint (3.1.0)
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.joml.MemUtil$MemUtilUnsafe (file:/private/tmp/server-waypoint-step19-live/a/libraries/org/joml/joml/1.10.8/joml-1.10.8.jar)
+WARNING: Please consider reporting this to the maintainers of class org.joml.MemUtil$MemUtilUnsafe
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[10:44:45 INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, profilesHost=https://api.mojang.com, name=PROD]
+[10:44:46 INFO]: Loaded 1585 recipes
+[10:44:46 INFO]: Loaded 1688 advancements
+[10:44:46 INFO]: Starting minecraft server version 26.2
+[10:44:46 INFO]: Loading properties
+[10:44:46 INFO]: This server is running Paper version 26.2-24-dev/26.2@1e3ffb9 (2026-06-19T12:57:50Z) (Implementing API version 26.2.build.24-alpha)
+[10:44:46 INFO]: [spark] This server bundles the spark profiler. For more information please visit https://docs.papermc.io/paper/profiling
+[10:44:46 INFO]: Server Ping Player Sample Count: 12
+[10:44:46 INFO]: Using 4 threads for Netty based IO
+[10:44:46 INFO]: [MoonriseCommon] Paper is using 2 worker threads, 1 I/O threads
+[10:44:46 INFO]: Default game type: CREATIVE
+[10:44:46 INFO]: Generating keypair
+>
+
+[10:44:46 INFO]: Starting Minecraft server on 127.0.0.1:25971
+>
+
+[10:44:51 INFO]: Paper: Using libdeflate (macOS ARM64 / Apple Silicon) compression from Velocity.
+>
+
+[10:44:51 INFO]: Paper: Using native (macOS ARM64 / Apple Silicon) cipher from Velocity.
+>
+
+[10:44:51 INFO]: [server_waypoint_plugin] Loading server plugin ServerWaypoint v3.1.0
+>
+
+[10:44:51 INFO]: Server permissions file permissions.yml is empty, ignoring it
+>
+
+[10:44:51 WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+>
+
+[10:44:51 WARN]: The server will make no attempt to authenticate usernames. Beware.
+>
+
+[10:44:51 WARN]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+>
+
+[10:44:51 WARN]: To change this, set "online-mode" to "true" in the server.properties file.
+>
+
+[10:44:51 INFO]: Preparing level "world"
+>
+
+[10:44:51 INFO]: Loading 0 persistent chunks for level 'minecraft:overworld'...
+>
+
+[10:44:51 INFO]: Preparing spawn area: 100%
+>
+
+[10:44:51 INFO]: Prepared spawn area in 1 ms
+>
+
+[10:44:51 INFO]: Loading 0 persistent chunks for level 'minecraft:the_nether'...
+>
+
+[10:44:51 INFO]: Prepared spawn area in 0 ms
+>
+
+[10:44:51 INFO]: Loading 0 persistent chunks for level 'minecraft:the_end'...
+>
+
+[10:44:51 INFO]: Prepared spawn area in 0 ms
+>
+
+[10:44:51 INFO]: Done preparing level "world" (0.180s)
+>
+
+[10:44:51 INFO]: [server_waypoint_plugin] Enabling ServerWaypoint v3.1.0
+>
+
+[10:44:51 INFO]: [server_waypoint_translator] Internal translations: he_il, zh_cn, en_us, zh_hk, zh_tw, es_es
+>
+
+[10:44:51 INFO]: [server_waypoint_core] Loaded config Config{serverId=1536161626, defaultPageLimit=10, defaultNavigationMethods=[ACTIONBAR], CommandPermission=CommandPermission{add=0, edit=0, remove=0, navigate=0, tp=2, reload=2, upload=2, uploadDelete=4, remoteList=0, remoteTp=2}, Features={addWaypointFromChatSharing=true, sendXaerosWorldId=true, compressChunkedMessages=true}}
+>
+
+[10:44:51 INFO]: [server_waypoint_core] Loaded 0 languages:
+>
+
+[10:44:51 INFO]: [server_waypoint_core] Loaded 1 lists and 1 waypoints from file: plugins/ServerWaypoint/waypoints/minecraft$overworld.json
+>
+
+[10:44:51 INFO]: [server_waypoint_core] Cross-server backend startup: SUCCESS
+>
+
+[10:44:51 INFO]: [spark] Starting background profiler...
+>
+
+[10:44:53 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+>
+
+[10:44:53 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+>
+
+[10:44:53 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+>
+
+[10:44:53 INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+>
+
+[10:44:53 INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+>
+
+[10:44:53 INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+>
+
+[10:44:53 INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+>
+
+[10:44:53 INFO]: Running delayed init tasks
+>
+
+[10:44:53 INFO]: Done (16.533s)! For help, type "help"
+>
+
+[10:44:53 INFO]: *** Currently you are 97 builds behind ***
+>
+
+[10:44:53 INFO]: *** It is highly recommended to download the latest build from https://papermc.io/downloads/paper ***
+>
+
+[10:45:54 INFO]: UUID of player CodexStep19 is 7cf408b7-3218-334b-8f94-04d13c8e9231
+>
+
+[10:45:54 INFO]: CodexStep19 joined the game
+>
+
+[10:45:55 INFO]: CodexStep19[/127.0.0.1:54552] logged in with entity id 274 at ([minecraft:overworld]1.5, -60.0, 9.5)
+>
+
+[10:46:00 INFO]: CodexStep19 issued server command: /wp remote servers
+>
+
+[10:46:01 INFO]: CodexStep19 issued server command: /wp remote tp b "minecraft:overworld" Test Target
+>
+
+[10:46:01 INFO]: CodexStep19 lost connection: Disconnected
+>
+
+[10:46:01 INFO]: CodexStep19 left the game
+>
+
+[10:46:11 INFO]: UUID of player CodexStep19 is 7cf408b7-3218-334b-8f94-04d13c8e9231
+>
+
+[10:46:12 INFO]: CodexStep19 joined the game
+>
+
+[10:46:12 INFO]: CodexStep19[/127.0.0.1:54572] logged in with entity id 510 at ([minecraft:overworld]1.5, -60.0, 9.5)
+> >
+
+[10:46:26 INFO]: CodexStep19 issued server command: /wp remote list b "minecraft:overworld" Test
+>
+
+[10:46:26 INFO]: CodexStep19 has the following entity data: [5.5d, 80.0d, 30.5d]
+>
+
+[10:47:01 INFO]: CodexStep19 issued server command: /wp remote list b "minecraft:overworld" Test
+>
+
+[10:47:02 INFO]: CodexStep19 issued server command: /wp remote tp b "minecraft:overworld" Test Target
+>
+
+[10:47:03 INFO]: CodexStep19 lost connection: Disconnected
+>
+
+[10:47:03 INFO]: CodexStep19 left the game
+>
+
+[10:47:14 INFO]: UUID of player CodexStep19 is 7cf408b7-3218-334b-8f94-04d13c8e9231
+>
+
+[10:47:14 INFO]: CodexStep19 joined the game
+>
+
+[10:47:14 INFO]: CodexStep19[/127.0.0.1:54617] logged in with entity id 713 at ([minecraft:overworld]5.5, 80.0, 30.5)
+>
+
+[10:47:30 INFO]: CodexStep19 issued server command: /wp remote list b "minecraft:overworld" Test
+>
+
+[10:47:39 INFO]: CodexStep19 issued server command: /wp remote tp b "minecraft:overworld" Test Target
+>
+
+[10:47:39 INFO]: CodexStep19 lost connection: Disconnected
+>
+
+[10:47:39 INFO]: CodexStep19 left the game
+>
+
+[10:47:50 INFO]: UUID of player CodexStep19 is 7cf408b7-3218-334b-8f94-04d13c8e9231
+>
+
+[10:47:50 INFO]: CodexStep19 joined the game
+>
+
+[10:47:50 INFO]: CodexStep19[/127.0.0.1:54901] logged in with entity id 848 at ([minecraft:overworld]5.5, 80.0, 30.5)
+>
+
+[10:48:59 INFO]: CodexStep19 issued server command: /wp remote tp b "minecraft:overworld" Test Target
+>
+
+[10:48:59 INFO]: CodexStep19 lost connection: Disconnected
+>
+
+[10:48:59 INFO]: CodexStep19 left the game
+>
+
+[10:50:05 INFO]: UUID of player CodexStep19 is 7cf408b7-3218-334b-8f94-04d13c8e9231
+>
+
+[10:50:05 INFO]: CodexStep19 joined the game
+>
+
+[10:50:05 INFO]: CodexStep19[/127.0.0.1:54927] logged in with entity id 1077 at ([minecraft:overworld]5.5, 80.0, 30.5)
+>
+
+[10:50:14 INFO]: CodexStep19 issued server command: /wp remote list b "minecraft:overworld" Test
+>
+
+[10:50:15 INFO]: CodexStep19 issued server command: /wp remote tp b "minecraft:overworld" Test Target
+>
+
+[10:50:15 INFO]: CodexStep19 lost connection: Disconnected
+>
+
+[10:50:15 INFO]: CodexStep19 left the game
+> >
+
+[10:50:50 INFO]: Stopping the server
+>
+
+[10:50:50 INFO]: Stopping server
+>
+
+[10:50:50 INFO]: [server_waypoint_plugin] Disabling ServerWaypoint v3.1.0
+>
+
+[10:50:50 INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/waypoints/minecraft$overworld.json
+>
+
+[10:50:50 INFO]: [server_waypoint_core] Saved config file: plugins/ServerWaypoint/config.json
+>
+
+[10:50:50 INFO]: Saving players
+>
+
+[10:50:51 INFO]: Saving worlds
+>
+
+[10:50:51 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+>
+
+[10:50:51 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:overworld'
+>
+
+[10:50:51 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:overworld'
+>
+
+[10:50:51 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:overworld'
+>
+
+[10:50:51 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'minecraft:overworld' in 0.01s
+>
+
+[10:50:51 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:overworld'
+>
+
+[10:50:51 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:overworld'
+>
+
+[10:50:51 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+>
+
+[10:50:51 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:the_nether'
+>
+
+[10:50:51 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:the_nether'
+>
+
+[10:50:51 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:the_nether'
+>
+
+[10:50:51 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'minecraft:the_nether' in 0.00s
+>
+
+[10:50:51 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:the_nether'
+>
+
+[10:50:51 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:the_nether'
+>
+
+[10:50:51 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+>
+
+[10:50:51 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:the_end'
+>
+
+[10:50:51 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:the_end'
+>
+
+[10:50:51 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:the_end'
+>
+
+[10:50:51 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'minecraft:the_end' in 0.00s
+>
+
+[10:50:51 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:the_end'
+>
+
+[10:50:51 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:the_end'
+>
+
+[10:50:51 INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+>
+
+[10:50:51 INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+>
+
+[10:50:51 INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+>
+
+[10:50:51 INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+>
+
+[10:50:51 INFO]: Waiting for all RegionFile I/O tasks to complete...
+>
+
+[10:50:51 INFO]: All RegionFile I/O tasks to complete
+>
+
+[10:50:51 INFO]: [MoonriseCommon] Awaiting termination of worker pool for up to 60s...
+>
+
+[10:50:51 INFO]: [MoonriseCommon] Awaiting termination of I/O pool for up to 60s...
+>

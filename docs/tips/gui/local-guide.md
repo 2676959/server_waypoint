@@ -1,0 +1,2035 @@
+# GUI Development Guide
+
+This guide describes the GUI code shared by the Fabric, Forge, and NeoForge targets in the `mods` project. Read it before adding a widget or screen, changing render entry points, manually rendering widgets, or editing GUI-related Stonecutter branches.
+
+Before implementing any GUI change, including a small bug fix, follow the mandatory
+[component reuse check](#mandatory-component-reuse-check). Do not start with custom drawing code
+until you have inspected the existing component that owns the required behavior.
+
+## Scope and source location
+
+The GUI source root is:
+
+```text
+mods/src/main/java/_959/server_waypoint/common/client/gui
+```
+
+The `common` segment in this Java package means loader-shared code inside the `mods` project. It is not the top-level `common` Gradle subproject. GUI code depends on Minecraft client classes and must remain in `mods`; only UI-neutral logic that is also needed by `paper` or another non-client consumer belongs in the top-level `common` project.
+
+Keep new helpers at the narrowest useful scope:
+
+- A helper used by one widget stays beside that widget, usually as a private method or nested type.
+- A helper shared only by GUI code belongs in one of the `client/gui` packages below.
+- A helper moves to the top-level `common` project only when it has real non-GUI consumers and no Minecraft client dependency.
+
+## Package structure
+
+| Package | Responsibility | Typical contents |
+| --- | --- | --- |
+| `client.gui.api` | Small GUI-facing contracts and callbacks | Button, toggle, color-picker, and dimension-selection callbacks; `Colorable`; `PopupOwner` |
+| `client.gui.layout` | Positioning, sizing, padding, and flow | `WidgetStack`, `WidgetPack`, `ExpandableManager`, `LayoutFlow`, `Padding`, `AnchorMode`, `VisualBounds`, `VisualPositioning`, `TooltipPlacement` |
+| `client.gui.render` | Cross-version drawing helpers, semantic theme state, and presentation constants | `DrawContextHelper`, `PaddingBackground`, `WidgetTheme`, `WidgetThemeManager`, `WaypointTextures` |
+| `client.gui.screens` | Screen lifecycle and feature composition | Manager, add/edit, configuration, theme-editor, and movement-aware screens |
+| `client.gui.widgets` | Reusable visible and interactive components | Buttons, fields, sliders, dialogs, color pickers, lists, tree views, and tooltips (`TranslucentTooltip`, `TooltipLayer`) |
+
+Related resources live under:
+
+```text
+mods/src/main/resources/assets/server_waypoint/lang
+mods/src/main/resources/assets/server_waypoint/textures/gui
+```
+
+Use translatable `Component` values for player-facing text. Add GUI textures to `textures/gui` and expose shared identifiers through `WaypointTextures` rather than scattering resource identifiers across widgets.
+
+`WaypointAddScreen.fromWaypoint(parent, dimensionName, listName, defaults)` opens the ordinary add
+form populated from a detached `SimpleWaypoint` draft, including its name, initials, position,
+color, yaw and icon. Map-share confirmation uses this API; opening or cancelling the form never
+adds a waypoint. The existing constructors remain suitable for empty forms and map-location adds.
+
+## How the packages work together
+
+A screen normally composes the packages in this direction:
+
+```text
+screen
+  -> widgets for display and input
+  -> layout objects for position and size
+  -> render helpers for version-compatible drawing
+  -> callbacks to pass user actions back to the screen or feature
+```
+
+Keep domain operations out of generic widgets when possible. A widget should report an action through a callback or a small UI-neutral value. The screen or client feature can then update configuration, send a command, or change screens.
+
+Three responsibilities must be handled separately:
+
+1. **Layout** decides widget positions and dimensions.
+2. **Screen registration** gives interactive widgets input, focus, and narration through `addRenderableWidget`.
+3. **Rendering** decides what is drawn and in which layer/order.
+
+Adding a child to `WidgetStack` or `ExpandableManager` does not automatically register it with the screen. Likewise, registering a widget does not make a manually rendered screen draw it if that screen does not call the vanilla screen renderer. New screens must deliberately cover all three responsibilities.
+
+## `api`: callbacks and small contracts
+
+Use the existing interfaces when their meaning matches the new component:
+
+- `ButtonClickCallback` reports a button press, from a left click or an activation key.
+- `ToggleButtonCallback` reports the new boolean state.
+- `ColorPickerCallback` reports an updated ARGB/RGB value.
+- `DimensionListCallback` reports a selected dimension name.
+- `Colorable` standardizes `getColor` and `setColor` for color-aware widgets.
+- `PopupOwner` marks a control with a transient popup, such as a menu or suggestion list.
+  `closePopupIfOpen` closes it and reports whether it was open, so Escape can dismiss it (see
+  [Input](#4-input-preserve-focus-and-text-entry)). `scrollPopupIfOver` scrolls the popup with the
+  mouse wheel when the pointer is over it and reports whether the wheel was used; the default
+  answer is no, so a popup that has no wheel behavior of its own needs no override.
+
+Keep callbacks small and synchronous. Prefer passing the callback into a widget constructor, as `TranslucentButton`, `ToggleButton`, and `DimensionListWidget` do. Do not make a reusable widget reach into a particular screen through static fields merely to report an ordinary click or value change.
+
+## `layout`: coordinates, padding, and containers
+
+### Shifted coordinates
+
+`Shiftable`, `ShiftableWidget`, and `ShiftableClickableWidget` separate a widget's base position from an offset. This is useful for building a layout at `(0, 0)` and moving the complete layout later.
+
+- `setX` and `setY` update the base position.
+- `setXOffset` and `setYOffset` move the displayed position relative to that base.
+- `getShiftedX` and `getShiftedY` return the displayed position.
+
+Widgets derived from the shiftable bases expose the shifted position through `getX` and `getY`. Initialize the shifted coordinates by calling `setX` and `setY` in a new clickable widget's constructor. When overriding position methods, update both the anchor/base value and the shifted value; `TranslucentButton` and `TranslucentTextField` are the reference implementations.
+
+### Content bounds and visual bounds
+
+Some widgets draw borders or backgrounds outside their Minecraft content rectangle. The project models their outer rectangle with `Padding`:
+
+- `getX`, `getY`, `getWidth`, and `getHeight` describe the content bounds used by the widget.
+- `getVisualX`, `getVisualY`, `getVisualWidth`, and `getVisualHeight` describe the complete drawn bounds, including padding or outlines.
+- `VisualBounds` converts between content and visual dimensions for fixed padding.
+- `VisualPositioning.getVisualX`, `getVisualY`, `getVisualWidth` and `getVisualHeight` read any
+  `LayoutElement`'s visual bounds: a `Padding` element's complete drawn rectangle, and any other
+  element's own bounds. Use them instead of repeating the `instanceof Padding` check.
+- `VisualPositioning.setVisualPosition(element, visualX, visualY)` places those drawn bounds.
+  It converts the requested position to the element's setter anchor by measuring the difference
+  after placement. This applies to every element, including shifted widgets and comboboxes whose
+  setters take a text anchor while their getters report the outer control. `Padding` only determines
+  which drawn bounds are measured; it does not determine whether anchor conversion is necessary.
+- `PaddingBackground` draws a padded background and optionally a border around a `LayoutElement`.
+
+Implement `Padding` whenever pixels extend outside the content bounds and the widget may participate in layout. If the widget can be resized by a container, also implement `Expandable` and make `setVisualWidth`, `setVisualHeight`, or `setVisualDimensions` convert the requested outer size back to the content size.
+
+`AnchorMode` determines what constructor and setter coordinates mean for padded widgets:
+
+- `CONTENT` preserves the historical behavior: the supplied coordinate anchors the content rectangle.
+- `OUTLINE` anchors the outer outline/visual rectangle.
+
+Existing constructors default to `CONTENT` for compatibility. For new edge-aligned or responsive layouts, `OUTLINE` is usually clearer because the layout coordinate matches the visible edge. Choose the mode explicitly when the distinction matters; do not change the default globally.
+
+### Choosing a container
+
+Use vanilla `SpacerElement.width(...)` or `SpacerElement.height(...)` for an explicit non-rendering
+gap between layout children. Do not use an empty layout container as a spacer.
+
+Use `WidgetStack` for intrinsic, fixed-size rows or columns:
+
+- It stacks children horizontally or vertically in `FORWARD` or `REVERSE` order.
+- Each child keeps its existing size.
+- The `pdx` value is spacing inserted before that child along the main axis.
+- `setOffsets` can move the whole stack after construction.
+- `addClickable` also adds a child to the stack's internal click-routing list; `addChild` only lays out and renders it.
+
+Use `addClickable` primarily inside a composite that deliberately forwards clicks, such as `DialogWidget`. A screen should still register each interactive child with `addRenderableWidget`.
+
+The enum constructor keeps legacy content-bound behavior by default:
+
+```java
+WidgetStack row = new WidgetStack(
+        0,
+        0,
+        8,
+        LayoutFlow.Orientation.HORIZONTAL,
+        LayoutFlow.Direction.FORWARD
+);
+```
+
+When padded children must be aligned and measured by their visible edges, use `addPadded`/`addPaddedClickable`, or opt the stack into visual bounds with the constructor's `useVisualBounds` argument. Do not silently convert existing stacks: many old layouts intentionally use content bounds.
+
+Use `ExpandableManager` for responsive layouts that must consume available width or height:
+
+- A ratio of `0` on the stacking axis keeps the child's current visual size fixed.
+- Positive ratios split the space remaining after fixed children are measured.
+- A positive ratio on the cross axis fills that axis; the exact positive value is not weighted there.
+- Nested managers relayout their children when the parent changes their size.
+- Padded children are measured and positioned by visual bounds.
+
+`ExpandableManager` is layout-only and does not render its children. Register and render the managed widgets separately.
+
+For example, a fixed-width rail next to a flexible main panel is:
+
+```java
+ExpandableManager layout = new ExpandableManager(
+        0,
+        0,
+        LayoutFlow.Orientation.HORIZONTAL,
+        LayoutFlow.Direction.FORWARD
+);
+layout.addChild(dimensionRail, 0, 1);
+layout.addChild(mainPanel, 1, 1);
+```
+
+Use `WidgetPack` when a fixed-size area must accept children from both ends of one axis. Each child
+chooses `LayoutFlow.Direction.FORWARD` or `LayoutFlow.Direction.REVERSE`: these mean left/right in a
+horizontal pack and top/bottom in a vertical pack. Children accumulate inward from their selected
+side, use visual bounds when padded, and never change the pack's dimensions. Resize the pack
+explicitly through its `Expandable` API; resizing or moving it relayouts both anchored groups.
+
+```java
+WidgetPack toolbar = new WidgetPack(
+        0,
+        0,
+        availableWidth,
+        buttonHeight,
+        LayoutFlow.Orientation.HORIZONTAL
+);
+toolbar.addChild(backButton, LayoutFlow.Direction.FORWARD);
+toolbar.addChild(doneButton, LayoutFlow.Direction.REVERSE);
+```
+
+Like `ExpandableManager`, `WidgetPack` is layout-only. Its children still need to be registered for
+input and rendered by their owning screen or composite.
+
+Children touch the top of a horizontal pack, or the left of a vertical pack. Call
+`setCrossAxisAlignment(WidgetPack.CrossAxisAlignment.CENTER)` to center them across the pack by
+their visual bounds instead, rounding toward the start; changing the alignment lays the children out
+again. In horizontal rows, a child implementing `VerticalAlignment.getVerticalAlignmentCenter()`
+is centered by its visible content instead. The center is measured in screen pixels below its visual
+top, and positioning rounds to the nearest pixel. `ScalableText`, text inputs, text buttons, toggles
+and comboboxes report their text block's center excluding the font line box's two empty trailing pixels;
+`IntegerSlider` reports its number field's center. Scaled fields include their render scale in this
+measurement. This aligns row text at different control sizes and scales without changing standalone
+rendering, dimensions or wrapping.
+Scaled integer fields round their text inset to a whole GUI pixel, matching the origins of scaled
+labels. The number, caret and inline completion use that rounded origin; the field's surface and
+pointer bounds keep their existing transform. Its reported content center includes the same rounding.
+`SettingsListWidget` rows use this to line up labels and controls of different heights. For manually
+placed rows, use `VisualPositioning.setCenteredRowPosition(element, visualX, rowTop, rowHeight)`;
+the waypoint form uses the same calculation. Vertical packs and start-aligned packs use visual bounds
+without this content alignment.
+
+Use `IconListLayout` for the geometry of an oriented, scrollable icon strip shared by dimension
+and server lists.
+It is a pure layout helper, not a widget or input handler. Its optional non-negative icon spacing
+participates in positioning and scroll extent; spacing gaps are deliberately non-interactive.
+Legacy `DimensionListWidget` constructors preserve zero icon spacing, while every pre-existing
+constructor retains 3-pixel vertical padding and 4-pixel horizontal padding. Its full overload lets
+a particular screen opt into non-negative icon spacing and symmetric vertical/horizontal padding;
+use zero padding for a strip whose parent already owns the complete outer inset.
+
+### Directional dropdown menus
+
+Extend `AbstractDropdownMenuWidget` for a control whose popup can grow along any `LayoutFlow`:
+
+| Orientation | Direction | Popup growth |
+| --- | --- | --- |
+| `HORIZONTAL` | `FORWARD` | Right |
+| `HORIZONTAL` | `REVERSE` | Left |
+| `VERTICAL` | `FORWARD` | Down |
+| `VERTICAL` | `REVERSE` | Up |
+
+Add choices by extending its nested `AbstractMenuItem` class and calling `addMenuItem` from the
+concrete dropdown constructor. A menu item owns its complete renderer, so it may draw text, icons,
+or richer content rather than being restricted to a label. The dropdown routes left clicks and
+direction-aware arrow-key selection to those internal choices; they are not separately registered
+or focused by the screen. Items are centered on the trigger's cross axis and retain logical
+insertion order even when expanding in reverse.
+
+If a concrete dropdown tracks a selected value, override `getSelectedMenuItemIndex()`. The selected
+item is represented by the dropdown control and omitted from the popup; the remaining visible
+items are compacted in logical insertion order. Use `getPopupItemCount()` when positioning the
+popup based on its displayed size. The initial keyboard highlight starts at the first selectable
+remaining choice and skips hidden or inactive items. Opening the popup with the mouse does not
+pre-highlight an item; arrow-key navigation starts from the first choice in that direction.
+
+The dropdown is a single registered composite: register the dropdown, not its menu items, and
+render it exactly once through the screen's rendering owner. A `MovementAllowedScreen` calls its
+high-level wrapper explicitly; a normal vanilla-rendered screen may already render registered
+widgets. The dropdown forwards rendering through each item's high-level wrapper and expands
+`isMouseOver` to cover visible popup items. That expanded hit area is required because newer
+Minecraft screens resolve a child by `isMouseOver` before dispatching the click.
+
+When popup items may overlap another registered widget, route the open dropdown before
+`super.mouseClicked`; render layers do not define input priority. For an outside click, call
+`closeMenuIfOutside` and then continue normal dispatch so the same click can reach its target.
+A dropdown is a `PopupOwner`, so Escape closes an open menu and the dropdown yields focus before
+the screen can close; screens need no Escape code of their own for it (see
+[Input](#4-input-preserve-focus-and-text-entry)). Losing focus closes the menu, so an open menu
+always belongs to the focused control.
+
+Use `InputConstants.KEY_*` and `InputConstants.MOUSE_BUTTON_*` for input comparisons and test
+events. Minecraft 26.3 uses SDL codes, so raw GLFW values and numeric mouse buttons no longer
+match the dispatched input. A `KeyEvent` carries its secondary code as `keycode()` on 26.3 and
+`scancode()` on earlier targets; keep that accessor behind a Stonecutter predicate.
+
+`ComboBoxWidget` combines editable text with a separately opened list of choices. It reuses
+`SuggestingTextInput` for cursor movement, selection, clipboard shortcuts, text rendering, and
+completion (also shared by `TranslucentTextField`), and
+`AbstractDropdownMenuWidget` for the popup. Register only the composite; it owns its internal field's
+position, size, focus, input, and rendering. Click the text area to edit and the arrow to toggle the
+list. Arbitrary text is accepted, including values absent from the list. Choosing an item replaces
+the field text. Enter opens/selects, Up/Down navigates the open popup, and typing or losing focus
+closes it. Unfocused text shows its prefix; focused text scrolls with the cursor, and popup labels
+are clipped. The control and choice rows do
+not show hover tooltips because their values are already presented by the input and suggestions.
+
+Pass choices, initial text, field label, font, and `Consumer<String>` to the constructor. Duplicate
+choices are removed in insertion order. `getValue` returns the current text; `setValue` accepts any
+non-null text without calling the callback. `setMaxLength` limits the text length, which is
+otherwise unlimited, and cuts longer text without calling the callback. `setValues` replaces the popup choices, closes an open
+popup, and preserves the current text without invoking the callback. User edits and popup selections invoke the callback.
+Suggestions default to the current choices; `setSuggestionsProvider(Supplier<List<String>>)` can
+supply a separate dynamic catalog, and `null` disables suggestions. Matching is case-insensitive
+prefix matching, deduplicated and sorted, with an inline suffix and up to five popup rows.
+`setSuggestionsMatcher(BiPredicate<String, String>)` on either `ComboBoxWidget` or
+`SuggestingTextInput` overrides matching for that input only. Its arguments are the candidate and
+current input text; changing it refreshes completion state. Exact matches remain omitted, and
+accepting a match replaces the entire input with the candidate. Inline suffixes appear only when
+the candidate starts with the current text.
+`setTextColorProvider(IntSupplier)` on either input or combobox supplies the active input's text
+color on every render; disabled text and placeholder colors remain theme-owned. Use it for input
+validation feedback instead of calling vanilla `setTextColor` once, which a theme refresh replaces.
+`ComboBoxWidget.useMatchingValueColors()` opts into colors based on exact, case-sensitive membership
+in the current popup choice catalog: theme `SUCCESS` for a matched value while focused,
+normal `TEXT_PRIMARY` when matched and unfocused, and theme `DANGER` for a non-empty unmatched
+value regardless of focus. Empty text keeps its normal theme color, and disabled text keeps
+`TEXT_DISABLED`. Replacing choices with `setValues` automatically changes the color on the next
+render without altering the entered text. The waypoint-add list-name combobox uses standard
+themed text colors.
+
+`ComboBoxWidget.useResourceIdMatching()` opts into vanilla resource-ID suggestions and the same
+focus-dependent validation colors. Without a colon, a query matches either the namespace or path,
+including words after underscores; with a colon it matches the full ID. This works for vanilla
+and custom dimensions alike: `over` suggests `minecraft:overworld`, while `moon` and `base` can
+suggest `examplemod:moon_base`. Suggestion matching ignores case, but a complete valid ID must use
+its exact canonical spelling. Bare complete IDs default to `minecraft`, so `overworld` matches
+`minecraft:overworld`; a custom ID requires its explicit namespace for validation. The full choice
+popup includes both vanilla and custom dimension IDs.
+
+`getValue()` retains the entered text. `getResolvedValue()` returns the canonical full ID for a
+complete known resource match, and the entered text otherwise; ordinary comboboxes return their
+entered text. Use the resolved value for catalog lookups, form checks and submission. The waypoint-add
+dimension field uses this mode and refreshes list choices after an asynchronous dimension-catalog
+update, so a newly resolved bare vanilla name uses the correct dimension's lists.
+
+`ComboBoxWidget.getHoveredValue(mouseX, mouseY)` returns the current visible popup choice or
+suggestion under the pointer, excluding the trigger and scrollbar. It is available before popup
+rendering, observes the current scroll position, and does not edit text, accept a choice, or move
+keyboard selection. `SuggestingTextInput.getHoveredSuggestion` provides the suggestion-only query;
+`AbstractDropdownMenuWidget.getHoveredMenuItem` is the protected choice-only counterpart. Hidden,
+disabled, closed or dismissed popups return no hovered value.
+Up/Down selects a suggestion and Tab/Shift-Tab accepts/cycles completions, and the mouse wheel
+scrolls a longer list while the pointer is over it. Clicking a suggestion
+also accepts it through the normal user-change callback. The full choice popup suppresses
+suggestions while open. `renderPopup(...)` draws whichever popup is active, including when rendered
+separately. Route popup clicks before overlapping controls using `isMouseOver(...)`.
+`isMouseOverPopup(...)` tests only the visible choice rows/scrollbar or suggestion list, excluding
+the input and arrow. The shared waypoint form lays out popups before this hit test and renders
+ordinary content with `DrawContextHelper.NO_MOUSE` while the pointer is over a popup; popup
+rendering keeps the real pointer so row hover still works. Standalone field suggestions use
+`isMouseOverSuggestion(...)` for the same isolation. A modal swatch suppresses both layers.
+The base dropdown also exposes `isMouseOverPopup(...)` for its visible menu alone.
+`closePopupIfOpen()` closes the choice list, or the suggestions when the list is closed, so
+Escape dismisses whichever is showing.
+
+Call `ComboBoxWidget.layoutPopup(screenHeight, maxRows)` after positioning the control and before
+rendering its popups to opt into screen-aware vertical placement (the waypoint form's
+comboboxes use eight rows). Refresh it as the screen size, control position, or choices change. The choice list
+prefers downward expansion whenever its visible rows fit within a four-pixel screen margin;
+otherwise it uses the side with more room and limits its scrollable height. Suggestions choose
+their direction independently using their actual height, so a shorter suggestion list can still
+open downward when the full choice list needs to open upward. Other comboboxes retain their
+explicit expansion direction until this method is used.
+
+`SuggestingTextInput` is the reusable surface-free input base. It owns editing, shifted layout,
+completion state, inline text, and suggestion rendering/hit testing. Setting its value while
+unfocused or losing focus moves the cursor and viewport to the beginning, so long values show their
+prefix. This also applies to combobox inputs and `TranslucentTextField` subclasses. While focused,
+editing and cursor movement retain vanilla horizontal scrolling. `TranslucentTextField` adds
+its themed surface, whose fill `surfaceColor()` returns for the field's state.
+A field on a panel that already paints a translucent fill overrides it to leave out the resting fill, as
+`WaypointSearchBarWidget` does on the manager's list panel; hovering and the disabled look still fill.
+Such a field shows its hint through `setPlaceholder`, as the search bar does, because vanilla's fixed
+dark gray hint is unreadable on a bare panel (1.2:1 against a light world). By default the list takes the field's outline: it starts at `getVisualX()`
+and is `getVisualWidth()` wide, so its edges line up with the field's, and it widens to the right
+only when a suggestion's text needs more room. Composites can override `getSuggestionsX()`,
+`getSuggestionsY()`, and `getSuggestionsWidth(int maxTextWidth)` to anchor suggestions to their outer
+bounds. The combobox uses its full control width, including the arrow area, and clips suggestion text
+inside that outline.
+Suggestion rows share vanilla `EditBox`'s horizontal text viewport through `EditBoxAccessor`, so
+their visible prefixes line up with the scrolled input. The inline completion follows the visible
+input text and is clipped to the input area. Moving the cursor back to the start restores the
+suggestion prefixes; acceptance always uses the complete suggestion value.
+Drawing and hit testing use the same bounds. Use `setSuggestionsEnabled(...)` to temporarily suppress completion without
+losing focus. `refreshSuggestions()` invalidates a completion cycle after catalog changes; replacing
+the provider also refreshes it. `renderSuggestions(...)` remains an explicit overlay pass for standalone inputs.
+Escape closes the suggestion list and the input yields focus. A dismissal through
+`closeSuggestionsIfOpen()` persists until editing or refocusing, and disabled/hidden inputs do not
+accept suggestion clicks. `AbstractDropdownMenuWidget.renderPopup(...)` may be overridden to provide
+another popup when the full menu is closed; preserve its separate-rendering contract.
+
+`setPlaceholder(Supplier<Component>)` shows themed text while the field is empty and unfocused, in
+`TEXT_PLACEHOLDER` (`TEXT_DISABLED` while inactive). It goes through vanilla's `EditBox` hint, which
+gives text without a color of its own a fixed gray, so the input styles the text with the theme's
+color each frame. The supplier is read every frame too, so the text can follow another field, as the
+waypoint form's Display name follows Name. `ComboBoxWidget.setPlaceholder` passes it to its input,
+and `ColorHexCodeField` uses it for `RRGGBB`, or `AARRGGBB` in its ARGB mode.
+`TranslucentTextField.setInvalid(true)` draws the outline in `DANGER` instead of the border color
+until it is cleared, for a value a form rejects.
+`isSuggestionListOpen()`, also on `ComboBoxWidget` for its input's list, reports whether a list is
+showing. `acceptHighlightedSuggestion()` takes the highlighted suggestion the way clicking it does
+and reports whether a list was showing. Text fields don't handle Enter themselves; a screen that
+gives Enter this meaning while a list is open, as the waypoint form does, calls it before using
+Enter for anything else.
+
+An exact matching choice is omitted from the popup when other choices exist. A sole choice remains
+in the popup even when it matches the current text or resolved resource ID, so the arrow still opens
+the list. Resizing also resizes the field and choice rows.
+Resting combobox popup rows draw side and bottom borders; the preceding control or row supplies
+the shared top edge, keeping separators one pixel thick without overlapping row hit areas.
+Hovered and keyboard-highlighted rows draw their own complete four-sided outline. Their surface,
+outline, and label reserve the scrollbar column when the popup overflows.
+`AbstractDropdownMenuWidget.getPopupContentWidth()` reports this row area, excluding the visible
+three-pixel scrollbar and its right inset. Popup rendering passes `NO_MOUSE` to the choice rows
+while the pointer is over the scrollbar, so it does not highlight a row underneath the thumb.
+`DrawContextHelper.renderOutlineWithoutTop(...)` provides this three-sided outline for both
+combobox and theme-selector popup rows; use it when the preceding row owns the top separator.
+The constructor and position setters anchor the text, matching standalone text inputs and labels.
+The widget derives its default height from `font.lineHeight + 2`, matching `TranslucentTextField`,
+and places the outline two pixels above and left of the text. Callers supply width, not height.
+`getX`/`getY` and their shifted equivalents report the outer control position used for drawing,
+hit testing, and popup placement. Offsets and height changes preserve the text anchor.
+Containers must position it through `VisualPositioning` to convert from outer bounds to that text
+anchor; do not compensate with a screen-specific offset.
+Width and height describe the complete control, including its outline;
+the popup is excluded from layout dimensions.
+Treat a focused combobox as text entry when deciding whether to forward movement keys, as
+`AbstractWaypointPropertiesScreen` does.
+
+When a dropdown appears early in a manually rendered layout, call
+`setRenderPopupSeparately(true)` and then `renderPopup(...)` once after the other controls.
+The default still renders the popup with its control. This prevents later controls from covering
+popup choices, including on newer render strata APIs. `AbstractWaypointPropertiesScreen` draws the
+popup of every dropdown it holds, the icon picker's and Add's dimension and list comboboxes, after the rows,
+the suggestions and the field tooltip, and calls `layoutPopup(height, 8)` on each first, so a popup
+shows at most eight rows and opens on the side with room. The dimension combobox is populated from the same complete
+integrated-server or remote-suggestion dimension catalog as `WaypointManagerScreen`, with the
+supplied starting dimension retained. The list combobox offers the waypoint lists of the chosen
+dimension: the screen replaces its choices with `setValues` whenever the dimension changes, so the
+text already typed stays and a name that isn't a list yet still creates one. `setMaxLength` caps
+it at `MAX_NAME_LENGTH`. Waypoint-name suggestions and submission read the current selection. Popup clicks have priority over overlapping
+fields, outside clicks continue to their targets, and Escape closes the popup before the screen.
+
+## `render`: drawing and presentation
+
+Use `DrawContextHelper` for drawing operations whose Minecraft API changes across supported versions. It centralizes text, texture, item, matrix, layer, outline, and custom-quad differences. Before adding a new Stonecutter branch at every call site, check whether the difference belongs in this helper.
+
+To draw widgets with no hover state or tooltip, as under a dialog or for a clipped settings row,
+pass `DrawContextHelper.NO_MOUSE` as both mouse coordinates.
+`AbstractWaypointPropertiesScreen` does this for the form and its popups while its modal
+`SwatchWidget` is visible, and passes the real mouse coordinates only to the swatch.
+`WaypointManagerScreen` does it for everything drawn before its sort dropdown while the pointer is
+over the dropdown's popup (see the manager's sort popup below). Disabling controls alone does not
+suppress hover or cursor requests during rendering.
+
+`DrawContextHelper.texture` has an overload with a trailing ARGB color that multiplies every pixel
+of the texture, as `IconButton` does to tint GUI icons. It uses the colored blit on 1.21.2
+and later, and a shader color around the blit before that.
+Its source-region overload takes separate source and destination dimensions for scaling a cropped
+region while preserving the same tint behavior.
+GUI chrome icons use `ICON_PRIMARY` (`icon.primary`) while active and `ICON_DISABLED`
+(`icon.disabled`) while inactive, independently of text colors. `WidgetThemeColors.getIconColor(active)`
+resolves the appropriate role from the live theme on each draw. The manager's sidebar controls,
+`IconButton`, local list actions and expansion icons, and remote tree expansion icons use this tint.
+The manager's sidebar icon controls use `ICON_DISABLED` for inactive icons and leave the panel
+background visible, including the sort-order toggle when default sorting is selected. Popup rows
+keep their own disabled fill because they float over other controls.
+
+Use the other render classes as follows:
+
+- `WidgetThemeVariable`, `WidgetTheme`, `WidgetThemes`, and `WidgetThemeManager` define and expose the runtime theme.
+- `WidgetThemeColors` is a compatibility facade over `WidgetThemeManager`; it does not hold fixed color constants.
+- `WidgetThemeJson` serializes complete theme snapshots and performs file persistence with GSON.
+- `WidgetTextures` owns identifiers for reusable GUI icons, including the Waypoint Manager's
+  single/all-dimension scopes, flat/grouped display modes, default/name/distance/color sort modes,
+  and ascending/descending sort directions.
+- `PaddingBackground` renders the background/outline associated with a padded widget or layout.
+- Small pure presentation calculations, such as `WaypointSortButtonLabel`, belong here when they are reusable and easy to unit test.
+
+The 25 reusable GUI textures are transparent 64×64 white masks downloaded from Google Material
+Symbols Sharp, with FILL 0, weight 400, grade 200 and optical size 48. White RGB preserves the exact
+selected ARGB tint; antialiasing remains in the alpha channel. The source URL follows
+`https://fonts.gstatic.com/s/i/short-term/release/materialsymbolssharp/<symbol>/grad200/48px.svg`;
+render that vector at 64×64 with `#FFFFFF` fill. Resource names map directly to symbol names except:
+`add` → `add_2`, `clear` → `close`, `confirm_delete` → `delete_forever`, `cube` → `deployed_code`,
+`edit` → `edit_square`, `hide` → `visibility_off`, `lan_servers` → `lan`,
+`list_collapse` → `keyboard_arrow_right`, `list_empty` → `check_indeterminate_small`,
+`list_expand` → `keyboard_arrow_down`, `placeholder` → `square`, `reset` → `redo`,
+`show` → `visibility`, and `synced` → `cloud_sync`. Cropped reset buttons use the visible region
+`(9, 9, 46, 43)` and the clear button uses `(13, 12, 38, 39)`, within a 64×64 texture.
+Item icons and waypoint-selected colors retain their own rendering rules.
+
+Rendering helpers should not own screen navigation, networking, or feature state.
+
+### Runtime themes
+
+Theme colors are semantic ARGB roles, not widget-specific constants. Choose the role by what a pixel means:
+
+- Text uses roles such as `TEXT_PRIMARY`, `TEXT_MUTED`, `TEXT_DISABLED`, and `TEXT_ON_ACCENT`.
+- GUI chrome icons use `ICON_PRIMARY` and `ICON_DISABLED`, including both real icon-button samples in the theme preview.
+- Surfaces use `SCREEN_BACKGROUND`, `PANEL_BACKGROUND`, `POPUP_BACKGROUND`, `DIALOG_BACKGROUND`,
+  and the control background roles.
+- Interaction states use `FOCUS_RING`, `SELECTION_BACKGROUND`, `ROW_HOVER_BACKGROUND`, and the scrollbar roles.
+- Divider and settings-header lines use `DECOR_LINE` (`decor.line`), independently of `BORDER` (`border.default`).
+- Feedback uses `SUCCESS`, `WARNING`, `DANGER`, and their background variants.
+
+These roles apply to GUI chrome and state. A waypoint's user-selected color is domain data, and RGB/HSV picker gradients visualize a color space; those values can remain direct colors rather than theme roles.
+
+`TEXT_SHADOW` (`text.shadow`) is a boolean setting, disabled in Light and enabled in the other built-in themes.
+`WidgetThemeVariable.isBoolean()` distinguishes boolean settings from color roles. Use
+`WidgetTheme.getBoolean` / `withBoolean`, `WidgetTheme.Builder.setBoolean`, and
+`WidgetThemeManager.getBoolean` / `setBoolean` for these settings; color APIs reject boolean keys,
+and boolean APIs reject color keys. `getColors()` and `getBooleans()` return separate immutable maps.
+`DrawContextHelper.drawText` resolves `text.shadow` on each call for String, Component and
+FormattedCharSequence text, including scaled text and wrapped `ScalableText` lines. A caller's
+explicit `shadow=false` stays false; `shadow=true` is enabled only while the theme setting is true.
+`EditBoxTextShadowMixin` also applies this setting to vanilla-rendered text in `SuggestingTextInput`
+and its subclasses, including `TranslucentTextField`, numeric/hex fields, search bars and the combobox
+input. It covers typed text, placeholders and the append cursor, while vanilla and other mods' EditBox
+instances retain their original shadow setting. On Minecraft 1.21.6 and newer the hook filters reads of
+vanilla's `textShadow` field and wraps the placeholder call; older versions wrap the text calls that
+implicitly enable shadows. Suggestion popup and inline-completion text use the drawing helper.
+
+`WidgetThemeVariable.getJsonName()` is the stable external name for a role. Use it in JSON. The theme editor shows it raw, so theme keys have no translations. Do not persist enum names or introduce a raw color constant when an existing semantic role already fits.
+
+`WidgetTheme` is an immutable, complete snapshot. A builder created with `WidgetTheme.builder()` must assign every variable before `build()`. For a partial change, start from an existing theme or use `withColor`:
+
+`WidgetThemes.DEFAULT` points to `WidgetThemes.CLASSIC`, the neutral translucent palette described
+below. Initial state, manager resets, and missing/invalid theme-file fallbacks all use Classic.
+
+`WidgetThemes.TRANSLUCENT_DARK` is the built-in neutral grayscale glass palette. The screen overlay is
+65% opaque and panels are 70% opaque, preserving a
+view of the world while limiting bright-scene washout. Controls use 85–90% opacity and
+lighter charcoal fills so their shape remains visible at night. Default borders are transparent;
+a brighter focus ring identifies keyboard focus. Popups are
+98% opaque and dialogs 99% opaque to suppress underlying labels showing through. Accent
+fills are dark gray with light text; selected rows have a stronger neutral fill. Success,
+warning, and danger use muted sage, amber, and dusty red foregrounds and backgrounds.
+Validate text and control contrast after compositing the screen, panel, and control over
+both black and white world backgrounds; checking raw RGB against black misses daylight failures.
+`WidgetThemes.MODERN_DARK` follows the same opacity progression with blue-gray surfaces,
+transparent default borders, and cyan focus highlights. Its accent and selected fills use dark teal to keep
+light labels readable, including the hovered accent state. Green, amber, and rose status text
+sits on darker matching fills. Both palettes are checked over black, white, and sky-blue
+world backgrounds, including status text on its matching background. Glassmorphism remains
+the shared design style; text, accents, and focus outlines stay crisp.
+
+`WidgetThemes.LIGHT` uses white glass with pale gray panels, dark slate text, sky blue (`#87CEEB`)
+accents, pale sky selection and hover fills, and deeper sky blue focus rings and scrollbar thumbs.
+Its screen overlay is 85% opaque and panels are 90% opaque;
+popups and dialogs are nearly opaque to suppress underlying labels. Green, amber, and red status
+text sits on matching pastel fills. `text.shadow` is false for this preset. Choose Light in the theme
+editor dropdown; its persistent preset ID is `light`. Text, focus, and scrollbar contrast are checked
+over black, white, and sky-blue world backgrounds.
+
+`WidgetThemes.HIGH_CONTRAST` uses stronger black and near-black glass tints, white primary
+text and borders, a yellow focus ring, and cyan accents. Its screen overlay is roughly 30%
+opaque, panels 50%, popups 60%, and dialogs 80%. Controls and status fills also remain
+translucent; contrast varies with the world behind the glass. Selected controls and status backgrounds stay dark to support white
+`TEXT_ON_ACCENT`; muted, disabled, and placeholder text remain bright enough to read. Apply the
+preset through the editor dropdown or `WidgetThemeManager.setTheme(WidgetThemes.HIGH_CONTRAST)`;
+it does not change the default theme.
+
+`WidgetThemes.CLASSIC` uses the supplied custom palette as the default: a 33% black screen overlay,
+50% black panels, 60% black popups/dialogs, and 25% black controls. Default borders and scrollbar tracks
+are transparent; dividers and focus rings use translucent white. Hovered controls and rows use white
+washes, selected controls use translucent blue, and accents use neutral gray. Toggles use translucent
+green/red fills, with bright green, yellow, and orange-red status text and matching status backgrounds.
+The pixel check in `WidgetThemeTest` pins the composed panel, control, scrollbar, and row-hover layers
+across black, white, and sky-blue world backgrounds. This palette retains its supplied colors exactly;
+its translucent hover, selected, and status fills do not guarantee the same contrast as the other presets.
+
+`DIALOG_BACKGROUND` is reserved for `DialogWidget`, which always renders above other controls;
+presets can give it a stronger tint or opacity than `POPUP_BACKGROUND`. Keep suggestion lists, color-picker popups, and other
+non-modal floating surfaces on `POPUP_BACKGROUND`. Hovered controls and rows use lighter
+translucent gray fills than their resting surfaces so hover remains visible against the dark theme.
+
+```java
+WidgetTheme updatedTheme = WidgetTheme.builder(WidgetThemeManager.getTheme())
+        .setColor(WidgetThemeVariable.ACCENT, 0xFF5BC3DF)
+        .build();
+
+WidgetThemeManager.setTheme(updatedTheme);
+```
+
+`WidgetThemeManager` owns the active immutable snapshot and supports whole-theme replacement,
+single-color changes, atomic `updateTheme` operations, and reset to `WidgetThemes.DEFAULT`.
+
+Resolve theme values when drawing so an open screen reacts immediately to a runtime update:
+
+```java
+int backgroundColor = WidgetThemeManager.getColor(
+        isHovered()
+                ? WidgetThemeVariable.CONTROL_HOVER_BACKGROUND
+                : WidgetThemeVariable.CONTROL_BACKGROUND
+);
+context.fill(x, y, x + width, y + height, backgroundColor);
+```
+
+Do not cache a resolved color in a `static final int` or a long-lived widget field. When an API needs a deferred value, use `WidgetThemeManager.getColorSupplier`. Inside the widgets package, reuse `WidgetThemeState` for the standard active/disabled, hover, focus, and text combinations. Components such as `ScalableText` should retain a `WidgetThemeVariable`, not a resolved integer, when they need live updates.
+
+When adding a theme variable, update all of these together:
+
+1. `WidgetThemeVariable`, including its unique JSON name.
+2. Every built-in theme in `WidgetThemes`.
+3. A `PreviewSample` (sample or marked element) that draws it: add the key to each constant whose widget
+   draws it, or add a sample when none does (see
+   [Markers and sample keys](#markers-and-sample-keys)).
+4. Theme completeness, JSON, and preview-coverage tests.
+
+### Theme JSON persistence
+
+`WidgetThemeJson` is the only theme JSON/file-I/O seam. The current format uses `formatVersion: 1`, a `colors` object with `#AARRGGBB` strings and a `booleans` object with JSON booleans, both keyed by semantic JSON names:
+
+```json
+{
+  "formatVersion": 1,
+  "colors": {
+    "text.primary": "#FFE8F0F7",
+    "background.screen": "#FF0B1016",
+    "accent.default": "#FF5BC3DF"
+  },
+  "booleans": {
+    "text.shadow": true
+  }
+}
+```
+
+The parser also accepts `#RRGGBB` and supplies opaque alpha. Missing known roles inherit from the fallback theme, and unknown roles are ignored for forward compatibility. Invalid structure, versions, or color strings fail parsing instead of silently applying a damaged theme. Serialization writes every known role and boolean setting. Missing boolean settings inherit from the fallback theme; strings and numbers are rejected as boolean values.
+
+Use `toJson`/`fromJson` for strings, `save`/`load` for snapshots, `saveCurrent` for the active theme, and `loadAndApply` when a successfully loaded theme should become active. `save` writes through a temporary file and then replaces the destination. In normal client startup, `WaypointClientMod` loads:
+
+```text
+config/server_waypoint/widget-theme.json
+```
+
+A missing file leaves `WidgetThemes.DEFAULT` active and the editor selects Classic when that default
+is active. An unreadable or invalid file is logged and
+the manager is reset to `WidgetThemes.DEFAULT`.
+
+## `widgets`: choosing and extending components
+
+### Mandatory component reuse check
+
+Before adding or changing GUI rendering, layout, or interaction behavior:
+
+1. Identify the behavior needed and consult the component table below.
+2. Search `client/gui/widgets`, `client/gui/layout`, and `client/gui/render` for an existing
+   implementation. Read the relevant component's API and implementation, plus an existing usage
+   when available. A nearby screen's custom drawing code is not sufficient evidence that a reusable
+   component is missing.
+3. Reuse the existing component when it provides the behavior. Do not duplicate its wrapping,
+   scaling, layout, clipping, hover, or input logic in a screen, callback, or private helper.
+4. If reuse cannot satisfy a concrete requirement, identify the missing capability before writing
+   custom code. Prefer a focused extension to the owning component when the capability belongs
+   there, and update this guide for any API change. When specialized rendering must remain local,
+   document the requirement and why the existing component cannot handle it near that code.
+
+This check applies to small fixes as well as new features. Convenience, fewer lines, or copying an
+existing low-level renderer is not a reason to bypass a suitable reusable component.
+
+### Text labels and wrapped messages
+
+Use `ScalableText` for standalone labels and explanatory, status, or empty-state messages that
+need scaling or wrapping. In particular, messages such as "No remote servers are cached…" must
+use `ScalableText`; do not add a local `Font.split(...)` loop and repeated `drawText(...)` calls.
+
+- Create and retain the `ScalableText` instance with the owning screen or widget, rather than
+  constructing it on every render.
+- Set its maximum width to the actual available content width after padding and scrollbar space.
+  Update that width when layout or viewport size changes, and use `setText` when the message changes.
+- Use a semantic theme role or color supplier so it follows theme changes.
+- Render it once through `render_method_swap` in the owner's coordinate space. It is
+  non-interactive and does not require separate input registration.
+
+While wrapping, `getWidth()` is the maximum width and `getTextWidth()` is the width of the widest
+wrapped line, scaled the same way. Without a maximum width `getTextWidth()` is the whole text's width,
+and with no lines it is 0. Use it to size a surface to its text, as `TranslucentTooltip` does.
+
+Direct text drawing remains appropriate inside the text widget itself and for specialized row or
+document renderers whose per-run formatting or geometry cannot be expressed by `ScalableText`.
+Those cases do not justify duplicating standalone message rendering elsewhere.
+
+### Component selection
+
+| Need | Start with |
+| --- | --- |
+| Text label, optional scaling/wrapping | `ScalableText` |
+| Text action | `TranslucentButton` |
+| Icon action | `IconButton` |
+| Boolean state | `ToggleButton` or `OnOffToggleButton` |
+| Text input with optional suggestions | `TranslucentTextField` |
+| Editable text with a popup choice list | `ComboBoxWidget` |
+| Bounded integer input | `IntegerField` |
+| Absolute/relative/local coordinate input | `CoordinateField` |
+| Integer slider plus field | `IntegerSlider` |
+| Hex color input | `ColorHexCodeField`, or `ColorHexCodeField.argb` for a color with an alpha |
+| Color selection | `ColorSquareButton`, `SwatchWidget`, `RGBColorPicker`, or `HSVColorPicker` |
+| Scrollable hierarchical rows | Extend `TreeViewWidget<T>` |
+| Scrollable settings rows with section headers | `SettingsListWidget` with `Row`, or `WideRow` for a control without a label |
+| Selectable item icon strip | `IconListWidget<T>`, `DimensionListWidget`, `ServerListWidget` |
+| Directional popup with custom items | Extend `AbstractDropdownMenuWidget` and `AbstractMenuItem` |
+| Confirmation overlay | `ConfirmationDialog` |
+| Tooltip for a control or a hovered item | `setTooltip(Component)`, or `TooltipLayer.scheduleAtPointer` |
+
+`TranslucentButton.fitted(label, callback)` makes an 11-pixel-high text button as wide as its label
+plus 5 pixels on each side, and at least 50 pixels wide, so short labels line up and long
+translations still fit. Dialog and footer buttons use it.
+
+`ColorHexCodeField` edits an opaque RGB color by default: six digits after the `#`, the placeholder
+`RRGGBB`, and `getColor()` and `setColor(int)` use RGB (`setColor` ignores the alpha). The waypoint
+form uses it that way. `ColorHexCodeField.argb(x, y, text, font)` makes an ARGB field for a color
+with an alpha, such as the theme's: eight digits, the placeholder `AARRGGBB`, a content width of 51
+instead of 39, and an ARGB `getColor()` and `setColor(int)`.
+
+- **Current color:** an ARGB field's `getColor()` reads the text only while it has all eight digits.
+  Otherwise it returns the last complete value: the last `setColor(argb)` or the last time the text held
+  eight digits, typed, pasted or set. It changes only when the text becomes complete, not on the way
+  there, so a responder that applies the value at eight digits never applies the color that the first
+  six digits of an unfinished edit would make.
+- **`commit()`** finishes an unfinished value. In an ARGB field, six digits become RGB under the alpha of
+  the current color (`B31C1C1C`, then `FF0000`, gives `B3FF0000`), and any other incomplete value, an
+  empty one included, is replaced by the current color; eight digits are left alone. An RGB field pads
+  a short value with leading zeros to six digits. `setFocused(false)` calls it, and a screen calls it
+  for Enter, since text fields don't handle Enter themselves. The completed text is set with
+  `setValue`, so the responder sees it.
+- **Typing and pasting:** `charTyped` takes a digit while the text, less the selection it replaces
+  (`getHighlighted()`), is shorter than the mode's digit count, so typing over a selection in a full
+  field replaces it, and a full field without a selection refuses the digit. `insertText` takes
+  hexadecimal digits only and drops one leading `#` in both modes, so a color copied from
+  `widget-theme.json`, such as `#D9262626`, can be pasted; any other text is ignored, and vanilla cuts a
+  paste to the room the digit count (`setMaxLength`) and the selection leave.
+
+`TranslucentButton`, `TranslucentTextField`, `ColorHexCodeField`, and `ToggleButton` paint the full background first,
+then overlay their outline on the same rectangle. Button and toggle visual bounds are
+`getX()`, `getY() - 1`, `width`, and `height`; the text field retains its two-pixel text inset
+and paints its full `width` by `backgroundHeight` surface beneath the border.
+
+`ColorHexCodeField` includes its `#` prefix in that full background. `ColorSquareButton` keeps
+its opaque swatch at the configured size and backs its outline with a same-RGB ring at 50% opacity.
+The themed outline is drawn last over that ring; borderless swatches add the ring only while
+active and hovered or focused.
+
+`IconButton` keeps its full configured hitbox while drawing its texture with a 2-pixel inner inset.
+Use `withIconPadding(int)` to choose a smaller non-negative inset, and
+`withIconRegion(x, y, width, height, textureWidth, textureHeight)` to fit and center the visible
+source region while preserving its proportions. The reset and clear buttons both use a 3-pixel
+inset and exclude their textures' unequal transparent margins, matching the add button's visible
+inset (its 2-pixel drawing inset plus transparent texture margin).
+Screen-local icon controls should use the same inset so adjacent icon actions remain visually consistent.
+An inactive `IconButton` multiplies its icon by the theme's `TEXT_DISABLED`, the color a disabled
+button's label takes, so an unavailable action, such as resetting a setting that's already at its
+default, doesn't look pressable. Draw icons in a light gray or white so the tint shows.
+
+An `IconButton` uses the control background at rest and the hover fill while active and hovered.
+Disabled buttons keep their resting background and dim only their icon. On a panel that already
+paints a translucent fill, call `withoutRestingFill()` so
+the button paints none of its own while idle and the panel shows through (the manager's add button does).
+The fill painted for the current state is `surfaceColor()`.
+Use `withoutBackground()` to remove the fill in every state, including hover and disabled,
+as the reset and clear buttons do. Their outlines and icon tints still follow the theme.
+
+`ToggleButton` takes each state's fill either as a `WidgetThemeVariable`, which follows the theme (as
+`OnOffToggleButton` does with `TOGGLE_ON_BACKGROUND` and `TOGGLE_OFF_BACKGROUND`), or as an int ARGB, which is
+used as given and never follows the theme. The waypoint form's Visibility toggle uses fixed colors on
+purpose: Local is green and Global is blue in every theme, so keep it off the theme roles. A toggle paints
+only its one fill, so pass the alpha you want over the panel. The form's `LOCAL_TOGGLE_COLOR` and
+`GLOBAL_TOGGLE_COLOR` are the previous release's #04E500 and #005AE5 at 60% over its 53%-black button fill,
+flattened into one layer, and `WaypointFormToggleColorsTest` pins them to those pixels. The outline, the
+hover and focus ring, the label color and the disabled look still follow the theme.
+
+`OnOffToggleButton` uses `toggle.onBackground` for On and `toggle.offBackground` for Off. These are
+independent of the status fills, so editing a status chip's color does not recolor the toggle. Every preset
+starts with its previous On/Off colors. Both keys are editable and saved through the ordinary theme system,
+and selecting either key marks the On and Off preview samples because both samples can be toggled.
+
+The main base classes have distinct roles:
+
+- Extend `ShiftableWidget` for a non-interactive `LayoutElement`/`Renderable`.
+- Extend `ShiftableClickableWidget` for a normal `AbstractWidget` with input. Its `keyPressed`
+  ignores keys unless overridden, so controls that own their key handling (text fields,
+  `IntegerSlider`, `ComboBoxWidget`, dropdowns, and color pickers) build on it directly.
+- Extend `ShiftableButtonWidget` for a pressable control, as `TranslucentButton`, `ToggleButton`,
+  and `IconButton` do. Implement `onPress()`: like vanilla `AbstractButton`, a left click and
+  Enter, Space or keypad Enter while the button is focused, active and visible both play the
+  click sound and run it. `onClick` is final so the two paths cannot diverge, and
+  `activatesOn(keyCode)` reports whether a key would press the button. Screens route those keys
+  as described in [Input](#4-input-preserve-focus-and-text-entry).
+- Extend `ShiftableScrollableWidget` when the widget has a vertically scrollable viewport. Its
+  scrollbar track, thumb, click area, and reserved content column are 3 GUI pixels wide. Combobox,
+  dropdown-menu, and input-suggestion scrollbars use their own geometry.
+- Extend `TreeViewWidget<T>` when the content is a flattened visible view of expandable hierarchical data. Implement child lookup, expansion state, empty rendering, and row rendering; the base class handles scroll bounds, hit testing, visible-row calculation, clipping, and scrollbar drawing. A tree paints its own `PANEL_BACKGROUND` fill, which is right when nothing else paints under it, as in the theme editor's key list. A tree on a panel that already paints that fill overrides `backgroundColor()` to return 0, as the waypoint list and the remote browser tree do on the manager's list panel: a translucent layer composited twice (60% black twice is 84%) makes the tree look darker than the panels beside it.
+
+`WaypointListWidget` supports both one-dimension and all-dimensions query scopes. Call
+`setShowAllDimensions(true)` to use `WaypointQueryEngine.queryAll`; grouped mode then renders
+dimension roots above list and waypoint rows, while flat mode retains each row's dimension so it
+can show the dimension on the first line and the list plus waypoint name on the second, without slash
+separators. Waypoints in the player's current dimension show their 3D distance in a shared aligned
+column, displayed as whole meters below one kilometer and compact one-decimal kilometers at longer
+ranges. Cross-dimension distance labels are enabled only between the vanilla Overworld and Nether,
+use the waypoint dimension's display color, and use the same coordinate conversion as distance
+sorting. End and modded dimension labels remain hidden unless the player is currently in that
+dimension. In an all-dimensions flat distance sort, waypoints from the current and convertible
+dimensions are sorted first. Other dimensions follow in `dimensionNameComparator` order while
+preserving their default waypoint order.
+Local rows prefer a shared aligned distance column. As the list narrows, the gap after each
+formatted name/context shrinks to a minimum of 3 GUI pixels; a longer label pushes its distance
+rightward instead of overlapping it. Names scale only after the minimum gap and distance width
+have been reserved inside the row. Distance text keeps its metadata scale independently of the
+name. Non-hovered rows can use the space occupied by hidden action buttons. On hover, a distance
+that would enter the three action columns is hidden, and the name fits before the buttons.
+Distances already clear of the buttons remain visible. Button positions and hitboxes are unchanged.
+Long initials shrink to the same 16-pixel slot as item and VoxelMap icons to avoid overlapping names.
+An empty waypoint name and context use an unshrunk label scale so the distance still renders
+whenever the distance column is visible.
+Dimension, list, and distance metadata render smaller than the waypoint name. Row actions must use
+the retained dimension rather than the sidebar's selected dimension. The displayed dimension omits
+the `minecraft:` namespace for vanilla dimensions but preserves namespaces for modded dimensions,
+and uses the shared dimension-color mapping in both grouped dimension roots and flat waypoint rows
+while list metadata remains muted. The dimension rail remains selectable in all-dimensions mode;
+its selection is retained for returning to selected-dimension scope.
+Scroll positions are retained within the current server or local-world session, independently for
+each selected dimension and for the all-dimensions view. Switching dimensions or reopening the
+manager restores that scope's position; reselecting the same dimension preserves it. Initial
+restoration waits until `setSelectedDimension` rebuilds the rows after the manager lays out its
+viewport, so constructor queries cannot overwrite remembered positions. `setScrollY` records the
+clamped position, including wheel scrolling, scrollbar dragging, row refreshes, and viewport
+resizing. A shortened or empty list therefore clamps the remembered position to its new bounds.
+`resetSessionStates()` clears every scope's scroll position and dimension expansion state on a
+new connection or local-world session.
+When a query leaves no rows, `WaypointListWidget.resolveEmptyReason(query, showAllDimensions)`
+picks a search-miss message, or a no-waypoints message for all dimensions or the selected one with
+a hint to use the + button, and the list renders it through a retained muted `ScalableText` at the
+first row's text position.
+
+`WaypointListWidget` reports row-body selection through the `Consumer<WaypointSelection>` supplied
+to its constructor. Its action columns remain independent: visibility, edit, and remove clicks do
+not replace the current selection. `WaypointSelection` carries the source dimension, plain and
+display list names, and live waypoint; the widget reconciles that identity after queries so sorting
+and refreshes preserve a still-visible selection while filtering or removal clears it.
+In the ready local view, `WaypointManagerScreen.keyPressed` offers keys to the list before
+`super.keyPressed` only when `canUseShortcuts(focused)` permits them: neither an `EditBox`
+(including the search field) nor a `ComboBoxWidget` may be focused. The same guard controls the
+manager's C shortcut and movement keys. With non-text focus, pressing T while a waypoint row is
+hovered sends that waypoint's teleport command; typing T in a text control leaves input to that
+control even while the mouse hovers over a waypoint.
+`isTeleportKey` compares against `InputConstants.KEY_T`, which is 23 on 26.3 and 84 before it.
+`WaypointDetailsWidget` consumes that selection and presents every stored waypoint field plus its
+dimension/list context in a separately scrollable viewport. Keep formatted display names and
+descriptions parsed only at this render boundary, and reserve scrollbar width while wrapping so
+content does not relayout when overflow begins. Empty keywords and descriptions retain their labels
+with blank values, without a placeholder. Local and remote descriptions start below their
+label. Parse their JSON before decoding literal `\n` and actual line separators through
+`TextHelper.parseDescription`, keeping styles on nested text; the same wrapped component determines
+both rendering and scroll height. Its content ignores clicks without playing a button
+sound; only the visible scrollbar accepts clicks for dragging, while the mouse wheel scrolls the
+viewport. Local and remote selections share a color row with a bordered swatch beside the saved
+hex value. Its fill and outline start one GUI pixel above the text origin, matching the inline icon's
+alignment. Reserve the swatch width during wrapping and content-height calculation.
+Remote status values use `RemoteRefs.stateColor`, matching `/wp remote`: green for available,
+yellow for stale, red for unavailable, and dark gray for unauthorized; the status label stays muted.
+Its optional icon row uses the same `Icon:` label
+as the waypoint form, draws the resolved item or VoxelMap image beside the saved ID, and shows
+initials if the image cannot be resolved. Keep the preview one font line high and align its image
+with the text baseline. Reserve its width in both rendering and content-height calculations so
+wrapped IDs and following rows do not overlap it. The dimension
+row uses the same shared dimension-color mapping as the waypoint list. `WaypointManagerScreen`
+always renders this panel and centers the
+left rail, middle waypoint list, and right details panel as one group with two-pixel inter-panel
+gaps. Calculate the middle content width as 38% of the scaled viewport clamped to 180–360 pixels,
+and the details content width as 32% clamped to 150–320 pixels. When their combined desired width
+exceeds the space inside the 12-pixel screen margins, proportionally shrink both while keeping all
+three panels visible. Content height uses 82% of the viewport clamped to 120–400 pixels and the
+available vertical margins. Resize the search field and waypoint list by visual width together with
+their panels so drawing and hitboxes continue to match the calculated geometry. The manager paints
+each panel's fill once, over the whole panel; the waypoint list, the remote tree and both rails sit on
+that fill and paint none of their own, so they match the other panels at any theme translucence. The
+list keeps its own outline, which frames it inside the list panel. A widget added to a panel follows
+the same rule. The same goes for controls: the sidebar's icon buttons (the scope, grouping and sort-order
+toggles, the sort dropdown's button and the add button) and the search field paint no fill while idle, only
+their border, so a control isn't a second translucent layer stacked on the panel. Hovering, the disabled
+look and a selected control still fill. The sort dropdown's popup rows float over other widgets, so they keep
+their resting fill; `WaypointManagerScreen.resolveIconControlFill` makes that choice.
+
+On a narrow screen, where the choices don't fit left of the controls, the sort popup shifts right and up one
+row, over the sort-order toggle. That toggle is drawn before the dropdown, so with the real pointer it would be
+hovered under the hovered choice and request its tooltip first, and a hovered choice never replaces an earlier
+request. While `sortingModeDropdown.isMouseOverPopup(...)` holds, the manager therefore draws everything before
+the dropdown (the search field, the lists, the details, the rails and the other controls) with `NO_MOUSE`,
+through the pure `WaypointManagerScreen.resolveMouseBeneathPopup`. The dropdown keeps the real pointer, so its
+popup shows the hovered choice's tooltip. The all-dimensions toggle is drawn after the dropdown, asks later than
+the choice does and needs no such treatment.
+
+The manager's sidebar `HOME_ICON` / `LAN_SERVERS_ICON` toggle switches its middle list and right
+details panel between current-server and remote waypoints without opening another screen. Its
+tooltip shows `Waypoints in current server` in local mode and `Waypoints in remote servers`
+in remote mode. The toggle is shown only while `RemoteWaypointPanel.servers()` is non-empty
+or the remote view is open, so singleplayer and servers without cross-server never show it.
+`RemoteWaypointPanel` is a package-private screen composition helper: the manager registers its
+widgets once, supplies layout and visibility, forwards ticks, and owns its manual render pass.
+Search, list/flat mode, name/color/default sorting, and sort direction control both views. Remote
+flat mode sorts within the selected server and dimension scope while retaining server, dimension,
+list, and waypoint identity; grouped mode shows list roots for a selected dimension or dimension/list roots for all dimensions. Remote distance sorting is unavailable because there
+is no shared player origin across servers (entering remote mode from distance sorting selects name,
+and the distance sort choice is hidden).
+In remote mode, `ServerListWidget` appears immediately above the scope toggle and the add button
+is hidden, releasing its layout slot. The dimension rail shows dimensions from the selected remote
+server's catalog (including exported empty dimensions); `RemoteBrowserModel.dimensionNames` leaves
+it empty for an unavailable server, whose retained snapshot the tree also hides. The all-dimensions
+toggle applies within that server. One-pixel themed separator lines separate the dimension and server rails, and the server
+rail from the control buttons, when each adjacent pair is visible. `SeparatorWidget` owns these
+non-interactive lines; the manager positions each midway in its gap and renders it explicitly.
+The four-argument `SeparatorWidget(x, y, width, height)` constructor resolves `DECOR_LINE`
+at render time. All manager and waypoint-form dividers and the lines beside
+`SettingsListWidget.Header` titles use this role, which is editable as
+`decor.line` in the theme editor and JSON. Built-in palettes give dividers their own
+visible color even when default borders are transparent. The reusable widget also accepts
+an explicit theme color or color supplier,
+and its width and height allow either horizontal or vertical separators. Returning to local mode
+restores the local dimension selection.
+
+`IconListWidget<T>` owns per-instance selection, scroll, clipping, item positioning, padding,
+hover labels and left-click dispatch for both `DimensionListWidget` and `ServerListWidget`. It paints no
+background: a rail sits on the manager's left panel, which already paints the fill, and its
+`backgroundColor()` returns 0 so the translucent role isn't composited twice.
+Hover labels are scheduled at the cursor after resolving the hovered icon, so scrolling or
+resizing either rail does not anchor a label to the full widget bounds.
+Dimension hover labels use the shared dimension color mapping and the same GUI color scale as
+dimension labels in waypoint rows; server hover labels show the server name and exact ID.
+Specializations supply `drawIcon` and optionally `entryLabel`. `setEntries` copies its catalog,
+preserves selection by identity, and falls back to the first entry; an empty catalog clears selection.
+`setSelectedEntry` does not fire callbacks; `resetSelection` replaces the former static dimension
+reset. Register and manually render each rail once through its high-level wrapper.
+Specializations may also override `entryBadgeColor` to return a theme role. After drawing every
+icon, the rail draws a 5×5 dot (a 3×3 fill in that role inside a one-pixel `BORDER` edge) flush
+with the top-right corner of each badged icon cell, above the icons through
+`DrawContextHelper.nextItemOverlayLayer` and inside the rail's scissor. `ServerListWidget` badges
+stale servers with `WARNING` and unavailable ones with `DANGER`; available servers get no badge.
+Its hover label adds the state on a second line, colored by `RemoteRefs.stateColor` to match
+`/wp remote` and the remote details pane. `ServerListWidget.stateColor` supplies the theme roles
+for icon badges.
+
+`preferredHeight()` reports the icon strip's natural content height with a one-icon minimum.
+`OpposedExpansionLayout.allocate` reserves the fixed minimum for each rail and shares constrained
+space equally, giving unused space from a short rail to the longer rail. The manager anchors the
+dimension rail at the sidebar top and the server rail just above the controls; they grow down and
+up respectively, stop at their content sizes, and scroll when constrained. Icons in both rails flow
+top to bottom, so their wheel scrolling follows the same direction. The helper returns zero
+sizes if even both minima plus their gap cannot fit; the screen hides the rails at that tiny size.
+The pure `WaypointManagerScreen.calculateSidebarLayout` combines this allocation with the number of
+visible controls, which stack upward from the content bottom with 4-pixel gaps, so a hidden toggle
+or add button releases its slot to the rails. Catalog changes, mode switches, resize and changes in
+remote-server availability all recalculate it. Local mutation callbacks
+must not replace the remote dimension catalog.
+
+Server item icons resolve from `CatalogReceiver.View.iconItem()` through the client's item registry.
+Missing registry entries and air use a compass; tooltip labels include the exact server ID.
+Remote data stays in `RemoteClientCatalogs`; no remote row creates a local waypoint or mutation
+handle. The remote details remain read-only; the read-only tip appears only while no waypoint is
+selected. The teleport button sends immediately without a
+confirmation dialog, after rechecking session, catalog revision, exact identity, and waypoint data.
+The bottom of its outline lines up with the details content bottom, 4 pixels below the details
+viewport. Its tooltip shows `teleport_hint` while disabled, the chat-feedback note while enabled,
+and the failure message after a failed attempt until the selection changes. Below the remote tree,
+a `ScalableText` footer shows the selected server's display name in `TEXT_MUTED` and its state in
+`RemoteRefs.stateColor`; `RemoteWaypointPanel.splitListArea` gives the tree the rest of the
+list area and hides the footer when no server is selected or the tree would drop below one row.
+Both lists use 20-pixel rows and `WaypointRowRenderer.background(...)` / `initials(...)` for waypoint
+color washes, hover/selection outlines and initials badges. The initials method always draws text
+without a shadow, matching in-world badges, including when reused by the form preview and details.
+It returns the badge width for label placement. `WaypointRowRenderer.icon(...)` centers a 16-pixel
+item or VoxelMap image over the minimum initials badge width so icon centers stay aligned across rows. Pass the waypoint
+RGB to tint VoxelMap images in both local and remote rows, and an alpha in `[0, 255]`.
+Local rows use 255 for enabled waypoints and 128 for disabled waypoints, matching the half-opacity
+name, distance and initials badge; remote rows use 255. The remote tree
+reuses `WidgetTextures` expand/collapse/empty icons,
+formatted display names and the tree's clipping and hit testing; exact identities remain in tooltips.
+Remote identity tooltips are scheduled at the pointer with `TooltipLayer.scheduleAtPointer` for the hovered entry after the
+panel render pass, rather than attaching a widget tooltip to the entire tree rectangle.
+Switching
+views preserves separate local and remote selection/scroll state; filtering/removal clears an
+invisible remote selection. Remote scope is owned by the screen instance, not persisted to disk.
+An empty remote tree explains itself: `RemoteBrowserModel.emptyReason(catalogState, hasServers,
+selectedServer, query, dimensionScope)` returns an `EmptyReason` (unauthorized, no servers, an
+unavailable selected server, a search miss, an empty server or an empty dimension, checked in that
+order), and the tree renders its translation through a retained muted `ScalableText` at the first
+row's text position, wrapped to the content width minus 5 pixels on each side.
+
+Waypoint and waypoint-list `name` fields are always unformatted plain-text identities used by
+commands, lookup, sorting, searching, initials, and external map integrations. They are also the
+default display names. An optional serialized `display_name` override retains raw Minecraft JSON
+input and must be converted with `TextHelper.parseFormattedText(...)` only at the client render boundary. `WaypointListWidget`
+renders these display components directly and exposes a waypoint's optional formatted description
+as its row tooltip. `OptimizedWaypointRenderer` keeps parsed display components in its render-thread
+snapshot and draws up to six wrapped description lines below the hovered HUD label. Xaero's Minimap
+and VoxelMap must continue to receive the plain `name` because they cannot render formatted text.
+
+Composite widgets must forward all relevant behavior to their children: position and offsets, dimensions where supported, rendering, focus, input, and `visitWidgets`. `DialogWidget`, `IntegerSlider`, and `SwatchWidget` are useful references.
+
+### Settings lists
+
+`ClientConfigSettings.RENDERING` declares the client screen's waypoint rendering rows. Its
+`RENDER_UNDER_F1` boolean defaults to off and uses the existing toggle and reset controls.
+The world renderer reads `ClientConfig.isRenderWaypointsUnderF1()` each frame, so both a toggle
+and a reset apply immediately; the option never bypasses loading-screen suppression.
+
+Use `SettingsListWidget` for a scrollable panel of settings. It holds `SettingsListWidget.Header`
+entries (a title followed by a line); `SettingsListWidget.Row` entries: a label, a control, an
+optional muted unit (`suffix`), an optional last-column widget (`action`, such as a reset button)
+and an optional `tooltip` supplier; and `SettingsListWidget.WideRow` entries: a control with no
+label column, described below. Entries have their own heights, so long labels wrap onto more
+lines instead of being clipped. The unit and action columns are as wide as their widest entry, so
+every control's right edge lines up. A control can be one widget, a non-interactive element such as
+a `ScalableText`, or a composite such as a `WidgetStack` of buttons: the row owns every widget the
+control's `visitWidgets` reports, and it can take focus while any of them is active.
+Row labels use 85% text scale and a 6-pixel indent beneath full-size section headers. Label wrapping
+and preferred width account for both the scale and indent. `ClientConfigScreen` keeps numeric units
+in hover text rather than adding suffixes, leaving a 4-pixel gap between controls and reset buttons.
+`SettingsListWidget.ROW_TEXT_SCALE` also sets its row buttons, toggles, status text and numeric fields
+to 85% scale, with smaller control
+heights and reset icons. The screen leaves slider track widths unchanged for pointer precision.
+Per-row reset buttons are 9 pixels square with a 2-pixel icon inset, shrinking the arrow along
+with the button bounds and matching the toggle height.
+`TranslucentButton.setTextScale` and `ToggleButton.setTextScale` scale their centered text; callers
+size the controls separately. `DrawContextHelper.drawScaledText` draws at a screen-space anchor.
+The `IntegerSlider` overload with `controlScale` scales its number field, track height and field
+hit bounds together, transforming pointer coordinates for cursor placement. Its internal field
+keeps native dimensions during drawing and input so vanilla text selection matches the visual scale.
+`Row.action(widget, BooleanSupplier)` conditionally shows an action while reserving its column,
+so controls do not shift when it disappears. Hidden actions are excluded from rendering, input,
+tooltips and Tab navigation. Call `refreshWidgetVisibility()` after the condition changes; scrolling
+and relayout also recheck it. `ClientConfigScreen` uses this for reset buttons, which appear only
+when their setting differs from its default and disappear immediately after a reset.
+
+`SettingsListWidget.WideRow` is a third entry type: a control with no label column, unit, action or
+tooltip, built as `new WideRow(control)`. The control starts at the row's left edge, can use the
+whole row width and is centered vertically. The row is as tall as the control plus 3 pixels above
+and below, and at least 17 pixels (`SettingsListLayout.wideRowHeight`); `getPreferredWidth()` counts
+the control's visual width. A wide row gets no `ROW_HOVER_BACKGROUND` fill and no tooltip
+(`SettingsListWidget.highlightsOnHover` is true only for a `Row`). Otherwise it follows the `Row`
+rules below: it owns every widget its control's `visitWidgets` reports, those widgets are visible
+only while entirely in view, a partly visible control is drawn clipped with the mouse off-screen,
+the row is a Tab stop while any of its widgets is active, and `reveal` and `revealTabTarget` treat
+it like a `Row`.
+
+- **Layout:** `setEntries` copies the entries and lays them out. Call `relayout()` after a label,
+  unit or control size changes. `getPreferredWidth()` is the width at which nothing wraps, including
+  the always-reserved scrollbar column; `getContentHeight()` is the total entry height. The widget's
+  bounds are the rows' area; its `Padding` adds `PANEL_PADDING` on each side for the themed panel,
+  so size it with `setVisualWidth`/`setVisualHeight` and position it `PANEL_PADDING` inside the
+  panel. The pure geometry lives in `SettingsListLayout`.
+- **Registration:** call `list.visitWidgets(this::addRenderableWidget)`. It visits every row's
+  control and action, then the list itself; that order keeps the list from taking clicks meant for
+  its rows. The list renders all of them once, inside its scissor. Don't render row widgets again.
+- **Visibility:** the list owns `visible` for its row widgets. A widget is visible only while it's
+  entirely inside the rows' area, so clipped parts can't be clicked or focused. Partly visible
+  widgets are still drawn, clipped, with no hover state, including those of a composite control:
+  while any widget its `visitWidgets` reports is hidden, the list makes those widgets visible for
+  one draw of the whole control with the mouse off-screen. Its fully visible widgets then lose
+  their hover state and tooltips too, until the control scrolls fully into view; clicks still reach
+  them. Screens set only `active`. A control that handles input itself, like `IntegerSlider`, must
+  check `isActive()`, which includes `visible`: before 1.21.5, vanilla offers every click to every
+  child, hidden or not.
+- **Input:** offer the mouse wheel to the list before `super.mouseScrolled`, so it scrolls while the
+  list overflows and reaches a slider under the cursor only when it doesn't. The list isn't a Tab
+  stop. Vanilla Tab skips invisible and inactive widgets, so before the screen handles Tab, call
+  `revealTabTarget(screen, forward)`, with `forward` false for Shift-Tab: when the next stop in the
+  screen's Tab order, wrapping around, is a hidden row widget, it scrolls that row into view. Tab
+  then reaches every row, and wraps from the last stop to the first row even when the list is
+  scrolled. After a key press moves focus to a row widget, call `reveal(focused)`, which scrolls the
+  row and the nearest rows with an active widget into view. If the wheel hides the focused widget, clear focus. A relayout or a focus change
+  made in code can hide it too, as when a longer status message shrinks the list; then reveal it
+  instead, and clear focus only if its row can't be shown. `ClientConfigScreen.keepFocusVisible`
+  does this after every relayout and every focus request.
+- **Tooltips:** the hovered row gets `ROW_HOVER_BACKGROUND`. After the pointer rests on a row for
+  500 ms, the list schedules the row's tooltip at the cursor, except over the row's action, which
+  shows its own tooltip. Headers and wide rows get neither.
+- **Limitations:** row controls can't open popups, because the scissor would clip them, unless the
+  screen renders the popup separately (`setRenderPopupSeparately(true)`, then `renderPopup(...)`
+  after the list) and closes it when the list scrolls. The theme editor's preview does this for its
+  combobox and dropdown: its list subclass closes the popups in `setScrollY`, and the screen gives an
+  open popup the clicks and the wheel first (see [Popups in the preview](#popups-in-the-preview)).
+
+### Confirmation dialogs
+
+`ConfirmationDialog` takes an optional confirm label; the shorter constructor keeps "Confirm". Both
+buttons come from `TranslucentButton.fitted`, so they're at least 50 pixels wide and grow to fit
+their text, and longer translations don't overflow. `getCancelButton()` returns the Cancel button so a screen can focus it when the dialog
+opens. `DialogWidget` receives its buttons through its constructor, and the first one sits on the
+right. Register the buttons through the dialog's `visitWidgets`, keep them inactive while the dialog
+is hidden, and render the open dialog on a later layer. Escape should close an open dialog before the
+screen; `ClientConfigScreen` shows the pattern.
+
+### Color pickers
+
+`HSVColorPicker` and `RGBColorPicker`, which `SwatchWidget` combines, extend
+`Abstract3ChannelColorPicker<T>`. It owns three sliders, sends mouse, wheel and key input to the
+slider under the cursor, and reports each change through its `ColorPickerCallback`. A subclass
+implements `getColor()`, `setColor(int)` and the three protected `onChannelNUpdate()` hooks, which
+run after a channel changes and refresh the other sliders' gradients.
+
+Its sliders extend `Abstract3ChannelColorPicker.ColorGradientSlider`, not `AbstractColorBgSlider`
+directly. Every gradient shows the picker's current color at its handle, so a fixed or inverted
+handle color can vanish against it: the inverse of `#808080` is `#7F7F7F`. The picker wires each
+slider to its `getColor()`, and the slider draws its handle in `ColorUtils.getContrastColor(...)`
+of that color, black or white with at least 4.5:1 contrast. The color is read whenever the handle is
+drawn, so no input path can leave a stale one. Use `getContrastColor` for a marker over an arbitrary
+color and `getSafeTextColor` for text, which favors white.
+
+`AbstractColorBgSlider.getHandleColor()` is the hook that picks a slider's handle color. Its default
+is the themed `ACCENT`, or `SLIDER_THUMB_DISABLED` while the slider is inactive, and a
+`ColorGradientSlider` keeps the disabled color. The handle is one pixel wide and stays inside the
+slider on every version.
+
+### Tooltips
+
+`TranslucentTooltip` is the only tooltip surface in the mod's screens. `TooltipLayer` holds the
+frame's request and `MovementAllowedScreen` draws it last, so a screen needs no tooltip drawing of its
+own. A widget drawn outside a `MovementAllowedScreen` shows no tooltip, because nothing draws the layer.
+`TooltipLayer` is static frame state for the render thread, so a test that schedules a tooltip
+clears it before and after.
+
+- **Look:** the `POPUP_BACKGROUND` fill, a one-pixel `BORDER` outline and `TEXT_PRIMARY` text with a
+  shadow, all resolved each time the tooltip is drawn, so a theme change shows in the next frame. The
+  text wraps at 170 pixels like vanilla's tooltip, and the box extends 4 pixels past the text on every
+  side. The dark themes and Classic have a transparent default border, so their tooltips have no
+  outline.
+- **A control's tooltip:** call `setTooltip(Component)` on the control, and remove it with
+  `setTooltip((Component) null)`: a bare `null` is ambiguous next to vanilla's `setTooltip(Tooltip)` and
+  does not compile. A class shows its tooltip only if it calls `scheduleTooltip(mouseX, mouseY)` at the
+  end of its renderer and `narrateTooltip(output)` at the end of `updateWidgetNarration`. These classes
+  do: `TranslucentButton`, `IconButton`, `ColorSquareButton` (and `RandomColorSquareButton`),
+  `AbstractDropdownMenuWidget` with its `AbstractMenuItem`s, and the manager's `IconToggleButton`. Any
+  other class ignores `setTooltip` without an error. Toggles, sliders, text fields and the swatch widget
+  are such classes today, so add the two calls to a class before giving it a tooltip.
+- **A hovered item's tooltip:** `TooltipLayer.scheduleAtPointer(text, mouseX, mouseY)` takes
+  screen-space coordinates, never coordinates after a render translation. Its owner decides when to call
+  it, as the rails and the remote tree do at once, and settings rows and form fields do after the
+  pointer rests for 500 ms.
+- **One tooltip per frame:** the first request wins, and only a focused control's request replaces it.
+  A control requests its tooltip while hovered, and while focused by keyboard after Tab or an arrow key.
+  A control focused by a mouse click and no longer hovered requests nothing. An inactive control shows its
+  tooltip too, as in vanilla. A control drawn with `NO_MOUSE` is not hovered, so it requests no hover
+  tooltip; one focused by keyboard still requests its tooltip below or above, so move focus off a control
+  that a dialog or popup covers.
+- **Placement:** vanilla's three rules, anchored to the control's visual bounds so distances are
+  measured from the visible outline. At the pointer, the tooltip sits right of it and above it. For a
+  hovered control it sits right of the pointer and below the control, lower the further down the
+  control the pointer is, or above the control near the screen's bottom. For a control focused by
+  keyboard it sits below the control, or above it near the screen's bottom. Each rule flips or shifts
+  left at the right edge. Besides the visual-bounds anchor, the rules change from vanilla in two ways: the
+  box's top stays on the screen, and a control with no height counts as one pixel high.
+- **Layering:** `MovementAllowedScreen` clears the layer when a frame starts and draws it after
+  `renderScreenContents`, through `nextTooltipLayer`/`previousTooltipLayer`, so a tooltip is above
+  popups, the swatch and item icons on every version.
+- **Narration:** `narrateTooltip` adds the tooltip as a hint, as vanilla's tooltip does. Pointer
+  tooltips are not narrated.
+- **Never vanilla's `Tooltip`:** do not use `Tooltip`, `setTooltipForNextFrame` or
+  `setTooltipForNextRenderPass` in the mod's screens. Vanilla's `setTooltip(Tooltip)` still exists on
+  every widget and would bring back the vanilla box.
+
+### New interactive widget checklist
+
+1. Put it in `client.gui.widgets` unless it is private to a single screen.
+2. Extend the narrowest base class.
+3. Accept callbacks and initial state through the constructor.
+4. Implement `Expandable` if a parent may resize it.
+5. Implement `Padding` if its actual drawing extends beyond its content bounds.
+6. Override the low-level widget renderer through `render_widget_method_swap`.
+7. Use `DrawContextHelper` and semantic `WidgetThemeVariable` values for shared drawing behavior.
+8. Keep hit testing consistent with the intended interactive bounds.
+9. Implement meaningful narration when practical.
+10. If it can show a tooltip, end its renderer with `scheduleTooltip(mouseX, mouseY)` and `updateWidgetNarration` with `narrateTooltip(output)`; without both calls, `setTooltip` does nothing.
+11. Add focused unit tests for pure geometry, layout, parsing, or state transitions.
+
+A minimal interactive widget follows this shape:
+
+```java
+//~ gui_graphics_26
+package _959.server_waypoint.common.client.gui.widgets;
+
+import _959.server_waypoint.common.client.gui.api.ButtonClickCallback;
+import _959.server_waypoint.common.client.gui.layout.Expandable;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.network.chat.Component;
+
+public final class ExampleButton extends ShiftableButtonWidget implements Expandable {
+    private final ButtonClickCallback callback;
+
+    public ExampleButton(int x, int y, int width, int height, Component message, ButtonClickCallback callback) {
+        super(x, y, width, height, message);
+        this.callback = callback;
+        this.setX(x);
+        this.setY(y);
+    }
+
+    @Override
+    protected void onPress() {
+        this.callback.onClick();
+    }
+
+    @Override
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    @Override
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+    @Override
+    public void
+    //$ render_widget_method_swap
+    extractWidgetRenderState
+            (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+        // Draw content using getX(), getY(), width, height, and prepared hover/focus state.
+    }
+
+    @Override
+    protected void updateWidgetNarration(NarrationElementOutput output) {
+        // Describe the control and its state.
+    }
+}
+```
+
+If this widget draws outside `x/y/width/height`, add a `VisualBounds` constant and implement the complete `Padding` contract instead of compensating with unexplained offsets in every screen.
+
+## `screens`: lifecycle and composition
+
+### Choosing a base screen
+
+- Extend `MovementAllowedScreen` for the normal in-world GUI behavior used by this project. It provides the themed `SCREEN_BACKGROUND`, centering helpers, and optional movement-key forwarding. When no world is loaded, as when a screen opens from a mod list, it draws vanilla's background for screens outside a world (the panorama on 1.20.5 and later) under the themed overlay. It inherits vanilla's singleplayer pause behavior. `WaypointManagerScreen` always returns `false` from `isPauseScreen()`. `WaypointEditScreen` pauses while editing, but returns `false` while an edit request is pending so the integrated server can tick and send its queued result. A result, send failure, or timeout clears that pending state and restores pausing if the edit form remains open. Add, client settings, and theme settings screens pause regardless of their parent.
+- Extend `AbstractWaypointPropertiesScreen` for a new add/edit-style waypoint properties flow. Shared fields, coordinate rules, suggestions, color selection, checks, layout, and overlay behavior belong in this base. A subclass supplies what differs through methods the base calls from `init()`, after both constructors have finished, so the constructors call none of them: `leadingRows()` (Add's Dimension and List rows above Name), `subtitle()`, `hasDisplayNameRow()`, `footerButtons()` and `primaryButton()`, `checkInput()`, `submit()`, `pendingMessage()` and `refreshButtons(...)`, and optionally `hasChanges()`, `initialFocus()` and `onTick()`. `refreshControlStates()` sets every control's `active` flag and the footer message from the color picker, a pending request, the check result and whether Edit's form differs from the saved waypoint, so no screen keeps a list of controls to disable. `setControlActive(...)` also locks and restores text editability when activation changes, because older vanilla text fields accept typing even with `active = false`. Text length limits are set before saved values are loaded, preserving long names, keywords and descriptions.
+- Extend vanilla `Screen` directly only if movement forwarding and the shared centering contract are deliberately not wanted.
+
+Use current screens as focused examples:
+
+- `WaypointManagerScreen` demonstrates pure, unit-tested geometry (`calculateLayoutGeometry` and `calculateSidebarLayout`), a `WidgetPack` for the search field and list, `TreeViewWidget` lists, sorting controls, and responsive resizing.
+- `WaypointManagerScreen` forwards screen ticks to `WaypointListWidget.refreshDistanceSortIfPlayerMoved()`. The widget caches the last query origin and only rebuilds distance-sorted rows after the player's block position or relevant dimension changes.
+- `WaypointManagerScreen` separates full refreshes, dimension-list changes, and ordinary waypoint mutations. `updateAllWidgets()` rebuilds the dimension rail and refreshes waypoint rows exactly once. `updateWidgetsForDimensionListChange(...)` rebuilds the dimension rail but refreshes waypoint rows only when selection fallback or the active viewing scope requires it. `updateWaypointWidget(...)` skips dimension-name copying and sorting entirely, and it ignores changes outside the selected dimension unless all-dimensions mode is active. The selection is preserved by name and falls back to the current or first available dimension. Callers report the changed dimension instead of passing waypoint-list snapshots because `WaypointListWidget` owns the active search, sort, grouping, and dimension-scope query state.
+- The manager's dimension rail includes empty dimensions that have no synchronized waypoint file. In an integrated world it reads the integrated server's level keys directly. On a remote connection it asynchronously extracts fully namespaced dimension identifiers from the `/wp list ` command suggestions, merges them with the synchronized client cache as a fallback, and ignores the command's literal list/search/sort options.
+- In all-dimensions mode, the waypoint-list scroll position and grouped dimension-node expansion choices are session-scoped static widget state, so both survive closing and reopening the manager as well as ordinary dimension changes. Scroll restoration is deferred until the reconstructed widget has rows and a real maximum scroll range. Selected-dimension mode never remembers scroll and resets to the top when its scope is selected. `WaypointClientMod.onJoinServer()` calls `WaypointManagerScreen.resetSessionWidgetStates()` so connecting to another server or opening another local save also starts at the top with every dimension expanded.
+- `WaypointManagerScreen.resolveViewState(integratedServer, networkState)` picks `LOADING` (`NOT_READY` or `HANDSHAKE_FINISHED`), `UNSUPPORTED`, `INCOMPATIBLE` or `READY` (`SYNC_FINISHED`, or any state in an integrated world). A non-ready build registers no widgets and shows one centered `ScalableText` message. `tick()` calls vanilla `rebuildWidgets()` when the resolved state changes, so a manager opened during sync builds itself in place when sync finishes. In the remote view a catalog session change still closes the screen; in the local view it rebuilds the screen, and the ready build rebinds `RemoteWaypointPanel` to the new session, clearing its selection and the requested dimension catalog. `removed()` clears the static `isRendering`/`activeScreen` registration, so a manager closed by teleport or `setScreen(null)` stops receiving refresh calls; returning from a child screen re-runs `init()`, which re-queries the list. Because the client reports `NO_SERVERSIDE_SUPPORT` until a dedicated server's handshake arrives, a manager open in that window briefly shows the unsupported message.
+- `AbstractWaypointPropertiesScreen`, `WaypointAddScreen`, and `WaypointEditScreen` demonstrate a compact, fixed form. `WaypointFormLayout` is pure and unit-tested: from measured sizes it works out the label and control columns, the gap between rows (9 pixels, down to 5 when the screen is short), the dividers and the footer, and the screen places its widgets from the answers with `placeOutline` and `placeInRow`, which position any widget by its outline whatever its anchor. Layout runs in `init()`, when the footer message changes because a wrapped message changes the footer's height, and on resize through `repositionElements()`, which keeps the widgets, so values, focus, the message and a pending request survive; it never runs every frame. `WaypointFormCheck` runs on every edit and tick and reports the first problem: a hint or an error blocks Add and Save and the footer says why, an error's field gets a `DANGER` outline through `setInvalid`, and a note doesn't block. `WaypointAddScreen` sends `/wp add`, locks the form with a `PendingAdd`, closes when the waypoint appears in the synced data and unlocks with a message after 5 seconds. `WaypointEditScreen` captures the list revision, builds one atomic patch with `WaypointFormPatch`, keeps entered values until a matching server result accepts the edit, and unlocks with that result's message otherwise. Its Display name field holds only the override, and an empty field over a saved override clears it. The add screen treats its name field only as the exact identifier and creates no display-name override. Resting the pointer on a field's label or controls for 500 ms shows that field's tooltip at the pointer through `TooltipLayer.scheduleAtPointer`, but not over the remove-icon button, which has its own, nor while a popup, the color picker or a pending request is open.
+- `ClientConfigScreen` demonstrates `SettingsListWidget` with per-row reset buttons, a footer built with a `WidgetPack`, and confirmation dialogs that disable the underlying controls, close on Escape and return focus to the button that opened them. Its Map mods rows depend on which map mods the loader supports (`MapModIntegrations.find`) and the player installed; the pure rules live in `ClientConfigSync`, and the settings themselves in `ClientConfigSettings`. It saves the config in `removed()`, which every exit reaches.
+- `WidgetThemeConfigScreen` demonstrates a live-preview editing transaction, pure and unit-tested geometry (`WidgetThemeEditorLayout`), a `TreeViewWidget` key list that paints its own panel, a `SettingsListWidget` of real widgets (`WideRow`s) with usage markers, popups rendered separately from a scrolling list, and a modal `SwatchWidget`.
+
+### Recommended screen lifecycle
+
+#### 1. Constructor: create stable state
+
+Construct widgets, callbacks, and layout relationships that do not depend on the current window size. Prefer fields for controls whose state must survive `init` calls. Do not perform network actions merely because the screen object was constructed.
+
+#### 2. `init`: size, position, and register
+
+Call `super.init()` first. Then:
+
+- Recalculate responsive layout dimensions from `this.width` and `this.height`.
+- Position the root layout, usually with `getCenteredX` and `getCenteredY`.
+- Register every interactive widget with `addRenderableWidget`.
+- Register interactive children of composites through `visitWidgets` when appropriate.
+- Restore focus or other state that must survive a resize/reinitialization.
+
+Layout containers do not replace screen registration.
+
+#### 3. Render: use one rendering owner
+
+`MovementAllowedScreen` owns the final cross-version screen render entry point and the themed full-screen background. Its subclasses implement `renderScreenContents` and must render every visible content element themselves, usually through a root `WidgetStack` or explicit widget calls. Do not override the high-level screen render method in those subclasses or draw a second full-screen background.
+
+Do not both render a widget through a container and render it again explicitly. Use a predictable order:
+
+1. The themed screen background, owned by `MovementAllowedScreen`.
+2. Screen-specific panels and main content.
+3. Text-field suggestion lists.
+4. Modal or color-picker overlays on a later layer.
+5. The tooltip, drawn last by `MovementAllowedScreen`.
+
+Use `nextLayer`/`previousLayer` around suggestions and overlays when they must appear above normal controls.
+Use `nextItemOverlayLayer`/`previousItemOverlayLayer` for marks drawn over GUI item icons, such as the
+server rail badges. On 1.21.6 and later both pairs start a new render stratum, but before 1.21.6
+`nextLayer` moves drawing up by only 1 in z while vanilla draws GUI item models near z 150;
+`nextItemOverlayLayer` translates 200, the depth vanilla uses for item stack counts.
+The waypoint form's modal `SwatchWidget` uses this item-overlay pair so its background and
+controls cover the item preview on versions before 1.21.6.
+`nextTooltipLayer`/`previousTooltipLayer` are for the tooltip alone: `TooltipLayer` calls them, and screens
+do not. Before 1.21.6 `nextTooltipLayer` translates 400, vanilla's tooltip depth, above the item overlay
+layer; from 1.21.6 it starts a stratum.
+
+#### 4. Input: preserve focus and text entry
+
+Let registered widgets receive ordinary input through the screen. Intercept only behavior the screen must prioritize:
+
+- `MovementAllowedScreen.setFocused(...)` changes focus only when the target listener changes.
+  Older vanilla containers unfocus and refocus even the same listener after a handled click, which
+  closes a dropdown immediately after its arrow opens it. Reassigning the focused control preserves
+  its popup; moving focus to another control or clearing focus still closes it.
+- Suggestion clicks must be checked before delegating to `super.mouseClicked`.
+- The wheel needs no such check: vanilla gives it to the widget under the pointer, and a popup hangs
+  outside its owner, so `MovementAllowedScreen.mouseScrolled` first offers it to the focused
+  `PopupOwner` through `scrollPopupIfOver`. A screen that overrides `mouseScrolled` keeps that
+  behavior by calling `super.mouseScrolled` for the events it does not use itself, as
+  `AbstractWaypointPropertiesScreen`, `ClientConfigScreen` and `WidgetThemeConfigScreen` do. One that
+  routes the wheel before `super`, as `WidgetThemeConfigScreen` does for its preview, calls the protected
+  `scrollFocusedPopup` first, so the focused control's popup still gets the wheel. `mouseScrolled` takes
+  three doubles up to 1.20.1 and four from 1.20.2, so split the override with a Stonecutter predicate.
+- Vanilla closes the screen on Escape before the focused child sees the key. Before that,
+  `MovementAllowedScreen.keyPressed` calls `dismissFocusedInput()` to close the focused
+  `PopupOwner`'s open menu or suggestion list and clear focus. A focused `EditBox` or
+  `ComboBoxWidget` also yields focus and consumes Escape when no popup is open, and so does an
+  `IntegerSlider` whose number field rather than its track has focus (`isEditingNumber()`); an
+  `IntegerField` commits its number when it loses focus. So the first Escape leaves text entry
+  and a second Escape closes the screen. Do not add per-widget Escape
+  intercepts. A screen whose Escape handling does not reach `super.keyPressed` calls
+  `dismissFocusedInput()` first, as `WidgetThemeConfigScreen` does. Compare against
+  `InputConstants.KEY_ESCAPE`, never 256, which is not Escape on 26.3.
+- A focused `ShiftableButtonWidget` is pressed by Enter, Space and keypad Enter, but
+  `MovementAllowedScreen` also forwards movement keys, and Space is the default jump key. Each
+  press is handled once. After Tab or arrow-key navigation (vanilla's
+  `getLastInputType().isKeyboard()`), the focused button takes its activation keys and they are
+  not forwarded as movement. A mouse click also leaves the clicked button focused, so after one an
+  activation key that is bound to movement (Space) only moves the player, while Enter and keypad
+  Enter still press the button. Inactive or hidden buttons claim no keys, and other movement keys
+  keep moving the player while a button is focused.
+- Screen shortcuts should normally be disabled while the focused listener is an `EditBox` or
+  a `ComboBoxWidget`, whose editable field is owned by the composite.
+  Shortcuts that run before `super.keyPressed`, such as the manager's `C` binding and the list's
+  T teleport, must leave Enter, Space and keypad Enter to the focused widget.
+- Call `acceptMovementKeys(false)` while text entry or another control must own movement-key input.
+  On Forge and NeoForge, `MovementAllowedScreen` temporarily extends the seven movement bindings'
+  conflict contexts so they stay active while this screen accepts movement. Modifier checks and
+  original conflict rules remain in effect. Rebuilds retain the original contexts, and `removed()`
+  restores them; overrides must call `super.removed()`.
+- A modal should disable underlying controls and move focus into the modal; restore both when it closes.
+  On a `MovementAllowedScreen`, override `hasOpenModal()` to report it: from 1.20.5, vanilla moves
+  focus to the next Tab stop after every rebuild, such as a resize, when the keyboard was used last,
+  which would take it from a dialog's Cancel button to its confirm button. The screen skips that
+  while a modal is open, so the focus `init()` gives the modal stands. `ClientConfigScreen` shows the
+  pattern, and `WidgetThemeConfigScreen` follows it for its color picker.
+
+#### 5. `onClose`: return and clean up
+
+Return to the supplied parent screen with `MinecraftClientHelper.setScreen` when the feature has a parent. Save configuration or clear static screen state here when required. Avoid leaving registered modal buttons active after their overlay is hidden.
+
+If a screen mutates shared state for live preview, also make `removed()` restore uncommitted state. Minecraft may replace a screen without taking its explicit `onClose` path. Cleanup should be idempotent because an explicit close can be followed by `removed()`.
+
+### Minimal screen structure
+
+```java
+//~ gui_graphics_26
+package _959.server_waypoint.common.client.gui.screens;
+
+import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
+import _959.server_waypoint.common.client.gui.layout.WidgetStack;
+import _959.server_waypoint.common.client.gui.widgets.TranslucentButton;
+import _959.server_waypoint.common.client.util.MinecraftClientHelper;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+
+public final class ExampleScreen extends MovementAllowedScreen {
+    private final Screen parent;
+    private final WidgetStack layout = new WidgetStack(
+            0,
+            0,
+            8,
+            LayoutFlow.Orientation.VERTICAL,
+            LayoutFlow.Direction.FORWARD,
+            true
+    );
+    private final TranslucentButton doneButton = new TranslucentButton(
+            0,
+            0,
+            80,
+            11,
+            Component.translatable("server_waypoint.done"),
+            this::onClose
+    );
+
+    public ExampleScreen(Screen parent) {
+        super(Component.translatable("server_waypoint.example.title"));
+        this.parent = parent;
+        this.layout.addChild(this.doneButton);
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+        this.layout.setPosition(this.getCenteredX(), this.getCenteredY());
+        this.addRenderableWidget(this.doneButton);
+    }
+
+    @Override
+    int getContentWidth() {
+        return this.layout.getWidth();
+    }
+
+    @Override
+    int getContentHeight() {
+        return this.layout.getHeight();
+    }
+
+    @Override
+    protected void renderScreenContents(
+            GuiGraphicsExtractor context,
+            int mouseX,
+            int mouseY,
+            float deltaTicks
+    ) {
+        this.layout.
+        //$ render_method_swap
+        extractRenderState
+                (context, mouseX, mouseY, deltaTicks);
+    }
+
+    @Override
+    public void onClose() {
+        MinecraftClientHelper.setScreen(this.minecraft, this.parent);
+    }
+}
+```
+
+This example deliberately shows all three responsibilities: the stack positions and renders the button, while `addRenderableWidget` registers it for input and focus.
+
+The example translation keys are placeholders; add real keys to the language files when creating the screen.
+
+### In-game theme editor
+
+Selecting a boolean key such as `text.shadow` shows the reusable `OnOffToggleButton` in place of
+the color swatch, ARGB field and alpha slider. Its edit follows the same Custom-theme copy, live
+preview, dirty tracking, per-key reset, Reset, save and cancel lifecycle as a color edit. Boolean
+rows have no color chip. Preview markers include the text samples that use the drawing helper.
+
+The Configure button in the Appearance section of `ClientConfigScreen` opens `WidgetThemeConfigScreen`, a
+developer tool for the runtime theme. It lists the theme's raw keys (`WidgetThemeVariable.getJsonName()`)
+with their `#AARRGGBB` color values or `true`/`false` boolean values, as `widget-theme.json` stores them, and draws a live preview of the mod's
+widgets that marks where the selected key is used. Edits preview at once through `WidgetThemeManager` and are
+undone unless the player saves. The keys have no translations; the rest of the screen's text exists in every
+locale.
+
+The screen composes the parts below. Apart from the screen they are package-private in `client.gui.screens`,
+and the pure helpers (`WidgetThemeEditorLayout`, `KeySelection`, `PreviewPacking`, `PreviewSample`) have unit
+tests of their own.
+
+| Part | Responsibility |
+| --- | --- |
+| `WidgetThemeConfigScreen` | Builds every widget once, in its constructor, so they survive resizes; owns the selected key, the status, the color picker and the preview confirmation dialog; routes input. Its nested `KeyList` is the key list |
+| `WidgetThemeEditorLayout` | The geometry, and whether the key list shows values |
+| `KeySelection` | The key list's selection rules |
+| `WidgetThemePreview` | The preview panel, its markers and its popups |
+| `PreviewPacking`, `PreviewSample` | How the samples are packed into rows; the theme keys each sample and marked element draws |
+| `TextChoiceDropdown` | A dropdown of text choices, for the theme selector, choice sample and Popup surface |
+| `WidgetThemeEditorSession` | The editing transaction |
+
+#### Layout
+
+One group, centered on the screen, holds a header line, three panels and a footer:
+
+```text
+Color theme                                    [Theme: Custom ▾]
+┌─────────────────────────────┐ ┌──────────────────────────────┐
+│ Key list                    │ │ Preview                      │
+│                             │ │                              │
+└─────────────────────────────┘ │                              │
+┌─────────────────────────────┐ │                              │
+│ Key editor                  │ │                              │
+└─────────────────────────────┘ └──────────────────────────────┘
+status                                   [Reset] [Cancel] [Save]
+```
+
+| Item | Value |
+| --- | --- |
+| Margin and gaps | 10 px screen margin; 6 px from the header to the panels and from the panels to the footer; 2 px between panels; 6 px of panel padding |
+| Header line | 11 px: the title at 1.2× and the dropdown (`font.lineHeight + 2`), at least 8 px apart |
+| Group width | `min(screen width − 20, 420)` |
+| Left column | `clamp(round(group width × 0.5), 152, 210)`; the key list sits above the key editor, and the preview takes the rest |
+| Panels height | `min(space left after the margins, header, footer and gaps, 230)`, but at least 115: the key editor, a gap and four key rows with their padding |
+| Key editor | 53 px: padding, the 9-px key line, 5 px, two 11-px rows 5 px apart, padding |
+| Key row | 12 px |
+| Footer | `TranslucentButton.fitted` buttons 6 px apart, placed from the right with a `WidgetPack`. The status wraps to the width left of them minus 8 px; under 100 px (`ClientConfigScreen.statusAboveButtons`) it takes its own line, 4 px above them |
+
+- **Geometry:** `WidgetThemeEditorLayout.arrange(...)` is pure. From the screen size, the dropdown's and the
+  buttons' sizes and the wrapped status's height (a function of its width) it returns an `Arrangement` of
+  screen-space `Rect`s, the panels as visual bounds with their outlines. The group starts at the top margin
+  when the screen is too short for the minimum panels height, and the title is cut with an ellipsis when the
+  dropdown leaves it too little room.
+- **Lifecycle:** `layoutContent()` runs in `init()`, which a resize also runs, and when the status changes,
+  because a wrapped status changes the footer's height; it never runs while rendering. Each panel's fill is
+  painted once, by the widget that owns it (the key list, the screen for the key editor, and the preview's
+  `SettingsListWidget`), so the three match at any theme translucence, as the manager's panels do.
+
+#### Key list
+
+`KeyList` extends `TreeViewWidget<WidgetThemeVariable>` with one root per key and no children, in
+`WidgetThemeVariable.values()` order, the order `WidgetThemeJson` writes the file in. It paints its own
+panel, which is right because nothing else paints under it, and reports clicks and Up and Down; the screen
+owns the selection, which starts on `text.primary`.
+
+- **Rows** are 12 px high: an 8×8 chip of the key's color over a 2-pixel checkerboard, so a translucent key
+  shows its opacity (the two grays are fixed colors, a transparency visualization like the color pickers'
+  gradients); the raw key at 85%; and, when the list shows values, the right-aligned `#AARRGGBB` value in
+  `TEXT_MUTED`. Rows have no tooltip.
+- **Values** show when `WidgetThemeEditorLayout.showsValues(...)` holds:
+  `KEY_X (14) + widest key + VALUE_GAP (8) + value + VALUE_INSET (2)` fits the row. With the default font the
+  widest key and a value measure 120 px and 46 px at the rows' scale, so a row needs 190 px. A tree's row is
+  the list's width minus 12 px of padding and a 3-pixel scrollbar with no gap (a `SettingsListWidget` keeps
+  2 px), so values show from a **205-pixel** left column, a GUI width of 429 or more: at 480×270 (210 px)
+  they show, and at 378×245 (179 px) and 320×240 (152 px) they don't. The key editor always shows the
+  selected key's value.
+- **Selection:** `KeySelection.click(selected, clicked)` returns the clicked key, or `null` when it was
+  already selected, so clicking the selected key clears the selection: the preview shows no markers and the
+  key editor its empty state. `KeySelection.move(selected, down)` returns the next or previous key and stops
+  at the first and last; with nothing selected, Down gives the first key and Up the last. The list is a Tab
+  stop and reports Up and Down while it is active; the screen then calls `KeyList.reveal(key)`, which scrolls
+  the least amount that shows the row.
+- **Focus:** while the list has focus, its outline is `FOCUS_RING` instead of `BORDER`, which shows that Up
+  and Down act on it. The list draws its outline itself, after the rows, so it passes `border` false to
+  `TreeViewWidget`, whose padding background then paints only the fill.
+
+#### Key editor
+
+The key editor shows the selected key under the key list, on a panel that the screen paints once.
+`syncControls(source)` sets the key line and the controls from the draft and leaves alone the control the
+change came from; `updatingControls` stops their callbacks from applying a value that was just set.
+
+- **Rows:** the key in `TEXT_PRIMARY` followed by a `DECOR_LINE` `SeparatorWidget` (made again when the text
+  or the layout changes, since it has no width setter); a color row, with the `ColorSquareButton` that opens
+  the color picker, a `ColorHexCodeField.argb` whose narration label is the literal "ARGB", and the reset
+  icon at the right end; and an Alpha row, with its label at 85% and an `IntegerSlider` from 0 to 255 with
+  `controlScale` 0.85, a 64-pixel track and a 30-pixel field. As in the settings rows, the track has a fixed
+  width, here one that leaves room for every locale's label in the 152-pixel column.
+- **What each control changes:** the ARGB field both the RGB and the alpha, the color picker only the RGB,
+  and the slider only the alpha. `SwatchWidget` is RGB-only, so the screen keeps the key's alpha when it
+  confirms. The field applies its value at eight digits; Enter and leaving the field call `commit()` (see
+  `ColorHexCodeField` under [Component selection](#component-selection)).
+- **Pending edits:** a value typed in the ARGB field or the Alpha slider is finished when the control loses
+  focus, and six ARGB digits apply only then. Vanilla runs a click's callback before it focuses the clicked
+  widget, which would finish the value after a clicked key changed the selection or Save or Cancel closed the
+  session, and it gives a click on an inactive widget to nothing, so while a pending value is the session's
+  first change, a click on the still inactive Reset or Save would do nothing. Before it dispatches a click,
+  `mouseClicked` therefore calls `finishEditingBeforeClick`: a click outside the focused field or slider
+  (`isMouseOver`) moves focus off it (`finishEditing()`) and refreshes the control states, so the click then
+  reaches its target, a Reset or Save that the value made active included. Clicks are offered in the same
+  order as before, and nothing is finished while the color picker is open. Selecting a key, Save and Cancel
+  call `finishEditing()` too. Both mouse-click branches run through the screen-local `ClickDispatch`:
+  status changes request a layout, which is deferred until the click finishes. A commit can therefore
+  activate Save or Reset without moving its hit box before that same click reaches it. Outside click
+  dispatch, a status change lays out immediately.
+- **Reset icon:** a 9×9 `IconButton` with `WidgetTextures.RESET_ICON` and the settings screen's icon region.
+  It shows only while `session.isChanged(key)`, in a place of its own at the end of the row, and calls
+  `session.revert(key)`, which counts as an edit.
+- **Empty state:** with no key selected, the key line reads "No key selected" in `TEXT_MUTED`, a hint below
+  it says how to select a key and that selecting it again hides the markers, and the color button, ARGB
+  field, reset icon and slider are hidden, so they take no clicks and aren't Tab stops. The panel keeps its
+  height.
+
+#### Preview
+
+`WidgetThemePreview` is the right column. Its list, `PreviewList`, is a `SettingsListWidget` subclass that
+paints the panel and holds a `Header` titled "Preview" and then `WideRow`s of samples at full size; it
+scrolls real widgets and hides clipped ones from clicks and Tab, as the client settings do. The samples come
+in ten families, shown in this order with 6 px between the samples of a family: text, a text field, a
+combobox and a dropdown, buttons, toggles, sliders, accent chips, a tooltip with the popup and dialog chips,
+status chips, and scrollbars at rest, dragged and inactive.
+
+- **Widgets:** the samples are the mod's own widgets, so they react to the pointer, take focus and show the
+  focus ring. The icon buttons use `WidgetTextures.PLACEHOLDER_ICON`. Toggles toggle, and the combobox
+  and dropdown keep the value chosen. Accent/status chips and scrollbars are non-interactive.
+  The tooltip remains a real `TranslucentTooltip` drawn in place; hovering its visual bounds schedules
+  the same message through `TooltipLayer`, unless the preview is disabled or the row is clipped.
+  Clicking Popup opens a `TextChoiceDropdown` choice popup through the existing separate popup pass.
+  Clicking Dialog opens a screen-owned `ConfirmationDialog`; both buttons and Escape dismiss it without
+  changing the theme. The screen disables underlying controls, blocks wheel scrolling, keeps focus in
+  the dialog through clicks and resize, and restores focus to the sample when it closes.
+  While the color picker or preview dialog is open,
+  `setActive(false)` makes every sample inactive through `AbstractWaypointPropertiesScreen.setControlActive`,
+  which also stops a text field from taking typing; `sampleActive` keeps the Disabled button and the second
+  slider inactive whatever the picker does.
+- **Packing:** `PreviewPacking.pack(familyWidths, rowWidth, sampleGap, familyGap)` is a pure function from
+  each family's sample widths to rows of `Placement(family, sample, x)`. Families keep their order, 12 px
+  apart on a shared row. A family stays whole on a row when it fits, starts a new row when it doesn't fit the
+  rest of the current one, and wraps sample by sample when it is wider than a row, so nothing is cut off.
+  `setBounds(...)` packs again only when the rows' width changes, and `setEntries` keeps the widgets and
+  their state.
+- **Rows:** each `WideRow` holds a `SampleRow`, a `LayoutElement` and `Renderable` around a `WidgetPack` that
+  centers the samples on the tallest. The `SampleRow` is exactly as tall as its tallest sample, because
+  `WideRow` adds the 3-pixel padding itself; sizing it with `wideRowHeight` too would pad every row twice.
+  `SampleRow.visitWidgets` reports the samples' widgets, so the wide row owns them: each is visible only
+  while entirely in view, and the row is a Tab stop while one is active.
+- **Combobox placement:** `WidgetPack` uses `VisualPositioning` to place the combobox's outline,
+  converting to its text anchor. The preview supplies no compensating offsets.
+
+#### Markers and sample keys
+
+Every sample and panel that draws the selected key gets a solid outline, 1 px wide and 2 px outside its
+visual bounds (`WidgetThemePreview.drawMarker`). Its color is a fixed magenta, `MARKER_COLOR` (`0xFFFF4FD8`),
+not a theme color, so that it shows in every theme. With no key selected, nothing is marked.
+
+- **What is marked:** the preview marks its samples inside a scissor of the rows' area grown by 2 px: a
+  sample scrolled out of view has no marker (`partlyInView`), and the marker of a partly visible one is cut
+  where the sample is. The screen marks the key list, the key editor and the preview panel, and
+  `background.screen` with an outline 2 px inside the screen's edge. It marks a panel only for a key the
+  panel draws at its current size (`WidgetThemeConfigScreen.panelDraws`): the scrollbar keys while the
+  panel's list overflows, so the preview, which fits at 480×270, isn't marked for them there, and the key
+  list's `text.muted` while the list shows values.
+- **The keys of a sample:** each `PreviewSample` constant lists the keys it draws, and `uses(key)` decides
+  its marker. A sample lists every key it draws while the color picker is closed, in every state a player can
+  put it in: at rest, hovered, focused, with its popup open (typed combobox suggestions included) and, for a
+  toggle, in both states. The inactive look the open picker gives every sample is left out, except for the
+  two samples that are always inactive. An element (`KEY_LIST`, `KEY_EDITOR`, `PREVIEW_PANEL`, `SCREEN`)
+  lists the keys of its own drawing at any size (fill, outline and the key list's focus ring, header and key
+  text, separator, scrollbar), not those of the widgets placed on it. The key list also leaves out its
+  per-key chips, which draw every key and would mark the list for every selection.
+- **Adding a key or a sample:**
+  1. Add a new key to each constant whose widget draws it, re-deriving the sets from the drawing code when
+     that changes.
+  2. A key that no sample draws needs a new `PreviewSample` constant in a family and its widget, built in
+     `WidgetThemePreview`'s constructor with `put`. The constructor fails fast when a family member has no
+     widget.
+  3. A sample with a popup draws it through the screen, as the combobox and the dropdown do (see
+     [Popups in the preview](#popups-in-the-preview)): call `setRenderPopupSeparately(true)` on it, add it
+     to the popup owners the constructor passes to `PreviewList`, and place its popup in `layoutPopups`,
+     with `layoutPopup(screenHeight, rows)` for a combobox or `setExpansionDirection` for a dropdown.
+     Without the first, the popup is drawn twice: clipped inside its row, and again by `renderPopups`.
+     Without the second, nothing draws the popup, gives it clicks and the wheel first or closes it when the
+     list scrolls. Without the third, it isn't placed for the room on the screen and can open past its edge.
+
+  `PreviewSampleTest` checks that every `WidgetThemeVariable` is used by some constant, and pins the keys the
+  widgets draw beyond the obvious ones.
+
+#### Popups in the preview
+
+`SettingsListWidget` rows can't draw popups, because the list's scissor would clip them. The combobox, dropdown and Popup surface
+samples therefore call `setRenderPopupSeparately(true)` and draw their popups after the screen's
+content, as the waypoint form does:
+
+- **Drawing:** the screen calls `preview.layoutPopups(height)` at the start of every render, so the pointer
+  and clicks find the popups where they are drawn: it gives the combobox `layoutPopup(height, 6)` and opens
+  the dropdown's popup upward when three rows below it would pass the screen's bottom margin.
+  The Popup surface opens upward when its single choice would pass that margin.
+  `preview.renderPopups(...)` draws the open popups after the footer and the theme dropdown's popup, before
+  the color picker. While the pointer is over an open popup, the content beneath it is drawn with `NO_MOUSE`;
+  the popups keep the real pointer.
+- **Input:** an open popup takes clicks and the wheel before anything under it: another owner's control, or,
+  for the theme dropdown's popup, the preview. `PreviewList.clickPopup` gives a click to the open popup under
+  the pointer, then to the owner under the pointer; a click elsewhere closes the popups and goes on to its
+  target. The screen focuses the owner that took the click and, for the left button, starts a drag, so a
+  popup's scrollbar can be dragged. The wheel goes to the focused popup (`scrollFocusedPopup`), then to the
+  theme dropdown's popup under the pointer, then to `PreviewList.scroll`: an open popup under the pointer
+  takes it; otherwise, while the list overflows and the pointer is over it, the popups close and the list
+  scrolls.
+- **Closing:** `PreviewList.setScrollY` closes the popups whenever the scroll position changes. The wheel, a
+  scrollbar drag, `reveal` and a relayout that clamps the position all go through it, so a popup never hangs
+  where its owner was. `init()`, which a resize runs, and opening the color picker close them too, and a
+  dropdown that loses focus closes its own.
+
+#### Text choice dropdowns
+
+`TextChoiceDropdown` extends `AbstractDropdownMenuWidget` for a trigger and choices that are lines of text.
+The trigger shows `triggerLabel()`, read each time it is drawn, and an open/closed arrow; each `TextChoice`
+shows its label and runs a `Runnable` when chosen. The trigger and the choices are `font.lineHeight + 2` high
+with the text 2 px in, like text fields and comboboxes; labels are clipped inside the outline, and the
+trigger reserves a 14-pixel column for the arrow (`triggerWidth(labelWidth)` adds it). Popup rows share
+single-pixel separators: a choice leaves out the edge it shares with the row or trigger before it, which is
+its top, or its bottom after `setExpansionDirection(REVERSE)`. A subclass supplies `triggerLabel()` and, to
+leave the selected choice out of the popup, `getSelectedMenuItemIndex()`.
+
+- **Theme dropdown:** `ThemeSelector`, an inner class of the screen, offers Custom, Translucent Dark, Modern
+  Dark, High Contrast and Classic (`WidgetThemeSelection`) and previews a choice at once. It is as wide as its
+  widest label, so it keeps its width whichever theme is selected. The screen registers it once, routes
+  clicks on its popup before the controls it covers and draws the popup after the footer. Its tooltip is
+  hidden while the popup is open (`onExpandedChanged`), because the tooltip would sit on the popup's first
+  choices.
+- **Preview dropdown:** `WidgetThemePreview.SampleDropdown` shows "Choice 1" to "Choice 3" and keeps the
+  choice made.
+
+#### Footer, editing and status
+
+- **Reset** and **Save** are active while the color picker is closed and `session.isDirty()`, not while a key
+  `isChanged`: editing a built-in theme selects Custom, and putting every key back by hand leaves Custom
+  selected, which still differs from what the editor opened with. Reset calls `session.revertAll()`, clears
+  the status and keeps the editor open. Save calls `session.save()` and returns to the parent screen; if
+  writing fails, the screen stays open, the failure is logged and the status shows "Couldn't save the theme.
+  Your changes are still here." in `DANGER`.
+- **Cancel** puts everything back (`session.cancel()`) and returns to the parent screen without asking.
+  Escape does the same when no popup, text entry or color picker is open, and `removed()` covers every other
+  way out.
+- **Status:** one message at a time, wrapped in the footer; a new message replaces the old one, and editing
+  doesn't clear it. When an edit turns a built-in theme into Custom and replaces Custom colors that differ
+  from it, the status says "Custom now starts from *theme*." in `TEXT_MUTED`. Reset and a choice in the theme
+  dropdown clear it. Showing or clearing a message runs the layout again.
+
+#### Editing session
+
+The package-private `WidgetThemeEditorSession` owns the editing transaction; it is an implementation seam
+for the screen, not a public theme API. It keeps the settings the editor opened with (the selected theme and
+the Custom colors) and the draft. The screen opens it with the settings read from `widget-theme.json` and
+the live theme; when their themes differ, as after the file was edited by hand while the game ran, the
+session previews the file's settings at once, so the key list, the preview and the key editor agree from the
+first frame, and `cancel()` still restores the live theme.
+
+- `setColor(variable, color)` updates the immutable draft and previews it through `WidgetThemeManager`.
+  Editing a key while a built-in theme is selected copies that theme into Custom with the edit. It returns
+  that theme when the Custom colors the copy replaced differ from it in any key, so the screen can say so,
+  and an empty `Optional` otherwise (Custom was already selected, or the replaced colors equal the theme).
+  Setting the color the draft already has changes nothing, so committing an unchanged value never turns a
+  built-in theme into Custom.
+- `revert(variable)` sets one key back to its color when the editor opened, through `setColor`, and returns
+  what `setColor` returns. `revertAll()` restores the selection and the Custom colors and previews them.
+  `isChanged(variable)` compares a key with the theme in effect when the editor opened, and `isDirty()`
+  compares the selection and the Custom colors.
+- `select(selection)` previews a built-in theme or Custom and retains the Custom colors: switching never
+  erases them, and an edit to a built-in theme copies its colors into Custom, so later switches retain those
+  edits.
+- `save()` atomically writes the selected theme's ID and the Custom palette to `widget-theme.json` and keeps
+  the draft active. `WidgetThemeSelection` resolves presets, and `WidgetThemeJson.Settings` contains the
+  selection and the Custom colors. `loadSettings` reads both, while `load`/`fromJson` resolve the selected
+  effective theme for startup and callers. The `colors` object always stores the Custom palette; the optional
+  `selection` defaults to `custom`. The session closes only after the write succeeds, so a failed save
+  leaves it open and the draft available for another attempt.
+- `cancel()` restores the theme that was live when the editor opened, which isn't the opening settings'
+  theme after such a hand edit. It is idempotent, so an explicit close and the `removed()` that follows are
+  safe. After a save or a cancel, the methods that change the draft or write the file throw
+  `IllegalStateException`.
+
+Keep file I/O and rollback behavior in the session rather than scattering it through button callbacks.
+
+#### Input, focus and the color picker
+
+- **Control states:** `refreshControlStates()` sets every control's `active` flag, and which key editor
+  controls show, from the color picker, the selected key and `session.isDirty()`, so the screen keeps no
+  list of controls to disable. It runs after every change that affects them: an edit, a theme choice, Reset,
+  selecting or clearing a key, opening and closing the picker, and a failed save.
+- **Color picker:** the `SwatchWidget` opens from the color button, so only while a key is selected.
+  `openSwatch()` closes every popup, makes every other control inactive and focuses the picker, and
+  `hasOpenModal()` reports it, so a resize after keyboard use keeps focus in it. The screen draws it last,
+  on a later layer (`nextLayer` and `previousLayer`). Escape, or confirming a color, closes it and returns
+  focus to the color button. Vanilla focuses the clicked widget after its callback runs, so `mouseClicked`
+  calls `normalizeModalFocus()` after dispatching a click. While the picker is open, everything else is drawn
+  with `DrawContextHelper.NO_MOUSE`, so nothing under it shows a hover state or a tooltip.
+- **Keys:** Tab order follows the screen: the theme dropdown, the key list, the key editor's controls, the
+  preview's samples row by row, then Reset, Cancel and Save. Vanilla Tab skips the preview's hidden widgets,
+  so `keyPressed` calls the preview list's `revealTabTarget` before Tab (the package-private
+  `ClientConfigScreen.isShiftDown` gives the direction), and `reveal(focused)` after a key that moved focus
+  to a preview widget. Escape goes through `dismissFocusedInput()` first, then closes the picker, then
+  cancels and closes the screen. Movement keys stay off while the screen is open.
+- **Mouse:** open popups take clicks and the wheel first (see
+  [Popups in the preview](#popups-in-the-preview)), after a click outside a focused ARGB field or Alpha
+  slider has finished its value (see [Key editor](#key-editor)). The wheel then goes to the preview while it
+  overflows and the pointer is over it, and otherwise to the widget under the pointer, so the key list
+  scrolls itself.
+  A focused preview widget that a scroll hid loses focus.
+
+The geometry belongs to this screen; it isn't a general layout API. Future changes should preserve the
+editor transaction, dynamic theme resolution, single render ownership, input registration, modal layering
+and the cross-version render paths.
+
+## Text-field suggestions
+
+Calling `setSuggestionsProvider` is only the data step. A suggestion-enabled field needs three pieces:
+
+1. A provider that returns the current suggestions.
+2. `renderSuggestions` called after the field, usually on a later layer.
+3. `mouseClickedSuggestion` checked for the left mouse button before normal screen click dispatch
+   while that field is focused. A consumed click must establish screen drag state with
+   `setDragging(true)`, so subsequent drag and release events reach the focused field.
+
+`AbstractWaypointPropertiesScreen` is the reference for several fields, while `WaypointManagerScreen` shows the same pattern for a single search field. If any one of the three pieces is missing, suggestions may exist internally but fail to appear or accept clicks. Escape needs no fourth piece on a `MovementAllowedScreen`: the focused field closes its list before the screen closes. Nor does the mouse wheel: the screen offers it to the focused field through `scrollPopupIfOver`, so a list of more than five suggestions scrolls while the pointer is over it.
+
+The wheel moves the list at least one row per event, like the choice dropdown, and stops at both ends. The row under the pointer becomes the selected one, as when the pointer moves, so the suggestion Tab accepts stays in view; a selection left outside the window would be scrolled back to at the next redraw. A list that fits still takes the event, so it does not scroll whatever it covers. Hover selection counts only the pixels inside the list, so the row just below a scrolled list cannot select a hidden suggestion.
+
+`SuggestingTextInput.getSuggestionsY(int suggestionHeight)` positions a popup after its visible height is known. A `ComboBoxWidget` uses its expansion direction for both its choice list and typed suggestions: upward suggestions end at the top of the field, and downward suggestions begin below it. Keep render, hover, and click bounds on that same computed rectangle.
+
+Lists with more than five matches show a three-pixel themed scrollbar inside their right border.
+Labels and selection fills reserve space for it; standalone lists widen when needed to keep the
+longest label readable. Clicking the track or dragging the thumb scrolls without accepting a match.
+Dragging keeps the thumb's grab position, clamps at both ends, and stops on release, dismissal,
+or focus loss. Hovering the scrollbar does not select a row; wheel and thumb scrolling keep the
+keyboard selection within the visible window. `ComboBoxWidget` forwards drag and release events
+to its input only while that input has captured a scrollbar click, after offering them to its
+choice dropdown. Other comboboxes must leave the focused field's release event alone.
+
+## Waypoint icon picker and renderer
+
+The icon combobox uses vanilla `/give` item-ID matching through
+`SharedSuggestionProvider.matchesSubStr`: a query without a colon matches the namespace or item
+path, including word starts after underscores; a query with a colon matches the full ID. Matching
+is case-insensitive. VoxelMap IDs require a non-empty namespace match: `vox` and `voxelmap:st`
+can suggest `voxelmap:star`, while bare `star` and an empty query cannot. The full choice popup
+still includes VoxelMap icons. Typing `diam` suggests
+`minecraft:diamond`, and `sword` suggests `minecraft:diamond_sword`; acceptance inserts the full
+ID. All matches stay reachable through the suggestion list without a result cap.
+
+Complete known icon IDs use theme `SUCCESS` input text while focused and the normal field text
+color (`TEXT_PRIMARY`, white in the default theme) when unfocused. Invalid and partial non-empty
+inputs use theme `DANGER` regardless of focus. Bare item IDs use the `minecraft` namespace,
+so `diamond` is valid while
+bare `star` does not select a VoxelMap icon. Empty input retains the normal themed placeholder.
+Valid typed text updates the selection without replacing the text, so entering `diamond_sword`
+is not interrupted when the intermediate text reaches `diamond`. Partial input keeps the saved
+selection, as before.
+
+`WaypointIconPicker.preview(mouseX, mouseY)` resolves a hovered menu/suggestion value first, then
+the current input. Invalid, partial and empty inputs fall back to initials when no candidate is
+hovered. Hover previews never change the saved selection or fire an edit callback. The shared
+add/edit screen passes real popup coordinates to the preview even while the popup suppresses
+underlying hover, and `NO_MOUSE` while the color modal covers the form.
+
+`WaypointIconPicker` owns a searchable `ComboBoxWidget` whose placeholder reads "None — shows the initials", a 13×13 `IconButton` that removes the icon, and the selected nullable `NamespacedId`. The button draws `WidgetTextures.CLEAR_ICON`, is inactive while no icon is selected, which tints its icon with `TEXT_DISABLED`, and has a "Remove icon" tooltip. Add and edit screens register the menu and button once for input, render the menu's popup after the main form, and read `getSelectedIcon()` when submitting. `setSelectedIcon()` restores a saved choice, including an ID missing from the current client registry; it does not send an edit. The picker lists the current item registry and known VoxelMap image IDs. Search filters the catalog while a partial query leaves the saved choice intact.
+
+The icon combobox keeps the full catalog in its popup. `AbstractDropdownMenuWidget.setMaxPopupHeight()` limits the visible vertical rows; the remaining choices stay reachable with the wheel, arrow keys, or draggable scrollbar. `setExpansionDirection()` lets the owning screen place the popup above or below its control. The add/edit screen chooses the roomier side, caps the popup to eight rows and the available screen space, and routes wheel input to the open popup before other controls. When it handles a popup click before vanilla dispatch, the screen must establish drag focus and forward release events so scrollbar dragging works. Popup click and hover handling must use only the visible rows so covered form buttons cannot accidentally receive a click intended for the popup.
+
+Vertical popup choices retain their logical top-to-bottom order when opening upward; Up and Down follow that visual order. Resting upward combobox rows draw their top border and share the bottom border with the next row or trigger via `renderOutlineWithoutBottom`; resting downward rows use `renderOutlineWithoutTop`. Hovered or keyboard-highlighted rows draw all four edges within the row area to the left of any scrollbar. In the waypoint form, the icon row is the 11-pixel preview, 4 pixels, the stretched dropdown, 4 pixels and the remove button, starting at the control column. The preview shows only the resolved item or VoxelMap icon; absent or unresolved icons show only the initials badge. The badge uses `ColorUtils.getSafeTextColor` with the form's current color, matching the in-world badge's automatic foreground contrast. Its right edge stays at the preview slot's right edge, so longer initials expand left and leave the following input and its gap clear. Preview images keep their original size and opacity.
+
+`WaypointIconRenderer.resolve()` converts a stored ID to an item stack, a packaged VoxelMap texture, or the initials fallback on the client thread. Use `drawForWaypoint()` for saved waypoint icons in local and remote rows, details, and the add/edit preview; pass the waypoint RGB or the form's selected color. It preserves item RGB and multiplies VoxelMap texture pixels by that color. The overload with an alpha argument fades either icon kind; the overload without alpha draws at 255. The picker catalog lists icon IDs and has no waypoint color to apply. Use `drawScaledWorldItem()` for an in-world item and `drawScaledVoxelMap()` for an in-world VoxelMap texture. Both use the waypoint background alpha setting and become opaque for the waypoint whose hover details are shown; disabled local list icons use alpha 128, while other GUI icons remain opaque. Draw the hovered world icon after all distance-sorted markers so it appears above overlapping icons; keep initials badges in distance order and draw the name and distance afterward. The VoxelMap tint matches its in-world rendering. Before Minecraft 1.21.6, the immediate draw uses a scoped shader color and alpha; on Fabric through Minecraft 1.21, `WaypointBlockItemAlphaMixin` also replaces the vanilla cutout block sheet with the translucent block sheet within that draw scope when alpha is below 255, because the cutout sheet disables blending. Opaque GUI and world icons retain their original render types; on newer versions, item render states carry a scoped premultiplied tint to their atlas or oversized-item blits while VoxelMap textures use a colored GUI blit. The world marker stacks either icon above its colored initials badge, with both centered horizontally; the original badge stays at its projected position. The 16×16 icon background is temporarily disabled with `DRAW_ICON_BACKGROUND` for comparison testing; the initials badge keeps its colored background. Neither part has an outline. Use the full stacked bounds for projection culling, and let either visible part of the stack trigger the existing name and distance hover without making the gap hoverable. Expand the name at the colored badge's position and put the distance below it, leaving the icon above. Keep the stored ID when resolution falls back to initials. World rendering caches the resolved handle in per-waypoint state and clears it when the waypoint or scene is removed. Re-resolve after resource or scene rebuild so resource-pack changes are reflected.
+
+Through Minecraft 1.21, VoxelMap texture draws explicitly enable standard alpha blending and
+disable it after the immediate blit. The vanilla uncolored texture blit does not configure blending,
+so shader alpha and transparent image pixels otherwise depend on the previous draw's blend state.
+This applies to world markers and GUI previews; later GUI texture pipelines configure blending.
+
+VoxelMap resource paths follow the configured dependency's layout: before Minecraft 1.21.11,
+`voxelmap:star` resolves to `voxelmap:images/waypoints/waypointstar.png`; from 1.21.11 onward,
+it resolves to `voxelmap:images/waypoints/selectable/star.png`. Both `voxelmap:waypoint` and
+`voxelmap:point` use the default image (`waypoint.png` in the earlier layout, `selectable/point.png`
+in the newer layout). Keep this version selection in the shared resolver so the picker, forms,
+lists, details, and world markers all use the same resource handle.
+
+## Widget render entry points
+
+Minecraft `AbstractWidget` has two render layers. Their names differ by Minecraft version, but their responsibilities are consistent.
+
+| Layer | Minecraft 26+ | Earlier versions | Purpose |
+| --- | --- | --- | --- |
+| High-level wrapper | `extractRenderState` | `render` | Checks visibility, recalculates `isHovered`, delegates to the widget renderer, and updates tooltip state. |
+| Widget renderer | `extractWidgetRenderState` | `renderWidget` | Draws the widget using state already prepared by the high-level wrapper. |
+
+The project maps these names with Stonecutter swaps:
+
+- `render_method_swap`: `extractRenderState` on Minecraft 26+, otherwise `render`.
+- `render_widget_method_swap`: `extractWidgetRenderState` on Minecraft 26+, otherwise `renderWidget`.
+
+### Rule of thumb
+
+Use these rules:
+
+- A widget class overriding its drawing implementation uses `render_widget_method_swap`.
+- A screen or composite manually rendering an `AbstractWidget` normally calls the high-level method through `render_method_swap`.
+- A non-`AbstractWidget` `Renderable`, such as `WidgetStack` or `ScalableText`, exposes its render entry through `render_method_swap`.
+- Do not call the low-level widget renderer directly from a screen unless that widget deliberately calculates all required interaction state itself.
+
+Correct manual rendering from a screen or composite:
+
+```java
+button.
+//$ render_method_swap
+extractRenderState
+        (context, mouseX, mouseY, deltaTicks);
+```
+
+Correct drawing override inside a widget:
+
+```java
+@Override
+public void
+//$ render_widget_method_swap
+extractWidgetRenderState
+        (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+    // The high-level wrapper has already updated hover and tooltip state.
+}
+```
+
+### Common hover failure
+
+Calling `extractWidgetRenderState` or `renderWidget` directly bypasses the vanilla wrapper that updates `isHovered`. Widgets that choose colors or outlines using `isHovered()` will then appear not to react to the mouse.
+
+Some custom widgets hide this error because they calculate hover directly from `mouseX` and `mouseY`. A text field can update its own suggestion/hover state, and a list can calculate its hovered row independently. Do not assume that behavior for ordinary buttons.
+
+The high-level wrapper updates hover state; it does not automatically draw a background. A widget still needs to render its normal and hovered backgrounds itself:
+
+```java
+int backgroundColor = WidgetThemeManager.getColor(
+        isHovered()
+                ? WidgetThemeVariable.CONTROL_HOVER_BACKGROUND
+                : WidgetThemeVariable.CONTROL_BACKGROUND
+);
+context.fill(x, y, x + width, y + height, backgroundColor);
+```
+
+### Tooltip position for scrollable widgets
+
+`setTooltip(Component)` describes a whole control, and `TooltipLayer` places it beside the control's
+visual bounds (see [Tooltips](#tooltips)). For a hovered item inside a tall or scrollable widget,
+resolve the item from the current mouse coordinates and schedule its tooltip at the cursor instead;
+otherwise the tooltip can appear far from the item, especially after scrolling or resizing.
+
+- Calculate the hovered item using the widget's current viewport and scroll position. Schedule
+  nothing when the pointer is outside an item, the widget is inactive, or the item is clipped.
+- Pass the screen-space `mouseX` and `mouseY` to `TooltipLayer.scheduleAtPointer(...)`, which needs
+  no version branch. Do not pass coordinates after a render translation or the item's local position.
+- Schedule the tooltip during the hovered content's owning render pass. `IconListWidget`,
+  `RemoteWaypointPanel.BrowserTree`, `SettingsListWidget` and the waypoint form all schedule through
+  `TooltipLayer`, and each decides for itself when its tooltip shows.
+- Check the result in game with the first and last visible items, a scrolled list, a resized screen,
+  and items near screen edges. Compilation cannot confirm tooltip placement.
+
+## Stonecutter and version compatibility
+
+Before changing version-specific GUI code:
+
+1. Check the supported matrix in `settings.gradle.kts`.
+2. Check the active `mods` target in `mods/stonecutter.gradle.kts`.
+3. Prefer a small, broad Stonecutter predicate over duplicating a whole widget or screen.
+4. Preserve inactive branches; they are source for other generated targets.
+5. Keep replacement tokens such as `//~ gui_graphics_26` before the first non-empty, non-comment line.
+6. Keep `//$ render_method_swap` or `//$ render_widget_method_swap` directly attached to the controlled method name.
+7. Recheck balanced `//? if`, `//?}`, `/*?`, `/*?}*/`, and `*//*?` markers after editing.
+
+Do not call version-drifting draw APIs directly at many sites when `DrawContextHelper` can provide one shared compatibility seam.
+
+## Testing and validation
+
+Put pure GUI tests in the matching package under:
+
+```text
+mods/src/test/java/_959/server_waypoint/common/client/gui
+```
+
+Good test targets include:
+
+- Anchor and content/visual-bound conversions.
+- Fixed and weighted layout allocation.
+- Nested relayout after resize.
+- Tree expansion, visible rows, viewport ranges, and scroll clamping.
+- Input parsing and callback-driven state changes.
+- Keyboard activation, and routing a key between the focused widget and movement forwarding.
+  `MovementAllowedScreenButtonKeyTest` shows a screen double that overrides
+  `isKeyboardNavigating()` and `testMovementKeysDown(int)` instead of reading the game's input
+  state and key mappings.
+- Composite widgets built around a test double. `IntegerSlider`'s protected constructor takes the
+  `IntegerField` to use, so `IntegerSliderTest` and `MovementAllowedScreenPopupEscapeTest` pass a
+  number-field double instead of setting private fields by name through reflection, which a rename
+  would break only at run time. From 26.1, an editable `EditBox` asks the game to start text input
+  when it takes focus, so a unit test can't focus a real text field. `ColorHexCodeFieldTest` types
+  into a field whose `canConsumeInput()` returns true instead, built through the package-private
+  constructor that also makes ARGB fields. `MovementAllowedScreenPopupEscapeTest`
+  stands in for a combo box with a `ComboBoxWidget` subclass that skips the constructor and reports
+  no suggestions open, which is why `ComboBoxWidget` isn't `final`.
+- A suggestion list. `SuggestingTextInputTest` builds a real `TranslucentTextField` with `TestFont`
+  and overrides `isFocused()` to report focus, since a list shows only for a focused field. It
+  checks the list's rectangle with `isMouseOverSuggestion(...)`, reads which suggestions the rows
+  show by clicking one, and drives hover through the package-private `layoutSuggestions(...)`, the
+  layout half of `renderSuggestions(...)`, so nothing needs a graphics context.
+- Drawing decisions that don't need a real graphics context. `SettingsListWidget.renderPart` is
+  package-private and static, so `SettingsListWidgetTest` calls it with a null context and a
+  `WidgetStack` double whose render method records its widgets' `visible` flags and the mouse
+  position instead of drawing.
+- Pure label or presentation calculations.
+- A form's geometry, checks, patch and pending-request rules as helpers without Minecraft text
+  classes: `WaypointFormLayout`, `WaypointFormCheck`, `WaypointFormPatch`, `WaypointFormInitials` and
+  `PendingAdd` have their own tests, and `WaypointFormTranslationTest` checks that every key the
+  form uses exists in all six locales with the arguments of English.
+- Theme completeness, runtime updates, JSON round trips, invalid input, and file persistence.
+- Theme-editor session transitions: `setColor` and what it reports, `revert`, `revertAll`, `isChanged`,
+  `isDirty`, save, cancel, idempotent rollback, a failed save that a later attempt completes, and opening on
+  settings whose theme differs from the live one.
+- The theme editor's pure helpers (`WidgetThemeEditorLayout`, `KeySelection`, `PreviewPacking`,
+  `PreviewSample`) have their own tests, and `WidgetThemeConfigScreenKeyListTest` and
+  `TextChoiceDropdownTest` drive `KeyList` and `TextChoiceDropdown`. `WidgetThemeConfigScreenMarkerTest`
+  checks which panels the screen marks at their current size (`panelDraws`). The whole preview can't be
+  built in a unit test, because `TranslucentButton` and `ToggleButton` read the game's font when they are
+  created, so `WidgetThemePreviewTest` drives its package-private parts (`PreviewList`, `SampleRow`,
+  `SampleDropdown` and the `sampleActive` and `partlyInView` rules) instead.
+- `WidgetThemeConfigScreenClickTest` checks that committing an edit which wraps the status keeps a
+  button's old hit box until the click completes, then applies the new layout. It also checks immediate
+  layout outside click dispatch and cleanup after an interrupted dispatch.
+- The theme editor's text and coverage: `WidgetThemeTranslationTest` checks that its own keys, the theme
+  dropdown's included, exist in all six locales with the arguments of English and that no locale has a key
+  under `server_waypoint.theme.variable.`, and
+  `PreviewSampleTest` checks that every `WidgetThemeVariable` is used by a sample or marked element.
+
+After a GUI change:
+
+1. Run `git diff --check`.
+2. Run the exact versioned `mods` test or compile task for the active target, for example `./gradlew :mods:26.1.2-fabric:test` when that is the selected target.
+3. For render, input-signature, or Stonecutter changes, compile at least one older supported target such as `./gradlew :mods:1.20.1-fabric:compileJava`.
+4. Compile each affected loader when a predicate or API branch differs by loader.
+5. Inspect generated Stonecutter source if a branch or replacement does not behave as expected.
+6. Test the screen in game when the change depends on hover, focus, clipping, layering, tooltips, or resize behavior.
+
+## Review checklist
+
+- New code is in the narrowest correct package and project.
+- The mandatory component reuse check was completed before implementation; any custom alternative
+  identifies the existing component inspected and the concrete requirement it cannot satisfy.
+- Standalone wrapped/scaled labels and messages use `ScalableText`, with available width updated
+  after layout changes; screens and callbacks do not duplicate its wrapping loop.
+- Layout, input registration, and rendering are all wired exactly once.
+- Padded drawing has an explicit `Padding`/visual-bounds contract.
+- `WidgetStack` versus `ExpandableManager` matches fixed versus responsive layout needs.
+- Screen construction, `init`, rendering, input, focus, and `onClose` responsibilities are separated.
+- `MovementAllowedScreen` subclasses render content through `renderScreenContents` and rely on the inherited themed background.
+- Suggestion-enabled fields provide data, rendering, and click handling.
+- Screen call sites use `render_method_swap` for ordinary `AbstractWidget` rendering.
+- Widget drawing overrides use `render_widget_method_swap`.
+- Tooltips use `setTooltip(Component)` on a class that makes both calls, or `TooltipLayer.scheduleAtPointer`; nothing imports vanilla's `Tooltip`.
+- Hover-dependent drawing reads state only after the high-level wrapper has run.
+- Normal and hovered backgrounds are both explicit when the widget should not be transparent while idle.
+- Theme-aware drawing resolves semantic roles at render time instead of caching raw colors.
+- Built-in themes cover every theme variable, and every theme variable has a `PreviewSample`.
+- Live-preview screens restore shared state from `removed()` when edits were not committed.
+- Translation keys, textures, and theme roles use their shared resource locations.
+- Stonecutter markers are balanced and replacement tokens remain in valid positions.
+- The exact active target and a relevant compatibility target compile or test successfully.
+
+### Xaero default-list client setting
+
+`ClientConfigSettings.XAERO_DEFAULT_LIST_DIRECT_SYNC` defines the persisted toggle for the exact
+`gui.xaero_default` list. Off (the default) uses a separate owned set; On syncs directly into
+Xaero's default set. `forScreen(...)` includes it only for installed Xaero Minimap, immediately
+after its auto-sync setting. Use `createSettingRow(...)` for its toggle, tooltip and reset button.
+The Xaero Sync now dialog explains that direct mode replaces default-set contents, including
+personal waypoints. The choice changes the next synchronization rather than starting one itself.
+
+### Scrollbar visibility
+
+`ShiftableScrollableWidget.drawScrollbar(context, mouseX, mouseY)` takes screen-space pointer
+coordinates and fades the themed track and thumb with `ScrollbarFade` and `System.nanoTime()`.
+Hover anywhere in the panel's visual bounds, including `Padding`, fades in over 150 ms;
+dragging keeps it visible outside those bounds. Leaving holds the current opacity for 500 ms,
+then fades out over 300 ms. Re-hovering starts a 150 ms fade from the current opacity.
+Disabled, invisible and non-overflowing panels reset immediately to hidden. This also suppresses
+config-list scrollbars behind the Xaero sync dialog. Opacity does not change the 3px scrollbar
+width, content width, text wrapping, or drag hit area.
+
+`ShiftableScrollableWidget.getScrollbarX()` supplies the screen-space left edge for both drawing
+and dragging. By default the strip occupies the rightmost three pixels of the content rectangle.
+`WaypointListWidget` places it in its existing four-pixel right padding, leaving one pixel for the
+border. Its rows therefore keep equal left and right insets and the same width with or without
+overflow, including while the scrollbar fades. `TreeViewWidget.getContentWidth()` reserves only
+the part of the scrollbar inside the content rectangle. `isMouseOver(...)` includes an overflowing
+panel's scrollbar strip so screens can dispatch clicks to a scrollbar placed outside that rectangle.
+
+`ScrollbarFade.update(shouldShow, now)` accepts monotonic nanoseconds and returns opacity in
+`[0, 1]`; `reset()` immediately clears its state. The helper has no Minecraft dependencies.
+The shared visual-bounds lookup includes padding for trees and settings lists without widening
+row hover or input handling. The waypoint list, details, client settings and theme variable list
+all use this renderer. The theme gallery still has no scrollbar sample; hover the variable list
+to preview `scrollbar.*` colors.

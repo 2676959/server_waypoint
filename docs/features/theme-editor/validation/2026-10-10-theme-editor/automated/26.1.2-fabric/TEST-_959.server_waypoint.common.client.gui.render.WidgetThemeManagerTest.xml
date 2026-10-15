@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="_959.server_waypoint.common.client.gui.render.WidgetThemeManagerTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-10-10T22:30:09.868Z" hostname="Mac-mini.local" time="0.001">
+  <properties/>
+  <testcase name="setColorPublishesACompleteUpdatedTheme()" classname="_959.server_waypoint.common.client.gui.render.WidgetThemeManagerTest" time="0.0"/>
+  <testcase name="setThemePublishesTheProvidedTheme()" classname="_959.server_waypoint.common.client.gui.render.WidgetThemeManagerTest" time="0.0"/>
+  <testcase name="updateThemeCanChangeVariablesAtomically()" classname="_959.server_waypoint.common.client.gui.render.WidgetThemeManagerTest" time="0.0"/>
+  <testcase name="colorSupplierResolvesTheLatestThemeValue()" classname="_959.server_waypoint.common.client.gui.render.WidgetThemeManagerTest" time="0.0"/>
+  <testcase name="resetThemeRestoresTheBuiltInDefault()" classname="_959.server_waypoint.common.client.gui.render.WidgetThemeManagerTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

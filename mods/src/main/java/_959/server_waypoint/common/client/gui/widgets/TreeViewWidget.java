@@ -1,15 +1,18 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import _959.server_waypoint.common.client.gui.layout.Expandable;
 import _959.server_waypoint.common.client.gui.layout.Padding;
 import _959.server_waypoint.common.client.gui.render.PaddingBackground;
+import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.IntSupplier;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 
@@ -21,6 +24,7 @@ import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.
 
 public abstract class TreeViewWidget<T> extends ShiftableScrollableWidget implements Padding, Expandable {
     private final int rowHeight;
+    private final IntSupplier backgroundFill;
     private final PaddingBackground paddingBackground;
     private List<T> roots = List.of();
     private final List<TreeEntry<T>> visibleEntries = new ArrayList<>();
@@ -36,7 +40,9 @@ public abstract class TreeViewWidget<T> extends ShiftableScrollableWidget implem
                              int backgroundColor, int borderColor, boolean border) {
         super(x, y, width, height, text);
         this.rowHeight = rowHeight;
-        this.paddingBackground = new PaddingBackground(this, topPadding, bottomPadding, leftPadding, rightPadding, backgroundColor, borderColor, border);
+        this.backgroundFill = () -> backgroundColor;
+        this.paddingBackground = new PaddingBackground(this, topPadding, bottomPadding, leftPadding, rightPadding,
+                this::backgroundColor, () -> borderColor, border);
     }
 
     protected TreeViewWidget(int x, int y, int width, int height, int rowHeight, Component text,
@@ -44,8 +50,18 @@ public abstract class TreeViewWidget<T> extends ShiftableScrollableWidget implem
                              WidgetThemeVariable backgroundColor, WidgetThemeVariable borderColor, boolean border) {
         super(x, y, width, height, text);
         this.rowHeight = rowHeight;
+        this.backgroundFill = WidgetThemeManager.getColorSupplier(backgroundColor);
         this.paddingBackground = new PaddingBackground(this, topPadding, bottomPadding, leftPadding, rightPadding,
-                backgroundColor, borderColor, border);
+                this::backgroundColor, WidgetThemeManager.getColorSupplier(borderColor), border);
+    }
+
+    /**
+     * The fill painted behind the rows, read each time the tree is drawn. A tree on a panel that already
+     * paints {@code PANEL_BACKGROUND} overrides this to return 0, because a translucent layer composited
+     * twice looks darker than the panels around it.
+     */
+    protected int backgroundColor() {
+        return this.backgroundFill.getAsInt();
     }
 
     public void updateRoots(List<T> roots) {
@@ -122,7 +138,7 @@ public abstract class TreeViewWidget<T> extends ShiftableScrollableWidget implem
     }
 
     protected int getContentWidth() {
-        return overflows() ? this.width - SCROLLBAR_WIDTH : this.width;
+        return overflows() ? Math.min(this.width, getScrollbarX() - getX()) : this.width;
     }
 
     protected boolean isEmpty() {
@@ -177,7 +193,7 @@ public abstract class TreeViewWidget<T> extends ShiftableScrollableWidget implem
         if (onEntryClicked(entry, contentMouseX, contentMouseY, button)) {
             return true;
         }
-        if (button == 0 && isExpandable(entry.value())) {
+        if (button == InputConstants.MOUSE_BUTTON_LEFT && isExpandable(entry.value())) {
             toggleEntryExpanded(entry);
             return true;
         }
@@ -224,7 +240,7 @@ public abstract class TreeViewWidget<T> extends ShiftableScrollableWidget implem
             renderEmpty(context, mouseX, mouseY, deltaTicks);
             pop(context);
             context.disableScissor();
-            this.drawScrollbar(context);
+            this.drawScrollbar(context, mouseX, mouseY);
             return;
         }
 
@@ -243,7 +259,7 @@ public abstract class TreeViewWidget<T> extends ShiftableScrollableWidget implem
 
         pop(context);
         context.disableScissor();
-        this.drawScrollbar(context);
+        this.drawScrollbar(context, mouseX, mouseY);
     }
 
     protected VisibleRowRange getVisibleRenderRange(double scrollY) {

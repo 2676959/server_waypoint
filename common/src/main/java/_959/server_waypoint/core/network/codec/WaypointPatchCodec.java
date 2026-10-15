@@ -3,7 +3,9 @@ package _959.server_waypoint.core.network.codec;
 import _959.server_waypoint.core.network.DecodingContext;
 import _959.server_waypoint.core.network.EncodingContext;
 import _959.server_waypoint.core.edit.WaypointPatch;
+import _959.server_waypoint.core.waypoint.WaypointIconPolicy;
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.util.NamespacedId;
 import io.netty.buffer.ByteBuf;
 
 public final class WaypointPatchCodec {
@@ -30,6 +32,8 @@ public final class WaypointPatchCodec {
                 context
         );
         PatchFieldCodec.encode(buf, patch.description(), UtfStringCodec::encode, context);
+        PatchFieldCodec.encode(buf, patch.icon(),
+                (target, id, nestedContext) -> UtfStringCodec.encode(target, id.toString(), nestedContext), context);
     }
 
     public static WaypointPatch decode(ByteBuf buf, DecodingContext context) {
@@ -55,7 +59,9 @@ public final class WaypointPatchCodec {
                                 ListCodec.decode(target, UtfStringCodec::decode, nestedContext),
                         context
                 ),
-                PatchFieldCodec.decode(buf, UtfStringCodec::decode, context)
+                PatchFieldCodec.decode(buf, UtfStringCodec::decode, context),
+                PatchFieldCodec.decode(buf, (target, nestedContext) ->
+                        WaypointIconPolicy.validate(NamespacedId.parse(UtfStringCodec.decode(target, nestedContext))), context)
         );
     }
 }

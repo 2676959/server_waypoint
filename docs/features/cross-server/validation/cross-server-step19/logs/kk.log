@@ -1,0 +1,88 @@
+> Task :kk:verifyCandidate
+> Task :kk:compileJava
+> Task :kk:processResources
+> Task :kk:classes
+> Task :kk:shadowJar
+> Task :downloadCandidate
+> Task :extractCandidate
+> Task :kk:compileTestJava
+> Task :kk:processTestResources NO-SOURCE
+> Task :kk:testClasses
+
+> Task :kk:test
+
+CandidateTest > replayedFirstHandshakeDoesNotAuthenticateTransportOnFreshResponder() PASSED
+
+CandidateTest > nonceBoundaryFailsClosedForEncryptionAndDecryption(boolean) > [1] false PASSED
+
+CandidateTest > nonceBoundaryFailsClosedForEncryptionAndDecryption(boolean) > [2] true PASSED
+
+CandidateTest > matchesPublishedKkVector(boolean) > [1] false PASSED
+
+CandidateTest > matchesPublishedKkVector(boolean) > [2] true PASSED
+
+CandidateTest > badTagLeavesOutputUntouchedAndHarnessDiscardsSession() PASSED
+
+CandidateTest > harnessRejectsNonemptyHandshakePayloadAndCannotSendTransportBeforeSplit() PASSED
+
+CandidateTest > wrapperEnforcesRecordBudgetAndClosesOnOversize() PASSED
+
+TwoProcessTest > shadedJarIsSelfContainedAndRelocated() PASSED
+
+TwoProcessTest > unshadedPeers(String) > [1] success PASSED
+
+TwoProcessTest > unshadedPeers(String) > [2] wrong-pin PASSED
+
+TwoProcessTest > unshadedPeers(String) > [3] wrong-backend-key PASSED
+
+TwoProcessTest > unshadedPeers(String) > [4] unknown-id PASSED
+
+TwoProcessTest > unshadedPeers(String) > [5] revoked-id PASSED
+
+TwoProcessTest > unshadedPeers(String) > [6] wrong-prologue PASSED
+
+TwoProcessTest > unshadedPeers(String) > [7] tamper-request PASSED
+
+TwoProcessTest > unshadedPeers(String) > [8] tamper-response PASSED
+
+TwoProcessTest > unshadedPeers(String) > [9] tamper-confirmation PASSED
+
+TwoProcessTest > unshadedPeers(String) > [10] operation-before-confirmation PASSED
+
+TwoProcessTest > unshadedPeers(String) > [11] missing-confirmation PASSED
+
+TwoProcessTest > unshadedPeers(String) > [12] tamper-transport PASSED
+
+TwoProcessTest > unshadedPeers(String) > [13] replay-transport PASSED
+
+TwoProcessTest > relocatedPeersWithoutOriginalClasses(String) > [1] success PASSED
+
+TwoProcessTest > relocatedPeersWithoutOriginalClasses(String) > [2] wrong-pin PASSED
+
+TwoProcessTest > relocatedPeersWithoutOriginalClasses(String) > [3] wrong-backend-key PASSED
+
+TwoProcessTest > relocatedPeersWithoutOriginalClasses(String) > [4] unknown-id PASSED
+
+TwoProcessTest > relocatedPeersWithoutOriginalClasses(String) > [5] revoked-id PASSED
+
+TwoProcessTest > relocatedPeersWithoutOriginalClasses(String) > [6] wrong-prologue PASSED
+
+TwoProcessTest > relocatedPeersWithoutOriginalClasses(String) > [7] tamper-request PASSED
+
+TwoProcessTest > relocatedPeersWithoutOriginalClasses(String) > [8] tamper-response PASSED
+
+TwoProcessTest > relocatedPeersWithoutOriginalClasses(String) > [9] tamper-confirmation PASSED
+
+TwoProcessTest > relocatedPeersWithoutOriginalClasses(String) > [10] operation-before-confirmation PASSED
+
+TwoProcessTest > relocatedPeersWithoutOriginalClasses(String) > [11] missing-confirmation PASSED
+
+TwoProcessTest > relocatedPeersWithoutOriginalClasses(String) > [12] tamper-transport PASSED
+
+TwoProcessTest > relocatedPeersWithoutOriginalClasses(String) > [13] replay-transport PASSED
+
+> Task :kk:check
+
+BUILD SUCCESSFUL in 6s
+8 actionable tasks: 8 executed
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.5.1/userguide/configuration_cache_enabling.html

@@ -1,0 +1,9 @@
+{
+  "backend": "b",
+  "oldPublicPinSha256": "332488cc774b40944cce270fc8173127d0be798597868500b2d59186b67f824d",
+  "newPublicPinSha256": "fe934aac145c0ddb817bee19ea3764ba978bd41acf25a5ff255191ad60a2beca",
+  "oldPinDiffersFromRotatedIdentity": true,
+  "revocationOutcome": "Source catalog stale; teleport denied",
+  "oldPinAfterRotationOutcome": "Source catalog stale; teleport denied",
+  "newPinOutcome": "Remote catalog AVAILABLE and authenticated transfer to b succeeded"
+}

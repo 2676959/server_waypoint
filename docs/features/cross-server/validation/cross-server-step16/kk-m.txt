@@ -1,0 +1,34 @@
+Minecraft Console Client v26.2 - for MC 1.4.6 to 26.2 - Github.com/MCCTeam
+GitHub build 499, built on 2026-07-31 from commit 7b100a3
+⭐ Like MCC? Star us on GitHub: https://github.com/MCCTeam/Minecraft-Console-Client
+Failed to load settings:
+Could not find enum value by name "basic" in enum class MinecraftClient.Settings->ConsoleConfigHealper->ConsoleConfig->ConsoleModeType while deserializing.
+
+Failed to parse the settings file, enter "/new" to generate a new configuration.
+Or press Enter to exit Minecraft Console Client.
+  Minecraft Console Client v26.2 - for MC 1.4.6 to 26.2 - Github.com/MCCTeam
+GitHub build 499, built on 2026-07-31 from commit 7b100a3
+⭐ Like MCC? Star us on GitHub: https://github.com/MCCTeam/Minecraft-Console-Client
+You chose to run in offline mode.
+Using Minecraft version 1.21 (protocol v767)
+[MCC] Version is supported.
+Logging in...
+[MCC] Server is in offline mode.
+[MCC] Server was successfully joined.
+Type '/quit' to leave the server.
+A new version of MCC is available and you can download it via /upgrade
+Or download it manually: https://github.com/MCCTeam/Minecraft-Console-Client/releases
+▌CodexStep16 joined the game
+▌Remote servers b Available → Page 1/1
+▌Expected whitespace to end one argument, but found trailing data ... minecraft:overworld Test Target<--[HERE]
+▌Preparing remote teleport…
+▌CodexStep16 joined the game
+▌Remote teleport completed.
+▌Preparing remote teleport…
+▌CodexStep16 joined the game
+▌Remote teleport completed.
+▌Preparing remote teleport…
+▌CodexStep16 joined the game
+▌You do not have permission to teleport to that remote waypoint.
+▌Incorrect argument for command wp remote tp a "minecraft:overworld" Test Target<--[HERE]
+The current setting is saved as MinecraftClient.ini

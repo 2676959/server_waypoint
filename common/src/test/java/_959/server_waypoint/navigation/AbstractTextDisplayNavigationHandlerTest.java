@@ -6,6 +6,7 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -74,6 +75,7 @@ final class AbstractTextDisplayNavigationHandlerTest {
                         "Village",
                         "Village",
                         "",
+                        List.of(),
                         new WaypointPos(1, 2, 3),
                         0x123456
                 ),

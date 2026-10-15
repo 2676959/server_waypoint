@@ -1,5 +1,6 @@
 package _959.server_waypoint.network;
 
+import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.PaperScheduler;
 import _959.server_waypoint.core.network.ChunkedMessage;
 import _959.server_waypoint.core.network.ChunkedMessageDelivery;
@@ -10,13 +11,18 @@ import _959.server_waypoint.core.network.PlatformMessageSender;
 import _959.server_waypoint.core.network.SinglePacketMessage;
 import _959.server_waypoint.core.network.SinglePacketMessageEncoder;
 import _959.server_waypoint.core.network.buffer.MessageChunkBuffer;
+import _959.server_waypoint.server.command.CommandChatIcons;
+import _959.server_waypoint.text.chat.Chat;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.translation.GlobalTranslator;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.List;
@@ -79,21 +85,84 @@ public class PaperMessageSender implements PlatformMessageSender<CommandSourceSt
         }
     }
 
+    /** One message and who gets it. */
+    record Delivery(CommandSender recipient, Component message) {
+    }
+
+    /**
+     * The player whose view the feedback is: the player a command runs as, such as /execute as a
+     * player, else the sender when that is a player. Null for the console, RCON and command blocks,
+     * which read plain text.
+     */
+    static @Nullable Player viewingPlayer(CommandSourceStack source) {
+        if (source.getExecutor() instanceof Player executor) {
+            return executor;
+        }
+        return source.getSender() instanceof Player sender ? sender : null;
+    }
+
+    @Override
+    public boolean isPlainTextReceiver(CommandSourceStack source) {
+        return viewingPlayer(source) == null;
+    }
+
+    /**
+     * The stack of the player the feedback is viewed as when a commander ran it for them, so the
+     * view shows what that player may do; otherwise the stack itself. Paper's stack is the vanilla
+     * one, so the player's own stack is an API stack too.
+     */
+    @Override
+    public CommandSourceStack viewingSource(CommandSourceStack source) {
+        Player viewer = viewingPlayer(source);
+        if (viewer == null || viewer.equals(source.getSender()) || !(viewer instanceof CraftPlayer craftViewer)) {
+            return source;
+        }
+        return craftViewer.getHandle().createCommandSourceStack();
+    }
+
+    /**
+     * The feedback goes to the player whose view it is, and Paper renders it in their language.
+     * When a commander ran it for that player with /execute as, the commander also gets the view,
+     * under a "Viewed as" line that Paper renders in the commander's language. The view itself is
+     * rendered here, in the player's language, since Paper would render it in the commander's. A
+     * commander who is not a player reads it without chat objects.
+     */
+    static List<Delivery> deliveries(CommandSourceStack source, Component component) {
+        CommandSender commander = source.getSender();
+        Player viewer = viewingPlayer(source);
+        if (viewer == null) {
+            return List.of(new Delivery(commander, component));
+        }
+        Component view = PlatformMessageSender.forPlayer(component);
+        if (commander.equals(viewer)) {
+            return List.of(new Delivery(viewer, view));
+        }
+        Component viewedByCommander = commander instanceof Player
+                ? GlobalTranslator.render(view, viewer.locale())
+                : CommandChatIcons.INSTANCE.withoutIcons(GlobalTranslator.render(component, viewer.locale()));
+        return List.of(
+                new Delivery(viewer, view),
+                new Delivery(commander, PlatformMessageSender.forCommander(Chat.viewedAs(viewer.getName()), viewedByCommander))
+        );
+    }
+
     @Override
     public void sendMessage(CommandSourceStack source, Component component) {
-        CommandSender sender = source.getSender();
-        this.scheduler.execute(sender, () -> sender.sendMessage(component));
+        for (Delivery delivery : deliveries(source, component)) {
+            CommandSender recipient = delivery.recipient();
+            this.scheduler.execute(recipient, () -> recipient.sendMessage(delivery.message()));
+        }
     }
 
     @Override
     public void sendPlayerMessage(Player player, Component component) {
-        this.scheduler.execute(player, () -> player.sendMessage(component));
+        Component message = PlatformMessageSender.forPlayer(component);
+        this.scheduler.execute(player, () -> player.sendMessage(message));
     }
 
     @Override
     public void sendError(CommandSourceStack source, Component component) {
-        CommandSender sender = source.getSender();
-        this.scheduler.execute(sender, () -> sender.sendMessage(component));
+        this.sendMessage(source, component);
     }
 
     @Override
@@ -104,6 +173,18 @@ public class PaperMessageSender implements PlatformMessageSender<CommandSourceSt
     @Override
     public Collection<? extends Player> getBroadcastPlayersFromPlayer(Player player) {
         return player.getServer().getOnlinePlayers();
+    }
+
+    @Override
+    public PlayerActionLog.Actor playerActor(Player player) {
+        return new PlayerActionLog.Actor(player.getUniqueId(), player.getName());
+    }
+
+    @Override
+    public PlayerActionLog.Actor commandSenderActor(CommandSourceStack source) {
+        CommandSender sender = source.getSender();
+        return sender instanceof Player player ? this.playerActor(player)
+                : new PlayerActionLog.Actor(null, sender.getName());
     }
 
     @Override

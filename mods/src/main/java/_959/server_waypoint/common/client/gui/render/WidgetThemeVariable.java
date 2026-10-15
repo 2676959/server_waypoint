@@ -6,7 +6,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Semantic color roles shared by the project's GUI components.
+ * Semantic color and boolean settings shared by the project's GUI components.
  */
 public enum WidgetThemeVariable {
     TEXT_PRIMARY("text.primary"),
@@ -14,6 +14,9 @@ public enum WidgetThemeVariable {
     TEXT_DISABLED("text.disabled"),
     TEXT_PLACEHOLDER("text.placeholder"),
     TEXT_ON_ACCENT("text.onAccent"),
+    ICON_PRIMARY("icon.primary"),
+    ICON_DISABLED("icon.disabled"),
+    TEXT_SHADOW("text.shadow", true),
     SCREEN_BACKGROUND("background.screen"),
     PANEL_BACKGROUND("background.panel"),
     POPUP_BACKGROUND("background.popup"),
@@ -23,6 +26,7 @@ public enum WidgetThemeVariable {
     CONTROL_DISABLED_BACKGROUND("control.disabledBackground"),
     CONTROL_SELECTED_BACKGROUND("control.selectedBackground"),
     BORDER("border.default"),
+    DECOR_LINE("decor.line"),
     FOCUS_RING("border.focusRing"),
     ACCENT("accent.default"),
     ACCENT_HOVER("accent.hover"),
@@ -33,6 +37,8 @@ public enum WidgetThemeVariable {
     SCROLLBAR_THUMB_ACTIVE("scrollbar.thumbActive"),
     SCROLLBAR_THUMB_DISABLED("scrollbar.thumbDisabled"),
     SLIDER_THUMB_DISABLED("slider.thumbDisabled"),
+    TOGGLE_ON_BACKGROUND("toggle.onBackground"),
+    TOGGLE_OFF_BACKGROUND("toggle.offBackground"),
     SUCCESS("status.success"),
     WARNING("status.warning"),
     DANGER("status.danger"),
@@ -43,9 +49,19 @@ public enum WidgetThemeVariable {
     private static final Map<String, WidgetThemeVariable> BY_JSON_NAME = createJsonNameLookup();
 
     private final String jsonName;
+    private final boolean booleanVariable;
 
     WidgetThemeVariable(String jsonName) {
+        this(jsonName, false);
+    }
+
+    WidgetThemeVariable(String jsonName, boolean booleanVariable) {
         this.jsonName = jsonName;
+        this.booleanVariable = booleanVariable;
+    }
+
+    public boolean isBoolean() {
+        return this.booleanVariable;
     }
 
     public String getJsonName() {

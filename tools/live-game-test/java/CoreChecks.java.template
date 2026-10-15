@@ -1,0 +1,115 @@
+import _959.server_waypoint.common.client.WaypointClientMod;
+import _959.server_waypoint.common.client.gui.screens.WaypointAddScreen;
+import _959.server_waypoint.common.client.gui.screens.WaypointEditScreen;
+import _959.server_waypoint.common.client.util.MinecraftClientHelper;
+import _959.server_waypoint.core.waypoint.*;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.EditBox;
+import java.nio.file.*;
+import java.lang.reflect.Field;
+import java.util.concurrent.*;
+
+/** World and form checks for a target whose optional map mods have no matching loader release. */
+public class LiveChecks {
+    static Minecraft mc;
+    static Path result;
+
+    public static void start(String home, String op, String output) {
+        mc = Minecraft.getInstance();
+        result = Path.of(output);
+        Thread worker = new Thread(() -> {
+            try {
+                run(op);
+                write("PASS\n");
+            } catch (Throwable failure) {
+                java.io.StringWriter trace = new java.io.StringWriter();
+                failure.printStackTrace(new java.io.PrintWriter(trace));
+                try { write("FAIL\n" + trace); } catch (Exception ignored) {}
+            }
+        }, "SW core live verification");
+        worker.setDaemon(true);
+        worker.start();
+    }
+
+    static void write(String text) throws Exception {
+        Path temp = result.resolveSibling(result.getFileName() + ".writing");
+        Files.writeString(temp, text);
+        Files.move(temp, result, StandardCopyOption.ATOMIC_MOVE);
+    }
+
+    public static void quit() {
+        Minecraft.getInstance().execute(Minecraft.getInstance()::stop);
+    }
+
+    interface Task { void run() throws Exception; }
+
+    static void client(Task task) throws Exception {
+        CompletableFuture<Void> done = new CompletableFuture<>();
+        mc.execute(() -> {
+            try { task.run(); done.complete(null); }
+            catch (Throwable failure) { done.completeExceptionally(failure); }
+        });
+        done.get(120, TimeUnit.SECONDS);
+    }
+
+    static Object field(Object owner, String name) throws Exception {
+        for (Class<?> type = owner.getClass(); type != null; type = type.getSuperclass()) {
+            try {
+                Field field = type.getDeclaredField(name);
+                field.setAccessible(true);
+                return field.get(owner);
+            } catch (NoSuchFieldException ignored) {}
+        }
+        throw new NoSuchFieldException(name);
+    }
+
+    static void require(boolean condition, String message) {
+        if (!condition) throw new AssertionError(message);
+    }
+
+    static String value(String name) throws Exception {
+        return ((EditBox) field(GameApi.screen(mc), name)).getValue();
+    }
+
+    static void cancel() throws Exception {
+        var button = (AbstractWidget) field(GameApi.screen(mc), "cancelButton");
+        require(button.active && GameApi.click(GameApi.screen(mc), button), "Cancel did not handle click");
+    }
+
+    static void run(String op) throws Exception {
+        if (op.equals("create")) {
+            client(() -> GameApi.create(mc, GameApi.screen(mc)));
+            long deadline = System.currentTimeMillis() + 120000;
+            while ((mc.player == null || WaypointClientMod.getNetworkState()
+                    != WaypointClientMod.ClientNetworkState.SYNC_FINISHED)
+                    && System.currentTimeMillis() < deadline) Thread.sleep(250);
+            require(mc.player != null && WaypointClientMod.getNetworkState()
+                    == WaypointClientMod.ClientNetworkState.SYNC_FINISHED, "Integrated world did not sync");
+        } else if (op.equals("core-form")) {
+            client(() -> {
+                require(!_959.server_waypoint.common.client.ClientConfig.isXaerosMinimapLoaded,
+                        "Core-only verification unexpectedly loaded Xaero");
+                var draft = new SimpleWaypoint("core-draft", "CD", new WaypointPos(31, 75, -42), 0x33AA55, 90, false);
+                MinecraftClientHelper.setScreen(mc,
+                        new WaypointEditScreen(null, "minecraft:overworld", "Bases", "Display Bases", draft));
+                require(value("nameEditBox").equals("core-draft") && value("xEditBox").equals("31"), "Edit defaults lost");
+                cancel();
+                MinecraftClientHelper.setScreen(mc,
+                        WaypointAddScreen.fromWaypoint(null, "minecraft:overworld", "Bases", draft));
+                require(value("nameEditBox").equals("core-draft") && value("yEditBox").equals("75")
+                        && value("zEditBox").equals("-42") && value("initialsEditBox").equals("CD"), "Add draft defaults lost");
+                cancel();
+                require(!(GameApi.screen(mc) instanceof WaypointAddScreen)
+                        && !(GameApi.screen(mc) instanceof WaypointEditScreen), "Cancel kept a server form open");
+            });
+        } else if (op.equals("close")) {
+            client(() -> {
+                MinecraftClientHelper.setScreen(mc, null);
+                GameApi.disconnect(mc);
+            });
+        } else {
+            throw new IllegalArgumentException("Unknown core check: " + op);
+        }
+    }
+}

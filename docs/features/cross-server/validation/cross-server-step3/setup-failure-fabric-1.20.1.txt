@@ -1,0 +1,32 @@
+Downloading Minecraft server
+Installing Fabric Loader 0.17.3(1.20.1) on the server
+Downloading required files
+Downloading library org.ow2.asm:asm:9.9
+Downloading library org.ow2.asm:asm-analysis:9.9
+Downloading library org.ow2.asm:asm-commons:9.9
+Downloading library org.ow2.asm:asm-tree:9.9
+Downloading library org.ow2.asm:asm-util:9.9
+Downloading library net.fabricmc:sponge-mixin:0.16.5+mixin.0.8.7
+Downloading library net.fabricmc:intermediary:1.20.1
+Downloading library net.fabricmc:fabric-loader:0.17.3
+Generating server launch JAR
+Starting net.fabricmc.loader.impl.game.minecraft.BundlerClassPathCapture
+[21:53:35] [main/INFO]: Loading Minecraft 1.20.1 with Fabric Loader 0.17.3
+[21:53:35] [main/INFO]: Fabric is preparing JARs on first launch, this may take a few seconds...
+[21:53:35] [main/WARN]: Mod resolution failed
+[21:53:35] [main/INFO]: Immediate reason: [HARD_DEP_NO_CANDIDATE server_waypoint 3.1.0 {depends fabric-api @ [*]}, ROOT_FORCELOAD_SINGLE server_waypoint 3.1.0]
+[21:53:35] [main/INFO]: Reason: [HARD_DEP server_waypoint 3.1.0 {depends fabric-api @ [*]}]
+[21:53:35] [main/INFO]: Fix: add [add:fabric-api 1 ([(-∞,∞)])], remove [], replace []
+[21:53:35] [main/ERROR]: Incompatible mods found!
+net.fabricmc.loader.impl.FormattedException: Some of your mods are incompatible with the game or each other!
+A potential solution has been determined, this may resolve your problem:
+     - Install fabric-api, any version.
+More details:
+     - Mod 'Server Waypoint' (server_waypoint) 3.1.0 requires any version of fabric-api, which is missing!
+    at net.fabricmc.loader.impl.FormattedException.ofLocalized(FormattedException.java:51) ~[fabric-loader-0.17.3.jar:?]
+    at net.fabricmc.loader.impl.FabricLoaderImpl.load(FabricLoaderImpl.java:202) ~[fabric-loader-0.17.3.jar:?]
+    at net.fabricmc.loader.impl.launch.knot.Knot.init(Knot.java:142) ~[fabric-loader-0.17.3.jar:?]
+    at net.fabricmc.loader.impl.launch.knot.Knot.launch(Knot.java:66) ~[fabric-loader-0.17.3.jar:?]
+    at net.fabricmc.loader.impl.launch.knot.KnotServer.main(KnotServer.java:23) ~[fabric-loader-0.17.3.jar:?]
+    at net.fabricmc.loader.impl.launch.server.FabricServerLauncher.main(FabricServerLauncher.java:69) ~[fabric-loader-0.17.3.jar:?]
+    at net.fabricmc.installer.ServerLauncher.main(ServerLauncher.java:69) ~[server.jar:1.1.2]

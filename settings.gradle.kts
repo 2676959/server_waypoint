@@ -30,12 +30,13 @@ stonecutter {
         mc("fabric",
             "1.20.1", "1.20.2", "1.20.4", "1.20.6",
             "1.21", "1.21.2", "1.21.3", "1.21.5", "1.21.6", "1.21.9", "1.21.11",
-            "26.1.2", "26.2")
+            "26.1.2", "26.2", "26.3")
         mc("neoforge",
             "1.20.2", "1.20.4", "1.20.6",
-            "1.21", "1.21.2", "1.21.3", "1.21.5", "1.21.6", "1.21.9", "1.21.11",
-            "26.1.2", "26.2")
+            "1.21", "1.21.2", "1.21.3", "1.21.5", "1.21.6", "1.21.7", "1.21.9", "1.21.11",
+            "26.1.2", "26.2", "26.3")
         // Forge does not publish a 1.21.2 loader, so there is no resolvable 1.21.2-forge target.
+        // Forge has not published a Minecraft 26.3 loader yet.
         mc("forge",
             "1.20.1", "1.20.2", "1.20.4", "1.20.6",
             "1.21", "1.21.3", "1.21.5", "1.21.6", "1.21.9", "1.21.11",
@@ -47,6 +48,7 @@ stonecutter {
                 "1.20.2-neoforge" -> "neogradle.gradle.kts"
                 "26.1.2-fabric" -> "fabric-unobfuscated.gradle.kts"
                 "26.2-fabric" -> "fabric-unobfuscated.gradle.kts"
+                "26.3-fabric" -> "fabric-unobfuscated.gradle.kts"
                 else -> "$loader.gradle.kts"
             }
         }
@@ -54,6 +56,7 @@ stonecutter {
 
     create("paper") {
         version("1.21-paper", "1.21")
+        version("1.21.9-paper", "1.21.9") // created for item and player head objects in chat feedback
         // codes are identical with 1.21-paper, created because 1.21.11 complies the same method with different descriptor:
         // 1.21    : Transformation(Vector3f, Quaternionf, Vector3f, Quaternionf)
         // 1.21.11 : Transformation(Vector3fc, Quaternionfc, Vector3fc, Quaternionfc)
@@ -63,6 +66,10 @@ stonecutter {
 }
 
 rootProject.name = "server_waypoint"
+include("cross-server")
 include("common")
 include("mods")
 include("paper")
+
+include("proxy-common")
+include("velocity")

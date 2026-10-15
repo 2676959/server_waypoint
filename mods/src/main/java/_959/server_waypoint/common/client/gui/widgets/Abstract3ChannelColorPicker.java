@@ -4,11 +4,14 @@ package _959.server_waypoint.common.client.gui.widgets;
 import _959.server_waypoint.common.client.gui.api.ColorPickerCallback;
 import _959.server_waypoint.common.client.gui.api.Colorable;
 
+import java.util.function.IntSupplier;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 
-public abstract class Abstract3ChannelColorPicker<T extends AbstractColorBgSlider> extends ShiftableClickableWidget implements Colorable {
+import static _959.server_waypoint.util.ColorUtils.getContrastColor;
+
+public abstract class Abstract3ChannelColorPicker<T extends Abstract3ChannelColorPicker.ColorGradientSlider> extends ShiftableClickableWidget implements Colorable {
     protected final ColorPickerCallback callback;
     private final int slotHeight;
     private final int slotWidth;
@@ -25,6 +28,10 @@ public abstract class Abstract3ChannelColorPicker<T extends AbstractColorBgSlide
         this.slider1 = slider1;
         this.slider2 = slider2;
         this.callback = callback;
+        IntSupplier currentColor = this::getColor;
+        slider0.setColorSource(currentColor);
+        slider1.setColorSource(currentColor);
+        slider2.setColorSource(currentColor);
         this.setX(x);
         this.setY(y);
     }
@@ -65,9 +72,9 @@ public abstract class Abstract3ChannelColorPicker<T extends AbstractColorBgSlide
         this.slider2.setY(i + slotHeight);
     }
 
-    public abstract void onChannel0Update();
-    public abstract void onChannel1Update();
-    public abstract void onChannel2Update();
+    protected abstract void onChannel0Update();
+    protected abstract void onChannel1Update();
+    protected abstract void onChannel2Update();
 
     public void updateSlider0(int level) {
         this.slider0.setSliderLevel(level);
@@ -224,4 +231,29 @@ public abstract class Abstract3ChannelColorPicker<T extends AbstractColorBgSlide
 
     @Override
     public void updateWidgetNarration(NarrationElementOutput builder) {}
+
+    /**
+     * A slider whose gradient shows the picker's current color at its handle. Its handle is drawn in
+     * black or white, whichever contrasts more with that color, instead of the themed color. The color
+     * is read from the picker whenever the handle is drawn, so no input path can leave a stale one behind.
+     * */
+    public static abstract class ColorGradientSlider extends AbstractColorBgSlider {
+        private IntSupplier colorSource;
+
+        public ColorGradientSlider(int x, int y, int slotWidth, int slotHeight, int maxLevel) {
+            super(x, y, slotWidth, slotHeight, maxLevel);
+        }
+
+        void setColorSource(IntSupplier colorSource) {
+            this.colorSource = colorSource;
+        }
+
+        @Override
+        protected int getHandleColor() {
+            if (!isActive() || this.colorSource == null) {
+                return super.getHandleColor();
+            }
+            return getContrastColor(this.colorSource.getAsInt());
+        }
+    }
 }

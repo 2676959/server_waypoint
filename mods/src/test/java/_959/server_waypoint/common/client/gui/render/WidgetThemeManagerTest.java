@@ -41,7 +41,7 @@ class WidgetThemeManagerTest {
         WidgetThemeManager.resetTheme();
 
         assertSame(WidgetThemes.DEFAULT, WidgetThemeManager.getTheme());
-        assertSame(WidgetThemes.TRANSLUCENT_DARK, WidgetThemeManager.getTheme());
+        assertSame(WidgetThemes.CLASSIC, WidgetThemeManager.getTheme());
     }
 
     @Test

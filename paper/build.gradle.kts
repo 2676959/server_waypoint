@@ -24,6 +24,8 @@ repositories {
 }
 
 dependencies {
+    compileOnly("net.luckperms:api:5.5")
+    testImplementation("net.luckperms:api:5.5")
     val paperApiVersion : String by project
     compileOnly("io.papermc.paper:paper-api:$paperApiVersion")
     paperweight.paperDevBundle(paperApiVersion)
@@ -47,14 +49,23 @@ tasks.jar {
 }
 
 tasks.shadowJar {
+    relocate("com.southernstorm.noise", "_959.server_waypoint.internal.noisekk")
     configurations = listOf(project.configurations.runtimeClasspath.get())
     dependencies {
-        exclude { it.moduleGroup != "org.bstats" && it.moduleName != "common" }
+        exclude { it.moduleGroup != "org.bstats" && it.moduleName != "common" && it.moduleName != "cross-server"
+                && !(it.moduleGroup == "org.signal.forks" && it.moduleName == "noise-java") }
     }
-    relocate("org.bstats", project.group.toString())
+    relocate("org.bstats", "${project.group}.internal.bstats")
     archiveClassifier.set("")
     from(rootProject.file("LICENSE")) {
         rename { "${it}_server_waypoint" }
+    }
+}
+
+// Sprite objects in chat exist from 1.21.9; older targets never read the sprite table.
+if (stonecutter.eval(stonecutter.current.version, "<1.21.9")) {
+    tasks.shadowJar {
+        exclude("assets/server_waypoint/chat-sprites.json", "_959/server_waypoint/text/chat/VanillaChatSprites.class")
     }
 }
 
@@ -108,3 +119,5 @@ tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
     options.compilerArgs.addAll(listOf("-Xlint:deprecation", "-Xlint:unchecked"))
 }
+
+apply(from = rootProject.file("gradle/noise-packaging.gradle.kts"))

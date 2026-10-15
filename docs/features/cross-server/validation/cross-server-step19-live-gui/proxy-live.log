@@ -1,0 +1,75 @@
+[10:51:15 INFO]: Booting up Velocity 4.1.1...
+[10:51:18 INFO]: Connections will use kqueue channels, libdeflate (macOS ARM64 / Apple Silicon) compression, native (macOS ARM64 / Apple Silicon) ciphers
+[10:51:18 WARN]: The proxy is running in offline mode! This is a security risk and you will NOT receive any support!
+[10:51:18 WARN]: Player info forwarding is disabled! All players will appear to be connecting from the proxy and will have offline-mode UUIDs.
+[10:51:18 INFO]: Loading localizations...
+[10:51:18 INFO]: Loading plugins...
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::staticFieldBase has been called by com.google.inject.internal.aop.HiddenClassDefiner (file:/private/tmp/server-waypoint-step19-live/proxy/velocity.jar)
+WARNING: Please consider reporting this to the maintainers of class com.google.inject.internal.aop.HiddenClassDefiner
+WARNING: sun.misc.Unsafe::staticFieldBase will be removed in a future release
+[10:51:18 INFO]: Loaded plugin server_waypoint 3.1.0 by 2676959
+[10:51:18 INFO]: Loaded 2 plugins
+[10:51:18 INFO] [server_waypoint]: Server Waypoint coordinator startup: SUCCESS
+[10:51:18 INFO]: Listening on /127.0.0.1:25970
+[10:51:18 INFO]: Done (6.12s)!
+[10:51:54 INFO]: [connected player] CodexStep19 (/127.0.0.1:54949) has connected
+[10:51:54 INFO]: [server connection] CodexStep19 -> alpha has connected
+[10:52:06 INFO]: [server connection] CodexStep19 -> beta has connected
+[10:52:06 INFO]: [server connection] CodexStep19 -> alpha has disconnected
+[10:52:26 INFO]: [server connection] CodexStep19 -> alpha has connected
+[10:52:26 INFO]: [server connection] CodexStep19 -> beta has disconnected
+> >
+[10:54:22 INFO]: Shutting down the proxy...
+[10:54:22 INFO]: Closing endpoint /127.0.0.1:25970
+[10:54:22 INFO]: [connected player] CodexStep19 (/127.0.0.1:54949) has disconnected: Proxy shutting down.
+[10:54:22 INFO]: [server connection] CodexStep19 -> alpha has disconnected
+[10:54:22 INFO] [server_waypoint]: Server Waypoint coordinator stopped: SUCCESS
+> [00:15:25 INFO]: Booting up Velocity 4.1.1...
+[00:15:28 INFO]: Connections will use kqueue channels, libdeflate (macOS ARM64 / Apple Silicon) compression, native (macOS ARM64 / Apple Silicon) ciphers
+[00:15:28 WARN]: The proxy is running in offline mode! This is a security risk and you will NOT receive any support!
+[00:15:28 WARN]: Player info forwarding is disabled! All players will appear to be connecting from the proxy and will have offline-mode UUIDs.
+[00:15:29 INFO]: Loading localizations...
+[00:15:29 INFO]: Loading plugins...
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::staticFieldBase has been called by com.google.inject.internal.aop.HiddenClassDefiner (file:/private/tmp/server-waypoint-step19-live/proxy/velocity.jar)
+WARNING: Please consider reporting this to the maintainers of class com.google.inject.internal.aop.HiddenClassDefiner
+WARNING: sun.misc.Unsafe::staticFieldBase will be removed in a future release
+[00:15:29 INFO]: Loaded plugin server_waypoint 3.1.0 by 2676959
+[00:15:29 INFO]: Loaded 2 plugins
+[00:15:29 INFO]: Listening on /127.0.0.1:25970
+[00:15:29 INFO] [server_waypoint]: Server Waypoint coordinator startup: SUCCESS
+[00:15:29 INFO]: Done (5.93s)!
+[00:16:25 INFO]: [connected player] CodexStep19 (/127.0.0.1:60706) has connected
+[00:16:25 INFO]: [server connection] CodexStep19 -> alpha has connected
+[00:17:40 INFO]: [connected player] CodexStep19 (/127.0.0.1:60706) has disconnected: An internal error occurred in your connection.
+[00:17:40 ERROR]: [connected player] CodexStep19 (/127.0.0.1:60706): exception encountered in com.velocitypowered.proxy.connection.client.ClientPlaySessionHandler@171ffb61
+io.netty.channel.unix.Errors$NativeIoException: readAddress(..) failed with error(-54): Connection reset by peer
+[00:17:40 INFO]: [server connection] CodexStep19 -> alpha has disconnected
+[00:18:20 INFO]: [connected player] CodexStep19 (/127.0.0.1:60751) has connected
+[00:18:20 INFO]: [server connection] CodexStep19 -> alpha has connected
+[05:02:18 INFO]: Booting up Velocity 4.1.1...
+[05:02:20 INFO]: Connections will use kqueue channels, libdeflate (macOS ARM64 / Apple Silicon) compression, native (macOS ARM64 / Apple Silicon) ciphers
+[05:02:20 WARN]: The proxy is running in offline mode! This is a security risk and you will NOT receive any support!
+[05:02:20 WARN]: Player info forwarding is disabled! All players will appear to be connecting from the proxy and will have offline-mode UUIDs.
+[05:02:20 INFO]: Loading localizations...
+[05:02:20 INFO]: Loading plugins...
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::staticFieldBase has been called by com.google.inject.internal.aop.HiddenClassDefiner (file:/private/tmp/server-waypoint-step19-live/proxy/velocity.jar)
+WARNING: Please consider reporting this to the maintainers of class com.google.inject.internal.aop.HiddenClassDefiner
+WARNING: sun.misc.Unsafe::staticFieldBase will be removed in a future release
+[05:02:21 INFO]: Loaded plugin server_waypoint 3.1.0 by 2676959
+[05:02:21 INFO]: Loaded 2 plugins
+[05:02:21 INFO]: Listening on /127.0.0.1:25970
+[05:02:21 INFO]: Done (5.66s)!
+[05:02:21 INFO] [server_waypoint]: Server Waypoint coordinator startup: SUCCESS
+[05:03:04 INFO]: [connected player] CodexStep19 (/127.0.0.1:63380) has connected
+[05:03:05 INFO]: [server connection] CodexStep19 -> alpha has connected
+[05:03:27 INFO]: [server connection] CodexStep19 -> beta has connected
+[05:03:27 INFO]: [server connection] CodexStep19 -> alpha has disconnected
+[05:03:28 INFO]: [connected player] CodexStep19 (/127.0.0.1:63380) has disconnected
+[05:03:28 INFO]: [server connection] CodexStep19 -> beta has disconnected
+> >
+[05:04:26 INFO]: Shutting down the proxy...
+[05:04:26 INFO]: Closing endpoint /127.0.0.1:25970
+[05:04:26 INFO] [server_waypoint]: Server Waypoint coordinator stopped: SUCCESS

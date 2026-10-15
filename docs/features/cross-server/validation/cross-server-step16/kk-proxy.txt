@@ -1,0 +1,57 @@
+[15:44:40 INFO]: Booting up Velocity 4.1.1...
+[15:44:43 INFO]: Connections will use kqueue channels, libdeflate (macOS ARM64 / Apple Silicon) compression, native (macOS ARM64 / Apple Silicon) ciphers
+[15:44:44 WARN]: The proxy is running in offline mode! This is a security risk and you will NOT receive any support!
+[15:44:44 WARN]: Player info forwarding is disabled! All players will appear to be connecting from the proxy and will have offline-mode UUIDs.
+[15:44:44 INFO]: Loading localizations...
+[15:44:44 INFO]: Loading plugins...
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::staticFieldBase has been called by com.google.inject.internal.aop.HiddenClassDefiner (file:/private/tmp/server-waypoint-step16-live/proxy/velocity.jar)
+WARNING: Please consider reporting this to the maintainers of class com.google.inject.internal.aop.HiddenClassDefiner
+WARNING: sun.misc.Unsafe::staticFieldBase will be removed in a future release
+[15:44:44 INFO]: Loaded plugin server_waypoint 3.1.0 by 2676959
+[15:44:44 INFO]: Loaded 2 plugins
+[15:44:44 INFO]: Listening on /127.0.0.1:25960
+[15:44:44 INFO]: Done (7.28s)!
+>
+
+[15:44:44 INFO] [server_waypoint]: Server Waypoint coordinator startup: SUCCESS
+>
+
+[15:45:56 INFO]: [connected player] CodexStep16 (/127.0.0.1:53729) has connected
+>
+
+[15:45:56 INFO]: [server connection] CodexStep16 -> alpha has connected
+>
+
+[15:46:20 INFO]: [server connection] CodexStep16 -> beta has connected
+>
+
+[15:46:20 INFO]: [server connection] CodexStep16 -> alpha has disconnected
+>
+
+[15:47:00 INFO]: [server connection] CodexStep16 -> alpha has connected
+>
+
+[15:47:00 INFO]: [server connection] CodexStep16 -> beta has disconnected
+>
+
+[15:47:40 INFO]: [server connection] CodexStep16 -> beta has connected
+>
+
+[15:47:40 INFO]: [server connection] CodexStep16 -> alpha has disconnected
+> >
+
+[15:48:25 INFO]: Shutting down the proxy...
+>
+
+[15:48:25 INFO]: Closing endpoint /127.0.0.1:25960
+>
+
+[15:48:25 INFO]: [connected player] CodexStep16 (/127.0.0.1:53729) has disconnected: Proxy shutting down.
+>
+
+[15:48:25 INFO]: [server connection] CodexStep16 -> beta has disconnected
+>
+
+[15:48:25 INFO] [server_waypoint]: Server Waypoint coordinator stopped: SUCCESS
+>

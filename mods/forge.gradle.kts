@@ -26,17 +26,34 @@ val targetJavaVersion = when {
 val mcVersionRange: String by project
 val mod_id: String by project
 val mod_name: String by project
+val mod_description: String by project
 val mod_version: String by project
 val maven_group: String by project
 val forge_loader: String by project
 val mixinConfig = "server_waypoint-common.mixins.json"
+val voxelMapMixinConfig = "server_waypoint-voxelmap.mixins.json"
+// VoxelMap-Updated publishes Forge builds only for some Minecraft versions; a pinned build enables the integration.
+val voxelmapSupported = project.hasProperty("voxelmap_forge")
+val mixinConfigs = if (voxelmapSupported) listOf(mixinConfig, voxelMapMixinConfig) else listOf(mixinConfig)
 val mixinRefmap = "server_waypoint-common.refmap.json"
 val needsSrgReobf = stonecutter.eval(minecraftVersion, "<1.20.6")
 
-jarJar.register("jarJar", tasks.named<ShadowJar>("shadowJar"))
+// JarJar replays its input task's CopySpec. Feed it an already-relocated archive, not
+// Shadow's raw inputs, or it reintroduces original Noise classes and unrelocated callers.
+val shadedJarInput = tasks.register<Jar>("shadedJar") {
+    archiveClassifier.set("jarjar-input")
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from(tasks.named<ShadowJar>("shadowJar").flatMap { it.archiveFile }.map { zipTree(it.asFile) })
+}
+jarJar.register("jarJar", shadedJarInput)
 
 evaluationDependsOn(":common")
 val commonMainSourceSet = project(":common")
+    .extensions
+    .getByType(org.gradle.api.tasks.SourceSetContainer::class.java)
+    .named("main")
+evaluationDependsOn(":cross-server")
+val crossServerMainSourceSet = project(":cross-server")
     .extensions
     .getByType(org.gradle.api.tasks.SourceSetContainer::class.java)
     .named("main")
@@ -105,6 +122,7 @@ val unpackMixinMappings = if (needsSrgReobf) {
 
 stonecutter {
     constants.match(loader, "fabric", "neoforge", "forge")
+    constants.put("voxelmap", voxelmapSupported)
     val usesTwentySixApi = eval(current.version, ">=26")
     val usesResourceLocation = eval(current.version, "<1.21.11")
 
@@ -144,8 +162,10 @@ sourceSets.main {
         srcDir("src/generated/resources")
         exclude("fabric.mod.json")
         exclude("META-INF/neoforge.mods.toml")
-        exclude("server_waypoint-fabric.mixins.json")
         exclude("server_waypoint-official.accesswidener")
+        if (!voxelmapSupported) {
+            exclude(voxelMapMixinConfig)
+        }
     }
 }
 
@@ -200,11 +220,12 @@ minecraft {
             workingDir.set(project.layout.projectDirectory.dir("run"))
             systemProperty("forge.logging.markers", "REGISTRIES")
             systemProperty("forge.logging.console.level", "debug")
-            args("-mixin.config=$mixinConfig")
+            mixinConfigs.forEach { args("-mixin.config=$it") }
             mods {
                 create(mod_id) {
                     source(sourceSets.main.get())
                     source(commonMainSourceSet.get())
+                    source(crossServerMainSourceSet.get())
                 }
             }
         }
@@ -234,6 +255,25 @@ minecraft {
     }
 }
 
+// Forge's dev launcher loads each library jar on a run's classpath as its own module, and common and
+// cross-server share packages. The runs get one merged jar in their place, named like common's own jar so
+// the launcher sees the same single module as before the split.
+val devSharedModulesJar = tasks.register<Zip>("devSharedModulesJar") {
+    archiveFileName.set("common.jar")
+    destinationDirectory.set(layout.buildDirectory.dir("devlibs"))
+    from(commonMainSourceSet.get().output, crossServerMainSourceSet.get().output)
+}
+tasks.withType<JavaExec>().matching { it.name.startsWith("run") }.configureEach {
+    dependsOn(devSharedModulesJar)
+    val separateJars = listOf(":common", ":cross-server").map { path ->
+        project(path).tasks.named<Jar>("jar").flatMap { it.archiveFile }
+    }
+    doFirst {
+        val replaced = separateJars.map { it.get().asFile }.toSet()
+        classpath = classpath.filter { it !in replaced } + files(devSharedModulesJar)
+    }
+}
+
 minecraftExtension.mavenizer(repositories)
 
 dependencies {
@@ -242,6 +282,8 @@ dependencies {
     val mixinExtrasVersion = "0.5.4"
     compileOnly("io.github.llamalad7:mixinextras-common:$mixinExtrasVersion")
     annotationProcessor("io.github.llamalad7:mixinextras-common:$mixinExtrasVersion")
+    // Plain JUnit cannot load the common classes nested inside mixinextras-forge's JarJar archive.
+    testRuntimeOnly("io.github.llamalad7:mixinextras-common:$mixinExtrasVersion")
     // Forge 1.21.11+ bundles mixinextras-forge 0.5.3 itself; older Forge does not provide MixinExtras, so it must be embedded.
     if (!stonecutter.eval(minecraftVersion, ">=1.21.11")) {
         implementation("io.github.llamalad7:mixinextras-forge:$mixinExtrasVersion")
@@ -261,11 +303,26 @@ dependencies {
     val xaeros_world_map_forge: String by project
     if (project.hasProperty("xaerolib_forge")) {
         val xaerolibMinecraft = findProperty("xaerolib_forge_minecraft")?.toString() ?: minecraftVersion
-        compileOnly("xaero.lib:xaerolib-forge-$xaerolibMinecraft:${property("xaerolib_forge")}")
+        val xaerolibDependency = "xaero.lib:xaerolib-forge-$xaerolibMinecraft:${property("xaerolib_forge")}"
+        compileOnly(xaerolibDependency)
+        // Xaero's Minimap 25.3+ links its session class against XaeroLib, so tests that load it need the library.
+        // XaeroLib's runtime metadata names a newer Forge build, which would replace this target's Forge there.
+        testRuntimeOnly(xaerolibDependency) {
+            exclude("net.minecraftforge")
+        }
     }
     compileOnly("maven.modrinth:xaeros-minimap:$xaeros_minimap_forge")
     compileOnly("maven.modrinth:xaeros-world-map:$xaeros_world_map_forge")
     testImplementation("maven.modrinth:xaeros-minimap:$xaeros_minimap_forge")
+    testImplementation("maven.modrinth:xaeros-world-map:$xaeros_world_map_forge")
+
+    if (project.hasProperty("voxelmap_forge")) {
+        val voxelmap_forge: String by project
+        // Use Modrinth version IDs because VoxelMap version numbers can collide across loaders.
+        compileOnly("maven.modrinth:voxelmap-updated:$voxelmap_forge")
+        runtimeOnly("maven.modrinth:voxelmap-updated:$voxelmap_forge")
+        testImplementation("maven.modrinth:voxelmap-updated:$voxelmap_forge")
+    }
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
@@ -277,10 +334,12 @@ tasks.processResources {
     val replaceProperties = mapOf(
         "id" to mod_id,
         "name" to mod_name,
+        "description" to mod_description,
         "version" to mod_version,
         "java_version" to targetJavaVersion,
         "minecraft_dependency" to mcVersionForge,
         "forge_dependency" to loaderVersion,
+        "voxelmap" to voxelmapSupported,
     )
 
     inputs.properties(replaceProperties)
@@ -336,7 +395,7 @@ tasks.withType<Jar>().configureEach {
             "Implementation-Title" to mod_name,
             "Implementation-Version" to mod_version,
             "Implementation-Vendor" to "2676959",
-            "MixinConfigs" to mixinConfig,
+            "MixinConfigs" to mixinConfigs.joinToString(","),
         ))
     }
     from(rootProject.file("LICENSE")) {
@@ -356,23 +415,32 @@ tasks.jar {
 
 val shadowJarTask = tasks.named<ShadowJar>("shadowJar")
 shadowJarTask.configure {
+    relocate("com.southernstorm.noise", "_959.server_waypoint.internal.noisekk")
+    dependencies {
+        include(dependency("org.signal.forks:noise-java:.*"))
+    }
     configurations = listOf(shadedDependencies)
-    // Keep a distinct classifier on every version so the shadowJarJar output never collides with this archive.
+    // Keep a distinct classifier on every version so the shadedJarJar output never collides with this archive.
     archiveClassifier.set("shadow")
     addMultiReleaseAttribute.set(false)
     exclude("META-INF/*.DSA", "META-INF/*.RSA", "META-INF/*.SF", "META-INF/MANIFEST.MF", "mappings/**")
     dependencies {
         include(project(":common"))
+        include(project(":cross-server"))
         include(dependency("net.kyori:.*"))
     }
 }
 
-val jarJarTask = tasks.named<Jar>("shadowJarJar") {
+// Sprite objects in chat exist from 1.21.9; older targets never read the sprite table.
+if (stonecutter.eval(stonecutter.current.version, "<1.21.9")) {
+    shadowJarTask.configure {
+        exclude("assets/server_waypoint/chat-sprites.json", "_959/server_waypoint/text/chat/VanillaChatSprites.class")
+    }
+}
+
+val jarJarTask = tasks.named<Jar>("shadedJarJar") {
     archiveClassifier.set(if (needsSrgReobf) "dev-jarjar" else "")
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    // The jarjar plugin replays the shadowJar CopySpec, which misses the shaded dependencies
-    // (ShadowJar weaves them in during its copy action). Merge in the full shadow archive explicitly.
-    from(shadowJarTask.flatMap { it.archiveFile }.map { zipTree(it.asFile) })
 }
 
 // Shadow members belong to mixin classes, so the vanilla mappings alone cannot rename them.
@@ -413,6 +481,7 @@ artifacts {
 }
 
 tasks.test {
+    systemProperty("server_waypoint.test.forge_loader", forge_loader)
     useJUnitPlatform()
 }
 
@@ -436,3 +505,5 @@ fun DependencyHandlerScope.addAdventureSerializerDependency() {
     implementation(dependencyNotation)
     add(shadedDependencies.name, dependencyNotation)
 }
+
+apply(from = rootProject.file("gradle/noise-packaging.gradle.kts"))

@@ -3,6 +3,8 @@ package _959.server_waypoint.navigation;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -118,6 +120,7 @@ class NavigationMathTest {
                 "test-waypoint",
                 "test-waypoint",
                 "",
+                List.of(),
                 new WaypointPos(x, y, z),
                 0x39C5BB
         );

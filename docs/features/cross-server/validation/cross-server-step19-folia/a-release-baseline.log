@@ -1,0 +1,362 @@
+Downloading mojang_1.21.11.jar
+Applying patches
+Starting org.bukkit.craftbukkit.Main
+[18:52:22 INFO]: [bootstrap] Running Java 21 (OpenJDK 64-Bit Server VM 21.0.11; Homebrew Homebrew) on Mac OS X 26.5 (aarch64)
+[18:52:22 INFO]: [bootstrap] Loading Folia 1.21.11-14-ver/1.21.11@529aabc (2026-02-22T20:22:23Z) for Minecraft 1.21.11
+[18:52:24 INFO]: [PluginInitializerManager] Initializing plugins...
+[18:52:24 INFO]: [ReobfServer] Remapping server...
+[18:52:24 INFO]: [PluginInitializerManager] Initialized 1 plugin
+[18:52:24 INFO]: [PluginInitializerManager] Paper plugins (1):
+ - ServerWaypoint (3.1.0)
+[18:52:29 INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, profilesHost=https://api.mojang.com, name=PROD]
+[18:52:29 INFO]: Found new data pack file/bukkit, loading it automatically
+[18:52:29 INFO]: Found new data pack paper, loading it automatically
+[18:52:29 INFO]: No existing world data, creating new world
+[18:52:29 ERROR]: No key layers in MapLike[{}]
+[18:52:30 INFO]: [ReobfServer] Done remapping server in 5161ms.
+[18:52:30 INFO]: Loaded 1470 recipes
+[18:52:30 INFO]: Loaded 1584 advancements
+[18:52:30 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Initialising converters for DataConverter...
+[18:52:30 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Finished initialising converters for DataConverter in 265.3ms
+[18:52:30 INFO]: Starting minecraft server version 1.21.11
+[18:52:30 INFO]: Loading properties
+[18:52:30 INFO]: This server is running Folia version 1.21.11-14-ver/1.21.11@529aabc (2026-02-22T20:22:23Z) (Implementing API version 1.21.11-R0.1-SNAPSHOT)
+[18:52:30 INFO]: [spark] This server bundles the spark profiler. For more information please visit https://docs.papermc.io/paper/profiling
+[18:52:30 INFO]: Server Ping Player Sample Count: 12
+[18:52:30 INFO]: Using 4 threads for Netty based IO
+[18:52:31 INFO]: [MoonriseCommon] Paper is using 2 worker threads, 1 I/O threads
+[18:52:31 INFO]: [io.papermc.paper.threadedregions.TickRegions] Initialised EDF Folia scheduler with initial 1 target thread(s)
+[18:52:31 INFO]: Default game type: SURVIVAL
+[18:52:31 INFO]: Generating keypair
+[18:52:31 INFO]: Starting Minecraft server on 127.0.0.1:25981
+[18:52:38 INFO]: Paper: Using libdeflate (macOS ARM64 / Apple Silicon) compression from Velocity.
+[18:52:38 INFO]: Paper: Using native (macOS ARM64 / Apple Silicon) cipher from Velocity.
+[18:52:38 INFO]: [server_waypoint_plugin] Loading server plugin ServerWaypoint v3.1.0
+[18:52:38 WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[18:52:38 WARN]: The server will make no attempt to authenticate usernames. Beware.
+[18:52:38 WARN]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[18:52:38 WARN]: To change this, set "online-mode" to "true" in the server.properties file.
+[18:52:38 INFO]: Preparing level "world"
+[18:52:38 ERROR]: No key layers in MapLike[{}]
+[18:52:39 INFO]: Selecting spawn point for world 'minecraft:overworld'...
+[18:52:39 ERROR]: No key layers in MapLike[{}]
+[18:52:39 INFO]: Selecting spawn point for world 'minecraft:the_nether'...
+[18:52:39 ERROR]: No key layers in MapLike[{}]
+[18:52:39 INFO]: Selecting spawn point for world 'minecraft:the_end'...
+[18:52:39 INFO]: Loading 0 persistent chunks for world 'minecraft:overworld'...
+[18:52:39 INFO]: Preparing spawn area: 100%
+[18:52:39 INFO]: Prepared spawn area in 875 ms
+[18:52:39 INFO]: Loading 0 persistent chunks for world 'minecraft:the_nether'...
+[18:52:39 INFO]: Preparing spawn area: 100%
+[18:52:39 INFO]: Prepared spawn area in 613 ms
+[18:52:39 INFO]: Loading 0 persistent chunks for world 'minecraft:the_end'...
+[18:52:39 INFO]: Preparing spawn area: 100%
+[18:52:39 INFO]: Prepared spawn area in 162 ms
+[18:52:39 INFO]: Done preparing level "world" (1.001s)
+[18:52:39 INFO]: [server_waypoint_plugin] Enabling ServerWaypoint v3.1.0
+[18:52:40 INFO]: [server_waypoint_translator] Internal translations: es_es, he_il, zh_cn, en_us, zh_hk, zh_tw
+[18:52:40 INFO]: [server_waypoint_core] Created config file at: plugins/ServerWaypoint/config.json
+[18:52:40 INFO]: [server_waypoint_core] Loaded 0 languages:
+[18:52:40 INFO]: [server_waypoint_core] Loaded 1 lists and 1 waypoints from file: plugins/ServerWaypoint/waypoints/minecraft$overworld.json
+[18:52:40 INFO]: [server_waypoint_core] Cross-server backend startup: SUCCESS
+[18:52:40 INFO]: [spark] The spark plugin has been preferred but was not loaded. The bundled spark profiler will enabled instead.
+[18:52:40 INFO]: [spark] The spark profiler will not be enabled because it is currently disabled in the configuration.
+[18:52:40 INFO]: Done (21.869s)! For help, type "help"
+> >
+[18:53:00 INFO]: Stopping the server
+[18:53:00 INFO]: [RegionShutdownThread] Awaiting scheduler termination for 60s...
+[18:53:00 INFO]: [RegionShutdownThread] Scheduler halted
+[18:53:00 INFO]: Stopping server
+[18:53:00 INFO]: [server_waypoint_plugin] Disabling ServerWaypoint v3.1.0
+[18:53:00 INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/waypoints/minecraft$overworld.json
+[18:53:00 INFO]: [server_waypoint_core] Saved config file: plugins/ServerWaypoint/config.json
+[18:53:00 INFO]: [RegionShutdownThread] Halting chunk systems...
+[18:53:00 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world'
+[18:53:00 INFO]: [ChunkHolderManager] Halted chunk system for world 'world'
+[18:53:00 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world_nether'
+[18:53:00 INFO]: [ChunkHolderManager] Halted chunk system for world 'world_nether'
+[18:53:00 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world_the_end'
+[18:53:00 INFO]: [ChunkHolderManager] Halted chunk system for world 'world_the_end'
+[18:53:00 INFO]: [RegionShutdownThread] Halted chunk systems
+[18:53:00 INFO]: [RegionShutdownThread] Finishing pending teleports...
+[18:53:00 INFO]: [RegionShutdownThread] Finished pending teleports
+[18:53:00 INFO]: [RegionShutdownThread] Saving all worlds
+[18:53:00 INFO]: [RegionShutdownThread] Saving world data for world 'world'
+[18:53:00 INFO]: [RegionShutdownThread] Closing player inventories...
+[18:53:00 INFO]: [RegionShutdownThread] Closed player inventories
+[18:53:00 INFO]: [RegionShutdownThread] Saving chunks...
+[18:53:00 INFO]: [RegionShutdownThread] Saved chunks
+[18:53:00 INFO]: [RegionShutdownThread] Saving level data...
+[18:53:00 INFO]: [RegionShutdownThread] Saved level data
+[18:53:00 INFO]: [RegionShutdownThread] Saved world data for world 'world'
+[18:53:00 INFO]: [RegionShutdownThread] Saving world data for world 'world_nether'
+[18:53:00 INFO]: [RegionShutdownThread] Closing player inventories...
+[18:53:00 INFO]: [RegionShutdownThread] Closed player inventories
+[18:53:00 INFO]: [RegionShutdownThread] Saving chunks...
+[18:53:00 INFO]: [RegionShutdownThread] Saved chunks
+[18:53:00 INFO]: [RegionShutdownThread] Saving level data...
+[18:53:00 INFO]: [RegionShutdownThread] Saved level data
+[18:53:00 INFO]: [RegionShutdownThread] Saved world data for world 'world_nether'
+[18:53:00 INFO]: [RegionShutdownThread] Saving world data for world 'world_the_end'
+[18:53:00 INFO]: [RegionShutdownThread] Closing player inventories...
+[18:53:00 INFO]: [RegionShutdownThread] Closed player inventories
+[18:53:00 INFO]: [RegionShutdownThread] Saving chunks...
+[18:53:00 INFO]: [RegionShutdownThread] Saved chunks
+[18:53:00 INFO]: [RegionShutdownThread] Saving level data...
+[18:53:00 INFO]: [RegionShutdownThread] Saved level data
+[18:53:00 INFO]: [RegionShutdownThread] Saved world data for world 'world_the_end'
+[18:53:00 INFO]: [RegionShutdownThread] Saved all worlds
+[18:53:00 INFO]: [RegionShutdownThread] Saving all player data...
+[18:53:00 INFO]: [RegionShutdownThread] Saved all player data
+[18:53:00 INFO]: Waiting for all RegionFile I/O tasks to complete...
+[18:53:00 INFO]: All RegionFile I/O tasks to complete
+[18:53:00 INFO]: [MoonriseCommon] Awaiting termination of worker pool for up to 60s...
+[18:53:00 INFO]: [MoonriseCommon] Awaiting termination of I/O pool for up to 60s...
+> Starting org.bukkit.craftbukkit.Main
+[18:53:20 INFO]: [bootstrap] Running Java 21 (OpenJDK 64-Bit Server VM 21.0.11; Homebrew Homebrew) on Mac OS X 26.5 (aarch64)
+[18:53:20 INFO]: [bootstrap] Loading Folia 1.21.11-14-ver/1.21.11@529aabc (2026-02-22T20:22:23Z) for Minecraft 1.21.11
+[18:53:22 INFO]: [PluginInitializerManager] Initializing plugins...
+[18:53:23 INFO]: [PluginRemapper] Remapping plugin 'plugins/TeleportAudit.jar'...
+[18:53:23 INFO]: [PluginRemapper] Done remapping plugin 'plugins/TeleportAudit.jar' in 366ms.
+[18:53:23 INFO]: [PluginInitializerManager] Initialized 2 plugins
+[18:53:23 INFO]: [PluginInitializerManager] Paper plugins (1):
+ - ServerWaypoint (3.1.0)
+[18:53:23 INFO]: [PluginInitializerManager] Bukkit plugins (1):
+ - TeleportAudit (2)
+[18:53:26 INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, profilesHost=https://api.mojang.com, name=PROD]
+[18:53:27 INFO]: Loaded 1470 recipes
+[18:53:27 INFO]: Loaded 1584 advancements
+[18:53:27 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Initialising converters for DataConverter...
+[18:53:27 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Finished initialising converters for DataConverter in 207.6ms
+[18:53:27 INFO]: Starting minecraft server version 1.21.11
+[18:53:27 INFO]: Loading properties
+[18:53:27 INFO]: This server is running Folia version 1.21.11-14-ver/1.21.11@529aabc (2026-02-22T20:22:23Z) (Implementing API version 1.21.11-R0.1-SNAPSHOT)
+[18:53:27 INFO]: [spark] This server bundles the spark profiler. For more information please visit https://docs.papermc.io/paper/profiling
+[18:53:27 INFO]: Using 4 threads for Netty based IO
+[18:53:27 INFO]: Server Ping Player Sample Count: 12
+[18:53:28 INFO]: [MoonriseCommon] Paper is using 2 worker threads, 1 I/O threads
+[18:53:28 INFO]: [io.papermc.paper.threadedregions.TickRegions] Initialised EDF Folia scheduler with initial 1 target thread(s)
+[18:53:28 INFO]: Default game type: SURVIVAL
+[18:53:28 INFO]: Generating keypair
+[18:53:28 INFO]: Starting Minecraft server on 127.0.0.1:25981
+[18:53:35 INFO]: Paper: Using libdeflate (macOS ARM64 / Apple Silicon) compression from Velocity.
+[18:53:35 INFO]: Paper: Using native (macOS ARM64 / Apple Silicon) cipher from Velocity.
+[18:53:36 INFO]: [server_waypoint_plugin] Loading server plugin ServerWaypoint v3.1.0
+[18:53:36 INFO]: [TeleportAudit] Loading server plugin TeleportAudit v2
+[18:53:36 INFO]: Server permissions file permissions.yml is empty, ignoring it
+[18:53:36 WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[18:53:36 WARN]: The server will make no attempt to authenticate usernames. Beware.
+[18:53:36 WARN]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[18:53:36 WARN]: To change this, set "online-mode" to "true" in the server.properties file.
+[18:53:36 INFO]: Preparing level "world"
+[18:53:36 INFO]: Loading 0 persistent chunks for world 'minecraft:overworld'...
+[18:53:36 INFO]: Prepared spawn area in 0 ms
+[18:53:36 INFO]: Loading 0 persistent chunks for world 'minecraft:the_nether'...
+[18:53:36 INFO]: Prepared spawn area in 0 ms
+[18:53:36 INFO]: Loading 0 persistent chunks for world 'minecraft:the_end'...
+[18:53:36 INFO]: Prepared spawn area in 0 ms
+[18:53:36 INFO]: Done preparing level "world" (0.151s)
+[18:53:36 INFO]: [server_waypoint_plugin] Enabling ServerWaypoint v3.1.0
+[18:53:36 INFO]: [server_waypoint_translator] Internal translations: he_il, zh_cn, en_us, zh_hk, zh_tw, es_es
+[18:53:36 INFO]: [server_waypoint_core] Loaded config Config{serverId=1864037529, defaultPageLimit=10, defaultNavigationMethods=[ACTIONBAR], CommandPermission=CommandPermission{add=0, edit=0, remove=0, navigate=0, tp=2, reload=2, upload=2, uploadDelete=4, remoteList=0, remoteTp=2}, Features={addWaypointFromChatSharing=true, sendXaerosWorldId=true, compressChunkedMessages=true}}
+[18:53:36 INFO]: [server_waypoint_core] Loaded 0 languages:
+[18:53:36 INFO]: [server_waypoint_core] Loaded 1 lists and 1 waypoints from file: plugins/ServerWaypoint/waypoints/minecraft$overworld.json
+[18:53:36 INFO]: [TeleportAudit] Enabling TeleportAudit v2
+[18:53:36 INFO]: [server_waypoint_core] Cross-server backend startup: SUCCESS
+[18:53:36 INFO]: [spark] The spark plugin has been preferred but was not loaded. The bundled spark profiler will enabled instead.
+[18:53:36 INFO]: [spark] The spark profiler will not be enabled because it is currently disabled in the configuration.
+[18:53:36 INFO]: Done (19.748s)! For help, type "help"
+[18:53:41 INFO]: UUID of player CodexStep19 is 7cf408b7-3218-334b-8f94-04d13c8e9231
+[18:53:42 INFO]: [TeleportAudit] STEP19_JOIN player=7cf408b7-3218-334b-8f94-04d13c8e9231 owned=true
+[18:53:42 INFO]: CodexStep19 joined the game
+[18:53:42 INFO]: CodexStep19[/127.0.0.1:57836] logged in with entity id 1 at ([world]-8.5, -60.0, 2.5)
+[18:53:43 INFO]: [TeleportAudit] STEP19_OWNER player=7cf408b7-3218-334b-8f94-04d13c8e9231 owned=true current=true online=true x=-8.5 y=-60.0 z=2.5
+[18:53:50 INFO]: CodexStep19 issued server command: /wp remote servers
+[18:53:51 INFO]: CodexStep19 issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[18:53:51 INFO]: CodexStep19 lost connection: Disconnected
+[18:53:51 INFO]: [TeleportAudit] STEP19_QUIT player=7cf408b7-3218-334b-8f94-04d13c8e9231 owned=true
+[18:53:51 INFO]: CodexStep19 left the game
+[18:54:08 INFO]: UUID of player CodexStep19 is 7cf408b7-3218-334b-8f94-04d13c8e9231
+[18:54:09 INFO]: [TeleportAudit] STEP19_JOIN player=7cf408b7-3218-334b-8f94-04d13c8e9231 owned=true
+[18:54:09 INFO]: CodexStep19 joined the game
+[18:54:09 INFO]: CodexStep19[/127.0.0.1:57842] logged in with entity id 31 at ([world]-8.5, -60.0, 2.5)
+[18:54:10 INFO]: [TeleportAudit] STEP19_OWNER player=7cf408b7-3218-334b-8f94-04d13c8e9231 owned=true current=true online=true x=-8.5 y=-60.0 z=2.5
+> >
+[18:54:27 INFO]: Nothing changed. The player already is an operator
+[18:54:27 INFO]: CodexStep19 issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[18:54:27 INFO]: CodexStep19 lost connection: Disconnected
+[18:54:27 INFO]: [TeleportAudit] STEP19_QUIT player=7cf408b7-3218-334b-8f94-04d13c8e9231 owned=true
+[18:54:27 INFO]: CodexStep19 left the game
+> >
+[18:54:41 INFO]: Stopping the server
+[18:54:41 INFO]: [RegionShutdownThread] Awaiting scheduler termination for 60s...
+[18:54:41 INFO]: [RegionShutdownThread] Scheduler halted
+[18:54:41 INFO]: Stopping server
+[18:54:41 INFO]: [TeleportAudit] Disabling TeleportAudit v2
+[18:54:41 INFO]: [server_waypoint_plugin] Disabling ServerWaypoint v3.1.0
+[18:54:41 INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/waypoints/minecraft$overworld.json
+[18:54:41 INFO]: [server_waypoint_core] Saved config file: plugins/ServerWaypoint/config.json
+[18:54:41 INFO]: [RegionShutdownThread] Halting chunk systems...
+[18:54:41 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world'
+[18:54:41 INFO]: [ChunkHolderManager] Halted chunk system for world 'world'
+[18:54:41 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world_nether'
+[18:54:41 INFO]: [ChunkHolderManager] Halted chunk system for world 'world_nether'
+[18:54:41 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world_the_end'
+[18:54:41 INFO]: [ChunkHolderManager] Halted chunk system for world 'world_the_end'
+[18:54:41 INFO]: [RegionShutdownThread] Halted chunk systems
+[18:54:41 INFO]: [RegionShutdownThread] Finishing pending teleports...
+[18:54:41 INFO]: [RegionShutdownThread] Finished pending teleports
+[18:54:41 INFO]: [RegionShutdownThread] Saving all worlds
+[18:54:41 INFO]: [RegionShutdownThread] Saving world data for world 'world'
+[18:54:41 INFO]: [RegionShutdownThread] Closing player inventories...
+[18:54:41 INFO]: [RegionShutdownThread] Closed player inventories
+[18:54:41 INFO]: [RegionShutdownThread] Saving chunks...
+[18:54:41 INFO]: [RegionShutdownThread] Saved chunks
+[18:54:41 INFO]: [RegionShutdownThread] Saving level data...
+[18:54:41 INFO]: [RegionShutdownThread] Saved level data
+[18:54:41 INFO]: [RegionShutdownThread] Saved world data for world 'world'
+[18:54:41 INFO]: [RegionShutdownThread] Saving world data for world 'world_nether'
+[18:54:41 INFO]: [RegionShutdownThread] Closing player inventories...
+[18:54:41 INFO]: [RegionShutdownThread] Closed player inventories
+[18:54:41 INFO]: [RegionShutdownThread] Saving chunks...
+[18:54:41 INFO]: [RegionShutdownThread] Saved chunks
+[18:54:41 INFO]: [RegionShutdownThread] Saving level data...
+[18:54:41 INFO]: [RegionShutdownThread] Saved level data
+[18:54:41 INFO]: [RegionShutdownThread] Saved world data for world 'world_nether'
+[18:54:41 INFO]: [RegionShutdownThread] Saving world data for world 'world_the_end'
+[18:54:41 INFO]: [RegionShutdownThread] Closing player inventories...
+[18:54:41 INFO]: [RegionShutdownThread] Closed player inventories
+[18:54:41 INFO]: [RegionShutdownThread] Saving chunks...
+[18:54:41 INFO]: [RegionShutdownThread] Saved chunks
+[18:54:41 INFO]: [RegionShutdownThread] Saving level data...
+[18:54:41 INFO]: [RegionShutdownThread] Saved level data
+[18:54:41 INFO]: [RegionShutdownThread] Saved world data for world 'world_the_end'
+[18:54:41 INFO]: [RegionShutdownThread] Saved all worlds
+[18:54:41 INFO]: [RegionShutdownThread] Saving all player data...
+[18:54:41 INFO]: [RegionShutdownThread] Saved all player data
+[18:54:41 INFO]: Waiting for all RegionFile I/O tasks to complete...
+[18:54:41 INFO]: All RegionFile I/O tasks to complete
+[18:54:41 INFO]: [MoonriseCommon] Awaiting termination of worker pool for up to 60s...
+[18:54:41 INFO]: [MoonriseCommon] Awaiting termination of I/O pool for up to 60s...
+> Starting org.bukkit.craftbukkit.Main
+[18:56:02 INFO]: [bootstrap] Running Java 21 (OpenJDK 64-Bit Server VM 21.0.11; Homebrew Homebrew) on Mac OS X 26.5 (aarch64)
+[18:56:02 INFO]: [bootstrap] Loading Folia 1.21.11-14-ver/1.21.11@529aabc (2026-02-22T20:22:23Z) for Minecraft 1.21.11
+[18:56:05 INFO]: [PluginInitializerManager] Initializing plugins...
+[18:56:06 INFO]: [PluginInitializerManager] Initialized 2 plugins
+[18:56:06 INFO]: [PluginInitializerManager] Paper plugins (1):
+ - ServerWaypoint (3.1.0)
+[18:56:06 INFO]: [PluginInitializerManager] Bukkit plugins (1):
+ - TeleportAudit (2)
+[18:56:09 INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, profilesHost=https://api.mojang.com, name=PROD]
+[18:56:10 INFO]: Loaded 1470 recipes
+[18:56:10 INFO]: Loaded 1584 advancements
+[18:56:10 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Initialising converters for DataConverter...
+[18:56:10 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Finished initialising converters for DataConverter in 219.1ms
+[18:56:10 INFO]: Starting minecraft server version 1.21.11
+[18:56:10 INFO]: Loading properties
+[18:56:10 INFO]: This server is running Folia version 1.21.11-14-ver/1.21.11@529aabc (2026-02-22T20:22:23Z) (Implementing API version 1.21.11-R0.1-SNAPSHOT)
+[18:56:10 INFO]: [spark] This server bundles the spark profiler. For more information please visit https://docs.papermc.io/paper/profiling
+[18:56:10 INFO]: Server Ping Player Sample Count: 12
+[18:56:10 INFO]: Using 4 threads for Netty based IO
+[18:56:10 INFO]: [MoonriseCommon] Paper is using 2 worker threads, 1 I/O threads
+[18:56:11 INFO]: [io.papermc.paper.threadedregions.TickRegions] Initialised EDF Folia scheduler with initial 2 target thread(s)
+[18:56:11 INFO]: Default game type: SURVIVAL
+[18:56:11 INFO]: Generating keypair
+[18:56:11 INFO]: Starting Minecraft server on 127.0.0.1:25981
+[18:56:17 INFO]: Paper: Using libdeflate (macOS ARM64 / Apple Silicon) compression from Velocity.
+[18:56:17 INFO]: Paper: Using native (macOS ARM64 / Apple Silicon) cipher from Velocity.
+[18:56:17 INFO]: [server_waypoint_plugin] Loading server plugin ServerWaypoint v3.1.0
+[18:56:17 INFO]: [TeleportAudit] Loading server plugin TeleportAudit v2
+[18:56:17 INFO]: Server permissions file permissions.yml is empty, ignoring it
+[18:56:17 WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[18:56:17 WARN]: The server will make no attempt to authenticate usernames. Beware.
+[18:56:17 WARN]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[18:56:17 WARN]: To change this, set "online-mode" to "true" in the server.properties file.
+[18:56:17 INFO]: Preparing level "world"
+[18:56:18 INFO]: Loading 0 persistent chunks for world 'minecraft:overworld'...
+[18:56:18 INFO]: Preparing spawn area: 100%
+[18:56:18 INFO]: Prepared spawn area in 1 ms
+[18:56:18 INFO]: Loading 0 persistent chunks for world 'minecraft:the_nether'...
+[18:56:18 INFO]: Prepared spawn area in 0 ms
+[18:56:18 INFO]: Loading 0 persistent chunks for world 'minecraft:the_end'...
+[18:56:18 INFO]: Prepared spawn area in 0 ms
+[18:56:18 INFO]: Done preparing level "world" (0.204s)
+[18:56:18 INFO]: [server_waypoint_plugin] Enabling ServerWaypoint v3.1.0
+[18:56:18 INFO]: [server_waypoint_translator] Internal translations: es_es, zh_tw, zh_hk, en_us, zh_cn, he_il
+[18:56:18 INFO]: [server_waypoint_core] Loaded config Config{serverId=1864037529, defaultPageLimit=10, defaultNavigationMethods=[ACTIONBAR], CommandPermission=CommandPermission{add=0, edit=0, remove=0, navigate=0, tp=2, reload=2, upload=2, uploadDelete=4, remoteList=0, remoteTp=2}, Features={addWaypointFromChatSharing=true, sendXaerosWorldId=true, compressChunkedMessages=true}}
+[18:56:18 INFO]: [server_waypoint_core] Loaded 0 languages:
+[18:56:18 INFO]: [server_waypoint_core] Loaded 1 lists and 1 waypoints from file: plugins/ServerWaypoint/waypoints/minecraft$overworld.json
+[18:56:18 INFO]: [TeleportAudit] Enabling TeleportAudit v2
+[18:56:18 INFO]: [server_waypoint_core] Cross-server backend startup: SUCCESS
+[18:56:18 INFO]: [spark] The spark plugin has been preferred but was not loaded. The bundled spark profiler will enabled instead.
+[18:56:18 INFO]: [spark] The spark profiler will not be enabled because it is currently disabled in the configuration.
+[18:56:18 INFO]: Done (18.608s)! For help, type "help"
+[18:56:27 INFO]: UUID of player CodexStep19 is 7cf408b7-3218-334b-8f94-04d13c8e9231
+[18:56:28 INFO]: [TeleportAudit] STEP19_JOIN player=7cf408b7-3218-334b-8f94-04d13c8e9231 owned=true
+[18:56:28 INFO]: CodexStep19 joined the game
+[18:56:28 INFO]: CodexStep19[/127.0.0.1:57883] logged in with entity id 47 at ([world]-8.5, -60.0, 2.5)
+[18:56:28 INFO]: [TeleportAudit] STEP19_OWNER player=7cf408b7-3218-334b-8f94-04d13c8e9231 owned=true current=true online=true x=-8.5 y=-60.0 z=2.5
+[18:56:35 INFO]: CodexStep19 issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[18:56:35 INFO]: CodexStep19 lost connection: Disconnected
+[18:56:35 INFO]: [TeleportAudit] STEP19_QUIT player=7cf408b7-3218-334b-8f94-04d13c8e9231 owned=true
+[18:56:35 INFO]: CodexStep19 left the game
+[18:56:40 INFO]: UUID of player CodexStep19 is 7cf408b7-3218-334b-8f94-04d13c8e9231
+[18:56:40 INFO]: [TeleportAudit] STEP19_JOIN player=7cf408b7-3218-334b-8f94-04d13c8e9231 owned=true
+[18:56:40 INFO]: CodexStep19 joined the game
+[18:56:40 INFO]: CodexStep19[/127.0.0.1:57888] logged in with entity id 60 at ([world]-8.5, -60.0, 2.5)
+[18:56:41 INFO]: [TeleportAudit] STEP19_OWNER player=7cf408b7-3218-334b-8f94-04d13c8e9231 owned=true current=true online=true x=-8.5 y=-60.0 z=2.5
+> >
+[18:56:57 INFO]: Stopping the server
+[18:56:57 INFO]: [RegionShutdownThread] Awaiting scheduler termination for 60s...
+[18:56:57 INFO]: [RegionShutdownThread] Scheduler halted
+[18:56:57 INFO]: Stopping server
+[18:56:57 INFO]: [TeleportAudit] Disabling TeleportAudit v2
+[18:56:57 INFO]: [server_waypoint_plugin] Disabling ServerWaypoint v3.1.0
+[18:56:57 INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/waypoints/minecraft$overworld.json
+[18:56:57 INFO]: [server_waypoint_core] Saved config file: plugins/ServerWaypoint/config.json
+[18:56:57 INFO]: [RegionShutdownThread] Halting chunk systems...
+[18:56:57 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world'
+[18:56:57 INFO]: [ChunkHolderManager] Halted chunk system for world 'world'
+[18:56:57 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world_nether'
+[18:56:57 INFO]: [ChunkHolderManager] Halted chunk system for world 'world_nether'
+[18:56:57 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world_the_end'
+[18:56:57 INFO]: [ChunkHolderManager] Halted chunk system for world 'world_the_end'
+[18:56:57 INFO]: [RegionShutdownThread] Halted chunk systems
+[18:56:57 INFO]: [RegionShutdownThread] Finishing pending teleports...
+[18:56:57 INFO]: [RegionShutdownThread] Finished pending teleports
+[18:56:57 INFO]: [RegionShutdownThread] Saving all worlds
+[18:56:57 INFO]: [RegionShutdownThread] Saving world data for world 'world'
+[18:56:57 INFO]: [RegionShutdownThread] Closing player inventories...
+[18:56:57 INFO]: [RegionShutdownThread] Closed player inventories
+[18:56:57 INFO]: [RegionShutdownThread] Saving chunks...
+[18:56:57 INFO]: [RegionShutdownThread] Saving chunks around region around chunk [-1, 0] in world 'world'
+[18:56:57 INFO]: [ChunkHolderManager] Saved 121 block chunks, 121 entity chunks, 0 poi chunks in world 'world' in 0.13s
+[18:56:57 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'world'
+[18:56:57 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'world'
+[18:56:57 INFO]: [RegionShutdownThread] Saved chunks
+[18:56:57 INFO]: [RegionShutdownThread] Saving level data...
+[18:56:57 INFO]: [RegionShutdownThread] Saved level data
+[18:56:57 INFO]: [RegionShutdownThread] Saved world data for world 'world'
+[18:56:57 INFO]: [RegionShutdownThread] Saving world data for world 'world_nether'
+[18:56:57 INFO]: [RegionShutdownThread] Closing player inventories...
+[18:56:57 INFO]: [RegionShutdownThread] Closed player inventories
+[18:56:57 INFO]: [RegionShutdownThread] Saving chunks...
+[18:56:57 INFO]: [RegionShutdownThread] Saved chunks
+[18:56:57 INFO]: [RegionShutdownThread] Saving level data...
+[18:56:57 INFO]: [RegionShutdownThread] Saved level data
+[18:56:57 INFO]: [RegionShutdownThread] Saved world data for world 'world_nether'
+[18:56:57 INFO]: [RegionShutdownThread] Saving world data for world 'world_the_end'
+[18:56:57 INFO]: [RegionShutdownThread] Closing player inventories...
+[18:56:57 INFO]: [RegionShutdownThread] Closed player inventories
+[18:56:57 INFO]: [RegionShutdownThread] Saving chunks...
+[18:56:57 INFO]: [RegionShutdownThread] Saved chunks
+[18:56:57 INFO]: [RegionShutdownThread] Saving level data...
+[18:56:57 INFO]: [RegionShutdownThread] Saved level data
+[18:56:57 INFO]: [RegionShutdownThread] Saved world data for world 'world_the_end'
+[18:56:57 INFO]: [RegionShutdownThread] Saved all worlds
+[18:56:57 INFO]: [RegionShutdownThread] Saving all player data...
+[18:56:57 INFO]: [RegionShutdownThread] Saved all player data
+[18:56:57 INFO]: Waiting for all RegionFile I/O tasks to complete...
+[18:56:57 INFO]: All RegionFile I/O tasks to complete
+[18:56:57 INFO]: [MoonriseCommon] Awaiting termination of worker pool for up to 60s...
+[18:56:57 INFO]: [MoonriseCommon] Awaiting termination of I/O pool for up to 60s...

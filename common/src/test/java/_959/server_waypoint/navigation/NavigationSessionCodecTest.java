@@ -4,6 +4,7 @@ import _959.server_waypoint.core.waypoint.WaypointPos;
 import org.joml.Vector3f;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -28,6 +29,7 @@ class NavigationSessionCodecTest {
                         "Hub",
                         "Hub",
                         "",
+                        List.of(),
                         new WaypointPos(10, 64, -20),
                         0x123456
                 ),
@@ -60,6 +62,7 @@ class NavigationSessionCodecTest {
                         "Village",
                         "Village",
                         "",
+                        List.of(),
                         new WaypointPos(1, 2, 3),
                         0x39C5BB
                 ),

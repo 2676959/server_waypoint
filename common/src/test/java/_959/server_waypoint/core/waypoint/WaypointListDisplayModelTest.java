@@ -6,21 +6,24 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class WaypointListDisplayModelTest {
     @Test
-    void defaultSortForcesGroupedLists() {
+    void flatWithDefaultSortKeepsTheSavedOrder() {
         WaypointQueryEngine.QueryResult result = result(
                 WaypointSorting.SortMode.DEFAULT,
                 null,
-                listResult(list("zeta", waypoint("b", 0, 0, 0)))
+                listResult(list("zeta", waypoint("b", 0, 0, 0), waypoint("a", 0, 0, 0))),
+                listResult(list("alpha", waypoint("c", 0, 0, 0)))
         );
 
         WaypointListDisplayModel.Display display = WaypointListDisplayModel.build(result, false);
 
-        assertTrue(display.groupByLists());
-        assertEquals(List.of("zeta"), listNames(display));
+        assertFalse(display.groupByLists());
+        assertEquals(List.of("b", "a", "c"), display.flatWaypoints().stream()
+                .map(row -> row.waypoint().name()).toList());
     }
 
     @Test

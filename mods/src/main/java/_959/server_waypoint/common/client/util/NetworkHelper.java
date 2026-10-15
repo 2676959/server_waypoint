@@ -6,7 +6,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 //?} elif forge {
 /*import _959.server_waypoint.forge.ServerWaypointForge;
 import net.minecraftforge.network.PacketDistributor;
-*///?} elif neoforge && >= 1.21.9 {
+*///?} elif neoforge && >= 1.21.7 {
 /*import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 *///?} elif neoforge {
 /*import net.neoforged.neoforge.network.PacketDistributor;
@@ -29,7 +29,7 @@ public class NetworkHelper {
         ^///?} else {
         ServerWaypointForge.PACKET_CHANNEL.send(payload, PacketDistributor.SERVER.noArg());
         //?}
-        *///?} elif neoforge && >= 1.21.9 {
+        *///?} elif neoforge && >= 1.21.7 {
         /*ClientPacketDistributor.sendToServer(payload);
         *///?} elif neoforge && = 1.20.2 {
         /*ServerWaypointNeoForge.PACKET_CHANNEL.sendToServer(payload);

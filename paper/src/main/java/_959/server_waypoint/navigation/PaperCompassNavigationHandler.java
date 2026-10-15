@@ -83,7 +83,7 @@ public final class PaperCompassNavigationHandler implements
                 target.position().z()
         ));
         meta.setLodestoneTracked(false);
-        meta.displayName(NavigationDisplayText.buildItemName(target));
+        meta.displayName(NavigationDisplayText.buildItemTooltipName(target));
         meta.lore(NavigationDisplayText.buildItemLore(target));
         compass.setItemMeta(meta);
         return this.itemManager.tag(compass);

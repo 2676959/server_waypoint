@@ -1,6 +1,7 @@
 package _959.server_waypoint.mixin;
 
 import _959.server_waypoint.common.client.WaypointClientMod;
+import _959.server_waypoint.common.client.integrations.MapWaypointShareHelper;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.protocol.game.ClientboundLoginPacket;
 import org.spongepowered.asm.mixin.Mixin;
@@ -10,6 +11,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ClientPacketListener.class)
 public class ClientPlayNetworkHandlerMixin {
+
+    @Inject(method = {"sendChat", "sendCommand"}, at = @At("TAIL")/*? if >=26 {*/, remap = false/*?}*/)
+    private void sw$promptForSharedWaypoint(String message, CallbackInfo ci) {
+        MapWaypointShareHelper.onOutgoingMessage(message);
+    }
 
     @Inject(method = "handleLogin", at = @At(value = "TAIL")/*? if >= 26 {*/, remap = false/*?}*/)
     private void setHandshakeStatus(ClientboundLoginPacket packet, CallbackInfo ci) {

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="_959.server_waypoint.common.client.gui.render.WidgetThemeJsonTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-10-10T22:30:12.674Z" hostname="Mac-mini.local" time="0.008">
+  <properties/>
+  <testcase name="themeRoundTripsThroughJson()" classname="_959.server_waypoint.common.client.gui.render.WidgetThemeJsonTest" time="0.002"/>
+  <testcase name="rejectsFractionalFormatVersions()" classname="_959.server_waypoint.common.client.gui.render.WidgetThemeJsonTest" time="0.001"/>
+  <testcase name="rejectsInvalidColorSyntax()" classname="_959.server_waypoint.common.client.gui.render.WidgetThemeJsonTest" time="0.001"/>
+  <testcase name="phaseOneStatusColorsRemainBackwardCompatible()" classname="_959.server_waypoint.common.client.gui.render.WidgetThemeJsonTest" time="0.0"/>
+  <testcase name="rejectsUnsupportedFormatVersions()" classname="_959.server_waypoint.common.client.gui.render.WidgetThemeJsonTest" time="0.001"/>
+  <testcase name="acceptsOpaqueRgbColors()" classname="_959.server_waypoint.common.client.gui.render.WidgetThemeJsonTest" time="0.0"/>
+  <testcase name="savesLoadsAndAppliesThemeFiles()" classname="_959.server_waypoint.common.client.gui.render.WidgetThemeJsonTest" time="0.002"/>
+  <testcase name="omittedAndUnknownVariablesRemainForwardCompatible()" classname="_959.server_waypoint.common.client.gui.render.WidgetThemeJsonTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

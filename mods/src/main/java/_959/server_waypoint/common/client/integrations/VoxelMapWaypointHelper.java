@@ -1,8 +1,9 @@
-//? if fabric {
+//? if voxelmap {
 package _959.server_waypoint.common.client.integrations;
 
 import _959.server_waypoint.common.client.ClientConfig;
 import _959.server_waypoint.common.client.WaypointClientMod;
+import _959.server_waypoint.core.WaypointFilesManagerCore;
 import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
 import _959.server_waypoint.core.network.data.DimensionWaypointData;
 import _959.server_waypoint.core.network.data.WaypointData;
@@ -12,11 +13,16 @@ import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import _959.server_waypoint.common.util.SyncedWaypointName;
+import _959.server_waypoint.util.WaypointInitials;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.WaypointManager;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -28,9 +34,46 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static _959.server_waypoint.common.client.WaypointClientMod.LOGGER;
+import static _959.server_waypoint.common.client.integrations.MapModChatHelper.displayClientMessage;
+import static _959.server_waypoint.common.client.integrations.MapModChatHelper.waypointText;
+import static _959.server_waypoint.common.network.ModMessageSender.toVanillaText;
+import static _959.server_waypoint.common.util.DimensionKeyParser.getDimensionKey;
+import static _959.server_waypoint.common.util.TextHelper.getDimensionColor;
 
 public final class VoxelMapWaypointHelper {
     private VoxelMapWaypointHelper() {
+    }
+
+    /** Resolves a tracked marker to its complete server snapshot, including its owning dimension. */
+    public static @Nullable SyncedEditTarget resolveSyncedEditTarget(
+            Waypoint waypoint, WaypointFilesManagerCore waypointFiles
+    ) {
+        SyncedWaypointName.ParsedName parsedName = SyncedWaypointName.parse(waypoint.name);
+        if (parsedName == null) {
+            return null;
+        }
+        SyncedEditTarget target = null;
+        for (var entry : waypointFiles.getSortedMap()) {
+            String dimensionName = entry.getKey();
+            if (!waypointInDimension(waypoint, dimensionName)) {
+                continue;
+            }
+            WaypointList list = entry.getValue().getWaypointListByName(parsedName.listName());
+            SimpleWaypoint saved = list == null ? null : list.getWaypointByName(parsedName.waypointName());
+            if (saved == null) {
+                continue;
+            }
+            if (target != null) {
+                return null;
+            }
+            target = new SyncedEditTarget(dimensionName, list.name(), list.displayName(), new SimpleWaypoint(saved));
+        }
+        return target;
+    }
+
+    public record SyncedEditTarget(
+            String dimensionName, String listName, String listDisplayName, SimpleWaypoint waypoint
+    ) {
     }
 
     public static WaypointData collectUpload(UploadRequestBuffer request) {
@@ -122,7 +165,8 @@ public final class VoxelMapWaypointHelper {
                     | Math.round(waypoint.blue * 255.0F);
             SimpleWaypoint uploaded = new SimpleWaypoint(
                     waypointName,
-                    "",
+                    waypointName,
+                    WaypointInitials.getDefaultInitials(waypointName),
                     new WaypointPos(
                             (int) Math.round(waypoint.x / coordinateScale),
                             waypoint.y,
@@ -130,7 +174,10 @@ public final class VoxelMapWaypointHelper {
                     ),
                     rgb,
                     0,
-                    false
+                    false,
+                    List.of(),
+                    "",
+                    VoxelMapIconIds.fromSuffix(waypoint.imageSuffix)
             );
             uploadedByList.computeIfAbsent(listName, ignored -> new ArrayList<>()).add(uploaded);
         }
@@ -146,67 +193,110 @@ public final class VoxelMapWaypointHelper {
     public static void replaceAll(WaypointClientMod waypointClientMod) {
         WaypointManager manager = getWaypointManager();
         removeSyncedWaypoints(manager, (waypoint, parsedName) -> true);
-        waypointClientMod.forEachWaypointFileManager(fileManager ->
-                addLists(manager, fileManager.getDimensionName(), fileManager.getWaypointLists()));
+        boolean[] synced = {true};
+        waypointClientMod.forEachWaypointFileManager(fileManager -> {
+            if (isValidDimension(fileManager.getDimensionName())) {
+                synced[0] &= addLists(manager, fileManager.getDimensionName(), fileManager.getWaypointLists());
+            } else {
+                synced[0] = false;
+            }
+        });
+        displaySyncResult(synced[0], Component.translatable("server_waypoint.all.added.voxelmap"));
     }
 
     public static void replaceDimension(String dimensionName, List<WaypointList> waypointLists) {
+        if (!isValidDimension(dimensionName)) {
+            return;
+        }
         WaypointManager manager = getWaypointManager();
         removeSyncedWaypoints(manager, (waypoint, parsedName) -> waypointInDimension(waypoint, dimensionName));
-        addLists(manager, dimensionName, waypointLists);
+        displaySyncResult(addLists(manager, dimensionName, waypointLists), Component.translatable(
+                "server_waypoint.dimension.waypoint.added.voxelmap",
+                Component.literal(dimensionName).withStyle(getDimensionColor(dimensionName))));
     }
 
     public static void replaceList(String dimensionName, WaypointList waypointList) {
+        if (!isValidDimension(dimensionName)) {
+            return;
+        }
         WaypointManager manager = getWaypointManager();
         removeSyncedWaypoints(manager, (waypoint, parsedName) ->
                 waypointList.name().equals(parsedName.listName()) && waypointInDimension(waypoint, dimensionName));
-        addList(manager, dimensionName, waypointList);
+        displaySyncResult(addList(manager, dimensionName, waypointList), Component.translatable(
+                "server_waypoint.list.added.voxelmap", waypointList.name()));
     }
 
     public static void applyModification(String dimensionName, String listName, WaypointModificationType type, SimpleWaypoint waypoint, String waypointName) {
+        if (!isValidDimension(dimensionName)) {
+            return;
+        }
         WaypointManager manager = getWaypointManager();
         switch (type) {
             case ADD, UPDATE -> {
                 removeSyncedWaypoint(manager, dimensionName, listName, waypointName);
-                addWaypoint(manager, dimensionName, listName, waypoint);
+                boolean synced = addWaypoint(manager, dimensionName, listName, waypoint);
+                if (synced) {
+                    var player = Minecraft.getInstance().player;
+                    if (player != null) {
+                        String messageKey = type == WaypointModificationType.ADD
+                                ? "server_waypoint.modification.add.voxelmap"
+                                : "server_waypoint.modification.update.voxelmap";
+                        displayClientMessage(player, Component.translatable(messageKey, toVanillaText(waypointText(waypoint, dimensionName, listName))));
+                    }
+                }
             }
-            case REMOVE -> removeSyncedWaypoint(manager, dimensionName, listName, waypointName);
-            case REMOVE_LIST -> removeList(dimensionName, listName);
+            case REMOVE -> {
+                if (removeSyncedWaypoint(manager, dimensionName, listName, waypointName)) {
+                    displayMessage(Component.translatable("server_waypoint.modification.remove.voxelmap",
+                            Component.literal(waypointName)));
+                }
+            }
+            case REMOVE_LIST -> {
+                if (removeList(dimensionName, listName)) {
+                    displayMessage(Component.translatable("server_waypoint.list.removed.voxelmap", listName));
+                }
+            }
             case ADD_LIST -> {
             }
         }
     }
 
-    private static void removeList(String dimensionName, String listName) {
+    private static boolean removeList(String dimensionName, String listName) {
         WaypointManager manager = getWaypointManager();
-        removeSyncedWaypoints(manager, (waypoint, parsedName) ->
+        return removeSyncedWaypoints(manager, (waypoint, parsedName) ->
                 listName.equals(parsedName.listName()) && waypointInDimension(waypoint, dimensionName));
     }
 
-    private static void addLists(WaypointManager manager, String dimensionName, List<WaypointList> waypointLists) {
+    private static boolean addLists(WaypointManager manager, String dimensionName, List<WaypointList> waypointLists) {
+        boolean synced = true;
         for (WaypointList waypointList : waypointLists) {
-            addList(manager, dimensionName, waypointList);
+            synced &= addList(manager, dimensionName, waypointList);
         }
+        return synced;
     }
 
-    private static void addList(WaypointManager manager, String dimensionName, WaypointList waypointList) {
+    private static boolean addList(WaypointManager manager, String dimensionName, WaypointList waypointList) {
+        if (SyncedWaypointName.formatSyncedName(waypointList.name()) == null) {
+            LOGGER.warn("Skipping VoxelMap sync for list {} because its generated name would be ambiguous.", waypointList.name());
+            return false;
+        }
+        boolean synced = true;
         for (SimpleWaypoint simpleWaypoint : waypointList.simpleWaypoints()) {
-            Waypoint waypoint = toVoxelMapWaypoint(manager, dimensionName, waypointList.name(), simpleWaypoint);
-            if (waypoint != null) {
-                manager.addWaypoint(waypoint);
-            }
+            synced &= addWaypoint(manager, dimensionName, waypointList.name(), simpleWaypoint);
         }
+        return synced;
     }
 
-    private static void addWaypoint(WaypointManager manager, String dimensionName, String listName, SimpleWaypoint simpleWaypoint) {
+    private static boolean addWaypoint(WaypointManager manager, String dimensionName, String listName, SimpleWaypoint simpleWaypoint) {
         if (simpleWaypoint == null) {
-            return;
+            return false;
         }
         Waypoint waypoint = toVoxelMapWaypoint(manager, dimensionName, listName, simpleWaypoint);
         if (waypoint == null) {
-            return;
+            return false;
         }
         manager.addWaypoint(waypoint);
+        return true;
     }
 
     private static Waypoint toVoxelMapWaypoint(WaypointManager manager, String dimensionName, String listName, SimpleWaypoint simpleWaypoint) {
@@ -235,7 +325,7 @@ public final class VoxelMapWaypointHelper {
         }
 
         int rgb = simpleWaypoint.rgb();
-        return new Waypoint(
+        Waypoint waypoint = new Waypoint(
                 voxelMapName,
                 x,
                 z,
@@ -244,20 +334,23 @@ public final class VoxelMapWaypointHelper {
                 ((rgb >> 16) & 0xFF) / 255.0F,
                 ((rgb >> 8) & 0xFF) / 255.0F,
                 (rgb & 0xFF) / 255.0F,
-                "",
+                VoxelMapIconIds.toSuffix(simpleWaypoint.icon()),
                 manager.getCurrentSubworldDescriptor(false),
                 dimensions
         );
+        // VoxelMap only recalculates this flag on dimension changes, not when adding a waypoint.
+        waypoint.inDimension = dimensionName.equals(WaypointClientMod.getCurrentDimensionName());
+        return waypoint;
     }
 
-    private static void removeSyncedWaypoint(WaypointManager manager, String dimensionName, String listName, String waypointName) {
-        removeSyncedWaypoints(manager, (waypoint, parsedName) ->
+    private static boolean removeSyncedWaypoint(WaypointManager manager, String dimensionName, String listName, String waypointName) {
+        return removeSyncedWaypoints(manager, (waypoint, parsedName) ->
                 listName.equals(parsedName.listName())
                         && waypointName.equals(parsedName.waypointName())
                         && waypointInDimension(waypoint, dimensionName));
     }
 
-    private static void removeSyncedWaypoints(WaypointManager manager, BiPredicate<Waypoint, SyncedWaypointName.ParsedName> shouldRemove) {
+    private static boolean removeSyncedWaypoints(WaypointManager manager, BiPredicate<Waypoint, SyncedWaypointName.ParsedName> shouldRemove) {
         List<Waypoint> matches = new ArrayList<>();
         for (Waypoint waypoint : manager.getWaypoints()) {
             SyncedWaypointName.ParsedName parsedName = SyncedWaypointName.parse(waypoint.name);
@@ -268,6 +361,27 @@ public final class VoxelMapWaypointHelper {
         for (Waypoint waypoint : matches) {
             manager.deleteWaypoint(waypoint);
         }
+        return !matches.isEmpty();
+    }
+
+    private static boolean isValidDimension(String dimensionName) {
+        if (getDimensionKey(dimensionName) != null && VoxelConstants.getVoxelMapInstance().getDimensionManager()
+                .getDimensionContainerByIdentifier(dimensionName) != null) {
+            return true;
+        }
+        LOGGER.warn("Failed to decode VoxelMap dimension {}", dimensionName);
+        displayMessage(Component.translatable("server_waypoint.dimension.decode.fail",
+                Component.literal(String.valueOf(dimensionName))).withStyle(ChatFormatting.RED));
+        return false;
+    }
+
+    private static void displaySyncResult(boolean synced, Component successMessage) {
+        displayMessage(synced ? successMessage : Component.translatable(
+                "server_waypoint.sync.incomplete", "VoxelMap").withStyle(ChatFormatting.RED));
+    }
+
+    private static void displayMessage(Component message) {
+        displayClientMessage(Minecraft.getInstance().player, message);
     }
 
     private static boolean waypointInDimension(Waypoint waypoint, String dimensionName) {
