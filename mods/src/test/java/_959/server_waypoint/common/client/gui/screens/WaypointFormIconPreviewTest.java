@@ -32,6 +32,12 @@ import static org.junit.jupiter.api.Assertions.*;
 class WaypointFormIconPreviewTest {
     @BeforeAll
     static void bootstrapRegistries() {
+        //? if neoforge {
+        /*// Check before SharedConstants initializes: NeoForge's registries require a running loader.
+        org.junit.jupiter.api.Assumptions.assumeTrue(
+                net.neoforged.fml.loading.FMLLoader.getCurrentOrNull() != null,
+                "Minecraft registries require an FML loader, unavailable in plain JUnit");
+        *///?}
         SharedConstants.tryDetectVersion();
         Bootstrap.bootStrap();
     }

@@ -282,6 +282,8 @@ dependencies {
     val mixinExtrasVersion = "0.5.4"
     compileOnly("io.github.llamalad7:mixinextras-common:$mixinExtrasVersion")
     annotationProcessor("io.github.llamalad7:mixinextras-common:$mixinExtrasVersion")
+    // Plain JUnit cannot load the common classes nested inside mixinextras-forge's JarJar archive.
+    testRuntimeOnly("io.github.llamalad7:mixinextras-common:$mixinExtrasVersion")
     // Forge 1.21.11+ bundles mixinextras-forge 0.5.3 itself; older Forge does not provide MixinExtras, so it must be embedded.
     if (!stonecutter.eval(minecraftVersion, ">=1.21.11")) {
         implementation("io.github.llamalad7:mixinextras-forge:$mixinExtrasVersion")
