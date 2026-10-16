@@ -6,6 +6,7 @@
 - [Cross-server waypoints](cross-server/) — discovery and teleportation over Velocity.
 - [GUI tooltips](gui-tooltips/) — themed tooltips in the mod's screens: surface, scheduling, placement and layering.
 - [Jar packaging](jar-packaging/) — what each release jar ships, the `cross-server` module boundary and the release gate's content checks.
+- [Private and local waypoints](private-waypoint/) — proposed owner-only server collections, independent client profiles, collection views, and explicit copying.
 - [Publishing](publishing/) — Modrinth and CurseForge metadata, release checklists, artifact manifests and upload recovery.
 - [Theme editor](theme-editor/) — the color theme editor: raw key list, key editor, live preview with usage markers, Reset and Save.
 - [Upload transport](upload/) — chunked upload/download transport and startup fixes.
