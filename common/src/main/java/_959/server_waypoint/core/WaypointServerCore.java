@@ -307,14 +307,12 @@ public abstract class WaypointServerCore extends WaypointFilesManagerCore {
         LOGGER.info("Loaded {} languages: {}", languages.size(), log);
     }
 
-    /**
-     * calls saveAllFiles first then free all loaded waypoint files and external language files <br>
-     * */
+    /** Saves and closes owner stores before taking Shared lifecycle locks, then frees Shared resources. */
     public void freeAllLoadedFiles() {
+        this.flushPrivateWaypoints(true);
         this.withLifecycleWriteLock(() -> {
             this.resourcesLoaded = false;
-            saveAllFiles();
-            this.flushPrivateWaypoints(true);
+            this.saveSharedFiles();
             this.clearWaypointFileManagers();
             this.languageFilesManager.unloadAllExternalLanguages();
         });
@@ -333,12 +331,17 @@ public abstract class WaypointServerCore extends WaypointFilesManagerCore {
 
     @SuppressWarnings("unused")
     public void reloadWaypointFiles() {
+        if (!this.resourcesLoaded) {
+            LOGGER.warn("Ignoring waypoint reload because server resources are not loaded");
+            return;
+        }
+        this.flushPrivateWaypoints(false);
         this.withLifecycleWriteLock(() -> {
             if (!this.resourcesLoaded) {
                 LOGGER.warn("Ignoring waypoint reload because server resources are not loaded");
                 return;
             }
-            saveAllFiles();
+            this.saveSharedFiles();
             try {
                 initOrReadWaypointFiles();
             } catch (IOException e) {
@@ -353,6 +356,10 @@ public abstract class WaypointServerCore extends WaypointFilesManagerCore {
      */
     public void saveAllFiles() {
         this.flushPrivateWaypoints(false);
+        this.saveSharedFiles();
+    }
+
+    private void saveSharedFiles() {
         saveAllWaypointFiles();
         saveConfigFile(this.configDir);
     }

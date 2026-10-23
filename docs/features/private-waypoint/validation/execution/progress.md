@@ -17,7 +17,7 @@ The user authorized implementation and a separate local commit for each verified
 ## Task status
 
 1. Complete: collection identity and scoped navigation (`20cd599`).
-2. Complete: owner storage, quotas, lifecycle (Task 2 commit).
+2. Complete: owner storage, quotas, lifecycle (`f80b062`, plus the shutdown review fix).
 3. Pending: private commands and permissions.
 4. Pending: owner-only protocol and client collections.
 5. Pending: local profiles.
@@ -51,3 +51,10 @@ The user authorized implementation and a separate local commit for each verified
 - Lifecycle wiring covers mod/Paper disconnect, server save/shutdown, integrated-world rebinding, and navigation restore under the owner gate. Failed navigation reads preserve saved identity for retry.
 - No new locale keys or placeholders; only the literal configuration name was added to existing reload-help text.
 - Self-reviewed isolation, lock ordering, eviction races, failed reads/saves, reduced quotas, and Shared behavior. Live acceptance remains pending.
+
+## Task 2 review fix: shutdown lock ordering
+
+- RED: `PrivateWaypointLifecycleTest.shutdownDoesNotHoldSharedLocksWhileWaitingForAnOwner` reproduced a timeout when shutdown held the Shared lifecycle write lock while waiting for a Private operation that read Shared data.
+- Close/flush owner stores before acquiring Shared lifecycle locks during shutdown and waypoint reload. Shared persistence remains inside the Shared lifecycle boundary.
+- GREEN: `./gradlew :common:test :mods:26.1.2-fabric:compileJava :paper:26.2-paper:compileJava --console=plain --max-workers=2` succeeded; 677 common tests, zero failures/errors/skips.
+- Review was performed inline, consistent with the plan's instruction not to dispatch subagents without the user's choice. Tasks 3–8 and all live feature acceptance remain pending.

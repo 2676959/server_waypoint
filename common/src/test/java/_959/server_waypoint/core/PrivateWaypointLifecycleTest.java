@@ -12,6 +12,10 @@ import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -57,6 +61,51 @@ class PrivateWaypointLifecycleTest {
         assertSame(valid, WaypointServerCore.CONFIG);
         assertThrows(RuntimeException.class, () -> server.loadConfig(new StringReader("{\"privateWaypoints\":null}")));
         assertSame(valid, WaypointServerCore.CONFIG);
+    }
+
+    @Test
+    void shutdownDoesNotHoldSharedLocksWhileWaitingForAnOwner() throws Exception {
+        WaypointServerCore server = new WaypointServerCore(this.root) {};
+        CountDownLatch ownerEntered = new CountDownLatch(1);
+        CountDownLatch releaseOwner = new CountDownLatch(1);
+        AtomicReference<Thread> shutdownThread = new AtomicReference<>();
+        var executor = Executors.newFixedThreadPool(2, task -> {
+            Thread thread = new Thread(task);
+            thread.setDaemon(true);
+            return thread;
+        });
+        try {
+            var owner = executor.submit(() -> server.withCollection(WaypointCollectionKey.privateFor(UUID.randomUUID()), files -> {
+                ownerEntered.countDown();
+                try {
+                    if (!releaseOwner.await(5, TimeUnit.SECONDS)) throw new AssertionError("Owner was not released");
+                } catch (InterruptedException exception) {
+                    Thread.currentThread().interrupt();
+                    throw new AssertionError(exception);
+                }
+                // Reading Shared while operating on Private is valid, for example while preparing a copy.
+                assertTrue(server.getFileManagerMap().isEmpty());
+                return null;
+            }));
+            assertTrue(ownerEntered.await(5, TimeUnit.SECONDS));
+            var shutdown = executor.submit(() -> {
+                shutdownThread.set(Thread.currentThread());
+                server.freeAllLoadedFiles();
+            });
+            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+            while (System.nanoTime() < deadline && (shutdownThread.get() == null
+                    || shutdownThread.get().getState() != Thread.State.WAITING)) {
+                Thread.sleep(1);
+            }
+            assertNotNull(shutdownThread.get());
+            assertEquals(Thread.State.WAITING, shutdownThread.get().getState());
+            releaseOwner.countDown();
+            owner.get(5, TimeUnit.SECONDS);
+            shutdown.get(5, TimeUnit.SECONDS);
+        } finally {
+            releaseOwner.countDown();
+            executor.shutdownNow();
+        }
     }
 
     private static SimpleWaypoint waypoint() {
