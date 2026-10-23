@@ -1,5 +1,6 @@
 package _959.server_waypoint.navigation;
 
+import _959.server_waypoint.core.collection.WaypointCollectionKey;
 import _959.server_waypoint.core.WaypointFilesManagerCore;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointPos;
@@ -45,6 +46,7 @@ class NavigationModelTest {
                 }
         );
         NavigationTarget target = new NavigationTarget(
+                WaypointCollectionKey.shared(),
                 "minecraft:overworld",
                 addResult.waypointList(),
                 addResult.waypoint()
@@ -204,6 +206,7 @@ class NavigationModelTest {
 
     private static NavigationTarget target() {
         return new NavigationTarget(
+                WaypointCollectionKey.shared(),
                 "minecraft:overworld",
                 "towns",
                 "towns",

@@ -1,5 +1,6 @@
 package _959.server_waypoint.navigation;
 
+import _959.server_waypoint.core.collection.WaypointCollectionKey;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
@@ -26,6 +27,7 @@ class NavigationDisplayTextTest {
     private final NavigationSession session = new NavigationSession(
             UUID.randomUUID(),
             new NavigationTarget(
+                    WaypointCollectionKey.shared(),
                     "minecraft:overworld",
                     "villages",
                     "villages",
@@ -148,7 +150,7 @@ class NavigationDisplayTextTest {
     }
 
     private static NavigationTarget itemTarget(String displayName, List<String> keywords, String description) {
-        return new NavigationTarget("minecraft:overworld", new WaypointList("villages", "Village list", 0, List.of()),
+        return new NavigationTarget(WaypointCollectionKey.shared(), "minecraft:overworld", new WaypointList("villages", "Village list", 0, List.of()),
                 new SimpleWaypoint("Village", displayName, "V", new WaypointPos(10, 64, 20),
                         0x55FF55, 0, true, keywords, description));
     }
@@ -175,7 +177,7 @@ class NavigationDisplayTextTest {
             "twilightforest:twilight_forest, Twilight Forest, yellow"
     })
     void wrongDimensionMessagesUsePrettifiedColoredNames(String dimensionId, String name, String color) {
-        NavigationTarget target = new NavigationTarget(dimensionId,
+        NavigationTarget target = new NavigationTarget(WaypointCollectionKey.shared(), dimensionId,
                 new WaypointList("villages", "Village list", 0, List.of()),
                 new SimpleWaypoint("Village", "Village", "V", new WaypointPos(10, 64, 20),
                         0x55FF55, 0, true, List.of(), ""));

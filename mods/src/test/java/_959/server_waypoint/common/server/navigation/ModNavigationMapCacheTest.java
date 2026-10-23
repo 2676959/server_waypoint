@@ -1,5 +1,6 @@
 package _959.server_waypoint.common.server.navigation;
 
+import _959.server_waypoint.core.collection.WaypointCollectionKey;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import _959.server_waypoint.navigation.NavigationTarget;
 import _959.server_waypoint.navigation.NavigationMapTerrainStore;
@@ -143,7 +144,7 @@ class ModNavigationMapCacheTest {
     }
 
     private static NavigationTarget target(int x, int z) {
-        return new NavigationTarget("minecraft:overworld", "places", "Places", "target", "Target", "",
+        return new NavigationTarget(WaypointCollectionKey.shared(), "minecraft:overworld", "places", "Places", "target", "Target", "",
                 List.of(), new WaypointPos(x, 64, z), 0x447FFF);
     }
 }

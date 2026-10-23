@@ -1,5 +1,6 @@
 package _959.server_waypoint.navigation;
 
+import _959.server_waypoint.core.collection.WaypointCollectionKey;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import org.junit.jupiter.api.Test;
 
@@ -114,6 +115,7 @@ class NavigationMathTest {
 
     private static NavigationTarget target(String dimension, int x, int y, int z) {
         return new NavigationTarget(
+                WaypointCollectionKey.shared(),
                 dimension,
                 "test-list",
                 "test-list",

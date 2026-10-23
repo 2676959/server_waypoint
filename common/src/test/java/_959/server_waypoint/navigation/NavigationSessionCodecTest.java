@@ -1,6 +1,7 @@
 package _959.server_waypoint.navigation;
 
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.core.collection.WaypointCollectionKey;
 import org.joml.Vector3f;
 import org.junit.jupiter.api.Test;
 
@@ -23,6 +24,7 @@ class NavigationSessionCodecTest {
         NavigationSession session = new NavigationSession(
                 UUID.randomUUID(),
                 new NavigationTarget(
+                        WaypointCollectionKey.shared(),
                         "minecraft:the_nether",
                         "portals",
                         "portals",
@@ -56,6 +58,7 @@ class NavigationSessionCodecTest {
         NavigationSession session = new NavigationSession(
                 UUID.randomUUID(),
                 new NavigationTarget(
+                        WaypointCollectionKey.shared(),
                         "minecraft:overworld",
                         "towns",
                         "towns",
@@ -78,6 +81,21 @@ class NavigationSessionCodecTest {
     }
 
     @Test
+    void privateIdentityRoundTripsAndFormerFormatIsRejected() {
+        UUID owner = UUID.randomUUID();
+        NavigationSession session = new NavigationSession(owner,
+                new NavigationTarget(WaypointCollectionKey.privateFor(owner), "minecraft:overworld", "Homes", "Homes",
+                        "Base", "Base", "", List.of(), new WaypointPos(1, 64, 2), 0x123456),
+                Set.of(NavigationMethod.ACTIONBAR), TextDisplayTransformation.defaultValue());
+        String encoded = NavigationSessionCodec.encode(session);
+        assertEquals(WaypointCollectionKey.privateFor(owner), NavigationSessionCodec.decode(encoded).orElseThrow().collectionKey());
+        assertTrue(NavigationSessionCodec.decode(encoded.replace("\"version\":3", "\"version\":2")).isEmpty());
+        assertTrue(NavigationSessionCodec.decode(encoded.replace("PRIVATE", "LOCAL")).isEmpty());
+        assertTrue(NavigationSessionCodec.decode(encoded.replace(owner.toString(), "invalid-uuid")).isEmpty());
+        assertTrue(NavigationSessionCodec.decode(encoded.replace("PRIVATE", "SHARED")).isEmpty());
+    }
+
+    @Test
     void malformedUnknownAndFuturePayloadsAreRejected() {
         assertEquals(Optional.empty(), NavigationSessionCodec.decode("not-json"));
         assertEquals(
@@ -89,25 +107,25 @@ class NavigationSessionCodecTest {
         assertEquals(
                 Optional.empty(),
                 NavigationSessionCodec.decode("""
-                        {"version":2,"dimension":"minecraft:overworld","list":"towns","waypoint":"Village","methods":["unknown"],"transformation":{"translation":{"x":0,"y":0,"z":0},"rotation":{"x":0,"y":0,"z":0},"scale":{"x":1,"y":1,"z":1}}}
+                        {"version":3,"scope":"SHARED","dimension":"minecraft:overworld","list":"towns","waypoint":"Village","methods":["unknown"],"transformation":{"translation":{"x":0,"y":0,"z":0},"rotation":{"x":0,"y":0,"z":0},"scale":{"x":1,"y":1,"z":1}}}
                         """)
         );
         assertEquals(
                 Optional.empty(),
                 NavigationSessionCodec.decode("""
-                        {"version":2,"dimension":"minecraft:overworld","list":"towns","waypoint":"Village","methods":[]}
+                        {"version":3,"scope":"SHARED","dimension":"minecraft:overworld","list":"towns","waypoint":"Village","methods":[]}
                         """)
         );
         assertEquals(
                 Optional.empty(),
                 NavigationSessionCodec.decode("""
-                        {"version":2,"dimension":"minecraft:overworld","list":"towns","waypoint":"Village","methods":[],"transformation":{"translation":{"x":17,"y":0,"z":0},"rotation":{"x":0,"y":0,"z":0},"scale":{"x":1,"y":1,"z":1}}}
+                        {"version":3,"scope":"SHARED","dimension":"minecraft:overworld","list":"towns","waypoint":"Village","methods":[],"transformation":{"translation":{"x":17,"y":0,"z":0},"rotation":{"x":0,"y":0,"z":0},"scale":{"x":1,"y":1,"z":1}}}
                         """)
         );
         assertEquals(
                 Optional.empty(),
                 NavigationSessionCodec.decode("""
-                        {"version":3,"dimension":"minecraft:overworld","list":"towns","waypoint":"Village","methods":[],"transformation":{"translation":{"x":0,"y":0,"z":0},"rotation":{"x":0,"y":0,"z":0},"scale":{"x":1,"y":1,"z":1}}}
+                        {"version":4,"scope":"SHARED","dimension":"minecraft:overworld","list":"towns","waypoint":"Village","methods":[],"transformation":{"translation":{"x":0,"y":0,"z":0},"rotation":{"x":0,"y":0,"z":0},"scale":{"x":1,"y":1,"z":1}}}
                         """)
         );
     }

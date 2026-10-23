@@ -1,5 +1,7 @@
 package _959.server_waypoint.navigation;
 
+import _959.server_waypoint.core.collection.WaypointCollectionKey;
+import _959.server_waypoint.core.collection.WaypointScope;
 import com.google.gson.Gson;
 import org.joml.Vector3f;
 
@@ -7,10 +9,11 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /** Encodes the platform-neutral portion of a navigation session. */
 public final class NavigationSessionCodec {
-    public static final int CURRENT_VERSION = 2;
+    public static final int CURRENT_VERSION = 3;
     private static final int MAX_ENCODED_LENGTH = 16_384;
     private static final int MAX_DIMENSION_LENGTH = 1_024;
     private static final int MAX_IDENTIFIER_LENGTH = 65_535;
@@ -25,6 +28,8 @@ public final class NavigationSessionCodec {
                 .toList();
         Payload payload = new Payload(
                 CURRENT_VERSION,
+                session.target().collectionKey().scope(),
+                session.target().collectionKey().ownerUuid(),
                 session.target().dimensionName(),
                 session.target().listName(),
                 session.target().waypointName(),
@@ -42,6 +47,7 @@ public final class NavigationSessionCodec {
             Payload payload = GSON.fromJson(encoded, Payload.class);
             if (payload == null
                     || payload.version() != CURRENT_VERSION
+                    || payload.scope() == null
                     || !validDimension(payload.dimension())
                     || !validIdentifier(payload.list())
                     || !validIdentifier(payload.waypoint())
@@ -58,6 +64,7 @@ public final class NavigationSessionCodec {
                 }
             }
             return Optional.of(new StoredNavigationSession(
+                    new WaypointCollectionKey(payload.scope(), payload.owner()),
                     payload.dimension(),
                     payload.list(),
                     payload.waypoint(),
@@ -81,6 +88,8 @@ public final class NavigationSessionCodec {
 
     private record Payload(
             int version,
+            WaypointScope scope,
+            UUID owner,
             String dimension,
             String list,
             String waypoint,

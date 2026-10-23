@@ -1,5 +1,6 @@
 package _959.server_waypoint.common.server.navigation;
 
+import _959.server_waypoint.core.collection.WaypointCollectionKey;
 import _959.server_waypoint.common.network.ModMessageSender;
 import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.navigation.NavigationMethod;
@@ -55,7 +56,7 @@ public final class ModNavigationRuntime {
     public void onPlayerJoin(ServerPlayer player) {
         WaypointServerMod waypointServer = WaypointServerMod.getInstance();
         if (waypointServer != null) {
-            this.service.restorePersistedSession(player, waypointServer);
+            this.service.restorePersistedSession(player, key -> key.equals(WaypointCollectionKey.shared()) ? waypointServer : null);
         }
         if (this.itemManager.validateDirectInventory(player, this.enabledItemMethods(player))) {
             this.sendDeduplicatedMessage(player);

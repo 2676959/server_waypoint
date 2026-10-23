@@ -17,7 +17,7 @@ JUnit 5, Gradle Kotlin DSL, and Stonecutter across Fabric, Forge, NeoForge, and 
 
 **Spec:** [Private and local waypoint design](../specs/2026-10-16-private-waypoint-design.md).
 
-Status: planned, not implemented. Prepared on 2026-10-16 against branch
+Status: implementation in progress; Task 1 verified on 2026-10-23. Prepared on 2026-10-16 against branch
 `feature/private-waypoint`. Exact proposed class names below are implementation contracts,
 not claims that those classes already exist.
 
@@ -114,18 +114,18 @@ callers constructing their identities. Extend navigation tests and add
 an explicit collection-to-manager resolver. Task 1 tests supply in-memory managers; Task 2 wires
 the private store, so this task does not depend on a store implementation that comes later.
 
-- [ ] Add tests for valid Shared/Private keys and rejection of missing/mismatched owners.
-- [ ] Add navigation tests with Shared, Alice Private, and Bob Private all named
+- [x] Add tests for valid Shared/Private keys and rejection of missing/mismatched owners.
+- [x] Add navigation tests with Shared, Alice Private, and Bob Private all named
   `minecraft:overworld / Homes / Base`: refreshing or renaming Alice's target changes only Alice's
   private session. Removal cannot resolve the shared or Bob target.
-- [ ] Add codec round-trip tests retaining collection identity, reject mismatched-owner restoration,
+- [x] Add codec round-trip tests retaining collection identity, reject mismatched-owner restoration,
   and reject the former navigation session format after the version increment.
-- [ ] Run the focused tests and confirm the new assertions fail before implementation.
-- [ ] Implement identity propagation through target creation, target/list refresh keys, stopped
+- [x] Run the focused tests and confirm the new assertions fail before implementation.
+- [x] Implement identity propagation through target creation, target/list refresh keys, stopped
   target links, persistence, and restore resolution. Keep one active navigation session per player.
-- [ ] Run `rtk proxy ./gradlew :common:test --tests '*WaypointCollectionKeyTest' --tests '*Navigation*Test'`.
+- [x] Run `rtk proxy ./gradlew :common:test --tests '*WaypointCollectionKeyTest' --tests '*Navigation*Test'`.
   Expected: successful build and passing assertions, including existing navigation behavior.
-- [ ] Review the diff for unscoped target construction and unrelated changes.
+- [x] Review the diff for unscoped target construction and unrelated changes.
 
 ## Task 2: Owner storage, quotas, and platform lifecycle
 

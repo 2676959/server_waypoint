@@ -1,5 +1,6 @@
 package _959.server_waypoint.navigation;
 
+import _959.server_waypoint.core.collection.WaypointCollectionKey;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
@@ -11,6 +12,7 @@ import java.util.Objects;
  * An immutable copy of the waypoint properties needed by navigation.
  */
 public record NavigationTarget(
+        WaypointCollectionKey collectionKey,
         String dimensionName,
         String listName,
         String listDisplayName,
@@ -22,6 +24,7 @@ public record NavigationTarget(
         int rgb
 ) {
     public NavigationTarget {
+        Objects.requireNonNull(collectionKey, "collectionKey");
         Objects.requireNonNull(dimensionName, "dimensionName");
         Objects.requireNonNull(listName, "listName");
         Objects.requireNonNull(listDisplayName, "listDisplayName");
@@ -33,15 +36,17 @@ public record NavigationTarget(
     }
 
     public NavigationTarget(
+            WaypointCollectionKey collectionKey,
             String dimensionName,
             WaypointList waypointList,
             SimpleWaypoint waypoint
     ) {
-        this(dimensionName, waypointList.name(), waypointList.displayName(), snapshot(waypoint));
+        this(collectionKey, dimensionName, waypointList.name(), waypointList.displayName(), snapshot(waypoint));
     }
 
     public NavigationTarget withListIdentity(String newListName, String newListDisplayName) {
         return new NavigationTarget(
+                this.collectionKey,
                 this.dimensionName,
                 newListName,
                 newListDisplayName,
@@ -55,12 +60,14 @@ public record NavigationTarget(
     }
 
     private NavigationTarget(
+            WaypointCollectionKey collectionKey,
             String dimensionName,
             String listName,
             String listDisplayName,
             WaypointSnapshot waypointSnapshot
     ) {
         this(
+                collectionKey,
                 dimensionName,
                 listName,
                 listDisplayName,

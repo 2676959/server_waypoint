@@ -1,5 +1,6 @@
 package _959.server_waypoint.command;
 
+import _959.server_waypoint.core.collection.WaypointCollectionKey;
 import _959.server_waypoint.text.chat.ChatIcons;
 import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.crossserver.authorization.RemotePermissions;
@@ -1084,7 +1085,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
 
     /** The live waypoint behind a navigation target, or a stand-in made from the target when it is gone. */
     private PlacedWaypoint place(NavigationTarget target) {
-        WaypointFileManager fileManager = this.waypointServer.getWaypointFileManager(target.dimensionName());
+        WaypointFileManager fileManager = target.collectionKey().equals(WaypointCollectionKey.shared())
+                ? this.waypointServer.getWaypointFileManager(target.dimensionName()) : null;
         WaypointList list = fileManager == null ? null : fileManager.getWaypointListByName(target.listName());
         SimpleWaypoint waypoint = list == null ? null : list.getWaypointByName(target.waypointName());
         if (list == null || waypoint == null) {
@@ -1093,7 +1095,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                     WaypointInitials.getDefaultInitials(plainText(target.waypointDisplayName())), target.position(),
                     target.rgb(), 0, true, target.waypointKeywords(), target.waypointDescription());
         }
-        return new PlacedWaypoint(target.dimensionName(), list, waypoint);
+        return new PlacedWaypoint(target.collectionKey(), target.dimensionName(), list, waypoint);
     }
 
     private void runIfPlayerExists(S source, Consumer<P> playerAction) {
@@ -1340,7 +1342,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                         WaypointList after = Objects.requireNonNull(result.afterSnapshot());
                         saveChanges(source, fileManager, "list_edit", "dimension", dimensionName, "list", before.name(), "new_list", after.name());
                         this.navigationService.refreshListIdentity(
-                                dimensionName,
+                                WaypointCollectionKey.shared(), dimensionName,
                                 before.name(),
                                 after.name(),
                                 after.displayName()
@@ -1402,8 +1404,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                         SimpleWaypoint after = Objects.requireNonNull(result.afterSnapshot());
                         saveChanges(source, fileManager, "edit", "dimension", dimensionName, "list", list.name(), "waypoint", before.name(), "new_waypoint", after.name());
                         this.navigationService.refreshTarget(
-                                new NavigationTarget(dimensionName, list, before),
-                                new NavigationTarget(dimensionName, list, after)
+                                new NavigationTarget(WaypointCollectionKey.shared(), dimensionName, list, before),
+                                new NavigationTarget(WaypointCollectionKey.shared(), dimensionName, list, after)
                         );
                         WaypointModificationMessage update = new WaypointModificationMessage(
                                 dimensionName,
@@ -1690,6 +1692,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                             result.syncNum()
                     );
                     WaypointList list = Objects.requireNonNull(result.waypointList());
+                    this.navigationService.removeTarget(new NavigationTarget(
+                            WaypointCollectionKey.shared(), dimensionName, list, waypoint));
                     Component actor = actorName(source);
                     this.broadcast(source, buffer, dims -> Broadcasts.removed(dims, actor, dimensionName, list, waypoint));
                     String token = this.restoreRegistry.register(
@@ -1746,6 +1750,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                 waypointName,
                 (fileManager, waypointList, waypoint) -> {
                     NavigationTarget target = new NavigationTarget(
+                            WaypointCollectionKey.shared(),
                             fileManager.getDimensionName(),
                             waypointList,
                             waypoint
@@ -1792,6 +1797,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                 waypointName,
                 (fileManager, waypointList, waypoint) -> {
                     NavigationTarget target = new NavigationTarget(
+                            WaypointCollectionKey.shared(),
                             fileManager.getDimensionName(),
                             waypointList,
                             waypoint

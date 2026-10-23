@@ -1,5 +1,6 @@
 package _959.server_waypoint.core.network;
 
+import _959.server_waypoint.core.collection.WaypointCollectionKey;
 import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.ModInfo;
 import _959.server_waypoint.ProtocolVersion;
@@ -228,11 +229,13 @@ public class C2SPacketHandler<S, K, P> {
                             WaypointList list = Objects.requireNonNull(result.listSnapshot());
                             this.navigationService.refreshTarget(
                                     new NavigationTarget(
+                                            WaypointCollectionKey.shared(),
                                             request.dimensionName(),
                                             list,
                                             Objects.requireNonNull(result.beforeSnapshot())
                                     ),
                                     new NavigationTarget(
+                                            WaypointCollectionKey.shared(),
                                             request.dimensionName(),
                                             list,
                                             Objects.requireNonNull(result.afterSnapshot())

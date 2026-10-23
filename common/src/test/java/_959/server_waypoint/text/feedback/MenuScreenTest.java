@@ -1,5 +1,6 @@
 package _959.server_waypoint.text.feedback;
 
+import _959.server_waypoint.core.collection.WaypointCollectionKey;
 import _959.server_waypoint.text.chat.ChatAssert;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -16,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class MenuScreenTest {
     private static PlacedWaypoint mainHome() {
         var list = Fixtures.homeBases();
-        return new PlacedWaypoint(OVERWORLD, list, list.getWaypointByName("Main Home"));
+        return new PlacedWaypoint(WaypointCollectionKey.shared(), OVERWORLD, list, list.getWaypointByName("Main Home"));
     }
 
     @Test

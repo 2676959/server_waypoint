@@ -1,5 +1,6 @@
 package _959.server_waypoint.core.network.upload;
 
+import _959.server_waypoint.core.collection.WaypointCollectionKey;
 import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointFilesManagerCore;
@@ -531,11 +532,13 @@ public final class UploadCoordinator<P> {
                     );
                     summary.navigationReplacements.add(new NavigationReplacement(
                             new NavigationTarget(
+                                    WaypointCollectionKey.shared(),
                                     dimensionName,
                                     listSnapshot,
                                     Objects.requireNonNull(updateResult.beforeSnapshot())
                             ),
                             new NavigationTarget(
+                                    WaypointCollectionKey.shared(),
                                     dimensionName,
                                     listSnapshot,
                                     Objects.requireNonNull(updateResult.afterSnapshot())

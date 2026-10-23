@@ -1,5 +1,6 @@
 package _959.server_waypoint.core.network.upload;
 
+import _959.server_waypoint.core.collection.WaypointCollectionKey;
 import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointFilesManagerCore;
@@ -573,7 +574,7 @@ class UploadCoordinatorTest {
                 .getWaypointListByName("list");
         navigationService.navigate(
                 "player",
-                new NavigationTarget("minecraft:overworld", originalList, original)
+                new NavigationTarget(WaypointCollectionKey.shared(), "minecraft:overworld", originalList, original)
         );
         UploadCoordinator<String> coordinator = coordinator(server, navigationService);
         UploadRequestBuffer request = coordinator.begin(
@@ -681,6 +682,7 @@ class UploadCoordinatorTest {
         server.addWaypoint("minecraft:overworld", "list", original, ignored -> { });
         NavigationService<String> navigation = activeNavigationService();
         navigation.navigate("player", new NavigationTarget(
+                WaypointCollectionKey.shared(),
                 "minecraft:overworld",
                 server.getWaypointFileManager("minecraft:overworld").getWaypointListByName("list"),
                 original

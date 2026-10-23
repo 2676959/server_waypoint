@@ -1,5 +1,6 @@
 package _959.server_waypoint.util;
 
+import _959.server_waypoint.core.collection.WaypointScope;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
 import _959.server_waypoint.core.network.upload.UploadConflictPolicy;
@@ -14,6 +15,15 @@ import static _959.server_waypoint.util.ColorUtils.rgbToNameOrHexCode;
 
 public class StringCommandBuilder {
     public static final String WAYPOINT_COMMAND_WITH_SLASH = "/" + WAYPOINT_COMMAND;
+
+    public static String commandPrefix(WaypointScope scope) {
+        return scope == WaypointScope.PRIVATE ? WAYPOINT_COMMAND_WITH_SLASH + " private" : WAYPOINT_COMMAND_WITH_SLASH;
+    }
+
+    public static String navigateCmd(WaypointScope scope, String dimensionName, String listName, String waypointName) {
+        return commandPrefix(scope) + navigateCmd(dimensionName, listName, waypointName)
+                .substring(WAYPOINT_COMMAND_WITH_SLASH.length());
+    }
 
     public static String tpCmd(String dimensionName, String waypointList, String waypointName) {
         return tpCmd(dimensionName, waypointList, waypointName, true);

@@ -1,6 +1,7 @@
 package _959.server_waypoint.navigation;
 
 import _959.server_waypoint.core.WaypointFilesManagerCore;
+import _959.server_waypoint.core.collection.WaypointCollectionKey;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
@@ -16,6 +17,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 /**
@@ -151,6 +153,9 @@ public final class NavigationService<P> {
         Objects.requireNonNull(previousTarget, "previousTarget");
         Objects.requireNonNull(updatedTarget, "updatedTarget");
 
+        if (!previousTarget.collectionKey().equals(updatedTarget.collectionKey())) {
+            throw new IllegalArgumentException("A refresh cannot move a target between collections");
+        }
         Set<UUID> playerUuids = this.sessionPlayerUuidsByTarget.get(
                 TargetIdentity.from(previousTarget)
         );
@@ -171,23 +176,45 @@ public final class NavigationService<P> {
         }
     }
 
+    /** Stops exactly the sessions targeting a removed waypoint, including their saved resume state. */
+    public void removeTarget(NavigationTarget removedTarget) {
+        TargetIdentity identity = TargetIdentity.from(Objects.requireNonNull(removedTarget, "removedTarget"));
+        Set<UUID> players = this.sessionPlayerUuidsByTarget.get(identity);
+        if (players == null) {
+            return;
+        }
+        for (UUID playerUuid : List.copyOf(players)) {
+            this.platform.executePlayer(playerUuid, player -> {
+                this.platform.assertPlayerThread(player);
+                NavigationSession current = this.sessions.get(playerUuid);
+                if (current != null && identity.equals(TargetIdentity.from(current.target()))) {
+                    this.cleanupSession(player, current);
+                    this.clearPersistedSession(player);
+                }
+            });
+        }
+    }
+
     /**
      * Refreshes all active targets owned by a renamed or redisplayed waypoint list.
      * Persisted sessions are rewritten by the normal per-player refresh path.
      */
     public void refreshListIdentity(
+            WaypointCollectionKey collectionKey,
             String dimensionName,
             String previousListName,
             String updatedListName,
             String updatedListDisplayName
     ) {
+        Objects.requireNonNull(collectionKey, "collectionKey");
         Objects.requireNonNull(dimensionName, "dimensionName");
         Objects.requireNonNull(previousListName, "previousListName");
         Objects.requireNonNull(updatedListName, "updatedListName");
         Objects.requireNonNull(updatedListDisplayName, "updatedListDisplayName");
         for (Map.Entry<UUID, NavigationSession> entry : List.copyOf(this.sessions.entrySet())) {
             NavigationTarget currentTarget = entry.getValue().target();
-            if (!dimensionName.equals(currentTarget.dimensionName())
+            if (!collectionKey.equals(currentTarget.collectionKey())
+                    || !dimensionName.equals(currentTarget.dimensionName())
                     || !previousListName.equals(currentTarget.listName())) {
                 continue;
             }
@@ -340,10 +367,13 @@ public final class NavigationService<P> {
      * the currently loaded waypoint files. Invalid or stale identities are
      * removed so they cannot fail on every future login.
      */
-    public NavigationResult restorePersistedSession(P player, WaypointFilesManagerCore waypointFiles) {
+    public NavigationResult restorePersistedSession(
+            P player,
+            Function<WaypointCollectionKey, WaypointFilesManagerCore> collectionResolver
+    ) {
         Objects.requireNonNull(player, "player");
         this.platform.assertPlayerThread(player);
-        Objects.requireNonNull(waypointFiles, "waypointFiles");
+        Objects.requireNonNull(collectionResolver, "collectionResolver");
 
         Optional<String> encodedSession;
         try {
@@ -366,7 +396,7 @@ public final class NavigationService<P> {
             this.clearPersistedSession(player);
             return NavigationResult.failure(NavigationResult.Code.TARGET_UNAVAILABLE);
         }
-        Optional<NavigationTarget> target = storedSession.get().resolve(waypointFiles);
+        Optional<NavigationTarget> target = storedSession.get().resolve(this.platform.playerUuid(player), collectionResolver);
         if (target.isEmpty()) {
             this.clearPersistedSession(player);
             return NavigationResult.failure(NavigationResult.Code.TARGET_UNAVAILABLE);
@@ -593,6 +623,9 @@ public final class NavigationService<P> {
 
     private NavigationResult retargetInternal(P player, UUID playerUuid, NavigationTarget target) {
         NavigationSession currentSession = this.sessions.get(playerUuid);
+        if (!target.collectionKey().accessibleBy(playerUuid)) {
+            return NavigationResult.failure(NavigationResult.Code.TARGET_UNAVAILABLE).withSession(currentSession);
+        }
         if (currentSession == null) {
             return NavigationResult.result(NavigationResult.Code.NO_ACTIVE_SESSION, null, null);
         }
@@ -676,6 +709,9 @@ public final class NavigationService<P> {
             @Nullable TextDisplayTransformation restoredTransformation
     ) {
         NavigationSession currentSession = this.sessions.get(playerUuid);
+        if (!target.collectionKey().accessibleBy(playerUuid)) {
+            return NavigationResult.failure(NavigationResult.Code.TARGET_UNAVAILABLE).withSession(currentSession);
+        }
         if (selection.isEmpty() && !allowEmptySelection) {
             return NavigationResult.result(
                     NavigationResult.Code.INVALID_SELECTION,
@@ -1020,12 +1056,14 @@ public final class NavigationService<P> {
     }
 
     private record TargetIdentity(
+            WaypointCollectionKey collectionKey,
             String dimensionName,
             String listName,
             String waypointName
     ) {
         private static TargetIdentity from(NavigationTarget target) {
             return new TargetIdentity(
+                    target.collectionKey(),
                     target.dimensionName(),
                     target.listName(),
                     target.waypointName()

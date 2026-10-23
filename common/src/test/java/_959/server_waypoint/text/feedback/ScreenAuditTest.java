@@ -1,5 +1,6 @@
 package _959.server_waypoint.text.feedback;
 
+import _959.server_waypoint.core.collection.WaypointCollectionKey;
 import _959.server_waypoint.core.edit.EditResultStatus;
 import _959.server_waypoint.core.network.upload.UploadTarget;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
@@ -93,7 +94,7 @@ class ScreenAuditTest {
         SimpleWaypoint mainHome = home.getWaypointByName("Main Home");
         SimpleWaypoint iron = farms.getWaypointByName("Iron Farm");
         WaypointList storage = new WaypointList("Storage", 1, List.of());
-        PlacedWaypoint target = new PlacedWaypoint(OVERWORLD, home, mainHome);
+        PlacedWaypoint target = new PlacedWaypoint(WaypointCollectionKey.shared(), OVERWORLD, home, mainHome);
         Map<String, List<WaypointList>> overworld = Map.of(OVERWORLD, Fixtures.overworldLists());
         WaypointQueryEngine.Query all = new WaypointQueryEngine.Query("", SortMode.DEFAULT, viewer.position(), viewer.dimension(), false);
         WaypointQueryEngine.Query farm = new WaypointQueryEngine.Query("farm", SortMode.DEFAULT, viewer.position(), viewer.dimension(), false);
