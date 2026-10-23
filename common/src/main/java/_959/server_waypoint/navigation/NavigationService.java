@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
@@ -367,13 +368,24 @@ public final class NavigationService<P> {
      * the currently loaded waypoint files. Invalid or stale identities are
      * removed so they cannot fail on every future login.
      */
+    @FunctionalInterface
+    public interface SessionResolver {
+        Optional<NavigationTarget> resolve(UUID playerUuid, StoredNavigationSession session) throws IOException;
+    }
+
     public NavigationResult restorePersistedSession(
             P player,
             Function<WaypointCollectionKey, WaypointFilesManagerCore> collectionResolver
     ) {
+        Objects.requireNonNull(collectionResolver, "collectionResolver");
+        return this.restorePersistedSession(player, (playerUuid, stored) -> stored.resolve(playerUuid, collectionResolver));
+    }
+
+    /** Resolves under the collection owner's lifecycle gate when backed by persistent owner stores. */
+    public NavigationResult restorePersistedSession(P player, SessionResolver resolver) {
         Objects.requireNonNull(player, "player");
         this.platform.assertPlayerThread(player);
-        Objects.requireNonNull(collectionResolver, "collectionResolver");
+        Objects.requireNonNull(resolver, "resolver");
 
         Optional<String> encodedSession;
         try {
@@ -396,7 +408,16 @@ public final class NavigationService<P> {
             this.clearPersistedSession(player);
             return NavigationResult.failure(NavigationResult.Code.TARGET_UNAVAILABLE);
         }
-        Optional<NavigationTarget> target = storedSession.get().resolve(this.platform.playerUuid(player), collectionResolver);
+        Optional<NavigationTarget> target;
+        try {
+            UUID playerUuid = this.platform.playerUuid(player);
+            target = storedSession.get().collectionKey().accessibleBy(playerUuid)
+                    ? resolver.resolve(playerUuid, storedSession.get()) : Optional.empty();
+        } catch (IOException | RuntimeException exception) {
+            this.reportPersistenceException(player, "resolve", exception instanceof RuntimeException runtime
+                    ? runtime : new java.io.UncheckedIOException((IOException) exception));
+            return NavigationResult.failure(NavigationResult.Code.TARGET_UNAVAILABLE);
+        }
         if (target.isEmpty()) {
             this.clearPersistedSession(player);
             return NavigationResult.failure(NavigationResult.Code.TARGET_UNAVAILABLE);

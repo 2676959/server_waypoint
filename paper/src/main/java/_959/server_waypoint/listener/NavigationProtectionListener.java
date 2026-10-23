@@ -1,6 +1,5 @@
 package _959.server_waypoint.listener;
 
-import _959.server_waypoint.core.collection.WaypointCollectionKey;
 import _959.server_waypoint.PaperScheduler;
 import _959.server_waypoint.navigation.NavigationMethod;
 import _959.server_waypoint.navigation.NavigationService;
@@ -405,7 +404,7 @@ public final class NavigationProtectionListener implements Listener {
 
     public void restorePlayer(Player player) {
         this.navigationPlatform.registerPlayer(player);
-        this.navigationService.restorePersistedSession(player, key -> key.equals(WaypointCollectionKey.shared()) ? this.waypointServer : null);
+        this.navigationService.restorePersistedSession(player, this.waypointServer::resolveNavigationTarget);
         this.startNavigationTick(player);
         this.reconcileNextTick(player, false);
     }
@@ -421,6 +420,7 @@ public final class NavigationProtectionListener implements Listener {
                 tickTask.cancel();
             }
             this.navigationService.removePlayer(player);
+            this.waypointServer.releasePrivateWaypoints(player.getUniqueId());
             this.itemManager.purgeAll(player);
             this.lastDenialMessageTick.remove(player.getUniqueId());
             this.reconciling.remove(player.getUniqueId());

@@ -76,9 +76,13 @@ public class WaypointFileManager {
     }
 
     void readDimension() throws IOException {
+        this.readDimension(false);
+    }
+
+    void readDimension(boolean requireArray) throws IOException {
         this.fileIoLock.lock();
         try {
-            this.replaceWaypointLists(this.readFromFile(this.dimensionFilePath));
+            this.replaceWaypointLists(this.readFromFile(this.dimensionFilePath, requireArray));
         } finally {
             this.fileIoLock.unlock();
         }
@@ -153,7 +157,7 @@ public class WaypointFileManager {
         return waypointLists;
     }
 
-    private List<WaypointList> readFromFile(Path filePath) throws IOException {
+    private List<WaypointList> readFromFile(Path filePath, boolean requireArray) throws IOException {
         ArrayList<WaypointList> waypointLists;
         try (Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath.toFile()), StandardCharsets.UTF_8))) {
             Type listType = new TypeToken<ArrayList<WaypointList>>() {}.getType();
@@ -161,6 +165,7 @@ public class WaypointFileManager {
             waypointLists = gson.fromJson(reader, listType);
         }
         if (waypointLists == null) {
+            if (requireArray) throw new IOException("Waypoint file must contain an array: " + filePath);
             waypointLists = new ArrayList<>();
         }
         int waypointsNumber = 0;

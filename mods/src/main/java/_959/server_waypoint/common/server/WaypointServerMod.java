@@ -479,6 +479,7 @@ public class WaypointServerMod extends WaypointServerCore {
         }
         try {
             if (!runsWithClient) {
+                this.useDedicatedPrivateWaypoints();
                 WaypointList.excludeClientOnlyFields = true;
                 if (this.loaded) {
                     return;
@@ -486,6 +487,7 @@ public class WaypointServerMod extends WaypointServerCore {
                 initConfigAndLanguageResource();
                 initOrReadWaypointFiles();
             } else {
+                this.useIntegratedPrivateWaypoints(minecraftServer.getWorldPath(LevelResource.ROOT));
                 WaypointList.excludeClientOnlyFields = false;
                 if (loaded) {
                     changeWaypointFilesDir(asIntegratedServer(minecraftServer.getWorldPath(LevelResource.ROOT)));

@@ -1,6 +1,11 @@
 package _959.server_waypoint.core;
 
 import _959.server_waypoint.config.Config;
+import _959.server_waypoint.core.collection.PrivateWaypointStore;
+import _959.server_waypoint.core.collection.WaypointCollectionKey;
+import _959.server_waypoint.core.collection.WaypointScope;
+import _959.server_waypoint.navigation.NavigationTarget;
+import _959.server_waypoint.navigation.StoredNavigationSession;
 import _959.server_waypoint.crossserver.catalog.RemoteCatalogStore;
 import _959.server_waypoint.core.network.data.DimensionWaypointData;
 import _959.server_waypoint.core.network.data.WaypointData;
@@ -25,6 +30,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static _959.server_waypoint.translation.LanguageFilesManager.getExternalLoadedLanguages;
 import static _959.server_waypoint.util.WaypointFilesDirectoryHelper.asDedicatedServer;
@@ -43,6 +49,9 @@ public abstract class WaypointServerCore extends WaypointFilesManagerCore {
     private final LanguageFilesManager languageFilesManager;
     private final ReentrantLock configIoLock = new ReentrantLock(true);
     private volatile boolean resourcesLoaded;
+    private final ReentrantReadWriteLock privateStorageLifecycle = new ReentrantReadWriteLock(true);
+    private PrivateWaypointStore privateWaypoints;
+    private Path privateWaypointRoot;
     private volatile RemoteCatalogStore remoteCatalogStore =
             RemoteCatalogStore.empty();
 
@@ -79,11 +88,86 @@ public abstract class WaypointServerCore extends WaypointFilesManagerCore {
     public WaypointServerCore(Path configDir) {
         super(asDedicatedServer(configDir));
         this.configDir = configDir;
+        this.privateWaypointRoot = configDir.resolve("private-waypoints");
+        this.privateWaypoints = new PrivateWaypointStore(this.privateWaypointRoot, () -> CONFIG.privateWaypoints());
         this.languageFilesManager = new LanguageFilesManager(configDir);
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         this.DEFAULT_CONFIG = gson.toJson(CONFIG).getBytes(StandardCharsets.UTF_8);
         addAdventureTranslator();
         INSTANCE = this;
+    }
+
+    /** Borrows one collection for the complete operation, including its persistence outcome. */
+    public <T> T withCollection(WaypointCollectionKey key, PrivateWaypointStore.Operation<T> operation) throws IOException {
+        Objects.requireNonNull(key, "key");
+        Objects.requireNonNull(operation, "operation");
+        if (key.scope() == WaypointScope.SHARED) return operation.apply(this);
+        this.privateStorageLifecycle.readLock().lock();
+        try {
+            if (this.privateWaypoints == null) throw new IllegalStateException("Private storage is not loaded");
+            return this.privateWaypoints.withOwner(key.ownerUuid(), operation);
+        } finally {
+            this.privateStorageLifecycle.readLock().unlock();
+        }
+    }
+
+    public Optional<NavigationTarget> resolveNavigationTarget(UUID playerUuid, StoredNavigationSession stored) throws IOException {
+        if (!stored.collectionKey().accessibleBy(playerUuid)) return Optional.empty();
+        return this.withCollection(stored.collectionKey(), files -> stored.resolve(playerUuid, key -> files));
+    }
+
+    public void releasePrivateWaypoints(UUID playerUuid) {
+        this.privateStorageLifecycle.readLock().lock();
+        try {
+            if (this.privateWaypoints != null) this.privateWaypoints.evict(playerUuid);
+        } catch (IOException exception) {
+            LOGGER.error("Failed to release private waypoints for {}; retaining loaded data", playerUuid, exception);
+        } finally {
+            this.privateStorageLifecycle.readLock().unlock();
+        }
+    }
+
+    public void useIntegratedPrivateWaypoints(Path saveRoot) throws IOException {
+        this.configurePrivateWaypointStorage(saveRoot.resolve("server_waypoint").resolve("private-waypoints"));
+    }
+
+    public void useDedicatedPrivateWaypoints() throws IOException {
+        this.configurePrivateWaypointStorage(this.configDir.resolve("private-waypoints"));
+    }
+
+    private void configurePrivateWaypointStorage(Path root) throws IOException {
+        if (this.privateStorageLifecycle.getReadHoldCount() != 0) {
+            throw new IllegalStateException("Cannot rebind private storage during an owner operation");
+        }
+        this.privateStorageLifecycle.writeLock().lock();
+        try {
+            if (this.privateWaypoints != null && root.equals(this.privateWaypointRoot)) return;
+            if (this.privateWaypoints != null) this.privateWaypoints.close();
+            this.privateWaypointRoot = root;
+            this.privateWaypoints = new PrivateWaypointStore(root, () -> CONFIG.privateWaypoints());
+        } finally {
+            this.privateStorageLifecycle.writeLock().unlock();
+        }
+    }
+
+    private void flushPrivateWaypoints(boolean close) {
+        if (this.privateStorageLifecycle.getReadHoldCount() != 0) {
+            throw new IllegalStateException("Cannot flush private storage during an owner operation");
+        }
+        this.privateStorageLifecycle.writeLock().lock();
+        try {
+            if (this.privateWaypoints == null) return;
+            if (close) {
+                this.privateWaypoints.close();
+                this.privateWaypoints = null;
+            } else {
+                this.privateWaypoints.flush();
+            }
+        } catch (IOException exception) {
+            throw new UncheckedIOException("Failed to save private waypoints", exception);
+        } finally {
+            this.privateStorageLifecycle.writeLock().unlock();
+        }
     }
 
     @Nullable
@@ -111,6 +195,11 @@ public abstract class WaypointServerCore extends WaypointFilesManagerCore {
             Config loadedConfig = gson.fromJson(reader, Config.class);
             if (loadedConfig == null) {
                 loadedConfig = new Config();
+            }
+            try {
+                loadedConfig.privateWaypoints();
+            } catch (IllegalArgumentException exception) {
+                throw new JsonParseException("Invalid private waypoint configuration", exception);
             }
             CONFIG = loadedConfig;
             LOGGER.info("Loaded config {}", loadedConfig);
@@ -208,6 +297,7 @@ public abstract class WaypointServerCore extends WaypointFilesManagerCore {
      * */
     public void initConfigAndLanguageResource() throws IOException {
         this.resourcesLoaded = false;
+        this.configurePrivateWaypointStorage(this.privateWaypointRoot);
         this.initConfigDir(this.configDir);
         this.initOrReadConfigFile(this.configDir);
         this.initLanguageManager();
@@ -224,6 +314,7 @@ public abstract class WaypointServerCore extends WaypointFilesManagerCore {
         this.withLifecycleWriteLock(() -> {
             this.resourcesLoaded = false;
             saveAllFiles();
+            this.flushPrivateWaypoints(true);
             this.clearWaypointFileManagers();
             this.languageFilesManager.unloadAllExternalLanguages();
         });
@@ -261,6 +352,7 @@ public abstract class WaypointServerCore extends WaypointFilesManagerCore {
      * save all config file and waypoint files
      */
     public void saveAllFiles() {
+        this.flushPrivateWaypoints(false);
         saveAllWaypointFiles();
         saveConfigFile(this.configDir);
     }

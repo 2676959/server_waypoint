@@ -17,7 +17,7 @@ JUnit 5, Gradle Kotlin DSL, and Stonecutter across Fabric, Forge, NeoForge, and 
 
 **Spec:** [Private and local waypoint design](../specs/2026-10-16-private-waypoint-design.md).
 
-Status: implementation in progress; Task 1 verified on 2026-10-23. Prepared on 2026-10-16 against branch
+Status: implementation in progress; Tasks 1–2 verified on 2026-10-23. Prepared on 2026-10-16 against branch
 `feature/private-waypoint`. Exact proposed class names below are implementation contracts,
 not claims that those classes already exist.
 
@@ -139,20 +139,20 @@ Update mod/Paper server lifecycle roots and add `core/collection/PrivateWaypoint
 Callers supply an authenticated UUID; no public operation takes an arbitrary filesystem directory
 derived from client data.
 
-- [ ] Test distinct owners and dimensions round-trip into the spec's dedicated/integrated roots.
+- [x] Test distinct owners and dimensions round-trip into the spec's dedicated/integrated roots.
   Assert shared world snapshots and the shared manager map contain no private lists.
-- [ ] Test defaults 1,000/100, zero unlimited, negative configuration rejection, and valid reload.
+- [x] Test defaults 1,000/100, zero unlimited, negative configuration rejection, and valid reload.
   With a two-waypoint quota and one existing entry, two concurrent additions in different
   dimensions must leave exactly two entries and one rejection.
-- [ ] Test list quotas including empty lists and automatic list creation: a rejected add creates
+- [x] Test list quotas including empty lists and automatic list creation: a rejected add creates
   neither list nor waypoint. Reduced limits preserve data and permit rename/edit/delete.
-- [ ] Test disconnect during a mutation, shutdown flushing, and failed reads/saves. Read failures
+- [x] Test disconnect during a mutation, shutdown flushing, and failed reads/saves. Read failures
   cannot expose an empty writable replacement; save failures cannot be reported as durable success.
-- [ ] Run the new tests, observe failures, then implement isolated managers with an owner gate held
+- [x] Run the new tests, observe failures, then implement isolated managers with an owner gate held
   before existing dimension lanes. Keep load/eviction/persistence under the same lifecycle contract.
-- [ ] Run `rtk proxy ./gradlew :common:test --tests '*PrivateWaypointStoreTest' --tests '*WaypointFilesManagerConcurrencyTest'`.
+- [x] Run `rtk proxy ./gradlew :common:test --tests '*PrivateWaypointStoreTest' --tests '*WaypointFilesManagerConcurrencyTest'`.
   Expected: passing isolation, quota concurrency, and existing mutation tests.
-- [ ] Review storage paths and all lifecycle hooks before proceeding.
+- [x] Review storage paths and all lifecycle hooks before proceeding.
 
 ## Task 3: Private commands, permissions, and feedback
 

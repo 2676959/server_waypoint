@@ -228,7 +228,7 @@
   "wp.help.remote.tp": "Teleport to a waypoint on another server",
   "wp.help.remote.example": "Browse the survival server",
   "wp.help.reload.run": "Reload the config and translation files",
-  "wp.help.reload.applies": "Applies at once: defaultPageLimit, defaultNavigationMethods, CommandPermission, addWaypointFromChatSharing and compressChunkedMessages",
+  "wp.help.reload.applies": "Applies at once: defaultPageLimit, defaultNavigationMethods, privateWaypoints, CommandPermission, addWaypointFromChatSharing and compressChunkedMessages",
   "wp.help.reload.restart": "Needs a restart: serverId, cross-server.json and turning on sendXaerosWorldId",
   "wp.help.reload.waypoints": "Waypoint files are not reloaded; edit them while the server is stopped",
 
