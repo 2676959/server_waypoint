@@ -127,10 +127,10 @@ for this documentation-only step.
 
 **Interfaces:** Consumes prepared/runtime identities; produces `start_owned`, `stop_owned`, atomic `AttemptRecord` transitions and `SW_PERF` stream parsing.
 
-- [ ] Write `test_existing_or_symlinked_root_refused`, `test_only_owned_process_group_stopped`, `test_partial_report_survives_interrupt`, `test_stale_probe_reply_rejected`, `test_port_collision_reported`. A sentinel child outside the run must stay alive after teardown; interrupted state must have exit code 130 and retained logs.
-- [ ] Run `rtk proxy python3 -m unittest discover -s tools/server-performance/tests -p 'test_lifecycle.py' -v`; confirm the new lifecycle is not implemented.
-- [ ] Implement spec section 3's state machine, collision-checked ports, monotonic deadlines, graceful stop/kill escalation and atomic result files. Use argv arrays and UUID ownership markers; test child simulators are not runtime performance evidence.
-- [ ] Run tests and an isolated native Paper startup/stop. Inject interruption in STARTING and MEASURING; verify both reports survive and no unrelated process or directory changes.
+- [x] Write `test_existing_or_symlinked_root_refused`, `test_only_owned_process_group_stopped`, `test_partial_report_survives_interrupt`, `test_stale_probe_reply_rejected`, `test_port_collision_reported`. A sentinel child outside the run must stay alive after teardown; interrupted state must have exit code 130 and retained logs.
+- [x] Run `rtk proxy python3 -m unittest discover -s tools/server-performance/tests -p 'test_lifecycle.py' -v`; confirm the new lifecycle is not implemented.
+- [x] Implement spec section 3's state machine, collision-checked ports, monotonic deadlines, graceful stop/kill escalation and atomic result files. Use argv arrays and UUID ownership markers; test child simulators are not runtime performance evidence.
+- [x] Run tests and an isolated native Paper startup/stop. Inject interruption in STARTING and MEASURING; verify both reports survive and no unrelated process or directory changes.
 
 ### Task 4: Querz/NBT fixture generator and independent manifest
 
