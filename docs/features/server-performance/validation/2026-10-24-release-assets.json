@@ -1,0 +1,277 @@
+{
+    "purpose": "Published artifact inventory for the proposed audit; no performance execution evidence",
+    "verifiedOn": "2026-10-24",
+    "repository": "2676959/server_waypoint",
+    "tag": "4.0.0",
+    "releaseUrl": "https://github.com/2676959/server_waypoint/releases/tag/4.0.0",
+    "publishedAt": "2026-10-15T23:34:11Z",
+    "releaseTarget": "d9f532f8b5a14c9be4bc47531b05b44fd1dc5773",
+    "isDraft": false,
+    "isPrerelease": false,
+    "assets": [
+        {
+            "name": "server_waypoint-4.0.0-fabric-mc1.20-1.20.1.jar",
+            "size": 2520203,
+            "digest": "sha256:e7d370e38504ea7e56caa0ac22f7cabfaf85e1f97711d62d98905762dc452ef7",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-fabric-mc1.20-1.20.1.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-fabric-mc1.20.2.jar",
+            "size": 2519923,
+            "digest": "sha256:3ea0e988a65cabe7a5638d895963ceba71a08f3dbb0c953c4f93b03b21e6af98",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-fabric-mc1.20.2.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-fabric-mc1.20.3-1.20.4.jar",
+            "size": 2521519,
+            "digest": "sha256:fc2745e0ef762250354eef6cf37015add1647396f9d6a2543cc4cc620c52c4ff",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-fabric-mc1.20.3-1.20.4.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-fabric-mc1.20.5-1.20.6.jar",
+            "size": 2558635,
+            "digest": "sha256:a2786d1bac7fc76f2d83143ed7c895a692da94c1568d805a1cad148c5b00f172",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-fabric-mc1.20.5-1.20.6.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-fabric-mc1.21-1.21.1.jar",
+            "size": 2558770,
+            "digest": "sha256:8fd4843f73394b13eb99d444f661a558f95b18ae434612bb41b04e5e9f03a270",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-fabric-mc1.21-1.21.1.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-fabric-mc1.21.11.jar",
+            "size": 2666863,
+            "digest": "sha256:538ca5a0c0521b9bb088854bd1bda1ad8287624c7272c81b62368d1133d362d1",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-fabric-mc1.21.11.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-fabric-mc1.21.2-1.21.4.jar",
+            "size": 2524784,
+            "digest": "sha256:bd21aabb182e727580d524f1e85ac63b5ee32dfe65da4713e9971c1531b4eea8",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-fabric-mc1.21.2-1.21.4.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-fabric-mc1.21.5.jar",
+            "size": 2624769,
+            "digest": "sha256:97698c49b1c7a2ed3021dffa566e380bfb3eb8cc9c3713b6cae08dc7bf2ea708",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-fabric-mc1.21.5.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-fabric-mc1.21.6-1.21.8.jar",
+            "size": 2650331,
+            "digest": "sha256:b358f0b512b526e45180cf19c1b8ac7a72f987008e1b604d9686a8d5002305c1",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-fabric-mc1.21.6-1.21.8.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-fabric-mc1.21.9-1.21.10.jar",
+            "size": 2666490,
+            "digest": "sha256:766295dc907eddc87c92aaebb64fa7217b277fc1476f47469e01d36ae45aca13",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-fabric-mc1.21.9-1.21.10.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-fabric-mc26.1-26.1.2.jar",
+            "size": 2656469,
+            "digest": "sha256:cb36a7a8c2898e52d337c11c5b66499c4ea04971f0f32847bb37e843eb196db8",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-fabric-mc26.1-26.1.2.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-fabric-mc26.2.jar",
+            "size": 2656624,
+            "digest": "sha256:9f3824b36259f913ce65e984053bda1cd64cf33043465a8c23fbb3a35e6f9f58",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-fabric-mc26.2.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-fabric-mc26.3.jar",
+            "size": 2656539,
+            "digest": "sha256:d9bd7061a1dc8108a75751c2055ccd34652b03ae6be9bbac56317d311c4b2b25",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-fabric-mc26.3.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-forge-mc1.20-1.20.1.jar",
+            "size": 3117422,
+            "digest": "sha256:0cc9c0f48972db443644d939d8f5f379eb7689a7af6cde137bdd9488c23a5f8c",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-forge-mc1.20-1.20.1.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-forge-mc1.20.2.jar",
+            "size": 3116451,
+            "digest": "sha256:2a670b086132efd2642c8d47e882e3e1b049d907418d738be61501cd678568b3",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-forge-mc1.20.2.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-forge-mc1.20.3-1.20.4.jar",
+            "size": 3117929,
+            "digest": "sha256:d2e054327a810b2961315f67baa6a3d5cce49546f902246c0988708e32b635cb",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-forge-mc1.20.3-1.20.4.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-forge-mc1.20.6.jar",
+            "size": 3130631,
+            "digest": "sha256:e72e55904d27f42d889becbe97ce10619795dd0828ad345c952178db318f86fd",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-forge-mc1.20.6.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-forge-mc1.21-1.21.1.jar",
+            "size": 3130804,
+            "digest": "sha256:aab1b55c6b08b0ae9ffd326a8398b976dd5c202964917bdd402e3e5b6b83ba6b",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-forge-mc1.21-1.21.1.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-forge-mc1.21.11.jar",
+            "size": 2632743,
+            "digest": "sha256:9350d8074d027b69bbf7211986268093c74165d3fcdb339dae744df5a727bc6a",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-forge-mc1.21.11.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-forge-mc1.21.3-1.21.4.jar",
+            "size": 3179412,
+            "digest": "sha256:e31fe4a428ae698b0a05cac40071f4b501b1e146744d601c008c66764e1b9b0c",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-forge-mc1.21.3-1.21.4.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-forge-mc1.21.5.jar",
+            "size": 3201069,
+            "digest": "sha256:e4df61b4cb42278002379f8928f0934de2e7feb6d797b55f7ebe580d0984b95f",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-forge-mc1.21.5.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-forge-mc1.21.6-1.21.8.jar",
+            "size": 3226684,
+            "digest": "sha256:39842f2135ad475f61bf5603457c48d9e4cbb6990d27d4268bea91e16363f60e",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-forge-mc1.21.6-1.21.8.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-forge-mc1.21.9-1.21.10.jar",
+            "size": 3242416,
+            "digest": "sha256:d8d247a2a169eb836db77002359b8e4a9c9a757dc13363730fdac6b209736260",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-forge-mc1.21.9-1.21.10.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-forge-mc26.1-26.1.2.jar",
+            "size": 2636168,
+            "digest": "sha256:915bb12e2bf57546addceca56fc8117f4a1269a4cb3ce24fc524aabc44911dcc",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-forge-mc26.1-26.1.2.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-forge-mc26.2.jar",
+            "size": 2636332,
+            "digest": "sha256:dd48bc480f45c42b14cd44a6d16116981d89feb680d3abf272b45a6e03cb81ac",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-forge-mc26.2.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-forge-mc26.3.jar",
+            "size": 2636250,
+            "digest": "sha256:9ef86fe37e8879630fbac4719ea095f98db42691c7ed8778559e4ac8fe157b37",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-forge-mc26.3.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-neoforge-mc1.20.2.jar",
+            "size": 2551718,
+            "digest": "sha256:577323738432d093e3f4558967241a9808b4c8dc0b5f42bfcae0f42aecd27c9e",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-neoforge-mc1.20.2.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-neoforge-mc1.20.3-1.20.4.jar",
+            "size": 2555090,
+            "digest": "sha256:7289e81509c2018c5fe4aa83a1b6fdf18b55808a19f444be40a6fd4064a0fa26",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-neoforge-mc1.20.3-1.20.4.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-neoforge-mc1.20.5-1.20.6.jar",
+            "size": 2593652,
+            "digest": "sha256:dad4d81856ee4104ea2516a24f5834568966930a06182e7aaa87d9b68fe45b56",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-neoforge-mc1.20.5-1.20.6.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-neoforge-mc1.21-1.21.1.jar",
+            "size": 2593840,
+            "digest": "sha256:225442d68af2a6771e8f8ffc5966e1917f74e4e4990e7864104680ce3ee7bd91",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-neoforge-mc1.21-1.21.1.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-neoforge-mc1.21.11.jar",
+            "size": 2730478,
+            "digest": "sha256:476db2e1e6451755d5163bb2b56ea0c895797f86a543285e8f7b7c04b0c22907",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-neoforge-mc1.21.11.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-neoforge-mc1.21.2-1.21.4.jar",
+            "size": 2584252,
+            "digest": "sha256:e2fffe55dcdd34beb36cb55ac851f849eafa7b60b737775686e4a9cc74210e09",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-neoforge-mc1.21.2-1.21.4.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-neoforge-mc1.21.5.jar",
+            "size": 2664984,
+            "digest": "sha256:e48edb2e466735dfbe6a4c08c1ab57ee8b6d5074171aa7e952e989867f216b2c",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-neoforge-mc1.21.5.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-neoforge-mc1.21.6.jar",
+            "size": 2690776,
+            "digest": "sha256:808fac78327db93c7518792137dc9fe1c4d51e06557846306e6889d194e07d46",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-neoforge-mc1.21.6.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-neoforge-mc1.21.7-1.21.8.jar",
+            "size": 2690533,
+            "digest": "sha256:cf753722f378d6e68c9e35020ef32202fbc3c6eb4e11902ec97d640f5dc525d4",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-neoforge-mc1.21.7-1.21.8.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-neoforge-mc1.21.9-1.21.10.jar",
+            "size": 2706364,
+            "digest": "sha256:5e5a68ff46cc2fbc7085a73882a162131d032b6b289efaf450bdc2a711045386",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-neoforge-mc1.21.9-1.21.10.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-neoforge-mc26.1-26.1.2.jar",
+            "size": 2733990,
+            "digest": "sha256:2ffdf8e487b665ee5b866977df4cd1aa431850b83c48a591ed5e5848c1b84df8",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-neoforge-mc26.1-26.1.2.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-neoforge-mc26.2.jar",
+            "size": 2734153,
+            "digest": "sha256:6bcdb2f27df29d87a68eb03564b41f132af72417ab6437306119744b0e4f9f36",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-neoforge-mc26.2.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-neoforge-mc26.3.jar",
+            "size": 2734073,
+            "digest": "sha256:e1e9f7b07958889e183210516f5f386df659da7f841ea85dc228714bfac61d9b",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-neoforge-mc26.3.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-paper-mc1.21-1.21.8.jar",
+            "size": 1196445,
+            "digest": "sha256:0bd15bf981d3d91250b575e3d812860ccf2ccc5a5f8d47e733435787d0423161",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-paper-mc1.21-1.21.8.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-paper-mc1.21.11-26.1.2.jar",
+            "size": 1210479,
+            "digest": "sha256:0a1d2ddc07dff13dee1af78c8e1f3b0a50024f5d3b8686f733a512db0fa8ad57",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-paper-mc1.21.11-26.1.2.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-paper-mc1.21.9-1.21.10.jar",
+            "size": 1210070,
+            "digest": "sha256:cb8425f89a2f8e8fd7a23049bab50197bfe414ee59a1bf19bf14f09257602ecb",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-paper-mc1.21.9-1.21.10.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-paper-mc26.2-26.3.jar",
+            "size": 1210498,
+            "digest": "sha256:691bca27c90ec7b42db23ed79d8cca2a47b1028f515da7e8a33655c73601a87f",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-paper-mc26.2-26.3.jar"
+        },
+        {
+            "name": "server_waypoint-4.0.0-velocity.jar",
+            "size": 395578,
+            "digest": "sha256:69e12d7cfbd0560c94e3bec1ccef78ce102b0a84b84b81121e06fd93d3ecc4cf",
+            "downloadUrl": "https://github.com/2676959/server_waypoint/releases/download/4.0.0/server_waypoint-4.0.0-velocity.jar"
+        }
+    ]
+}

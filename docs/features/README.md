@@ -8,6 +8,7 @@
 - [Jar packaging](jar-packaging/) — what each release jar ships, the `cross-server` module boundary and the release gate's content checks.
 - [Private and local waypoints](private-waypoint/) — proposed owner-only server collections, independent client profiles, collection views, and explicit copying.
 - [Publishing](publishing/) — Modrinth and CurseForge metadata, release checklists, artifact manifests and upload recovery.
+- [Server performance](server-performance/) — current-release audits, zero-player test worlds, Azalea bot tiers, measured repairs and future regression gates.
 - [Theme editor](theme-editor/) — the color theme editor: raw key list, key editor, live preview with usage markers, Reset and Save.
 - [Upload transport](upload/) — chunked upload/download transport and startup fixes.
 - [VoxelMap sync](voxelmap-sync/) — VoxelMap waypoint sync on Fabric, Forge and NeoForge: target matrix, gating, mixin registration and checks.
