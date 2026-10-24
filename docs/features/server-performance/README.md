@@ -1,9 +1,10 @@
 # Server performance
 
-Status: M0 implementation is in progress on 2026-10-24. Contracts, immutable inputs,
-owned processes, deterministic fixtures, the Paper probe and metric decisions are
-implemented. Native measured reproduction is running; repairs and release gates
-remain later milestones. See the execution progress for evidence and limitations.
+Status: M0 (Tasks 1–7) implemented and validated on 2026-10-24. The published
+Paper 1.21.11 inventory defect reproduces in all three measured pairs; the medium
+physical hopper case passes all three pairs. The selected report is complete and
+failing. The comprehensive audit, remaining platforms/features, repairs and release
+gates remain later milestones. See the execution progress for evidence and limits.
 
 The first delivery is a comprehensive audit of the published 4.0.0 release across
 different load tiers, followed by repairs and repeated measurements. Future PRs can
@@ -31,6 +32,7 @@ continue running throughout the sample.
 - [Execution progress](validation/progress.md)
 - [Coverage requirements ledger](validation/coverage-ledger.md)
 - [Runtime evidence](validation/runtime-evidence.md)
+- [M0 Paper results and retained evidence](validation/2026-10-24-m0-paper.md)
 - [Tool commands](../../../tools/server-performance/README.md)
 
 The plan first delivers a Paper zero-player reproduction, then covers remaining features

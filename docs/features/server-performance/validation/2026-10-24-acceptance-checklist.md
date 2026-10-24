@@ -4,6 +4,10 @@ Status: required checks only. No runtime acceptance item has been executed by wr
 the design, specification or implementation plan. Each checked item needs a run ID,
 artifact/runtime hashes, command and retained evidence link in `progress.md`.
 
+M0 evidence: [Paper reproduction and scoped validation](2026-10-24-m0-paper.md).
+Only the specific known-reproduction item is checked below; full-matrix and
+three-tier performance acceptance remain pending.
+
 ## Original release audit
 
 - [ ] All 44 published 4.0.0 JAR bytes verified against the frozen manifest.
@@ -13,7 +17,7 @@ artifact/runtime hashes, command and retained evidence link in `progress.md`.
       expected block/item/metadata state, including negative coordinates/boundaries.
 - [ ] Zero-player idle and small/medium/stress physical hopper/container worlds prove
       zero clients, active ticking, sustained transfers and conservation throughout.
-- [ ] Known Paper synthetic inventory reproduction rerun with separate physical counters,
+- [x] Known Paper synthetic inventory reproduction rerun with separate physical counters,
       correct allocation scope, control pairing and local diagnostic evidence.
 - [ ] 1/10/50 Azalea connections and offered/completed actions verified server-side.
 - [ ] Java/Rust golden vectors match the published release's actual codecs/protocol.
