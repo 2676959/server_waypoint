@@ -32,7 +32,7 @@ class ProbeDriver:
 
     def send(self, operation, payload=None):
         import base64
-        encoded = base64.urlsafe_b64encode(json.dumps(payload or {}).encode()).decode()
+        encoded = base64.urlsafe_b64encode(json.dumps({"schemaVersion": 1, **(payload or {})}).encode()).decode()
         self.process.process.stdin.write(f"swperf {self.stream.run_id} {self.stream.attempt_id} {operation} {encoded}\n".encode())
         self.process.process.stdin.flush()
 

@@ -61,3 +61,24 @@ java {
 tasks.test {
     useJUnitPlatform()
 }
+
+// Standalone test-only protocol; never part of main or production archives.
+val performanceProbe = sourceSets.create("performanceProbe") {
+    compileClasspath += sourceSets.main.get().compileClasspath
+    runtimeClasspath += output + compileClasspath
+}
+val performanceProbeTest = sourceSets.create("performanceProbeTest") {
+    compileClasspath += performanceProbe.output + sourceSets.test.get().compileClasspath
+    runtimeClasspath += output + compileClasspath + sourceSets.test.get().runtimeClasspath
+}
+tasks.register<Jar>("performanceProbeContractJar") {
+    group = "verification"
+    archiveBaseName.set("server-waypoint-performance-contract")
+    archiveClassifier.set("probe")
+    from(performanceProbe.output)
+}
+tasks.register<Test>("performanceProbeTest") {
+    testClassesDirs = performanceProbeTest.output.classesDirs
+    classpath = performanceProbeTest.runtimeClasspath
+    useJUnitPlatform()
+}

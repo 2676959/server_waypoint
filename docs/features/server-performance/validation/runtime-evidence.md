@@ -29,3 +29,7 @@ Paper zero-player doctor initially exits 2: fixture, tick-processing, zero-playe
 ## Querz resolution and deterministic output
 
 Resolved `com.github.Querz:NBT:6.1`, SHA-256 `5b8e868ea6690d7c606e6deb0d3d6167f4b1c0fcffa2b6170b7cb1e9819b969d`. Generic tags inspected against the resolved binary with javap. Five generator tests pass, including facing/count, nested Mending data and negative chunk coordinates. Two independent shulker fixture outputs have identical template and manifest bytes; template SHA-256 `73945b2b13294ad49c97328a8146279f7cc5e5c38f680f9672fe8240ac9c92b3`. Native placement/save/reopen is pending Task 5.
+
+## Native probe and reopen
+
+Native no-plugin control boots successfully. Generated shulker/books fixture placed at 16 cells across negative/chunk-boundary coordinates, verified each hopper facing and exact initial item/enchantment metadata, quiesced, saved, stopped and reopened. `reopen.json` reports verified/reopened/conserved true and 64 force-loaded hoppers. Evidence: `/Volumes/ssd/sw-performance-m0-native-fixture-3/`. Probe/production archive inspection confirms no overlapping classes and no probe classes in the published production JAR. Native samples use Paper ServerTickEndEvent processing duration. Initial failed attempts (constructor world access and hidden console command) are retained in roots without suffix and `-2`; neither is performance evidence. Overhead and timed controls follow in Tasks 6/7.

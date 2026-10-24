@@ -549,8 +549,8 @@
                 "profile"
             ],
             "probe": {
-                "path": "",
-                "sha256": ""
+                "path": "/Volumes/ssd/fabric_mods_repo/server_waypoint/paper/versions/1.21.11-paper/build/libs/server-waypoint-performance-paper-probe.jar",
+                "sha256": "918f362080218f03eeed18f59b5aca2651bb6ae117c09b1a3d5c7f36b9cd2f37"
             }
         },
         {

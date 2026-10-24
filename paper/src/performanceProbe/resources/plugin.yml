@@ -1,0 +1,9 @@
+name: ServerWaypointPerformanceProbe
+version: '1'
+main: _959.server_waypoint.perf.paper.PaperPerformanceProbe
+api-version: '1.21.11'
+load: POSTWORLD
+softdepend: [ServerWaypoint]
+commands:
+    swperf:
+        description: Owned console-only performance probe

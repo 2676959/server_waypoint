@@ -110,6 +110,32 @@ java {
     sourceCompatibility = JavaVersion.toVersion(targetJavaVersion)
 }
 
+// First native probe anchor only. Production source sets and JARs are unchanged.
+if (stonecutter.current.version == "1.21.11") {
+    val performanceProbe = sourceSets.create("performanceProbe") {
+        java.setSrcDirs(listOf(rootProject.file("paper/src/performanceProbe/java")))
+        resources.setSrcDirs(listOf(rootProject.file("paper/src/performanceProbe/resources")))
+        compileClasspath += sourceSets.main.get().compileClasspath
+        runtimeClasspath += output + compileClasspath
+    }
+    val probeContract by configurations.creating
+    evaluationDependsOn(":cross-server")
+    val probeContractTask = project(":cross-server").tasks.named("performanceProbeContractJar")
+    dependencies {
+        add(performanceProbe.compileOnlyConfigurationName, files(probeContractTask))
+        add(probeContract.name, files(probeContractTask))
+    }
+    tasks.register<Jar>("performanceProbeJar") {
+        group = "verification"
+        archiveBaseName.set("server-waypoint-performance-paper")
+        archiveVersion.set("")
+        archiveClassifier.set("probe")
+        from(performanceProbe.output)
+        from(probeContract.map { zipTree(it) })
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
+}
+
 artifacts {
     archives(tasks.shadowJar)
 }
