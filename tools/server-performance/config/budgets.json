@@ -1,0 +1,24 @@
+{
+    "schemaVersion": 1,
+    "warmupSeconds": 30,
+    "measurementSeconds": 60,
+    "repeats": 3,
+    "budgets": {
+        "backend-medium": {
+            "p95MsExclusive": 40,
+            "p99MsExclusive": 50
+        },
+        "inventory-100": {
+            "p95MsInclusive": 5,
+            "bytesPerTickInclusive": 2097152
+        },
+        "correctness-bounds": {
+            "allowedFailures": 0
+        },
+        "relative-runtime": {
+            "percent": 25,
+            "latencyNoiseMs": 0.5,
+            "allocationNoiseBytes": null
+        }
+    }
+}

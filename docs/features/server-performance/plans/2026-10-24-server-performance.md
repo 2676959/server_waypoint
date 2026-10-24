@@ -105,10 +105,10 @@ for this documentation-only step.
 
 **Interfaces:** Produces all dataclasses, `Status`, `load_release`, `load_runtimes`, `expand_cases`; CLI `inventory` and result serialization at schema 1.
 
-- [ ] Write `test_missing_applicable_case_blocks`, `test_private_is_not_applicable_only_for_release`, `test_unknown_schema_rejected`, `test_nonfinite_samples_rejected`, `test_unmapped_entrypoint_rejected`. Assert `BLOCKED` for absent required cases, and `NOT_APPLICABLE` only with a release/source reason; `float('nan')`/`float('inf')` are invalid.
-- [ ] Run `rtk proxy python3 -m unittest discover -s tools/server-performance/tests -p 'test_contracts.py' -v`; confirm the new contracts are missing/failing before implementation.
-- [ ] Implement the exact interfaces above. Enumerate release command leaves/suggestions, event/mixin registrations, background tasks and server settings into the ledger; map all feature IDs in spec section 8. Expand parameter variants deterministically and show case cardinality before execution.
-- [ ] Run the same tests; inventory must list all expected cases without starting servers. Check that deliberately removing one coverage mapping fails. Record completion in `validation/progress.md` without checking runtime acceptance boxes.
+- [x] Write `test_missing_applicable_case_blocks`, `test_private_is_not_applicable_only_for_release`, `test_unknown_schema_rejected`, `test_nonfinite_samples_rejected`, `test_unmapped_entrypoint_rejected`. Assert `BLOCKED` for absent required cases, and `NOT_APPLICABLE` only with a release/source reason; `float('nan')`/`float('inf')` are invalid.
+- [x] Run `rtk proxy python3 -m unittest discover -s tools/server-performance/tests -p 'test_contracts.py' -v`; confirm the new contracts are missing/failing before implementation.
+- [x] Implement the exact interfaces above. Enumerate release command leaves/suggestions, event/mixin registrations, background tasks and server settings into the ledger; map all feature IDs in spec section 8. Expand parameter variants deterministically and show case cardinality before execution.
+- [x] Run the same tests; inventory must list all expected cases without starting servers. Check that deliberately removing one coverage mapping fails. Record completion in `validation/progress.md` without checking runtime acceptance boxes.
 
 ### Task 2: Immutable release artifacts and runtime capability preflight
 

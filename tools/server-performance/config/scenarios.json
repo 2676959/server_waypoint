@@ -1,0 +1,415 @@
+{
+    "schemaVersion": 1,
+    "scenarios": [
+        {
+            "feature": "idle",
+            "variants": [
+                "empty",
+                "dataset-1000",
+                "dataset-10000",
+                "dataset-50000",
+                "disabled-settings",
+                "unrelated-items"
+            ],
+            "fixture": "idle",
+            "metrics": [
+                "tick-processing",
+                "workload-duration",
+                "thread-allocation",
+                "physical-transfers",
+                "online-players"
+            ],
+            "budgets": [
+                "backend-medium",
+                "correctness-bounds"
+            ],
+            "clients": 0,
+            "rates": {
+                "small": 10,
+                "medium": 50,
+                "stress": 100
+            }
+        },
+        {
+            "feature": "world-container",
+            "variants": [
+                "container-stone",
+                "container-meta",
+                "container-shulker-books",
+                "container-bundle"
+            ],
+            "fixture": "navigation-terrain",
+            "metrics": [
+                "tick-processing",
+                "workload-duration",
+                "thread-allocation",
+                "physical-transfers",
+                "online-players"
+            ],
+            "budgets": [
+                "backend-medium",
+                "correctness-bounds"
+            ],
+            "clients": 0,
+            "rates": {
+                "small": 10,
+                "medium": 50,
+                "stress": 100
+            }
+        },
+        {
+            "feature": "inventory-regression",
+            "variants": [
+                "plain-0",
+                "plain-100",
+                "meta-100",
+                "shulker-empty-100",
+                "shulker-full-100",
+                "shulker-books-0",
+                "shulker-books-100",
+                "shulker-books-1000",
+                "bundle-empty-100",
+                "bundle-full-100",
+                "nested-100",
+                "direct-tag-100",
+                "nested-tag-100",
+                "nesting-boundary-100",
+                "navigation-100"
+            ],
+            "fixture": "container-shulker-books",
+            "metrics": [
+                "tick-processing",
+                "workload-duration",
+                "thread-allocation",
+                "physical-transfers",
+                "online-players"
+            ],
+            "budgets": [
+                "backend-medium",
+                "correctness-bounds",
+                "inventory-100"
+            ],
+            "clients": 0,
+            "rates": {
+                "small": 10,
+                "medium": 50,
+                "stress": 100
+            }
+        },
+        {
+            "feature": "storage",
+            "variants": [
+                "add-edit-remove-restore",
+                "revision-conflict",
+                "dimensions",
+                "concurrent",
+                "save-reload-restart"
+            ],
+            "fixture": "navigation-terrain",
+            "metrics": [
+                "action-latency",
+                "completed-actions"
+            ],
+            "budgets": [
+                "backend-medium",
+                "correctness-bounds"
+            ],
+            "clients": 1,
+            "rates": {
+                "small": 10,
+                "medium": 50,
+                "stress": 100
+            }
+        },
+        {
+            "feature": "commands",
+            "variants": [
+                "leaves-suggestions",
+                "list-layout-filter-sort-page",
+                "console-execute-as",
+                "permissions",
+                "local-tp",
+                "config-language-reload",
+                "action-log"
+            ],
+            "fixture": "navigation-terrain",
+            "metrics": [
+                "action-latency",
+                "completed-actions"
+            ],
+            "budgets": [
+                "backend-medium",
+                "correctness-bounds"
+            ],
+            "clients": 1,
+            "rates": {
+                "small": 10,
+                "medium": 50,
+                "stress": 100
+            }
+        },
+        {
+            "feature": "navigation",
+            "variants": [
+                "methods",
+                "lifecycle",
+                "retarget-edit-delete",
+                "death-respawn-world-change",
+                "rejoin-restore"
+            ],
+            "fixture": "navigation-terrain",
+            "metrics": [
+                "action-latency",
+                "completed-actions"
+            ],
+            "budgets": [
+                "backend-medium",
+                "correctness-bounds"
+            ],
+            "clients": 1,
+            "rates": {
+                "small": 10,
+                "medium": 50,
+                "stress": 100
+            }
+        },
+        {
+            "feature": "map-terrain",
+            "variants": [
+                "warm-cold",
+                "multiple-viewers",
+                "boundary-dimension",
+                "persist-evict-restart"
+            ],
+            "fixture": "navigation-terrain",
+            "metrics": [
+                "action-latency",
+                "completed-actions"
+            ],
+            "budgets": [
+                "backend-medium",
+                "correctness-bounds"
+            ],
+            "clients": 1,
+            "rates": {
+                "small": 10,
+                "medium": 50,
+                "stress": 100
+            }
+        },
+        {
+            "feature": "protection",
+            "variants": [
+                "inventory-click-drag-open-close",
+                "craft-result-cartography",
+                "drop-pickup-spawn-move",
+                "entity-frame-equipment",
+                "death-reconcile"
+            ],
+            "fixture": "navigation-terrain",
+            "metrics": [
+                "action-latency",
+                "completed-actions"
+            ],
+            "budgets": [
+                "backend-medium",
+                "correctness-bounds"
+            ],
+            "clients": 1,
+            "rates": {
+                "small": 10,
+                "medium": 50,
+                "stress": 100
+            }
+        },
+        {
+            "feature": "sync",
+            "variants": [
+                "vanilla-compatible-incompatible",
+                "full-incremental",
+                "forced-refresh",
+                "broadcast-world-reconnect"
+            ],
+            "fixture": "navigation-terrain",
+            "metrics": [
+                "action-latency",
+                "completed-actions"
+            ],
+            "budgets": [
+                "backend-medium",
+                "correctness-bounds"
+            ],
+            "clients": 1,
+            "rates": {
+                "small": 10,
+                "medium": 50,
+                "stress": 100
+            }
+        },
+        {
+            "feature": "upload-edit",
+            "variants": [
+                "compression",
+                "valid-multiframe",
+                "merge-conflict",
+                "concurrent",
+                "limits-malformed",
+                "timeout-cancel-disconnect"
+            ],
+            "fixture": "navigation-terrain",
+            "metrics": [
+                "action-latency",
+                "completed-actions"
+            ],
+            "budgets": [
+                "backend-medium",
+                "correctness-bounds"
+            ],
+            "clients": 1,
+            "rates": {
+                "small": 10,
+                "medium": 50,
+                "stress": 100
+            }
+        },
+        {
+            "feature": "sharing-icons",
+            "variants": [
+                "valid-invalid-long-unrelated",
+                "duplicates-permissions",
+                "xaero-voxelmap-icons"
+            ],
+            "fixture": "navigation-terrain",
+            "metrics": [
+                "action-latency",
+                "completed-actions"
+            ],
+            "budgets": [
+                "backend-medium",
+                "correctness-bounds"
+            ],
+            "clients": 1,
+            "rates": {
+                "small": 10,
+                "medium": 50,
+                "stress": 100
+            }
+        },
+        {
+            "feature": "transport",
+            "variants": [
+                "pair-auth",
+                "encrypted-partial-invalid-replay",
+                "rotate-reconnect",
+                "bounded-queues-cleanup"
+            ],
+            "fixture": "navigation-terrain",
+            "metrics": [
+                "action-latency",
+                "completed-actions"
+            ],
+            "budgets": [
+                "backend-medium",
+                "correctness-bounds"
+            ],
+            "clients": 1,
+            "rates": {
+                "small": 10,
+                "medium": 50,
+                "stress": 100
+            }
+        },
+        {
+            "feature": "catalog",
+            "variants": [
+                "snapshot-delta-fanout",
+                "remote-query",
+                "stale-offline-revision"
+            ],
+            "fixture": "navigation-terrain",
+            "metrics": [
+                "action-latency",
+                "completed-actions"
+            ],
+            "budgets": [
+                "backend-medium",
+                "correctness-bounds"
+            ],
+            "clients": 1,
+            "rates": {
+                "small": 10,
+                "medium": 50,
+                "stress": 100
+            }
+        },
+        {
+            "feature": "handoff",
+            "variants": [
+                "a-b-return",
+                "same-server",
+                "denied-offline-expiry-duplicate",
+                "disconnect-cancel-concurrent"
+            ],
+            "fixture": "navigation-terrain",
+            "metrics": [
+                "action-latency",
+                "completed-actions"
+            ],
+            "budgets": [
+                "backend-medium",
+                "correctness-bounds"
+            ],
+            "clients": 1,
+            "rates": {
+                "small": 10,
+                "medium": 50,
+                "stress": 100
+            }
+        },
+        {
+            "feature": "mixed-soak",
+            "variants": [
+                "mixed-recovery-30min"
+            ],
+            "fixture": "navigation-terrain",
+            "metrics": [
+                "action-latency",
+                "completed-actions"
+            ],
+            "budgets": [
+                "backend-medium",
+                "correctness-bounds"
+            ],
+            "clients": 1,
+            "rates": {
+                "small": 10,
+                "medium": 50,
+                "stress": 100
+            }
+        },
+        {
+            "feature": "private-development",
+            "variants": [
+                "owner-quota",
+                "load-evict",
+                "flush-reload-shutdown",
+                "collection-identity"
+            ],
+            "fixture": "navigation-terrain",
+            "metrics": [
+                "action-latency",
+                "completed-actions"
+            ],
+            "budgets": [
+                "backend-medium",
+                "correctness-bounds"
+            ],
+            "clients": 1,
+            "rates": {
+                "small": 10,
+                "medium": 50,
+                "stress": 100
+            }
+        }
+    ]
+}

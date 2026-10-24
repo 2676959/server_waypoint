@@ -1,0 +1,2400 @@
+{
+    "schemaVersion": 1,
+    "revision": "d9f532f8b5a14c9be4bc47531b05b44fd1dc5773",
+    "features": [
+        {
+            "id": "idle"
+        },
+        {
+            "id": "world-container"
+        },
+        {
+            "id": "inventory-regression"
+        },
+        {
+            "id": "storage"
+        },
+        {
+            "id": "commands"
+        },
+        {
+            "id": "navigation"
+        },
+        {
+            "id": "map-terrain"
+        },
+        {
+            "id": "protection"
+        },
+        {
+            "id": "sync"
+        },
+        {
+            "id": "upload-edit"
+        },
+        {
+            "id": "sharing-icons"
+        },
+        {
+            "id": "transport"
+        },
+        {
+            "id": "catalog"
+        },
+        {
+            "id": "handoff"
+        },
+        {
+            "id": "mixed-soak"
+        },
+        {
+            "id": "private-development"
+        }
+    ],
+    "entrypoints": [
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:139:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 139,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "private final SuggestionProvider<S> WAYPOINT_NAME_SUGGESTION = new WaypointNameSuggestion();"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:140:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 140,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "private final SuggestionProvider<S> WAYPOINT_LIST_SUGGESTION = new WaypointListSuggestion();"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:141:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 141,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "private final SuggestionProvider<S> NAME_INITIALS_SUGGESTION = new NameInitialsSuggestion();"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:142:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 142,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "private final SuggestionProvider<S> PLAYER_YAW_SUGGESTION = new PlayerYawSuggestion();"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:143:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 143,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "private final SuggestionProvider<S> HEX_COLOR_CODE_SUGGESTION = new HexColorCodeSuggestion();"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:144:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 144,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "private final SuggestionProvider<S> ICON_SUGGESTION = this::suggestIconIds;"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:384:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 384,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".executes(command)"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:400:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 400,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "visibilityNode.executes(command);"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:402:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 402,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "keywordsNode.executes(command);"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:404:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 404,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "descriptionNode.executes(command);"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:407:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 407,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".suggests((SuggestionProvider<Object>) ICON_SUGGESTION)"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:408:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 408,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".executes(command));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:412:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 412,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".suggests((SuggestionProvider<Object>) ICON_SUGGESTION).executes(command)));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:415:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 415,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".suggests((SuggestionProvider<Object>) ICON_SUGGESTION).executes(command)));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:427:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 427,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".suggests((context, builder) -> {"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:436:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 436,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "return (ArgumentBuilder<S, ?>) argument(LIST_NAME_ARG, string()).suggests((SuggestionProvider<Object>) WAYPOINT_LIST_SUGGESTION);"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:441:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 441,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "return (ArgumentBuilder<S, ?>) argument(WAYPOINT_NAME_ARG, string()).suggests((SuggestionProvider<Object>) WAYPOINT_NAME_SUGGESTION);"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:446:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 446,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "root.executes(context -> executeTargetHint(context.getSource(), \"wp.hint_line.details\", HelpTopics.Topic.DETAILS));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:452:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 452,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".executes(context -> {"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:471:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 471,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".executes(context -> {"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:488:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 488,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "root.executes(context -> executeTargetHint(context.getSource(), \"wp.hint_line.edit\", HelpTopics.Topic.EDIT));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:508:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 508,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "clear.then(LiteralArgumentBuilder.<S>literal(\"display-name\").executes(context -> {"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:525:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 525,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "propertyNode.then(RequiredArgumentBuilder.<S, String>argument(VALUE_ARG, string()).executes(context -> {"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:560:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 560,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".executes(context -> {"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:579:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 579,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".executes(context -> executePicker(context, true))"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:581:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 581,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".suggests(this.HEX_COLOR_CODE_SUGGESTION)"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:582:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 582,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".executes(context -> {"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:599:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 599,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".executes(context -> executePicker(context, false))"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:600:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 600,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".then(RequiredArgumentBuilder.<S, Integer>argument(YAW_ARG, integer()).executes(context -> {"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:611:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 611,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "visibility.then(LiteralArgumentBuilder.<S>literal(\"global\").executes(context -> this.executeVisibilityPatch(context, true)));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:612:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 612,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "visibility.then(LiteralArgumentBuilder.<S>literal(\"local\").executes(context -> this.executeVisibilityPatch(context, false)));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:618:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 618,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".suggests(ICON_SUGGESTION)"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:619:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 619,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".executes(context -> {"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:633:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 633,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "clear.then(LiteralArgumentBuilder.<S>literal(\"icon\").executes(context -> {"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:690:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 690,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "propertyNode.then(RequiredArgumentBuilder.<S, String>argument(VALUE_ARG, string()).executes(context -> {"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:707:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 707,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "return LiteralArgumentBuilder.<S>literal(property).executes(context -> {"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:723:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 723,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "return RequiredArgumentBuilder.<S, String>argument(name, string()).suggests(suggestions);"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:729:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 729,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".executes(context -> {"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:736:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 736,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".executes(context -> executeAddPicker((S) context.getSource(), 1))"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:739:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 739,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".executes(context -> executeAddPicker((S) context.getSource(),"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:743:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 743,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".suggests((SuggestionProvider<Object>) WAYPOINT_LIST_SUGGESTION)"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:744:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 744,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".executes(cxt -> {"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:755:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 755,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".suggests((SuggestionProvider<Object>) WAYPOINT_NAME_SUGGESTION)"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:756:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 756,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".executes(cxt -> {"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:768:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 768,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".suggests((SuggestionProvider<Object>) NAME_INITIALS_SUGGESTION)"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:770:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 770,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".suggests((SuggestionProvider<Object>) HEX_COLOR_CODE_SUGGESTION)"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:772:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 772,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".suggests((SuggestionProvider<Object>) PLAYER_YAW_SUGGESTION)"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:802:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 802,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".suggests((SuggestionProvider<Object>) WAYPOINT_LIST_SUGGESTION)"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:804:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 804,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".suggests((SuggestionProvider<Object>) WAYPOINT_NAME_SUGGESTION)"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:805:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 805,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".executes("
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:819:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 819,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".suggests((SuggestionProvider<Object>) NAME_INITIALS_SUGGESTION)"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:821:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 821,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".suggests((SuggestionProvider<Object>) HEX_COLOR_CODE_SUGGESTION)"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:823:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 823,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".suggests((SuggestionProvider<Object>) PLAYER_YAW_SUGGESTION)"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:857:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 857,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".executes(context -> {"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:865:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 865,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".executes(context -> executeTargetHint((S) context.getSource(), \"wp.hint_line.remove\","
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:869:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 869,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".executes("
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:880:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 880,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".executes("
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:897:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 897,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".executes(context -> executeTargetHint((S) context.getSource(), \"wp.hint_line.tp\","
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:914:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 914,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".executes("
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:921:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 921,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".executes("
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:928:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 928,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".executes("
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:939:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 939,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".executes("
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:960:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 960,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".executes("
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:973:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 973,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "upload.executes(context -> executeUploadPanel(context.getSource()));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:975:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 975,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "source.executes(context -> executeUploadAndReturn("
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:983:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 983,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "server.executes(context -> executeUploadAndReturn("
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:991:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 991,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "local.executes(context -> executeUploadAndReturn("
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:999:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 999,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "delete.executes(context -> executeUploadAndReturn("
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:1058:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 1058,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "help.executes(context -> {"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:1065:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 1065,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".executes(context -> {"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:1694:registration",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 1694,
+            "kind": "registration",
+            "feature": "commands",
+            "trigger": "String token = this.restoreRegistry.register("
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:2045:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 2045,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".executes(context -> executeUploadAndReturn("
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:2050:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 2050,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".executes(context -> executeUploadAndReturn("
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:2056:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 2056,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".executes(context -> executeUploadAndReturn("
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:2156:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 2156,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "navigateNode.executes(context -> {"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:2164:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 2164,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "methodNode.executes(context -> {"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:2173:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 2173,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "disableNode.executes(context -> {"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:2179:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 2179,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "methodNode.executes(context -> {"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:2199:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 2199,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "listNode.suggests(this.WAYPOINT_LIST_SUGGESTION);"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:2201:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 2201,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "waypointNode.suggests(this.WAYPOINT_NAME_SUGGESTION);"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:2202:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 2202,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "waypointNode.executes(navigateTargetCommand(null));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:2205:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 2205,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "defaultNode.executes(navigateTargetWithDefaultCommand());"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:2208:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 2208,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "allNode.executes(navigateTargetWithAllCommand());"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:2212:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 2212,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "methodNode.executes(navigateTargetCommand(method));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:2223:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 2223,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "textDisplayNode.executes(context -> {"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:2229:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 2229,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "resetNode.executes(context -> {"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:2274:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 2274,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "zNode.suggests(singleFloatSuggestion((context, builder) -> this.getTextDisplayTransformationZSuggestion(context, zArgument)));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:2275:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 2275,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "zNode.executes(context -> {"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:2290:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 2290,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "yNode.suggests(singleFloatSuggestion((context, builder) -> this.getTextDisplayTransformationYSuggestion(context, yArgument)));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:2296:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 2296,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "xNode.suggests(singleFloatSuggestion((context, builder) -> this.getTextDisplayTransformationXSuggestion(context, xArgument)));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:2347:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 2347,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "dimensionsNode.executes(context -> executeDimensionList(context.getSource(), 1));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:2350:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 2350,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".executes(context -> executeDimensionList(context.getSource(), getInteger(context, PAGE_NUMBER_ARG)))));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:2361:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 2361,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "listNameNode.suggests(this.WAYPOINT_LIST_SUGGESTION);"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:2561:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 2561,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".executes(context -> {"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java:2710:background",
+            "source": "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java",
+            "line": 2710,
+            "kind": "background",
+            "feature": "commands",
+            "trigger": "String hexCode = currentInput.toUpperCase() + \"0\".repeat(lengthRemain);"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/ListCommandOptions.java:36:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/ListCommandOptions.java",
+            "line": 36,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "targetNode.executes(command(WaypointSorting.SortMode.DEFAULT, false));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/ListCommandOptions.java:43:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/ListCommandOptions.java",
+            "line": 43,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "searchNode.executes(reserved.apply(SEARCH_COMMAND));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/ListCommandOptions.java:44:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/ListCommandOptions.java",
+            "line": 44,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "sortNode.executes(reserved.apply(SORT_COMMAND));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/ListCommandOptions.java:45:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/ListCommandOptions.java",
+            "line": 45,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "pageNode.executes(reserved.apply(PAGE_COMMAND));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/ListCommandOptions.java:46:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/ListCommandOptions.java",
+            "line": 46,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "limitNode.executes(reserved.apply(LIMIT_COMMAND));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/ListCommandOptions.java:47:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/ListCommandOptions.java",
+            "line": 47,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "viewNode.executes(reserved.apply(VIEW_COMMAND));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/ListCommandOptions.java:58:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/ListCommandOptions.java",
+            "line": 58,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "queryNode.executes(command(WaypointSorting.SortMode.DEFAULT, false));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/ListCommandOptions.java:73:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/ListCommandOptions.java",
+            "line": 73,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "queryNode.executes(command(sortMode, reversed, view));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/ListCommandOptions.java:85:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/ListCommandOptions.java",
+            "line": 85,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "pageNode.executes(command(sortMode, reversed, view));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/ListCommandOptions.java:98:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/ListCommandOptions.java",
+            "line": 98,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "valueNode.executes(command(sortMode, reversed, view));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/ListCommandOptions.java:110:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/ListCommandOptions.java",
+            "line": 110,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "modeNode.executes(command(sortMode, false));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/ListCommandOptions.java:129:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/ListCommandOptions.java",
+            "line": 129,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "directionNode.executes(command(sortMode, descending));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/ListCommandOptions.java:144:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/ListCommandOptions.java",
+            "line": 144,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "pageNode.executes(command(sortMode, reversed));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/ListCommandOptions.java:157:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/ListCommandOptions.java",
+            "line": 157,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "limitNode.executes(command(sortMode, reversed));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/RemoteWaypointCommand.java:63:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/RemoteWaypointCommand.java",
+            "line": 63,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".executes(context -> picker(context.getSource(), 1));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/RemoteWaypointCommand.java:66:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/RemoteWaypointCommand.java",
+            "line": 66,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": ".executes(context -> picker(context.getSource(), getInteger(context, PAGE_NUMBER_ARG)))));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/RemoteWaypointCommand.java:69:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/RemoteWaypointCommand.java",
+            "line": 69,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "server.suggests((context, builder) -> suggest(context, builder, 0));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/RemoteWaypointCommand.java:71:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/RemoteWaypointCommand.java",
+            "line": 71,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "dimension.suggests((context, builder) -> suggest(context, builder, 1));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/RemoteWaypointCommand.java:73:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/RemoteWaypointCommand.java",
+            "line": 73,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "list.suggests((context, builder) -> suggest(context, builder, 2));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/RemoteWaypointCommand.java:79:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/RemoteWaypointCommand.java",
+            "line": 79,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "detailsServer.suggests((context, builder) -> suggest(context, builder, 0));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/RemoteWaypointCommand.java:80:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/RemoteWaypointCommand.java",
+            "line": 80,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "detailsDimension.suggests((context, builder) -> suggest(context, builder, 1));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/RemoteWaypointCommand.java:81:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/RemoteWaypointCommand.java",
+            "line": 81,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "detailsList.suggests((context, builder) -> suggest(context, builder, 2));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/RemoteWaypointCommand.java:82:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/RemoteWaypointCommand.java",
+            "line": 82,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "detailsWaypoint.suggests((context, builder) -> suggest(context, builder, 3)).executes(this::details);"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/RemoteWaypointCommand.java:89:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/RemoteWaypointCommand.java",
+            "line": 89,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "tpServer.suggests((context, builder) -> suggest(context, builder, 0, true));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/RemoteWaypointCommand.java:90:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/RemoteWaypointCommand.java",
+            "line": 90,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "tpDimension.suggests((context, builder) -> suggest(context, builder, 1, true));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/RemoteWaypointCommand.java:91:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/RemoteWaypointCommand.java",
+            "line": 91,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "tpList.suggests((context, builder) -> suggest(context, builder, 2, true));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/command/RemoteWaypointCommand.java:92:command",
+            "source": "common/src/main/java/_959/server_waypoint/command/RemoteWaypointCommand.java",
+            "line": 92,
+            "kind": "command",
+            "feature": "commands",
+            "trigger": "tpWaypoint.suggests((context, builder) -> suggest(context, builder, 3, true)).executes(this::teleport);"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/core/network/C2SPacketHandler.java:483:background",
+            "source": "common/src/main/java/_959/server_waypoint/core/network/C2SPacketHandler.java",
+            "line": 483,
+            "kind": "background",
+            "feature": "sync",
+            "trigger": "List<ReceiveFailure<P>> failures = this.uploadChunkedMessages.tick();"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/core/network/C2SPacketHandler.java:494:background",
+            "source": "common/src/main/java/_959/server_waypoint/core/network/C2SPacketHandler.java",
+            "line": 494,
+            "kind": "background",
+            "feature": "sync",
+            "trigger": "this.uploadCoordinator.tick().ifPresent(this::clearExpiredUploadTransport);"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/core/network/PlatformMessageSender.java:233:background",
+            "source": "common/src/main/java/_959/server_waypoint/core/network/PlatformMessageSender.java",
+            "line": 233,
+            "kind": "background",
+            "feature": "sync",
+            "trigger": "List<ReceiveFailure<P>> failures = this.chunkedMessageManager().tick();"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/core/network/codec/ChunkedMessageManager.java:429:background",
+            "source": "common/src/main/java/_959/server_waypoint/core/network/codec/ChunkedMessageManager.java",
+            "line": 429,
+            "kind": "background",
+            "feature": "sync",
+            "trigger": "return this.tick(System.nanoTime());"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/crossserver/transport/BackendAgent.java:96:background",
+            "source": "common/src/main/java/_959/server_waypoint/crossserver/transport/BackendAgent.java",
+            "line": 96,
+            "kind": "background",
+            "feature": "idle",
+            "trigger": "writer = new ScheduledThreadPoolExecutor(1, daemonThreads(\"server-waypoint-backend-heartbeat\"));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/crossserver/transport/BackendAgent.java:98:background",
+            "source": "common/src/main/java/_959/server_waypoint/crossserver/transport/BackendAgent.java",
+            "line": 98,
+            "kind": "background",
+            "feature": "idle",
+            "trigger": "writer.scheduleWithFixedDelay(remoteCatalogs::maintain, settings.heartbeatMillis(), settings.heartbeatMillis(), TimeUnit.MILLISECONDS);"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/crossserver/transport/BackendAgent.java:100:background",
+            "source": "common/src/main/java/_959/server_waypoint/crossserver/transport/BackendAgent.java",
+            "line": 100,
+            "kind": "background",
+            "feature": "idle",
+            "trigger": "publications = new ScheduledThreadPoolExecutor(1, daemonThreads(\"server-waypoint-backend-catalog\"));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/crossserver/transport/BackendAgent.java:103:background",
+            "source": "common/src/main/java/_959/server_waypoint/crossserver/transport/BackendAgent.java",
+            "line": 103,
+            "kind": "background",
+            "feature": "idle",
+            "trigger": "reader = Executors.newSingleThreadExecutor(daemonThreads(\"server-waypoint-backend-reader\"));"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/crossserver/transport/BackendAgent.java:151:background",
+            "source": "common/src/main/java/_959/server_waypoint/crossserver/transport/BackendAgent.java",
+            "line": 151,
+            "kind": "background",
+            "feature": "idle",
+            "trigger": "maintenance = writer.scheduleWithFixedDelay(owner::maintain, 100, 100, TimeUnit.MILLISECONDS);"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/crossserver/transport/BackendAgent.java:153:background",
+            "source": "common/src/main/java/_959/server_waypoint/crossserver/transport/BackendAgent.java",
+            "line": 153,
+            "kind": "background",
+            "feature": "idle",
+            "trigger": "heartbeat = writer.scheduleWithFixedDelay(() -> sendHeartbeat(session), settings.heartbeatMillis(),"
+        },
+        {
+            "id": "common/src/main/java/_959/server_waypoint/crossserver/transport/BackendAgent.java:157:background",
+            "source": "common/src/main/java/_959/server_waypoint/crossserver/transport/BackendAgent.java",
+            "line": 157,
+            "kind": "background",
+            "feature": "idle",
+            "trigger": "publication = publications.scheduleWithFixedDelay(() -> {"
+        },
+        {
+            "id": "cross-server/src/main/java/_959/server_waypoint/crossserver/transport/AsyncTransportLifecycle.java:14:background",
+            "source": "cross-server/src/main/java/_959/server_waypoint/crossserver/transport/AsyncTransportLifecycle.java",
+            "line": 14,
+            "kind": "background",
+            "feature": "transport",
+            "trigger": "control = new ThreadPoolExecutor(1, 1, 0, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(66), task -> {"
+        },
+        {
+            "id": "cross-server/src/main/java/_959/server_waypoint/crossserver/transport/QueuedChannelSender.java:13:background",
+            "source": "cross-server/src/main/java/_959/server_waypoint/crossserver/transport/QueuedChannelSender.java",
+            "line": 13,
+            "kind": "background",
+            "feature": "transport",
+            "trigger": "worker = new ThreadPoolExecutor(1, 1, 0, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(64), task -> {"
+        },
+        {
+            "id": "cross-server/src/main/java/_959/server_waypoint/crossserver/transport/TcpChannel.java:55:background",
+            "source": "cross-server/src/main/java/_959/server_waypoint/crossserver/transport/TcpChannel.java",
+            "line": 55,
+            "kind": "background",
+            "feature": "transport",
+            "trigger": "expiry = TcpWire.TIMER.scheduleWithFixedDelay(this::expire, interval, interval, TimeUnit.MILLISECONDS);"
+        },
+        {
+            "id": "cross-server/src/main/java/_959/server_waypoint/crossserver/transport/TcpWire.java:14:background",
+            "source": "cross-server/src/main/java/_959/server_waypoint/crossserver/transport/TcpWire.java",
+            "line": 14,
+            "kind": "background",
+            "feature": "transport",
+            "trigger": "static final ScheduledThreadPoolExecutor TIMER = new ScheduledThreadPoolExecutor(1, task -> {"
+        },
+        {
+            "id": "cross-server/src/main/java/_959/server_waypoint/crossserver/transport/TcpWire.java:26:background",
+            "source": "cross-server/src/main/java/_959/server_waypoint/crossserver/transport/TcpWire.java",
+            "line": 26,
+            "kind": "background",
+            "feature": "transport",
+            "trigger": "task = TIMER.schedule(() -> {"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/common/server/handoff/ModDestinationPlatform.java:38:background",
+            "source": "mods/src/main/java/_959/server_waypoint/common/server/handoff/ModDestinationPlatform.java",
+            "line": 38,
+            "kind": "background",
+            "feature": "handoff",
+            "trigger": "server.schedule(new TickTask(server.getTickCount(), action));"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricClient.java:38:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricClient.java",
+            "line": 38,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "KeyMapping.Category.register(modId(\"mod_name\"))"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricClient.java:43:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricClient.java",
+            "line": 43,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) ->"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricClient.java:44:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricClient.java",
+            "line": 44,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "ClientWaypointCommand.register(dispatcher));"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricClient.java:45:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricClient.java",
+            "line": 45,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "ClientTickEvents.END_CLIENT_TICK.register(client -> {"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricClient.java:51:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricClient.java",
+            "line": 51,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "ClientLifecycleEvents.CLIENT_STARTED.register(client -> {"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricServer.java:89:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricServer.java",
+            "line": 89,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "().register(XaerosWorldIdS2CPayload.ID, XaerosWorldIdS2CPayload.PACKET_CODEC);"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricServer.java:94:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricServer.java",
+            "line": 94,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, registrationEnvironment) -> waypointCommand.register(dispatcher));"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricServer.java:95:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricServer.java",
+            "line": 95,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "ServerLifecycleEvents.SERVER_STARTING.register(waypointServer::load);"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricServer.java:96:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricServer.java",
+            "line": 96,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "ServerLifecycleEvents.SERVER_STOPPING.register(server -> {"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricServer.java:100:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricServer.java",
+            "line": 100,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "ServerTickEvents.END_SERVER_TICK.register(server -> {"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricServer.java:101:background",
+            "source": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricServer.java",
+            "line": 101,
+            "kind": "background",
+            "feature": "idle",
+            "trigger": "waypointServer.navigation().tick();"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricServer.java:105:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricServer.java",
+            "line": 105,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "ServerPlayConnectionEvents.JOIN.register("
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricServer.java:112:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricServer.java",
+            "line": 112,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "ServerPlayConnectionEvents.DISCONNECT.register("
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricServer.java:118:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricServer.java",
+            "line": 118,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "ServerPlayerEvents.AFTER_RESPAWN.register("
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricServer.java:122:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricServer.java",
+            "line": 122,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "ServerMessageEvents.CHAT_MESSAGE.register(handler::onChatMessage);"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricServer.java:153:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricServer.java",
+            "line": 153,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "().register(MessageChunkS2CPayload.ID, MessageChunkS2CPayload.PACKET_CODEC);"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricServer.java:157:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricServer.java",
+            "line": 157,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "().register(ServerHandshakeS2CPayload.ID, ServerHandshakeS2CPayload.PACKET_CODEC);"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricServer.java:161:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricServer.java",
+            "line": 161,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "().register(UploadRequestS2CPayload.ID, UploadRequestS2CPayload.PACKET_CODEC);"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricServer.java:166:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricServer.java",
+            "line": 166,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "().register(ClientHandshakeC2SPayload.ID, ClientHandshakeC2SPayload.PACKET_CODEC);"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricServer.java:170:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricServer.java",
+            "line": 170,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "().register(MessageChunkC2SPayload.ID, MessageChunkC2SPayload.PACKET_CODEC);"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricServer.java:174:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricServer.java",
+            "line": 174,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "().register(UploadChunkC2SPayload.ID, UploadChunkC2SPayload.PACKET_CODEC);"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/forge/ServerWaypointForge.java:165:background",
+            "source": "mods/src/main/java/_959/server_waypoint/forge/ServerWaypointForge.java",
+            "line": 165,
+            "kind": "background",
+            "feature": "idle",
+            "trigger": "this.waypointServer.navigation().tick();"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/forge/ServerWaypointForge.java:172:background",
+            "source": "mods/src/main/java/_959/server_waypoint/forge/ServerWaypointForge.java",
+            "line": 172,
+            "kind": "background",
+            "feature": "idle",
+            "trigger": "this.waypointServer.navigation().tick();"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/forge/ServerWaypointForge.java:322:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/forge/ServerWaypointForge.java",
+            "line": 322,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "this.waypointCommand.register(event.getDispatcher());"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/forge/ServerWaypointForgeClient.java:81:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/forge/ServerWaypointForgeClient.java",
+            "line": 81,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "/*? if >= 1.21.9 {*/ KeyMapping.Category.register(modId(\"mod_name\")) /*?} else {*/ /*\"key.category.server_waypoint.mod_name\" *//*?}*/"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/forge/ServerWaypointForgeClient.java:83:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/forge/ServerWaypointForgeClient.java",
+            "line": 83,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "event.register(keyBinding);"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/forge/ServerWaypointForgeClient.java:87:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/forge/ServerWaypointForgeClient.java",
+            "line": 87,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "ClientWaypointCommand.register(event.getDispatcher());"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/forge/ServerWaypointForgeClient.java:155:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/forge/ServerWaypointForgeClient.java",
+            "line": 155,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "registerClientPayload(MessageChunkS2CPayload.class, 0, /*? if >= 1.20.5 {*/ MessageChunkS2CPayload.PACKET_CODEC /*?} else {*/ /*MessageChunkS2CPayload::new *//*?}*/, messageChunkHandler);"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/forge/ServerWaypointForgeClient.java:156:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/forge/ServerWaypointForgeClient.java",
+            "line": 156,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "registerClientPayload(ServerHandshakeS2CPayload.class, 1, /*? if >= 1.20.5 {*/ ServerHandshakeS2CPayload.PACKET_CODEC /*?} else {*/ /*ServerHandshakeS2CPayload::new *//*?}*/, serverHandshakeHandler);"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/forge/ServerWaypointForgeClient.java:157:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/forge/ServerWaypointForgeClient.java",
+            "line": 157,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "registerClientPayload(UploadRequestS2CPayload.class, 2, /*? if >= 1.20.5 {*/ UploadRequestS2CPayload.PACKET_CODEC /*?} else {*/ /*UploadRequestS2CPayload::new *//*?}*/, uploadRequestHandler);"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/forge/ServerWaypointForgeClient.java:160:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/forge/ServerWaypointForgeClient.java",
+            "line": 160,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "private static <P extends ModPayload> void registerClientPayload("
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/AbstractContainerMenuNavigationMixin.java:18:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/AbstractContainerMenuNavigationMixin.java",
+            "line": 18,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@Inject(method = \"clicked\", at = @At(\"HEAD\"), cancellable = true/*? if >= 26 {*/, remap = false/*?}*/)"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/AbstractContainerMenuNavigationMixin.java:36:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/AbstractContainerMenuNavigationMixin.java",
+            "line": 36,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@Inject(method = \"clicked\", at = @At(\"TAIL\")/*? if >= 26 {*/, remap = false/*?}*/)"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/AbstractContainerMenuNavigationMixin.java:51:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/AbstractContainerMenuNavigationMixin.java",
+            "line": 51,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@Inject(method = \"removed\", at = @At(\"HEAD\")/*? if >= 26 {*/, remap = false/*?}*/)"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/AllayNavigationMixin.java:16:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/AllayNavigationMixin.java",
+            "line": 16,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@Inject(method = \"mobInteract\", at = @At(\"HEAD\"), cancellable = true/*? if >= 26 {*/, remap = false/*?}*/)"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/AllayNavigationMixin.java:27:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/AllayNavigationMixin.java",
+            "line": 27,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@Inject(method = \"tick\", at = @At(\"HEAD\")/*? if >= 26 {*/, remap = false/*?}*/)"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/ArmorStandNavigationMixin.java:21:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/ArmorStandNavigationMixin.java",
+            "line": 21,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@Inject("
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/ArmorStandNavigationMixin.java:40:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/ArmorStandNavigationMixin.java",
+            "line": 40,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@Inject(method = \"readAdditionalSaveData\", at = @At(\"TAIL\")/*? if >= 26 {*/, remap = false/*?}*/)"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/CartographyTableMenuNavigationMixin.java:25:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/CartographyTableMenuNavigationMixin.java",
+            "line": 25,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@Inject(method = \"slotsChanged\", at = @At(\"HEAD\"), cancellable = true/*? if >= 26 {*/, remap = false/*?}*/)"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/ClientPlayNetworkHandlerMixin.java:15:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/ClientPlayNetworkHandlerMixin.java",
+            "line": 15,
+            "kind": "event-mixin",
+            "feature": "idle",
+            "trigger": "@Inject(method = {\"sendChat\", \"sendCommand\"}, at = @At(\"TAIL\")/*? if >=26 {*/, remap = false/*?}*/)"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/ClientPlayNetworkHandlerMixin.java:20:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/ClientPlayNetworkHandlerMixin.java",
+            "line": 20,
+            "kind": "event-mixin",
+            "feature": "idle",
+            "trigger": "@Inject(method = \"handleLogin\", at = @At(value = \"TAIL\")/*? if >= 26 {*/, remap = false/*?}*/)"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/CompassItemNavigationMixin.java:15:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/CompassItemNavigationMixin.java",
+            "line": 15,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@Inject(method = \"useOn\", at = @At(\"HEAD\"), cancellable = true/*? if >= 26 {*/, remap = false/*?}*/)"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/CraftingMenuNavigationMixin.java:27:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/CraftingMenuNavigationMixin.java",
+            "line": 27,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@Inject(method = \"slotChangedCraftingGrid\", at = @At(\"HEAD\"), cancellable = true/*? if >= 26 {*/, remap = false/*?}*/)"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/DecoratedPotBlockEntityNavigationMixin.java:26:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/DecoratedPotBlockEntityNavigationMixin.java",
+            "line": 26,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@Inject(method = \"setTheItem\", at = @At(\"HEAD\"), cancellable = true/*? if >= 26 {*/, remap = false/*?}*/)"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/DecoratedPotBlockEntityNavigationMixin.java:34:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/DecoratedPotBlockEntityNavigationMixin.java",
+            "line": 34,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "/*@Inject(method = \"load\", at = @At(\"TAIL\"))"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/DecoratedPotBlockEntityNavigationMixin.java:39:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/DecoratedPotBlockEntityNavigationMixin.java",
+            "line": 39,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "/*@Inject(method = \"loadAdditional\", at = @At(\"TAIL\"))"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/DecoratedPotBlockEntityNavigationMixin.java:48:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/DecoratedPotBlockEntityNavigationMixin.java",
+            "line": 48,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "/*@Inject(method = \"loadAdditional\", at = @At(\"TAIL\"))"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/DecoratedPotBlockEntityNavigationMixin.java:53:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/DecoratedPotBlockEntityNavigationMixin.java",
+            "line": 53,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@Inject(method = \"loadAdditional\", at = @At(\"TAIL\"), remap = false)"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/DecoratedPotBlockNavigationMixin.java:21:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/DecoratedPotBlockNavigationMixin.java",
+            "line": 21,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "/*@Inject(method = \"use\", at = @At(\"HEAD\"), cancellable = true)"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/DecoratedPotBlockNavigationMixin.java:36:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/DecoratedPotBlockNavigationMixin.java",
+            "line": 36,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "/*@Inject(method = \"useItemOn\", at = @At(\"HEAD\"), cancellable = true)"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/DecoratedPotBlockNavigationMixin.java:52:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/DecoratedPotBlockNavigationMixin.java",
+            "line": 52,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "/*@Inject(method = \"useItemOn\", at = @At(\"HEAD\"), cancellable = true)"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/DecoratedPotBlockNavigationMixin.java:68:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/DecoratedPotBlockNavigationMixin.java",
+            "line": 68,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@Inject(method = \"useItemOn\", at = @At(\"HEAD\"), cancellable = true, remap = false)"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/EditBoxTextShadowMixin.java:26:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/EditBoxTextShadowMixin.java",
+            "line": 26,
+            "kind": "event-mixin",
+            "feature": "idle",
+            "trigger": "@ModifyExpressionValue("
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/EditBoxTextShadowMixin.java:36:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/EditBoxTextShadowMixin.java",
+            "line": 36,
+            "kind": "event-mixin",
+            "feature": "idle",
+            "trigger": "@WrapOperation(method = /*? >= 26 {*/ \"extractWidgetRenderState\" /*?} else {*//* \"renderWidget\" *//*?}*/,"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/EditBoxTextShadowMixin.java:53:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/EditBoxTextShadowMixin.java",
+            "line": 53,
+            "kind": "event-mixin",
+            "feature": "idle",
+            "trigger": "/*@WrapOperation(method = \"renderWidget\", at = @At(value = \"INVOKE\","
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/EditBoxTextShadowMixin.java:65:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/EditBoxTextShadowMixin.java",
+            "line": 65,
+            "kind": "event-mixin",
+            "feature": "idle",
+            "trigger": "/*@WrapOperation(method = \"renderWidget\", at = @At(value = \"INVOKE\","
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/EditBoxTextShadowMixin.java:74:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/EditBoxTextShadowMixin.java",
+            "line": 74,
+            "kind": "event-mixin",
+            "feature": "idle",
+            "trigger": "@WrapOperation(method = \"renderWidget\", at = @At(value = \"INVOKE\","
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/GameHudMixin.java:32:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/GameHudMixin.java",
+            "line": 32,
+            "kind": "event-mixin",
+            "feature": "idle",
+            "trigger": "/*@Inject("
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/GameHudMixin.java:51:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/GameHudMixin.java",
+            "line": 51,
+            "kind": "event-mixin",
+            "feature": "idle",
+            "trigger": "/*@Inject("
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/GameRendererMixin.java:24:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/GameRendererMixin.java",
+            "line": 24,
+            "kind": "event-mixin",
+            "feature": "idle",
+            "trigger": "@Inject("
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/GuiItemRenderStateMixin.java:30:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/GuiItemRenderStateMixin.java",
+            "line": 30,
+            "kind": "event-mixin",
+            "feature": "idle",
+            "trigger": "@Inject(method = \"<init>\", at = @At(\"RETURN\"))"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/GuiRendererItemAlphaMixin.java:26:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/GuiRendererItemAlphaMixin.java",
+            "line": 26,
+            "kind": "event-mixin",
+            "feature": "idle",
+            "trigger": "@ModifyExpressionValue(method = \"submitBlitFromItemAtlas\","
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/InventoryNavigationMixin.java:28:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/InventoryNavigationMixin.java",
+            "line": 28,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@Inject(method = \"removeFromSelected\", at = @At(\"HEAD\"), cancellable = true/*? if >= 26 {*/, remap = false/*?}*/)"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/ItemEntityNavigationMixin.java:14:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/ItemEntityNavigationMixin.java",
+            "line": 14,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@Inject(method = \"setItem\", at = @At(\"TAIL\")/*? if >= 26 {*/, remap = false/*?}*/)"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/ItemEntityNavigationMixin.java:21:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/ItemEntityNavigationMixin.java",
+            "line": 21,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@Inject(method = \"tick\", at = @At(\"HEAD\"), cancellable = true/*? if >= 26 {*/, remap = false/*?}*/)"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/ItemEntityNavigationMixin.java:30:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/ItemEntityNavigationMixin.java",
+            "line": 30,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@Inject(method = \"playerTouch\", at = @At(\"HEAD\"), cancellable = true/*? if >= 26 {*/, remap = false/*?}*/)"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/ItemFrameNavigationMixin.java:17:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/ItemFrameNavigationMixin.java",
+            "line": 17,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@Inject(method = \"interact\", at = @At(\"HEAD\"), cancellable = true/*? if >= 26 {*/, remap = false/*?}*/)"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/MinecraftClientMixin.java:17:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/MinecraftClientMixin.java",
+            "line": 17,
+            "kind": "event-mixin",
+            "feature": "idle",
+            "trigger": "@Inject("
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/OversizedWaypointItemAlphaMixin.java:28:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/OversizedWaypointItemAlphaMixin.java",
+            "line": 28,
+            "kind": "event-mixin",
+            "feature": "idle",
+            "trigger": "@ModifyExpressionValue(method = \"blitTexture\","
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/PlayerManagerMixin.java:18:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/PlayerManagerMixin.java",
+            "line": 18,
+            "kind": "event-mixin",
+            "feature": "idle",
+            "trigger": "@Inject(method = \"sendLevelInfo\", at = @At(value = \"HEAD\")/*? if >= 26 {*/, remap = false/*?}*/)"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/ServerPlayerEntityMixin.java:45:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/ServerPlayerEntityMixin.java",
+            "line": 45,
+            "kind": "event-mixin",
+            "feature": "idle",
+            "trigger": "@Inject(method = \"die\", at = @At(\"HEAD\")/*? if >= 26 {*/, remap = false/*?}*/)"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/ServerPlayerEntityMixin.java:51:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/ServerPlayerEntityMixin.java",
+            "line": 51,
+            "kind": "event-mixin",
+            "feature": "idle",
+            "trigger": "@Inject(method = \"readAdditionalSaveData\", at = @At(\"TAIL\")/*? if >= 26 {*/, remap = false/*?}*/)"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/ServerPlayerEntityMixin.java:57:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/ServerPlayerEntityMixin.java",
+            "line": 57,
+            "kind": "event-mixin",
+            "feature": "idle",
+            "trigger": "@Inject(method = \"addAdditionalSaveData\", at = @At(\"TAIL\")/*? if >= 26 {*/, remap = false/*?}*/)"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/ServerPlayerEntityMixin.java:67:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/ServerPlayerEntityMixin.java",
+            "line": 67,
+            "kind": "event-mixin",
+            "feature": "idle",
+            "trigger": "/*@Inject(method = \"readAdditionalSaveData\", at = @At(\"TAIL\"))"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/ServerPlayerEntityMixin.java:84:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/ServerPlayerEntityMixin.java",
+            "line": 84,
+            "kind": "event-mixin",
+            "feature": "idle",
+            "trigger": "@Inject(method = \"addAdditionalSaveData\", at = @At(\"TAIL\"))"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/ServerPlayerEntityMixin.java:95:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/ServerPlayerEntityMixin.java",
+            "line": 95,
+            "kind": "event-mixin",
+            "feature": "idle",
+            "trigger": "@Inject(method = \"restoreFrom\", at = @At(\"TAIL\")/*? if >= 26 {*/, remap = false/*?}*/)"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/ServerPlayerEntityMixin.java:136:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/ServerPlayerEntityMixin.java",
+            "line": 136,
+            "kind": "event-mixin",
+            "feature": "idle",
+            "trigger": "@Inject("
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/WaypointBlockItemAlphaMixin.java:22:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/WaypointBlockItemAlphaMixin.java",
+            "line": 22,
+            "kind": "event-mixin",
+            "feature": "idle",
+            "trigger": "/*@ModifyExpressionValue("
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/WorldRendererMixin.java:32:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/WorldRendererMixin.java",
+            "line": 32,
+            "kind": "event-mixin",
+            "feature": "idle",
+            "trigger": "@Inject("
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/WorldRendererMixin.java:51:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/WorldRendererMixin.java",
+            "line": 51,
+            "kind": "event-mixin",
+            "feature": "idle",
+            "trigger": "/^@Inject("
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/WorldRendererMixin.java:61:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/WorldRendererMixin.java",
+            "line": 61,
+            "kind": "event-mixin",
+            "feature": "idle",
+            "trigger": "/^@Inject("
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/mixin/WorldSessionMixin.java:12:event-mixin",
+            "source": "mods/src/main/java/_959/server_waypoint/mixin/WorldSessionMixin.java",
+            "line": 12,
+            "kind": "event-mixin",
+            "feature": "idle",
+            "trigger": "@Inject("
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/neoforge/ServerWaypointNeoForge.java:137:background",
+            "source": "mods/src/main/java/_959/server_waypoint/neoforge/ServerWaypointNeoForge.java",
+            "line": 137,
+            "kind": "background",
+            "feature": "idle",
+            "trigger": "this.waypointServer.navigation().tick();"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/neoforge/ServerWaypointNeoForge.java:144:background",
+            "source": "mods/src/main/java/_959/server_waypoint/neoforge/ServerWaypointNeoForge.java",
+            "line": 144,
+            "kind": "background",
+            "feature": "idle",
+            "trigger": "this.waypointServer.navigation().tick();"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/neoforge/ServerWaypointNeoForge.java:297:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/neoforge/ServerWaypointNeoForge.java",
+            "line": 297,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "registerLegacyNoopClientPayload(MessageChunkS2CPayload.class, 0, MessageChunkS2CPayload::new);"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/neoforge/ServerWaypointNeoForge.java:298:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/neoforge/ServerWaypointNeoForge.java",
+            "line": 298,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "registerLegacyNoopClientPayload(ServerHandshakeS2CPayload.class, 1, ServerHandshakeS2CPayload::new);"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/neoforge/ServerWaypointNeoForge.java:299:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/neoforge/ServerWaypointNeoForge.java",
+            "line": 299,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "registerLegacyNoopClientPayload(UploadRequestS2CPayload.class, 2, UploadRequestS2CPayload::new);"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/neoforge/ServerWaypointNeoForge.java:301:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/neoforge/ServerWaypointNeoForge.java",
+            "line": 301,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "registerLegacyNoopClientPayload(XaerosWorldIdS2CPayload.class, 3, XaerosWorldIdS2CPayload::new);"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/neoforge/ServerWaypointNeoForge.java:305:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/neoforge/ServerWaypointNeoForge.java",
+            "line": 305,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "private static <T extends _959.server_waypoint.common.network.payload.ModPayload> void registerLegacyNoopClientPayload("
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/neoforge/ServerWaypointNeoForge.java:319:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/neoforge/ServerWaypointNeoForge.java",
+            "line": 319,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "this.waypointCommand.register(event.getDispatcher());"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/neoforge/ServerWaypointNeoForgeClient.java:83:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/neoforge/ServerWaypointNeoForgeClient.java",
+            "line": 83,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "event.register(keyBinding);"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/neoforge/ServerWaypointNeoForgeClient.java:111:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/neoforge/ServerWaypointNeoForgeClient.java",
+            "line": 111,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "ClientWaypointCommand.register(event.getDispatcher());"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/neoforge/ServerWaypointNeoForgeClient.java:174:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/neoforge/ServerWaypointNeoForgeClient.java",
+            "line": 174,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "registerLegacyClientPayload(channel, MessageChunkS2CPayload.class, 0, MessageChunkS2CPayload::new, messageChunkHandler);"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/neoforge/ServerWaypointNeoForgeClient.java:175:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/neoforge/ServerWaypointNeoForgeClient.java",
+            "line": 175,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "registerLegacyClientPayload(channel, ServerHandshakeS2CPayload.class, 1, ServerHandshakeS2CPayload::new, serverHandshakeHandler);"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/neoforge/ServerWaypointNeoForgeClient.java:176:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/neoforge/ServerWaypointNeoForgeClient.java",
+            "line": 176,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "registerLegacyClientPayload(channel, UploadRequestS2CPayload.class, 2, UploadRequestS2CPayload::new, uploadRequestHandler);"
+        },
+        {
+            "id": "mods/src/main/java/_959/server_waypoint/neoforge/ServerWaypointNeoForgeClient.java:179:registration",
+            "source": "mods/src/main/java/_959/server_waypoint/neoforge/ServerWaypointNeoForgeClient.java",
+            "line": 179,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "private static <P extends _959.server_waypoint.common.network.payload.ModPayload> void registerLegacyClientPayload("
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/PaperScheduler.java:63:background",
+            "source": "paper/src/main/java/_959/server_waypoint/PaperScheduler.java",
+            "line": 63,
+            "kind": "background",
+            "feature": "idle",
+            "trigger": "return entity.getScheduler().runAtFixedRate("
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java:156:background",
+            "source": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java",
+            "line": 156,
+            "kind": "background",
+            "feature": "idle",
+            "trigger": "server.getAsyncScheduler().runAtFixedRate("
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java:165:registration",
+            "source": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java",
+            "line": 165,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java:166:registration",
+            "source": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java",
+            "line": 166,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "commands.registrar().register(command);"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java:167:registration",
+            "source": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java",
+            "line": 167,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "commands.registrar().register(waypointCommand.buildKeyGenerationCommand());"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java:170:registration",
+            "source": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java",
+            "line": 170,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "server.getPluginManager().registerEvents(crossServer, this);"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java:173:registration",
+            "source": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java",
+            "line": 173,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "server.getPluginManager().registerEvents(chatListener, this);"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java:174:registration",
+            "source": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java",
+            "line": 174,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "server.getPluginManager().registerEvents(channelRegisterListener, this);"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java:175:registration",
+            "source": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java",
+            "line": 175,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "server.getPluginManager().registerEvents(navigationListener, this);"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java:209:registration",
+            "source": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java",
+            "line": 209,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "messenger.registerOutgoingPluginChannel(this, MESSAGE_CHUNK_CHANNEL.ID);"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java:210:registration",
+            "source": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java",
+            "line": 210,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "messenger.registerOutgoingPluginChannel(this, SERVER_HANDSHAKE_CHANNEL.ID);"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java:211:registration",
+            "source": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java",
+            "line": 211,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "messenger.registerOutgoingPluginChannel(this, UPLOAD_REQUEST_CHANNEL.ID);"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java:213:registration",
+            "source": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java",
+            "line": 213,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "messenger.registerIncomingPluginChannel(this, CLIENT_HANDSHAKE_CHANNEL.ID, this);"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java:214:registration",
+            "source": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java",
+            "line": 214,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "messenger.registerIncomingPluginChannel(this, MESSAGE_CHUNK_CHANNEL.ID, this);"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java:215:registration",
+            "source": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java",
+            "line": 215,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "messenger.registerIncomingPluginChannel(this, UPLOAD_CHUNK_CHANNEL.ID, this);"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java:218:registration",
+            "source": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java",
+            "line": 218,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "messenger.registerOutgoingPluginChannel(this, XAEROS_WORLD_ID_CHANNEL.ID);"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java:219:registration",
+            "source": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java",
+            "line": 219,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "messenger.registerOutgoingPluginChannel(this, XaeroCompatibilityPayloads.XAERO_WORLD_MAP_CHANNEL);"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java:220:registration",
+            "source": "paper/src/main/java/_959/server_waypoint/ServerWaypointPaperMC.java",
+            "line": 220,
+            "kind": "registration",
+            "feature": "idle",
+            "trigger": "messenger.registerOutgoingPluginChannel(this, XaeroCompatibilityPayloads.XAEROLIB_CHANNEL);"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/handoff/PaperCrossServerRuntime.java:52:event-mixin",
+            "source": "paper/src/main/java/_959/server_waypoint/handoff/PaperCrossServerRuntime.java",
+            "line": 52,
+            "kind": "event-mixin",
+            "feature": "idle",
+            "trigger": "@EventHandler(priority = EventPriority.MONITOR) public void onJoin(PlayerJoinEvent event) {"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/listener/ChatMessageListenerPaperMC.java:23:event-mixin",
+            "source": "paper/src/main/java/_959/server_waypoint/listener/ChatMessageListenerPaperMC.java",
+            "line": 23,
+            "kind": "event-mixin",
+            "feature": "sharing-icons",
+            "trigger": "@EventHandler"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java:103:event-mixin",
+            "source": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java",
+            "line": 103,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@EventHandler(priority = EventPriority.HIGHEST)"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java:147:event-mixin",
+            "source": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java",
+            "line": 147,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@EventHandler(priority = EventPriority.HIGHEST)"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java:170:event-mixin",
+            "source": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java",
+            "line": 170,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@EventHandler(priority = EventPriority.HIGHEST)"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java:179:event-mixin",
+            "source": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java",
+            "line": 179,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@EventHandler(priority = EventPriority.HIGHEST)"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java:192:event-mixin",
+            "source": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java",
+            "line": 192,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@EventHandler(priority = EventPriority.HIGHEST)"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java:210:event-mixin",
+            "source": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java",
+            "line": 210,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@EventHandler(priority = EventPriority.HIGHEST)"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java:227:event-mixin",
+            "source": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java",
+            "line": 227,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@EventHandler(priority = EventPriority.HIGHEST)"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java:242:event-mixin",
+            "source": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java",
+            "line": 242,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@EventHandler(priority = EventPriority.HIGHEST)"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java:251:event-mixin",
+            "source": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java",
+            "line": 251,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@EventHandler(priority = EventPriority.HIGHEST)"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java:265:event-mixin",
+            "source": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java",
+            "line": 265,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@EventHandler(priority = EventPriority.HIGHEST)"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java:284:event-mixin",
+            "source": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java",
+            "line": 284,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@EventHandler(priority = EventPriority.HIGHEST)"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java:299:event-mixin",
+            "source": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java",
+            "line": 299,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@EventHandler(priority = EventPriority.HIGHEST)"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java:311:event-mixin",
+            "source": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java",
+            "line": 311,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@EventHandler(priority = EventPriority.HIGHEST)"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java:331:event-mixin",
+            "source": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java",
+            "line": 331,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@EventHandler(priority = EventPriority.HIGHEST)"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java:356:event-mixin",
+            "source": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java",
+            "line": 356,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@EventHandler(priority = EventPriority.HIGHEST)"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java:372:event-mixin",
+            "source": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java",
+            "line": 372,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@EventHandler(priority = EventPriority.HIGHEST)"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java:393:event-mixin",
+            "source": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java",
+            "line": 393,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@EventHandler(priority = EventPriority.HIGHEST)"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java:401:event-mixin",
+            "source": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java",
+            "line": 401,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@EventHandler(priority = EventPriority.HIGHEST)"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java:409:event-mixin",
+            "source": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java",
+            "line": 409,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@EventHandler(priority = EventPriority.HIGHEST)"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java:427:event-mixin",
+            "source": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java",
+            "line": 427,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@EventHandler(priority = EventPriority.HIGHEST)"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java:432:event-mixin",
+            "source": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java",
+            "line": 432,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@EventHandler(priority = EventPriority.HIGHEST)"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java:445:event-mixin",
+            "source": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java",
+            "line": 445,
+            "kind": "event-mixin",
+            "feature": "protection",
+            "trigger": "@EventHandler(priority = EventPriority.HIGHEST)"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java:575:background",
+            "source": "paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java",
+            "line": 575,
+            "kind": "background",
+            "feature": "protection",
+            "trigger": "ScheduledTask task = this.scheduler.runAtFixedRate("
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/listener/PlayerRegisterChannelListener.java:27:event-mixin",
+            "source": "paper/src/main/java/_959/server_waypoint/listener/PlayerRegisterChannelListener.java",
+            "line": 27,
+            "kind": "event-mixin",
+            "feature": "sync",
+            "trigger": "@EventHandler(priority = EventPriority.MONITOR)"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/listener/PlayerRegisterChannelListener.java:41:event-mixin",
+            "source": "paper/src/main/java/_959/server_waypoint/listener/PlayerRegisterChannelListener.java",
+            "line": 41,
+            "kind": "event-mixin",
+            "feature": "sync",
+            "trigger": "@EventHandler(priority = EventPriority.MONITOR)"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/listener/PlayerRegisterChannelListener.java:48:event-mixin",
+            "source": "paper/src/main/java/_959/server_waypoint/listener/PlayerRegisterChannelListener.java",
+            "line": 48,
+            "kind": "event-mixin",
+            "feature": "sync",
+            "trigger": "@EventHandler(priority = EventPriority.MONITOR)"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/listener/PlayerRegisterChannelListener.java:53:event-mixin",
+            "source": "paper/src/main/java/_959/server_waypoint/listener/PlayerRegisterChannelListener.java",
+            "line": 53,
+            "kind": "event-mixin",
+            "feature": "sync",
+            "trigger": "@EventHandler(priority = EventPriority.MONITOR)"
+        },
+        {
+            "id": "paper/src/main/java/_959/server_waypoint/network/PaperMessageSender.java:53:background",
+            "source": "paper/src/main/java/_959/server_waypoint/network/PaperMessageSender.java",
+            "line": 53,
+            "kind": "background",
+            "feature": "sync",
+            "trigger": "plugin.getServer().getAsyncScheduler().runAtFixedRate("
+        },
+        {
+            "id": "proxy-common/src/main/java/_959/server_waypoint/proxy/pairing/PairingCoordinator.java:56:background",
+            "source": "proxy-common/src/main/java/_959/server_waypoint/proxy/pairing/PairingCoordinator.java",
+            "line": 56,
+            "kind": "background",
+            "feature": "transport",
+            "trigger": "timer = Executors.newSingleThreadScheduledExecutor(task -> {"
+        },
+        {
+            "id": "proxy-common/src/main/java/_959/server_waypoint/proxy/pairing/PairingCoordinator.java:59:background",
+            "source": "proxy-common/src/main/java/_959/server_waypoint/proxy/pairing/PairingCoordinator.java",
+            "line": 59,
+            "kind": "background",
+            "feature": "transport",
+            "trigger": "timer.scheduleWithFixedDelay(this::expire, 1, 1, TimeUnit.SECONDS);"
+        },
+        {
+            "id": "proxy-common/src/main/java/_959/server_waypoint/proxy/transport/CoordinatorAgent.java:79:background",
+            "source": "proxy-common/src/main/java/_959/server_waypoint/proxy/transport/CoordinatorAgent.java",
+            "line": 79,
+            "kind": "background",
+            "feature": "transport",
+            "trigger": "writers = new ScheduledThreadPoolExecutor(Math.min(4, limits.connections()), daemonThreads(\"server-waypoint-coordinator-heartbeat\"));"
+        },
+        {
+            "id": "proxy-common/src/main/java/_959/server_waypoint/proxy/transport/CoordinatorAgent.java:81:background",
+            "source": "proxy-common/src/main/java/_959/server_waypoint/proxy/transport/CoordinatorAgent.java",
+            "line": 81,
+            "kind": "background",
+            "feature": "transport",
+            "trigger": "distributions = new ScheduledThreadPoolExecutor(Math.min(4, limits.connections()), daemonThreads(\"server-waypoint-coordinator-catalog\"));"
+        },
+        {
+            "id": "proxy-common/src/main/java/_959/server_waypoint/proxy/transport/CoordinatorAgent.java:83:background",
+            "source": "proxy-common/src/main/java/_959/server_waypoint/proxy/transport/CoordinatorAgent.java",
+            "line": 83,
+            "kind": "background",
+            "feature": "transport",
+            "trigger": "distributions.scheduleWithFixedDelay(catalogs::maintain, settings.heartbeatMillis(), settings.heartbeatMillis(), TimeUnit.MILLISECONDS);"
+        },
+        {
+            "id": "proxy-common/src/main/java/_959/server_waypoint/proxy/transport/CoordinatorAgent.java:126:background",
+            "source": "proxy-common/src/main/java/_959/server_waypoint/proxy/transport/CoordinatorAgent.java",
+            "line": 126,
+            "kind": "background",
+            "feature": "transport",
+            "trigger": "maintenance = writers.scheduleWithFixedDelay(owner::maintain, 100, 100, TimeUnit.MILLISECONDS);"
+        },
+        {
+            "id": "proxy-common/src/main/java/_959/server_waypoint/proxy/transport/CoordinatorAgent.java:128:background",
+            "source": "proxy-common/src/main/java/_959/server_waypoint/proxy/transport/CoordinatorAgent.java",
+            "line": 128,
+            "kind": "background",
+            "feature": "transport",
+            "trigger": "heartbeat = writers.scheduleWithFixedDelay(() -> sendHeartbeat(session), settings.heartbeatMillis(),"
+        },
+        {
+            "id": "proxy-common/src/main/java/_959/server_waypoint/proxy/transport/CoordinatorAgent.java:131:background",
+            "source": "proxy-common/src/main/java/_959/server_waypoint/proxy/transport/CoordinatorAgent.java",
+            "line": 131,
+            "kind": "background",
+            "feature": "transport",
+            "trigger": "distribution = distributions.scheduleWithFixedDelay(() -> {"
+        },
+        {
+            "id": "velocity/src/main/java/_959/server_waypoint/velocity/ServerWaypointVelocity.java:37:registration",
+            "source": "velocity/src/main/java/_959/server_waypoint/velocity/ServerWaypointVelocity.java",
+            "line": 37,
+            "kind": "registration",
+            "feature": "transport",
+            "trigger": "proxy.getChannelRegistrar().register(RESERVED);"
+        },
+        {
+            "id": "velocity/src/main/java/_959/server_waypoint/velocity/ServerWaypointVelocity.java:38:registration",
+            "source": "velocity/src/main/java/_959/server_waypoint/velocity/ServerWaypointVelocity.java",
+            "line": 38,
+            "kind": "registration",
+            "feature": "transport",
+            "trigger": "proxy.getCommandManager().register("
+        }
+    ]
+}
