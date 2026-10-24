@@ -182,10 +182,10 @@ for this documentation-only step.
 
 **Interfaces:** Consumes section 6 JSON commands; produces readiness/action/rate events and 1/10/50 actual connected-player sessions. First native pin is the verified Azalea 1.21.11 candidate, with its compatible local Rust pin.
 
-- [ ] Write `test_ready_requires_server_online_count`, `test_stalled_driver_cannot_pass`, `test_reconnect_does_not_hide_disconnect`, plus Rust `rejects_stale_action_ids` and `barrier_waits_for_acknowledged_actions`. Assert each bot's server UUID and completed action count, not just Rust swarm membership.
-- [ ] Run Python tests and `rtk proxy cargo test --manifest-path tools/server-performance/bots/versions/mc1.21.11/Cargo.toml --locked`; document dependency/setup failure separately from a behavior failure.
-- [ ] Implement argv/stdin/stdout control with stderr logs, unique offline roles, staggered joins, bounded queues and normal movement/container/command APIs. Keep monotonic client latency local; record driver CPU/RSS/action lag. Disable automatic reconnect during explicit disconnect cases.
-- [ ] Build optimized/locked bots, connect 1 then 10 then 50 to the isolated native server, and verify server-side counts, movement, inventory actions and orderly disconnect. Compare offered/completed rates and driver capacity; this proves only the recorded native version.
+- [x] Write `test_ready_requires_server_online_count`, `test_stalled_driver_cannot_pass`, `test_reconnect_does_not_hide_disconnect`, plus Rust `rejects_stale_action_ids` and `barrier_waits_for_acknowledged_actions`. Assert each bot's server UUID and completed action count, not just Rust swarm membership.
+- [x] Run Python tests and `rtk proxy cargo test --manifest-path tools/server-performance/bots/versions/mc1.21.11/Cargo.toml --locked`; document dependency/setup failure separately from a behavior failure.
+- [x] Implement argv/stdin/stdout control with stderr logs, unique offline roles, staggered joins, bounded queues and normal movement/container/command APIs. Keep monotonic client latency local; record driver CPU/RSS/action lag. Disable automatic reconnect during explicit disconnect cases.
+- [x] Build optimized/locked bots, connect 1 then 10 then 50 to the isolated native server, and verify server-side counts, movement, inventory actions and orderly disconnect. Compare offered/completed rates and driver capacity; this proves only the recorded native version.
 
 ### Task 9: Release codec fixtures and Server Waypoint bot protocol
 

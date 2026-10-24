@@ -60,3 +60,14 @@ Final runtime evidence is recorded in the documentation commit containing this l
 Verification totals: 56 Python tests; 677 common Java tests; 115 cross-server Java tests; 2 shared probe-contract Java tests; 5 Querz generator Java tests. Probe and production Paper 1.21.11 archives build; the latter excludes probe classes. The rebuilt development artifact has a different hash from the immutable published asset. All retained native test servers are stopped.
 
 Final CLI checks: inventory expands 10,800 requirements over 44 immutable assets and 45 anchors; Paper zero-player doctor passes. Full Paper doctor remains BLOCKED for unverified Azalea actions and wire protocol, as required for M1.
+
+## M1 execution (2026-10-24)
+
+Scope: Tasks 8–16, continuing in the clean `codex/server-performance-m0` checkout.
+Task-sized local commits are authorized; no pushes or production changes.
+
+- Task 8: complete. Python RED: absent bot driver; subsequent regressions reject absent native observations, mixed stderr, zero-demand capacity and stale identities. Native RED: unsupported player snapshot. GREEN: 8 bot-driver tests (64 accumulated), 2 Rust action-ledger tests, optimized locked bot build and Paper probe build. Native 1/10/50 players complete 3/30/150 actions with server-observed UUIDs, movement, inventory transfer/conservation, commands and zero online after stop. Evidence: `/Volumes/ssd/sw-performance-m1-bots-2/`. The first smoke retained a fixture failure caused by persisted offline inventory between tiers; fresh setup now clears before seeding. These are action smoke checks, not 30/60-second performance repetitions or wire coverage.
+
+Ruling: pin DER/PKCS prereleases to the published Azalea revision's lockfile after current resolution produced RSA API compilation errors. Keep the dated nightly override in the bot project and preserve the global Rust default. Cost if wrong: refreshing these pins requires a new locked build and native smoke.
+
+Localization impact: none; no production messages or translations changed.

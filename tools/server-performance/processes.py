@@ -12,7 +12,7 @@ from models import OwnedProcess
 _OWNED = {}
 
 
-def start_owned(argv, cwd, log):
+def start_owned(argv, cwd, log, *, stderr_log=None):
     cwd, log = Path(cwd).absolute(), Path(log).absolute()
     marker = owned_root(cwd)
     if log.is_symlink() or cwd not in log.parents or log.exists():
@@ -20,8 +20,16 @@ def start_owned(argv, cwd, log):
     log.parent.mkdir(parents=True, exist_ok=True)
     owner = str(uuid.uuid4())
     environment = dict(os.environ, SW_PERF_OWNER=owner, SW_PERF_RUN=marker["runId"])
-    with log.open("xb") as stream:
-        process = subprocess.Popen(list(argv), cwd=cwd, stdin=subprocess.PIPE, stdout=stream, stderr=subprocess.STDOUT, env=environment, start_new_session=True)
+    from contextlib import ExitStack
+    with ExitStack() as stack:
+        stream = stack.enter_context(log.open("xb"))
+        errors = subprocess.STDOUT
+        if stderr_log is not None:
+            stderr_log = Path(stderr_log).absolute()
+            if stderr_log.is_symlink() or cwd not in stderr_log.parents or stderr_log.exists():
+                raise ValueError("new owned stderr path required")
+            errors = stack.enter_context(stderr_log.open("xb"))
+        process = subprocess.Popen(list(argv), cwd=cwd, stdin=subprocess.PIPE, stdout=stream, stderr=errors, env=environment, start_new_session=True)
     result = OwnedProcess(process.pid, process.pid, owner, cwd, log, process)
     _OWNED[owner] = result
     return result

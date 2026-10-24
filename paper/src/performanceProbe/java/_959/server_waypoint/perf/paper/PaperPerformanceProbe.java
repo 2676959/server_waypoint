@@ -15,6 +15,7 @@ import java.util.List;
 
 public final class PaperPerformanceProbe extends JavaPlugin {
     private PaperFixtureAdapter fixture;
+    private final BotAssertions bots = new BotAssertions();
     private ProbeWriter writer;
     private boolean sampling;
     private String phase = "WARMUP";
@@ -23,6 +24,7 @@ public final class PaperPerformanceProbe extends JavaPlugin {
 
     @Override public void onEnable() {
         fixture = new PaperFixtureAdapter();
+        Bukkit.getPluginManager().registerEvents(bots, this);
         Bukkit.getPluginManager().registerEvents(new PaperTickProbe(this, fixture), this);
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             if (sampling) {
@@ -102,6 +104,8 @@ public final class PaperPerformanceProbe extends JavaPlugin {
                     stopped.addProperty("phaseElapsedSeconds", (System.nanoTime() - phaseStarted) / 1_000_000_000.0);
                     emit("scenario.stopped", stopped);
                 }
+                case "players.snapshot" -> emit("players.snapshot", bots.snapshot(false));
+                case "players.reset" -> emit("players.reset", bots.snapshot(true));
                 case "snapshot" -> emit("snapshot", fixture.snapshot());
                 case "shutdown" -> Bukkit.shutdown();
                 default -> throw new IllegalArgumentException("Unsupported probe operation");
