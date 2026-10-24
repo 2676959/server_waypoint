@@ -1,0 +1,611 @@
+{
+    "schemaVersion": 1,
+    "runtimes": [
+        {
+            "id": "fabric-1.20",
+            "artifact": "server_waypoint-4.0.0-fabric-mc1.20-1.20.1.jar",
+            "platform": "fabric",
+            "minecraft": "1.20",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "fabric-1.20.2",
+            "artifact": "server_waypoint-4.0.0-fabric-mc1.20.2.jar",
+            "platform": "fabric",
+            "minecraft": "1.20.2",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "fabric-1.20.3",
+            "artifact": "server_waypoint-4.0.0-fabric-mc1.20.3-1.20.4.jar",
+            "platform": "fabric",
+            "minecraft": "1.20.3",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "fabric-1.20.5",
+            "artifact": "server_waypoint-4.0.0-fabric-mc1.20.5-1.20.6.jar",
+            "platform": "fabric",
+            "minecraft": "1.20.5",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "fabric-1.21",
+            "artifact": "server_waypoint-4.0.0-fabric-mc1.21-1.21.1.jar",
+            "platform": "fabric",
+            "minecraft": "1.21",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "fabric-1.21.11",
+            "artifact": "server_waypoint-4.0.0-fabric-mc1.21.11.jar",
+            "platform": "fabric",
+            "minecraft": "1.21.11",
+            "bot": {
+                "candidate": "0.15.1+mc1.21.11",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "fabric-1.21.2",
+            "artifact": "server_waypoint-4.0.0-fabric-mc1.21.2-1.21.4.jar",
+            "platform": "fabric",
+            "minecraft": "1.21.2",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "fabric-1.21.5",
+            "artifact": "server_waypoint-4.0.0-fabric-mc1.21.5.jar",
+            "platform": "fabric",
+            "minecraft": "1.21.5",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "fabric-1.21.6",
+            "artifact": "server_waypoint-4.0.0-fabric-mc1.21.6-1.21.8.jar",
+            "platform": "fabric",
+            "minecraft": "1.21.6",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "fabric-1.21.9",
+            "artifact": "server_waypoint-4.0.0-fabric-mc1.21.9-1.21.10.jar",
+            "platform": "fabric",
+            "minecraft": "1.21.9",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "fabric-26.1",
+            "artifact": "server_waypoint-4.0.0-fabric-mc26.1-26.1.2.jar",
+            "platform": "fabric",
+            "minecraft": "26.1",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "fabric-26.2",
+            "artifact": "server_waypoint-4.0.0-fabric-mc26.2.jar",
+            "platform": "fabric",
+            "minecraft": "26.2",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "fabric-26.3",
+            "artifact": "server_waypoint-4.0.0-fabric-mc26.3.jar",
+            "platform": "fabric",
+            "minecraft": "26.3",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "forge-1.20",
+            "artifact": "server_waypoint-4.0.0-forge-mc1.20-1.20.1.jar",
+            "platform": "forge",
+            "minecraft": "1.20",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "forge-1.20.2",
+            "artifact": "server_waypoint-4.0.0-forge-mc1.20.2.jar",
+            "platform": "forge",
+            "minecraft": "1.20.2",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "forge-1.20.3",
+            "artifact": "server_waypoint-4.0.0-forge-mc1.20.3-1.20.4.jar",
+            "platform": "forge",
+            "minecraft": "1.20.3",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "forge-1.20.6",
+            "artifact": "server_waypoint-4.0.0-forge-mc1.20.6.jar",
+            "platform": "forge",
+            "minecraft": "1.20.6",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "forge-1.21",
+            "artifact": "server_waypoint-4.0.0-forge-mc1.21-1.21.1.jar",
+            "platform": "forge",
+            "minecraft": "1.21",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "forge-1.21.11",
+            "artifact": "server_waypoint-4.0.0-forge-mc1.21.11.jar",
+            "platform": "forge",
+            "minecraft": "1.21.11",
+            "bot": {
+                "candidate": "0.15.1+mc1.21.11",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "forge-1.21.3",
+            "artifact": "server_waypoint-4.0.0-forge-mc1.21.3-1.21.4.jar",
+            "platform": "forge",
+            "minecraft": "1.21.3",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "forge-1.21.5",
+            "artifact": "server_waypoint-4.0.0-forge-mc1.21.5.jar",
+            "platform": "forge",
+            "minecraft": "1.21.5",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "forge-1.21.6",
+            "artifact": "server_waypoint-4.0.0-forge-mc1.21.6-1.21.8.jar",
+            "platform": "forge",
+            "minecraft": "1.21.6",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "forge-1.21.9",
+            "artifact": "server_waypoint-4.0.0-forge-mc1.21.9-1.21.10.jar",
+            "platform": "forge",
+            "minecraft": "1.21.9",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "forge-26.1",
+            "artifact": "server_waypoint-4.0.0-forge-mc26.1-26.1.2.jar",
+            "platform": "forge",
+            "minecraft": "26.1",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "forge-26.2",
+            "artifact": "server_waypoint-4.0.0-forge-mc26.2.jar",
+            "platform": "forge",
+            "minecraft": "26.2",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "forge-26.3",
+            "artifact": "server_waypoint-4.0.0-forge-mc26.3.jar",
+            "platform": "forge",
+            "minecraft": "26.3",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "neoforge-1.20.2",
+            "artifact": "server_waypoint-4.0.0-neoforge-mc1.20.2.jar",
+            "platform": "neoforge",
+            "minecraft": "1.20.2",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "neoforge-1.20.3",
+            "artifact": "server_waypoint-4.0.0-neoforge-mc1.20.3-1.20.4.jar",
+            "platform": "neoforge",
+            "minecraft": "1.20.3",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "neoforge-1.20.5",
+            "artifact": "server_waypoint-4.0.0-neoforge-mc1.20.5-1.20.6.jar",
+            "platform": "neoforge",
+            "minecraft": "1.20.5",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "neoforge-1.21",
+            "artifact": "server_waypoint-4.0.0-neoforge-mc1.21-1.21.1.jar",
+            "platform": "neoforge",
+            "minecraft": "1.21",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "neoforge-1.21.11",
+            "artifact": "server_waypoint-4.0.0-neoforge-mc1.21.11.jar",
+            "platform": "neoforge",
+            "minecraft": "1.21.11",
+            "bot": {
+                "candidate": "0.15.1+mc1.21.11",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "neoforge-1.21.2",
+            "artifact": "server_waypoint-4.0.0-neoforge-mc1.21.2-1.21.4.jar",
+            "platform": "neoforge",
+            "minecraft": "1.21.2",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "neoforge-1.21.5",
+            "artifact": "server_waypoint-4.0.0-neoforge-mc1.21.5.jar",
+            "platform": "neoforge",
+            "minecraft": "1.21.5",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "neoforge-1.21.6",
+            "artifact": "server_waypoint-4.0.0-neoforge-mc1.21.6.jar",
+            "platform": "neoforge",
+            "minecraft": "1.21.6",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "neoforge-1.21.7",
+            "artifact": "server_waypoint-4.0.0-neoforge-mc1.21.7-1.21.8.jar",
+            "platform": "neoforge",
+            "minecraft": "1.21.7",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "neoforge-1.21.9",
+            "artifact": "server_waypoint-4.0.0-neoforge-mc1.21.9-1.21.10.jar",
+            "platform": "neoforge",
+            "minecraft": "1.21.9",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "neoforge-26.1",
+            "artifact": "server_waypoint-4.0.0-neoforge-mc26.1-26.1.2.jar",
+            "platform": "neoforge",
+            "minecraft": "26.1",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "neoforge-26.2",
+            "artifact": "server_waypoint-4.0.0-neoforge-mc26.2.jar",
+            "platform": "neoforge",
+            "minecraft": "26.2",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "neoforge-26.3",
+            "artifact": "server_waypoint-4.0.0-neoforge-mc26.3.jar",
+            "platform": "neoforge",
+            "minecraft": "26.3",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "paper-1.21",
+            "artifact": "server_waypoint-4.0.0-paper-mc1.21-1.21.8.jar",
+            "platform": "paper",
+            "minecraft": "1.21",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "paper-1.21.11",
+            "artifact": "server_waypoint-4.0.0-paper-mc1.21.11-26.1.2.jar",
+            "platform": "paper",
+            "minecraft": "1.21.11",
+            "bot": {
+                "candidate": "0.15.1+mc1.21.11",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "Paper 1.21.11 build 111; source/bytecode inspection recorded in validation/runtime-evidence.md"
+            ],
+            "java": "/opt/homebrew/Cellar/openjdk@21/21.0.11/libexec/openjdk.jdk/Contents/Home/bin/java",
+            "java_sha256": "04005388bac0c272ea914210ca519ce94b2f873ea3962b9874a6859f74d7f279",
+            "server": "/Volumes/ssd/minecraft_servers/paper/1.21.11/paper-1.21.11-111.jar",
+            "server_sha256": "82a487ab8c2d0f6f072b8dbaedc9218c85ae3a7d167808124462b248955beec3",
+            "argv": [
+                "-Xms1G",
+                "-Xmx2G",
+                "-XX:+UseG1GC",
+                "-jar",
+                "/Volumes/ssd/minecraft_servers/paper/1.21.11/paper-1.21.11-111.jar",
+                "--nogui"
+            ],
+            "capabilities": [
+                "profile"
+            ],
+            "probe": {
+                "path": "",
+                "sha256": ""
+            }
+        },
+        {
+            "id": "paper-1.21.9",
+            "artifact": "server_waypoint-4.0.0-paper-mc1.21.9-1.21.10.jar",
+            "platform": "paper",
+            "minecraft": "1.21.9",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "paper-26.2",
+            "artifact": "server_waypoint-4.0.0-paper-mc26.2-26.3.jar",
+            "platform": "paper",
+            "minecraft": "26.2",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "velocity-proxy",
+            "artifact": "server_waypoint-4.0.0-velocity.jar",
+            "platform": "velocity",
+            "minecraft": "proxy",
+            "bot": {
+                "candidate": "",
+                "verifiedNativeActions": false
+            },
+            "evidence": [
+                "release revision d9f532f8 metadata; native capability not yet verified"
+            ]
+        },
+        {
+            "id": "folia-1.21.11",
+            "artifact": "server_waypoint-4.0.0-paper-mc1.21.11-26.1.2.jar",
+            "platform": "folia",
+            "minecraft": "1.21.11",
+            "evidence": [
+                "Required region anchor; per-region timing remains Task 14"
+            ]
+        }
+    ],
+    "toolchains": {
+        "querz": "com.github.Querz:NBT:6.1",
+        "azalea": "0.15.1+mc1.21.11",
+        "python": "Python 3.14.6",
+        "rust": "rustc 1.97.1 (8bab26f4f 2026-07-14)"
+    }
+}

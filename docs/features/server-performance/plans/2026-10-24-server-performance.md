@@ -116,10 +116,10 @@ for this documentation-only step.
 
 **Interfaces:** Consumes `ArtifactSpec`/`RuntimeSpec`; produces `stage_artifacts`, `check_runtime` and CLI `doctor`. Every runtime lock entry identifies its exact Java/server/loader/bot/probe artifacts.
 
-- [ ] Write `test_filename_cannot_override_digest`, `test_cached_bytes_are_rehashed`, `test_partial_matrix_blocks`, `test_unknown_bot_mapping_blocks`, `test_zero_player_selection_does_not_require_bots`, `test_release_and_head_provenance_differ`. Assert one changed byte rejects staging and a missing required native mapping yields `BLOCKED`, never exclusion; the zero-player selection remains runnable without bot binaries.
-- [ ] Run `rtk proxy python3 -m unittest discover -s tools/server-performance/tests -p 'test_provenance.py' -v`; verify failure before adding the implementation.
-- [ ] Implement staging from hash-verified copies/downloads and runtime lock validation. Populate initial Paper 1.21.11 capability proof; add explicit entries for every other asset/runtime requirement, retaining unverified capabilities as blockers. Pin/check Querz/NBT 6.1, the first Azalea candidate and local toolchains without changing global defaults.
-- [ ] Run tests and `inventory`/`doctor` against the first runtime. Save runtime class/source evidence and exact blocker list. Test all 44 inventory names are accounted for; do not fetch a replacement release automatically if latest changes.
+- [x] Write `test_filename_cannot_override_digest`, `test_cached_bytes_are_rehashed`, `test_partial_matrix_blocks`, `test_unknown_bot_mapping_blocks`, `test_zero_player_selection_does_not_require_bots`, `test_release_and_head_provenance_differ`. Assert one changed byte rejects staging and a missing required native mapping yields `BLOCKED`, never exclusion; the zero-player selection remains runnable without bot binaries.
+- [x] Run `rtk proxy python3 -m unittest discover -s tools/server-performance/tests -p 'test_provenance.py' -v`; verify failure before adding the implementation.
+- [x] Implement staging from hash-verified copies/downloads and runtime lock validation. Populate initial Paper 1.21.11 capability proof; add explicit entries for every other asset/runtime requirement, retaining unverified capabilities as blockers. Pin/check Querz/NBT 6.1, the first Azalea candidate and local toolchains without changing global defaults.
+- [x] Run tests and `inventory`/`doctor` against the first runtime. Save runtime class/source evidence and exact blocker list. Test all 44 inventory names are accounted for; do not fetch a replacement release automatically if latest changes.
 
 ### Task 3: Owned processes and interruption-safe attempt lifecycle
 

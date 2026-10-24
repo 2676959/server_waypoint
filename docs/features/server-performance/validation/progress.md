@@ -15,7 +15,8 @@ Task 3 ownership/stream IDs feed 5/6/7; Task 4 manifests feed 5/7; Task 5 tick
 processing and physical assertions feed 6/7. No conflicting interfaces found.
 
 - Task 1: complete. RED: contracts module missing. GREEN: 8/8 contract tests; inventory expands 240 cases per runtime without launching a server. The release ledger records 293 source registrations/settings. Removing an entrypoint family mapping raises ValueError. Runtime command-tree expansion is reserved for Task 10.
-- Tasks 2–7: pending.
+- Task 2: contracts/staging/preflight complete; 15/15 accumulated Python tests. All 44 immutable assets mapped to explicit native requirements, plus Folia. First release asset staged and rehashed. Initial doctor exits 2 for missing native fixture/timing/probe proofs; see runtime-evidence.md. Querz binary resolution is tracked with Task 4.
+- Tasks 3–7: pending.
 
 Runtime acceptance is tracked separately; simulated processes and contract tests
 do not establish native fixture validity or performance.
