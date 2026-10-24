@@ -138,10 +138,10 @@ for this documentation-only step.
 
 **Interfaces:** Consumes spec section 5 recipes; produces generated `.nbt` structures, JSON manifest and hashes via `generate`/`verify`. Generator output is input to native placement, not a complete validated world by itself.
 
-- [ ] Write `sameRecipeProducesSameTemplates`, `hopperFacingAndInventoryMatchRecipe`, `negativeChunkBoundaryCoordinatesPreserved`, `nestedItemMetadataPreserved`, `rejectsLiveOrExistingOutput`. Assert seed `95920261024`, palette positions/facing, expected item identities/counts, and reproducible content hashes.
-- [ ] Run `rtk ./gradlew -p tools/server-performance/worldgen test`; confirm generator behavior tests fail before implementing it.
-- [ ] Implement Java 17-compatible generic `CompoundTag`/`ListTag` structure serialization with the pinned Querz/NBT API and GSON recipes/manifests. Include idle, four container variants, navigation terrain, A/B and mixed recipes; no high-level legacy MCA conversion or live save edits.
-- [ ] Run tests and generate small fixtures twice in distinct new roots. Independently inspect expected palette/block/entity inventories. Record dependency artifact hash. Native load/save/reopen validation remains Task 5/7 and must stay unchecked here.
+- [x] Write `sameRecipeProducesSameTemplates`, `hopperFacingAndInventoryMatchRecipe`, `negativeChunkBoundaryCoordinatesPreserved`, `nestedItemMetadataPreserved`, `rejectsLiveOrExistingOutput`. Assert seed `95920261024`, palette positions/facing, expected item identities/counts, and reproducible content hashes.
+- [x] Run `rtk ./gradlew -p tools/server-performance/worldgen test`; confirm generator behavior tests fail before implementing it.
+- [x] Implement Java 17-compatible generic `CompoundTag`/`ListTag` structure serialization with the pinned Querz/NBT API and GSON recipes/manifests. Include idle, four container variants, navigation terrain, A/B and mixed recipes; no high-level legacy MCA conversion or live save edits.
+- [x] Run tests and generate small fixtures twice in distinct new roots. Independently inspect expected palette/block/entity inventories. Record dependency artifact hash. Native load/save/reopen validation remains Task 5/7 and must stay unchecked here.
 
 ### Task 5: Paper probe, native fixture validation and tick boundaries
 

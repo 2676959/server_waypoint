@@ -1,0 +1,79 @@
+{
+    "schemaVersion": 1,
+    "id": "cross-server-b-stress",
+    "targetRuntime": "paper-1.21.11",
+    "seed": 95920261024,
+    "dataVersion": 4671,
+    "bounds": {
+        "min": [
+            -17,
+            64,
+            -17
+        ],
+        "max": [
+            48,
+            66,
+            112
+        ]
+    },
+    "structures": [
+        {
+            "file": "cell.nbt",
+            "size": [
+                1,
+                1,
+                1
+            ],
+            "palette": [
+                {
+                    "Name": "minecraft:stone"
+                }
+            ],
+            "blocks": [
+                {
+                    "pos": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "state": 0
+                }
+            ],
+            "entities": []
+        }
+    ],
+    "placements": [
+        {
+            "x": -17,
+            "y": 64,
+            "z": -17
+        }
+    ],
+    "initialInventories": {
+        "item": null,
+        "cells": 0
+    },
+    "waypointDataset": {
+        "count": 50000,
+        "dimensions": 3,
+        "lists": 500
+    },
+    "activation": {
+        "type": "none"
+    },
+    "expectedState": [
+        {
+            "offset": [
+                0,
+                0,
+                0
+            ],
+            "material": "STONE",
+            "items": []
+        }
+    ],
+    "requiredTickingRegions": [
+        "overworld:fixture"
+    ],
+    "hashes": {}
+}

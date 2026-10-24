@@ -1,0 +1,299 @@
+{
+    "schemaVersion": 1,
+    "id": "container-stone-small",
+    "targetRuntime": "paper-1.21.11",
+    "seed": 95920261024,
+    "dataVersion": 4671,
+    "bounds": {
+        "min": [
+            -17,
+            64,
+            -17
+        ],
+        "max": [
+            48,
+            66,
+            112
+        ]
+    },
+    "structures": [
+        {
+            "file": "cell.nbt",
+            "size": [
+                2,
+                2,
+                2
+            ],
+            "palette": [
+                {
+                    "Name": "minecraft:hopper",
+                    "Properties": {
+                        "facing": "east",
+                        "enabled": "false"
+                    }
+                },
+                {
+                    "Name": "minecraft:hopper",
+                    "Properties": {
+                        "facing": "south",
+                        "enabled": "false"
+                    }
+                },
+                {
+                    "Name": "minecraft:hopper",
+                    "Properties": {
+                        "facing": "west",
+                        "enabled": "false"
+                    }
+                },
+                {
+                    "Name": "minecraft:hopper",
+                    "Properties": {
+                        "facing": "north",
+                        "enabled": "false"
+                    }
+                },
+                {
+                    "Name": "minecraft:redstone_block"
+                }
+            ],
+            "blocks": [
+                {
+                    "pos": [
+                        0,
+                        1,
+                        0
+                    ],
+                    "state": 0,
+                    "nbt": {
+                        "id": "minecraft:hopper",
+                        "Items": [
+                            {
+                                "Slot": 0,
+                                "id": "minecraft:stone",
+                                "count": 16
+                            }
+                        ]
+                    }
+                },
+                {
+                    "pos": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "state": 4
+                },
+                {
+                    "pos": [
+                        1,
+                        1,
+                        0
+                    ],
+                    "state": 1,
+                    "nbt": {
+                        "id": "minecraft:hopper",
+                        "Items": []
+                    }
+                },
+                {
+                    "pos": [
+                        1,
+                        0,
+                        0
+                    ],
+                    "state": 4
+                },
+                {
+                    "pos": [
+                        1,
+                        1,
+                        1
+                    ],
+                    "state": 2,
+                    "nbt": {
+                        "id": "minecraft:hopper",
+                        "Items": []
+                    }
+                },
+                {
+                    "pos": [
+                        1,
+                        0,
+                        1
+                    ],
+                    "state": 4
+                },
+                {
+                    "pos": [
+                        0,
+                        1,
+                        1
+                    ],
+                    "state": 3,
+                    "nbt": {
+                        "id": "minecraft:hopper",
+                        "Items": []
+                    }
+                },
+                {
+                    "pos": [
+                        0,
+                        0,
+                        1
+                    ],
+                    "state": 4
+                }
+            ],
+            "entities": []
+        }
+    ],
+    "placements": [
+        {
+            "x": -17,
+            "y": 64,
+            "z": -17
+        },
+        {
+            "x": -13,
+            "y": 64,
+            "z": -17
+        },
+        {
+            "x": -9,
+            "y": 64,
+            "z": -17
+        },
+        {
+            "x": -5,
+            "y": 64,
+            "z": -17
+        },
+        {
+            "x": -1,
+            "y": 64,
+            "z": -17
+        },
+        {
+            "x": 3,
+            "y": 64,
+            "z": -17
+        },
+        {
+            "x": 7,
+            "y": 64,
+            "z": -17
+        },
+        {
+            "x": 11,
+            "y": 64,
+            "z": -17
+        },
+        {
+            "x": 15,
+            "y": 64,
+            "z": -17
+        },
+        {
+            "x": 19,
+            "y": 64,
+            "z": -17
+        },
+        {
+            "x": 23,
+            "y": 64,
+            "z": -17
+        },
+        {
+            "x": 27,
+            "y": 64,
+            "z": -17
+        },
+        {
+            "x": 31,
+            "y": 64,
+            "z": -17
+        },
+        {
+            "x": 35,
+            "y": 64,
+            "z": -17
+        },
+        {
+            "x": 39,
+            "y": 64,
+            "z": -17
+        },
+        {
+            "x": 43,
+            "y": 64,
+            "z": -17
+        }
+    ],
+    "initialInventories": {
+        "item": {
+            "id": "minecraft:stone",
+            "count": 16
+        },
+        "cells": 16
+    },
+    "waypointDataset": {
+        "count": 1000,
+        "dimensions": 3,
+        "lists": 10
+    },
+    "activation": {
+        "type": "remove-power-below"
+    },
+    "expectedState": [
+        {
+            "offset": [
+                0,
+                1,
+                0
+            ],
+            "material": "HOPPER",
+            "facing": "EAST",
+            "items": [
+                {
+                    "id": "minecraft:stone",
+                    "count": 16
+                }
+            ]
+        },
+        {
+            "offset": [
+                1,
+                1,
+                0
+            ],
+            "material": "HOPPER",
+            "facing": "SOUTH",
+            "items": []
+        },
+        {
+            "offset": [
+                1,
+                1,
+                1
+            ],
+            "material": "HOPPER",
+            "facing": "WEST",
+            "items": []
+        },
+        {
+            "offset": [
+                0,
+                1,
+                1
+            ],
+            "material": "HOPPER",
+            "facing": "NORTH",
+            "items": []
+        }
+    ],
+    "requiredTickingRegions": [
+        "overworld:fixture"
+    ],
+    "hashes": {}
+}

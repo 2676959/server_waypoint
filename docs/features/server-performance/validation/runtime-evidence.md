@@ -25,3 +25,7 @@ Source archive: Gradle cached `paper-api:1.21.11-R0.1-SNAPSHOT` at hash director
 45 runtime requirement rows account for 44 assets plus a separate Folia anchor. The inventory expands 10,800 cases. These are requirements, not completed coverage.
 
 Paper zero-player doctor initially exits 2: fixture, tick-processing, zero-player-ticking and probe are unverified. Other runtime Java/server/probe mappings remain explicit blockers. Full selections also require verified native bot/action/wire capabilities.
+
+## Querz resolution and deterministic output
+
+Resolved `com.github.Querz:NBT:6.1`, SHA-256 `5b8e868ea6690d7c606e6deb0d3d6167f4b1c0fcffa2b6170b7cb1e9819b969d`. Generic tags inspected against the resolved binary with javap. Five generator tests pass, including facing/count, nested Mending data and negative chunk coordinates. Two independent shulker fixture outputs have identical template and manifest bytes; template SHA-256 `73945b2b13294ad49c97328a8146279f7cc5e5c38f680f9672fe8240ac9c92b3`. Native placement/save/reopen is pending Task 5.
