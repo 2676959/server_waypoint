@@ -33,3 +33,7 @@ Resolved `com.github.Querz:NBT:6.1`, SHA-256 `5b8e868ea6690d7c606e6deb0d3d6167f4
 ## Native probe and reopen
 
 Native no-plugin control boots successfully. Generated shulker/books fixture placed at 16 cells across negative/chunk-boundary coordinates, verified each hopper facing and exact initial item/enchantment metadata, quiesced, saved, stopped and reopened. `reopen.json` reports verified/reopened/conserved true and 64 force-loaded hoppers. Evidence: `/Volumes/ssd/sw-performance-m0-native-fixture-3/`. Probe/production archive inspection confirms no overlapping classes and no probe classes in the published production JAR. Native samples use Paper ServerTickEndEvent processing duration. Initial failed attempts (constructor world access and hidden console command) are retained in roots without suffix and `-2`; neither is performance evidence. Overhead and timed controls follow in Tasks 6/7.
+
+## Native metric/JFR calibration
+
+Unprofiled and separately JFR-profiled frozen-world idle runs each use 30s warmup and 60s measurement. Roots: `/Volumes/ssd/sw-performance-m0-measurements/idle` and `idle-profile`; raw native tick samples and full logs retained. JFR local save/start/stop succeeded; `profiles/idle.jfr` exists and is hashed in the stop evidence. No upload occurred. This calibration uses the Task 5 probe build; later workload instrumentation has a different fingerprint and is matched again in each pair. Single calibration repetitions do not satisfy the three-repeat gate.

@@ -160,10 +160,10 @@ for this documentation-only step.
 
 **Interfaces:** Produces `evaluate`, `write_report`, nearest-rank sample summaries and local spark/JFR evidence. `run_case` returns a typed `CaseResult` even when capture or sampling fails.
 
-- [ ] Write `test_p99_not_callback_spacing`, `test_bad_repeat_not_averaged_away`, `test_thread_allocations_not_process_allocations`, `test_profile_failure_retains_measured_failure`, `test_empty_or_wrong_unit_samples_inconclusive`, `test_complete_failing_audit_is_not_incomplete`. Assert p95=40 ms violates strict `<40`; 5 ms/2,097,152 bytes satisfy the inclusive inventory limits.
-- [ ] Run `rtk proxy python3 -m unittest discover -s tools/server-performance/tests -p 'test_measurements.py' -v`; confirm missing calculations/decisions fail.
-- [ ] Implement sample validation, 30/60-second phases, three independent repetitions, absolute/relative decisions, scope/clock metadata and provisional-budget classification. Capture local profiles with capability-checked save/cancel paths; never auto-upload. Preserve raw samples and incompatible pair reasons.
-- [ ] Run tests, then an idle Paper sample plus profiled diagnostic rerun. Verify measured processing vs wall spacing, profile files exist and no report claims an unprofiled or unsupported metric. Inject a missing profiler/NaN/empty sample and confirm honest status.
+- [x] Write `test_p99_not_callback_spacing`, `test_bad_repeat_not_averaged_away`, `test_thread_allocations_not_process_allocations`, `test_profile_failure_retains_measured_failure`, `test_empty_or_wrong_unit_samples_inconclusive`, `test_complete_failing_audit_is_not_incomplete`. Assert p95=40 ms violates strict `<40`; 5 ms/2,097,152 bytes satisfy the inclusive inventory limits.
+- [x] Run `rtk proxy python3 -m unittest discover -s tools/server-performance/tests -p 'test_measurements.py' -v`; confirm missing calculations/decisions fail.
+- [x] Implement sample validation, 30/60-second phases, three independent repetitions, absolute/relative decisions, scope/clock metadata and provisional-budget classification. Capture local profiles with capability-checked save/cancel paths; never auto-upload. Preserve raw samples and incompatible pair reasons.
+- [x] Run tests, then an idle Paper sample plus profiled diagnostic rerun. Verify measured processing vs wall spacing, profile files exist and no report claims an unprofiled or unsupported metric. Inject a missing profiler/NaN/empty sample and confirm honest status.
 
 ### Task 7: Known inventory reproduction and zero-player physical worlds
 

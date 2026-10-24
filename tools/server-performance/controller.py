@@ -3,6 +3,7 @@ from dataclasses import replace
 from pathlib import Path
 import socket
 import uuid
+import time
 
 from contracts import atomic_write, read_document, safe_name
 from models import AttemptRecord
@@ -84,3 +85,40 @@ class Attempt:
             self.record = replace(self.record, state="INTERRUPTED" if interrupted else "FAILED", reason=str(error) or kind.__name__, exit_code=130 if interrupted else 2)
             atomic_write(self.path, self.record)
         return False
+
+
+def collect_window(driver, phase, seconds, workload=None):
+    """Server acknowledges phase boundaries; Python only controls the deadline."""
+    driver.send("scenario.start", {"phase": phase, **(workload or {})})
+    initial = driver.wait("scenario.started")["data"]
+    deadline = time.monotonic() + seconds
+    samples = []
+    from profiles import whole_process_sample
+    process_samples = []
+    next_process_sample = 0
+    while time.monotonic() < deadline:
+        if time.monotonic() >= next_process_sample:
+            process_samples.append(whole_process_sample(driver.process.pid))
+            next_process_sample = time.monotonic() + 1
+        for event in driver.poll():
+            if event["type"] == "sample":
+                if event["data"]["phase"] != phase:
+                    raise ValueError("sample from wrong measurement phase")
+                samples.append(event["data"])
+            elif event["type"] == "error":
+                raise ValueError(event["data"])
+        if driver.process.process.poll() is not None:
+            raise RuntimeError("server exited during measurement")
+        time.sleep(0.025)
+    driver.send("scenario.stop")
+    stop_deadline = time.monotonic() + 30
+    while time.monotonic() < stop_deadline:
+        for event in driver.poll():
+            if event["type"] == "sample":
+                samples.append(event["data"])
+            elif event["type"] == "scenario.stopped":
+                return {"schemaVersion": 1, "phase": phase, "seconds": event["data"]["phaseElapsedSeconds"], "initial": initial, "final": event["data"], "samples": samples, "processSamples": process_samples}
+            elif event["type"] == "error":
+                raise ValueError(event["data"])
+        time.sleep(0.025)
+    raise TimeoutError("server did not acknowledge measurement completion")

@@ -68,7 +68,9 @@ def boot(runtime, root, control, artifact_hash="", attempt_id=None):
     root = Path(root)
     marker = owned_root(root)
     identifier = attempt_id or str(uuid.uuid4())
-    process = start_owned([runtime.java, "-Xms1G", "-Xmx2G", "-XX:+UseG1GC", "-jar", "server.jar", "--nogui"], root, root / f"server-{identifier}.log")
+    argv = [runtime.java, "-Xms1G", "-Xmx2G", "-XX:+UseG1GC", f"-Xlog:gc*:file=gc-{identifier}.log:time,uptime,level,tags", "-jar", "server.jar", "--nogui"]
+    atomic_write(root / f"argv-{identifier}.json", {"schemaVersion": 1, "argv": argv})
+    process = start_owned(argv, root, root / f"server-{identifier}.log")
     try:
         deadline = time.monotonic() + 120
         while "Done (" not in process.log.read_text(errors="replace"):
