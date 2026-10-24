@@ -90,3 +90,21 @@ def load_runtimes(path):
     if len({r.id for r in entries}) != len(entries):
         raise ValueError("duplicate runtime")
     return tuple(entries)
+
+
+def load_case(value):
+    from models import CaseSpec
+    value = dict(value)
+    for key in ("metrics", "budgets"):
+        value[key] = tuple(value[key])
+    return CaseSpec(**value)
+
+
+def load_result(path):
+    from models import CaseResult, Decision, MetricSample, Status
+    value = read_document(path)
+    value["case"] = load_case(value["case"])
+    decision = value["decision"]
+    value["decision"] = Decision(Status(decision["status"]), tuple(decision["reasons"]))
+    value["samples"] = tuple(MetricSample(**sample) for sample in value["samples"])
+    return CaseResult(**value)

@@ -4,6 +4,7 @@ from pathlib import Path
 import socket
 import uuid
 import time
+import os
 
 from contracts import atomic_write, read_document, safe_name
 from models import AttemptRecord
@@ -13,10 +14,15 @@ PREPARATION = ("CREATED", "ARTIFACTS_VERIFIED", "FIXTURES_VALIDATED", "PREPARED"
 REPOSITORY = Path(__file__).resolve().parents[2]
 
 
+class NativeFailure(RuntimeError):
+    """A ready runtime crashed/watchdogged instead of completing its workload."""
+
+
 def reject_aliases(path):
     path = Path(path).absolute()
     if any(parent.is_symlink() for parent in (path, *path.parents)):
         raise ValueError("symlink runtime root/ancestor refused")
+    path = Path(os.path.normpath(path))
     if path == REPOSITORY or REPOSITORY in path.parents:
         raise ValueError("writable runtime roots must be outside the checkout")
     return path
@@ -108,7 +114,7 @@ def collect_window(driver, phase, seconds, workload=None):
             elif event["type"] == "error":
                 raise ValueError(event["data"])
         if driver.process.process.poll() is not None:
-            raise RuntimeError("server exited during measurement")
+            raise NativeFailure("server exited during measurement")
         time.sleep(0.025)
     driver.send("scenario.stop")
     stop_deadline = time.monotonic() + 30

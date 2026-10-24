@@ -22,13 +22,20 @@ def report_axes(expected, observed):
     return {"complete": not missing, "missing": missing, "decision": combine_decisions(decisions)}
 
 
+def observed_decisions(results):
+    groups = {}
+    for result in results:
+        groups.setdefault(result.case.id, []).append(result.decision)
+    return {identifier: combine_decisions(decisions) for identifier, decisions in groups.items()}
+
+
 def exit_code(decision):
     return 1 if decision.status == Status.FAIL else 0 if decision.status in (Status.PASS, Status.NOT_APPLICABLE) else 2
 
 
 def write_report(run, root):
     root = Path(root)
-    axes = report_axes(run.expected, {result.case.id: result.decision for result in run.results})
+    axes = report_axes(run.expected, observed_decisions(run.results))
     atomic_write(root / "report.json", {"schemaVersion": 1, "run": run, "axes": axes})
     atomic_write(root / "coverage.json", {"schemaVersion": 1, **axes, "partialSelection": run.partial})
     failures = [result for result in run.results if result.decision.status == Status.FAIL]

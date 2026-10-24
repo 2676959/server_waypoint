@@ -31,6 +31,7 @@ final class PaperTickProbe implements Listener {
         sample.addProperty("clock", "server-monotonic");
         sample.addProperty("scope", "server-thread");
         sample.addProperty("regionId", "global");
+        plugin.addWorkloadSample(sample);
         plugin.emit("sample", sample);
     }
 }

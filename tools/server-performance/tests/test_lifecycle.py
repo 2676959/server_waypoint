@@ -5,6 +5,7 @@ import socket
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 from pathlib import Path
 
@@ -29,6 +30,9 @@ class LifecycleTest(unittest.TestCase):
         alias.symlink_to(self.base, target_is_directory=True)
         with self.assertRaises(ValueError):
             create_root(alias / "new")
+        from controller import REPOSITORY, reject_aliases
+        with self.assertRaises(ValueError):
+            reject_aliases(REPOSITORY.parent / ".." / REPOSITORY.parent.name / REPOSITORY.name / "new")
 
     def test_only_owned_process_group_stopped(self):
         sentinel = subprocess.Popen([sys.executable, str(CHILD)], stdin=subprocess.PIPE, stdout=subprocess.DEVNULL)
@@ -75,3 +79,23 @@ class LifecycleTest(unittest.TestCase):
         attempt = Attempt(create_root(self.base / "owned"), "case")
         with self.assertRaises(ValueError):
             attempt.transition("MEASURING")
+
+    def test_owned_descendant_cannot_survive_parent_stop(self):
+        root = create_root(self.base / "owned")
+        pid_file = root / "descendant.pid"
+        process = start_owned([sys.executable, str(CHILD), str(pid_file)], root, root / "server.log")
+        deadline = time.monotonic() + 3
+        while not pid_file.exists() and time.monotonic() < deadline:
+            time.sleep(0.01)
+        pid = int(pid_file.read_text())
+        time.sleep(0.1)
+        try:
+            stop_owned(process, 0.2)
+            time.sleep(0.1)
+            with self.assertRaises(ProcessLookupError):
+                os.kill(pid, 0)
+        finally:
+            try:
+                os.kill(pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass

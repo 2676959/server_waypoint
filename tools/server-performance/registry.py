@@ -36,7 +36,7 @@ def expand_cases(features, scenarios, runtimes, mode, tiers):
                         scenario["feature"], variant, tier, mode,
                         variant if scenario["feature"] == "world-container" else scenario["fixture"],
                         tuple(scenario["metrics"]), tuple(scenario["budgets"]),
-                        clients=scenario["clients"], offered_rate=scenario.get("rates", {}).get(tier, 0),
+                        clients=1 if variant == "navigation-100" else scenario["clients"], offered_rate=scenario.get("rates", {}).get(tier, 0),
                         applicability_reason=reason))
     return tuple(sorted(result, key=lambda case: case.id))
 

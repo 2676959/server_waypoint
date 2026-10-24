@@ -2,6 +2,7 @@
 from contracts import read_document
 from metrics import summarize, incremental
 from models import Decision, Status
+import math
 
 
 def compare_relative(candidate, baseline, unit, candidate_identity, baseline_identity, approved, noise_floor):
@@ -31,6 +32,9 @@ def evaluate(result, budgets):
     for index, repetition in enumerate(repetitions, 1):
         prefix = f"repeat {index}"
         try:
+            if any(not math.isfinite(repetition.get(key, 0)) or repetition.get(key, 0) < 0 for key in ("warmupSeconds", "measurementSeconds")):
+                incomplete.append(f"{prefix}: invalid phase duration")
+                continue
             ticks = summarize(repetition.get("tickNs", []), "ns")
             if ticks["count"] < result.case.minimum_samples:
                 incomplete.append(f"{prefix}: too few native samples")

@@ -1,7 +1,9 @@
 # Server performance
 
-Status: design approved on 2026-10-24; implementation specification and staged plan
-written. The performance suite, repairs, and release gate are not implemented.
+Status: M0 implementation is in progress on 2026-10-24. Contracts, immutable inputs,
+owned processes, deterministic fixtures, the Paper probe and metric decisions are
+implemented. Native measured reproduction is running; repairs and release gates
+remain later milestones. See the execution progress for evidence and limitations.
 
 The first delivery is a comprehensive audit of the published 4.0.0 release across
 different load tiers, followed by repairs and repeated measurements. Future PRs can
@@ -26,6 +28,10 @@ continue running throughout the sample.
 - [Acceptance checklist — not execution evidence](validation/2026-10-24-acceptance-checklist.md)
 - [Verified current-release scope](validation/2026-10-24-release-scope.md)
 - [Published artifact inventory and hashes](validation/2026-10-24-release-assets.json)
+- [Execution progress](validation/progress.md)
+- [Coverage requirements ledger](validation/coverage-ledger.md)
+- [Runtime evidence](validation/runtime-evidence.md)
+- [Tool commands](../../../tools/server-performance/README.md)
 
 The plan first delivers a Paper zero-player reproduction, then covers remaining features
 and platforms and freezes the original-release audit before repairs. Component benchmarks,

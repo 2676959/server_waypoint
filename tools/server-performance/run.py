@@ -2,4 +2,9 @@
 from cli import main
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    try:
+        raise SystemExit(main())
+    except (ValueError, OSError, RuntimeError, TimeoutError) as error:
+        import sys
+        print(f"BLOCKED: {error}", file=sys.stderr)
+        raise SystemExit(2)

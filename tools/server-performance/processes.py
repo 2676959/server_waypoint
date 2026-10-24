@@ -4,6 +4,7 @@ from pathlib import Path
 import signal
 import subprocess
 import uuid
+import time
 
 from controller import owned_root
 from models import OwnedProcess
@@ -49,6 +50,16 @@ def stop_owned(process, grace_seconds):
         # Reap any child descendants left in this freshly-created group.
         try:
             os.killpg(process.pgid, signal.SIGTERM)
+            deadline = time.monotonic() + grace_seconds
+            while True:
+                try:
+                    os.killpg(process.pgid, 0)
+                except ProcessLookupError:
+                    break
+                if time.monotonic() >= deadline:
+                    os.killpg(process.pgid, signal.SIGKILL)
+                    break
+                time.sleep(0.01)
         except ProcessLookupError:
             pass
     finally:

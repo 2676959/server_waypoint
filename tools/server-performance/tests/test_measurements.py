@@ -7,8 +7,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from metrics import summarize
 from budgets import evaluate
-from reporting import report_axes, combine_decisions
-from models import CaseSpec, CaseResult, Decision, Status
+from reporting import report_axes, combine_decisions, write_report
+from models import CaseSpec, CaseResult, Decision, Status, RunRecord
 from profiles import start_jfr
 
 CONFIG = Path(__file__).resolve().parents[1] / "config/budgets.json"
@@ -79,3 +79,18 @@ class MeasurementsTest(unittest.TestCase):
         self.assertEqual(Status.INCONCLUSIVE, compare_relative([2], [1], "ns", {"host": "a"}, {"host": "b"}, True, 0).status)
         self.assertEqual(Status.FAIL, compare_relative([2_000_000], [1_000_000], "ns", {}, {}, True, 500_000).status)
         self.assertEqual(Status.PASS, compare_relative([1_400_000], [1_000_000], "ns", {}, {}, True, 500_000).status)
+
+    def test_successful_retry_cannot_erase_independent_failure(self):
+        import json
+        result = self.result()
+        failed = dataclasses.replace(result, decision=Decision(Status.FAIL, ("measured defect",)))
+        passed = dataclasses.replace(result, decision=Decision(Status.PASS))
+        with tempfile.TemporaryDirectory() as directory:
+            write_report(RunRecord("run", (failed, passed), (result.case.id,)), Path(directory))
+            document = json.loads((Path(directory) / "report.json").read_text())
+            self.assertEqual("FAIL", document["axes"]["decision"]["status"])
+
+    def test_nonfinite_phase_window_cannot_pass(self):
+        result = self.result()
+        result.observations["repetitions"][0]["measurementSeconds"] = float("nan")
+        self.assertEqual(Status.INCONCLUSIVE, evaluate(result, CONFIG).status)

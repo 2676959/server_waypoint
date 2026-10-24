@@ -20,7 +20,22 @@ processing and physical assertions feed 6/7. No conflicting interfaces found.
 - Task 4: complete. RED: StructureWriter absent (compileTestJava failure). GREEN: 5/5 generator tests; two independently generated outputs match exactly and pass manifest verification. Querz 6.1 binary hash recorded. Recipes cover nine fixture families at three tiers; native state validation remains Task 5. Test temporary roots are canonicalized because macOS /var is a symlink.
 - Task 5: complete. RED: Python worlds module and Java ProbeCommand absent. GREEN: 27 Python contract/lifecycle/provenance/probe tests and 2 Java contract tests; fully qualified contract/Paper probe tasks pass. Native no-plugin place/save/reopen and nested item validation pass; production/probe archives have no overlapping classes. Timed overhead controls follow Task 6.
 - Task 6: complete. RED: metrics module absent. GREEN: 10 focused measurement tests (37 accumulated before Task 7). Native idle and separately profiled idle each use 30s warmup + 60s measurement, retaining 1,201 and 1,200 native tick samples. JFR start/stop both succeed and the local recording exists. These single-repetition calibration samples are not a three-repeat gate result. Whole-process CPU/RSS snapshots and GC logs are separate from named-thread allocations in subsequent runs.
-- Task 7: in progress. RED: scenario module absent. GREEN: 6 scenario classification tests; native workload execution pending.
+- Task 7: implementation and review fixes complete; measured audit in progress. RED: scenario module absent. GREEN: 54 accumulated Python tests, plus successful common/cross-server tests, 2 probe-contract Java tests, native probe build and production Paper 1.21.11 archive build. Active Stonecutter targets unchanged. Native activity smoke: 224 observed inventory increases in 100 ticks, zero players, pause threshold 0, 16 top-level items conserved. Fresh three-repeat medium synthetic and physical measurements run under `/Volumes/ssd/sw-performance-m0-final-audit`; a following independent idle case is scheduled. Runtime completion remains unchecked until outputs are inspected.
 
 Runtime acceptance is tracked separately; simulated processes and contract tests
 do not establish native fixture validity or performance.
+
+## Final review and rulings
+
+The executing-plans/requesting-code-review workflow requested one independent read-only reviewer. It reported the issues below; its session hit its usage limit before returning a formal final verdict. Findings were checked against source and addressed with regressions. No second review was dispatched.
+
+- Retry aggregation: a subsequent result could hide an earlier failure. RED/GREEN: `test_successful_retry_cannot_erase_independent_failure`; persisted runs retain all attempts and combine their decisions.
+- Partial numeric failures: later setup/profile/cleanup errors could erase measured failures. RED/GREEN: `test_later_setup_error_retains_already_measured_failure`; partial cases are saved before quiescence/profiler teardown. A ready native crash is FAIL (`test_native_measurement_crash_is_failure`).
+- Fixture/config binding: frozen world hashes did not bind the manifest/config bytes actually consumed. RED/GREEN: `test_changed_fixture_or_copied_config_is_rejected`; generated manifests/templates and copied runtime/release/budget/selection files are sealed.
+- Owned descendants: a descendant ignoring SIGTERM could outlive its parent. RED/GREEN: `test_owned_descendant_cannot_survive_parent_stop`; bounded group escalation now covers descendants.
+
+Ruling: treat lexical `..` root aliases and nonfinite helper inputs as important correctness issues despite the reviewer's lower severity: they could bypass writable-root scope or produce a numeric pass through public helpers. RED/GREEN regressions reject both. Cost if wrong: stricter rejection of malformed inputs.
+
+Ruling: navigation-session synthetic variants require an actual player and are excluded from the explicitly zero-player selection; their recorded requirements remain for M1. Dataset/settings idle variants retain BLOCKED status pending Task 10 rather than running an empty world under those names. Cost if wrong: those variants have no M0 native execution evidence.
+
+Ruling: physical throughput uses a provisional 75% of matched active control threshold (the initial 25% regression calibration); 40 consecutive native ticks with no movement invalidate a control and fail an active candidate. These are discovery calibration inputs, not a production SLA. Cost if wrong: physical case classification needs recalibration; raw counters/windows remain available.

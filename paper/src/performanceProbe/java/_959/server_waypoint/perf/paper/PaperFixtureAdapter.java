@@ -188,6 +188,8 @@ final class PaperFixtureAdapter {
     JsonObject snapshot() {
         JsonObject result = new JsonObject();
         result.addProperty("onlinePlayers", Bukkit.getOnlinePlayers().size());
+        result.addProperty("paused", Bukkit.getServer().isPaused());
+        result.addProperty("pauseWhenEmptySeconds", Bukkit.getPauseWhenEmptyTime());
         result.addProperty("physicalTransfersObserved", physicalChanges);
         result.addProperty("physicalCounterUnit", "observed-inventory-increases");
         result.addProperty("forceLoadedHoppers", hoppers.stream().filter(b -> world.isChunkForceLoaded(b.getX() >> 4, b.getZ() >> 4)).count());

@@ -19,10 +19,16 @@ public final class PaperPerformanceProbe extends JavaPlugin {
     private boolean sampling;
     private String phase = "WARMUP";
     private long phaseStarted;
+    private final InventoryWorkload workload = new InventoryWorkload();
 
     @Override public void onEnable() {
         fixture = new PaperFixtureAdapter();
         Bukkit.getPluginManager().registerEvents(new PaperTickProbe(this, fixture), this);
+        Bukkit.getScheduler().runTaskTimer(this, () -> {
+            if (sampling) {
+                workload.tick();
+            }
+        }, 1, 1);
     }
 
     boolean sampling() {
@@ -36,6 +42,15 @@ public final class PaperPerformanceProbe extends JavaPlugin {
     void emit(String type, JsonObject value) {
         if (writer != null) {
             writer.write(type, value);
+        }
+    }
+
+    void addWorkloadSample(JsonObject sample) {
+        workload.addSample(sample);
+        try {
+            sample.addProperty("navigationSessions", InventoryWorkload.navigationSessions());
+        } catch (ReflectiveOperationException exception) {
+            sample.addProperty("navigationSessions", -1);
         }
     }
 
@@ -75,6 +90,7 @@ public final class PaperPerformanceProbe extends JavaPlugin {
                     emit("fixture.quiesced", fixture.snapshot());
                 }
                 case "scenario.start" -> {
+                    workload.configure(data);
                     phase = data.has("phase") ? data.get("phase").getAsString() : "WARMUP";
                     phaseStarted = System.nanoTime();
                     sampling = true;

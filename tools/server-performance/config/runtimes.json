@@ -531,7 +531,8 @@
                 "verifiedNativeActions": false
             },
             "evidence": [
-                "Paper 1.21.11 build 111; source/bytecode inspection recorded in validation/runtime-evidence.md"
+                "Paper 1.21.11 build 111; source/bytecode inspection recorded in validation/runtime-evidence.md",
+                "/Volumes/ssd/sw-performance-m0-activity-smoke/activity.json: 100 native ticks, 224 observed transfers, zero players, pause threshold 0, conserved 16 items"
             ],
             "java": "/opt/homebrew/Cellar/openjdk@21/21.0.11/libexec/openjdk.jdk/Contents/Home/bin/java",
             "java_sha256": "04005388bac0c272ea914210ca519ce94b2f873ea3962b9874a6859f74d7f279",
@@ -546,11 +547,14 @@
                 "--nogui"
             ],
             "capabilities": [
-                "profile"
+                "profile",
+                "fixture",
+                "tick-processing",
+                "zero-player-ticking"
             ],
             "probe": {
                 "path": "/Volumes/ssd/fabric_mods_repo/server_waypoint/paper/versions/1.21.11-paper/build/libs/server-waypoint-performance-paper-probe.jar",
-                "sha256": "918f362080218f03eeed18f59b5aca2651bb6ae117c09b1a3d5c7f36b9cd2f37"
+                "sha256": "ab79b35462f8b5e1c33a5da254ac4f7434fa3a524c70373dc69c71c1e60b9430"
             }
         },
         {
