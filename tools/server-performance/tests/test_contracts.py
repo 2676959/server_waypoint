@@ -65,6 +65,20 @@ class ContractsTest(unittest.TestCase):
         self.assertEqual(1, json.loads(value)["schemaVersion"])
         self.assertEqual("BLOCKED", json.loads(value)["status"])
 
+    def test_m0_offered_demand_matches_native_units(self):
+        cases = expand_cases(CONFIG / "features.json", CONFIG / "scenarios.json", (), "audit", ("medium",))
+        offered = {(case.feature, case.variant): case.offered_rate for case in cases}
+        self.assertEqual(100, offered[("inventory-regression", "shulker-books-100")])
+        self.assertEqual(1000, offered[("inventory-regression", "shulker-books-1000")])
+        self.assertEqual(128, offered[("world-container", "container-stone")])
+        self.assertEqual(0, offered[("idle", "empty")])
+
+    def test_client_only_mixins_have_source_backed_exclusions(self):
+        value = contracts.read_document(CONFIG / "features.json")
+        entries = [entry for entry in value["entrypoints"] if entry["source"].endswith("/GameRendererMixin.java")]
+        self.assertTrue(entries)
+        self.assertTrue(all(entry.get("exclusion_reason") for entry in entries))
+
 
 if __name__ == "__main__":
     unittest.main()

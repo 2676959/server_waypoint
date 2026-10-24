@@ -31,12 +31,19 @@ def expand_cases(features, scenarios, runtimes, mode, tiers):
                     reason = ""
                     if scenario["feature"] == "private-development" and mode == "audit":
                         reason = "Private is absent at published release d9f532f8; development-only storage."
+                    offered_rate = scenario.get("rates", {}).get(tier, 0)
+                    if scenario["feature"] == "inventory-regression":
+                        offered_rate = int(variant.rsplit("-", 1)[1])
+                    elif scenario["feature"] == "world-container":
+                        offered_rate = {"small": 16, "medium": 128, "stress": 512}[tier]
+                    elif scenario["feature"] == "idle":
+                        offered_rate = 0
                     result.append(CaseSpec(
                         f"{runtime_id}:{scenario['feature']}:{variant}:{tier}", runtime_id,
                         scenario["feature"], variant, tier, mode,
                         variant if scenario["feature"] == "world-container" else scenario["fixture"],
                         tuple(scenario["metrics"]), tuple(scenario["budgets"]),
-                        clients=1 if variant == "navigation-100" else scenario["clients"], offered_rate=scenario.get("rates", {}).get(tier, 0),
+                        clients=1 if variant == "navigation-100" else scenario["clients"], offered_rate=offered_rate,
                         applicability_reason=reason))
     return tuple(sorted(result, key=lambda case: case.id))
 

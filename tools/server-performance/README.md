@@ -53,6 +53,10 @@ native tick samples, named-server-thread workload allocations, whole-process
 CPU/RSS observations and GC logs have separate scopes. Callback spacing is never
 reported as tick processing time.
 
+For M0, `CaseSpec.offered_rate` uses events/workload-tick for synthetic cases,
+circulation-cell counts for physical cases, and zero for idle. Native counters
+independently record the achieved demand.
+
 Physical counters record observed hopper inventory increases, a conservative
 movement count; synthetic dispatch counters never stand in for moved items.
 All physical cases require zero players, disabled empty-server pausing, force-loaded

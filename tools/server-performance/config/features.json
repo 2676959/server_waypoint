@@ -1169,40 +1169,45 @@
             "source": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricClient.java",
             "line": 38,
             "kind": "registration",
-            "feature": "idle",
-            "trigger": "KeyMapping.Category.register(modId(\"mod_name\"))"
+            "feature": null,
+            "trigger": "KeyMapping.Category.register(modId(\"mod_name\"))",
+            "exclusion_reason": "Client-only initializer/event subscriber in mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricClient.java at d9f532f8b5a14c9be4bc47531b05b44fd1dc5773; no server execution path."
         },
         {
             "id": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricClient.java:43:registration",
             "source": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricClient.java",
             "line": 43,
             "kind": "registration",
-            "feature": "idle",
-            "trigger": "ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) ->"
+            "feature": null,
+            "trigger": "ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) ->",
+            "exclusion_reason": "Client-only initializer/event subscriber in mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricClient.java at d9f532f8b5a14c9be4bc47531b05b44fd1dc5773; no server execution path."
         },
         {
             "id": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricClient.java:44:registration",
             "source": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricClient.java",
             "line": 44,
             "kind": "registration",
-            "feature": "idle",
-            "trigger": "ClientWaypointCommand.register(dispatcher));"
+            "feature": null,
+            "trigger": "ClientWaypointCommand.register(dispatcher));",
+            "exclusion_reason": "Client-only initializer/event subscriber in mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricClient.java at d9f532f8b5a14c9be4bc47531b05b44fd1dc5773; no server execution path."
         },
         {
             "id": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricClient.java:45:registration",
             "source": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricClient.java",
             "line": 45,
             "kind": "registration",
-            "feature": "idle",
-            "trigger": "ClientTickEvents.END_CLIENT_TICK.register(client -> {"
+            "feature": null,
+            "trigger": "ClientTickEvents.END_CLIENT_TICK.register(client -> {",
+            "exclusion_reason": "Client-only initializer/event subscriber in mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricClient.java at d9f532f8b5a14c9be4bc47531b05b44fd1dc5773; no server execution path."
         },
         {
             "id": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricClient.java:51:registration",
             "source": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricClient.java",
             "line": 51,
             "kind": "registration",
-            "feature": "idle",
-            "trigger": "ClientLifecycleEvents.CLIENT_STARTED.register(client -> {"
+            "feature": null,
+            "trigger": "ClientLifecycleEvents.CLIENT_STARTED.register(client -> {",
+            "exclusion_reason": "Client-only initializer/event subscriber in mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricClient.java at d9f532f8b5a14c9be4bc47531b05b44fd1dc5773; no server execution path."
         },
         {
             "id": "mods/src/main/java/_959/server_waypoint/fabric/ServerWaypointFabricServer.java:89:registration",
@@ -1481,16 +1486,18 @@
             "source": "mods/src/main/java/_959/server_waypoint/mixin/ClientPlayNetworkHandlerMixin.java",
             "line": 15,
             "kind": "event-mixin",
-            "feature": "idle",
-            "trigger": "@Inject(method = {\"sendChat\", \"sendCommand\"}, at = @At(\"TAIL\")/*? if >=26 {*/, remap = false/*?}*/)"
+            "feature": null,
+            "trigger": "@Inject(method = {\"sendChat\", \"sendCommand\"}, at = @At(\"TAIL\")/*? if >=26 {*/, remap = false/*?}*/)",
+            "exclusion_reason": "Client-only mixin in mods/src/main/resources/server_waypoint-common.mixins.json client list, absent from common/server lists at d9f532f8b5a14c9be4bc47531b05b44fd1dc5773; no server execution path."
         },
         {
             "id": "mods/src/main/java/_959/server_waypoint/mixin/ClientPlayNetworkHandlerMixin.java:20:event-mixin",
             "source": "mods/src/main/java/_959/server_waypoint/mixin/ClientPlayNetworkHandlerMixin.java",
             "line": 20,
             "kind": "event-mixin",
-            "feature": "idle",
-            "trigger": "@Inject(method = \"handleLogin\", at = @At(value = \"TAIL\")/*? if >= 26 {*/, remap = false/*?}*/)"
+            "feature": null,
+            "trigger": "@Inject(method = \"handleLogin\", at = @At(value = \"TAIL\")/*? if >= 26 {*/, remap = false/*?}*/)",
+            "exclusion_reason": "Client-only mixin in mods/src/main/resources/server_waypoint-common.mixins.json client list, absent from common/server lists at d9f532f8b5a14c9be4bc47531b05b44fd1dc5773; no server execution path."
         },
         {
             "id": "mods/src/main/java/_959/server_waypoint/mixin/CompassItemNavigationMixin.java:15:event-mixin",
@@ -1585,80 +1592,90 @@
             "source": "mods/src/main/java/_959/server_waypoint/mixin/EditBoxTextShadowMixin.java",
             "line": 26,
             "kind": "event-mixin",
-            "feature": "idle",
-            "trigger": "@ModifyExpressionValue("
+            "feature": null,
+            "trigger": "@ModifyExpressionValue(",
+            "exclusion_reason": "Client-only mixin in mods/src/main/resources/server_waypoint-common.mixins.json client list, absent from common/server lists at d9f532f8b5a14c9be4bc47531b05b44fd1dc5773; no server execution path."
         },
         {
             "id": "mods/src/main/java/_959/server_waypoint/mixin/EditBoxTextShadowMixin.java:36:event-mixin",
             "source": "mods/src/main/java/_959/server_waypoint/mixin/EditBoxTextShadowMixin.java",
             "line": 36,
             "kind": "event-mixin",
-            "feature": "idle",
-            "trigger": "@WrapOperation(method = /*? >= 26 {*/ \"extractWidgetRenderState\" /*?} else {*//* \"renderWidget\" *//*?}*/,"
+            "feature": null,
+            "trigger": "@WrapOperation(method = /*? >= 26 {*/ \"extractWidgetRenderState\" /*?} else {*//* \"renderWidget\" *//*?}*/,",
+            "exclusion_reason": "Client-only mixin in mods/src/main/resources/server_waypoint-common.mixins.json client list, absent from common/server lists at d9f532f8b5a14c9be4bc47531b05b44fd1dc5773; no server execution path."
         },
         {
             "id": "mods/src/main/java/_959/server_waypoint/mixin/EditBoxTextShadowMixin.java:53:event-mixin",
             "source": "mods/src/main/java/_959/server_waypoint/mixin/EditBoxTextShadowMixin.java",
             "line": 53,
             "kind": "event-mixin",
-            "feature": "idle",
-            "trigger": "/*@WrapOperation(method = \"renderWidget\", at = @At(value = \"INVOKE\","
+            "feature": null,
+            "trigger": "/*@WrapOperation(method = \"renderWidget\", at = @At(value = \"INVOKE\",",
+            "exclusion_reason": "Client-only mixin in mods/src/main/resources/server_waypoint-common.mixins.json client list, absent from common/server lists at d9f532f8b5a14c9be4bc47531b05b44fd1dc5773; no server execution path."
         },
         {
             "id": "mods/src/main/java/_959/server_waypoint/mixin/EditBoxTextShadowMixin.java:65:event-mixin",
             "source": "mods/src/main/java/_959/server_waypoint/mixin/EditBoxTextShadowMixin.java",
             "line": 65,
             "kind": "event-mixin",
-            "feature": "idle",
-            "trigger": "/*@WrapOperation(method = \"renderWidget\", at = @At(value = \"INVOKE\","
+            "feature": null,
+            "trigger": "/*@WrapOperation(method = \"renderWidget\", at = @At(value = \"INVOKE\",",
+            "exclusion_reason": "Client-only mixin in mods/src/main/resources/server_waypoint-common.mixins.json client list, absent from common/server lists at d9f532f8b5a14c9be4bc47531b05b44fd1dc5773; no server execution path."
         },
         {
             "id": "mods/src/main/java/_959/server_waypoint/mixin/EditBoxTextShadowMixin.java:74:event-mixin",
             "source": "mods/src/main/java/_959/server_waypoint/mixin/EditBoxTextShadowMixin.java",
             "line": 74,
             "kind": "event-mixin",
-            "feature": "idle",
-            "trigger": "@WrapOperation(method = \"renderWidget\", at = @At(value = \"INVOKE\","
+            "feature": null,
+            "trigger": "@WrapOperation(method = \"renderWidget\", at = @At(value = \"INVOKE\",",
+            "exclusion_reason": "Client-only mixin in mods/src/main/resources/server_waypoint-common.mixins.json client list, absent from common/server lists at d9f532f8b5a14c9be4bc47531b05b44fd1dc5773; no server execution path."
         },
         {
             "id": "mods/src/main/java/_959/server_waypoint/mixin/GameHudMixin.java:32:event-mixin",
             "source": "mods/src/main/java/_959/server_waypoint/mixin/GameHudMixin.java",
             "line": 32,
             "kind": "event-mixin",
-            "feature": "idle",
-            "trigger": "/*@Inject("
+            "feature": null,
+            "trigger": "/*@Inject(",
+            "exclusion_reason": "Client-only mixin in mods/src/main/resources/server_waypoint-common.mixins.json client list, absent from common/server lists at d9f532f8b5a14c9be4bc47531b05b44fd1dc5773; no server execution path."
         },
         {
             "id": "mods/src/main/java/_959/server_waypoint/mixin/GameHudMixin.java:51:event-mixin",
             "source": "mods/src/main/java/_959/server_waypoint/mixin/GameHudMixin.java",
             "line": 51,
             "kind": "event-mixin",
-            "feature": "idle",
-            "trigger": "/*@Inject("
+            "feature": null,
+            "trigger": "/*@Inject(",
+            "exclusion_reason": "Client-only mixin in mods/src/main/resources/server_waypoint-common.mixins.json client list, absent from common/server lists at d9f532f8b5a14c9be4bc47531b05b44fd1dc5773; no server execution path."
         },
         {
             "id": "mods/src/main/java/_959/server_waypoint/mixin/GameRendererMixin.java:24:event-mixin",
             "source": "mods/src/main/java/_959/server_waypoint/mixin/GameRendererMixin.java",
             "line": 24,
             "kind": "event-mixin",
-            "feature": "idle",
-            "trigger": "@Inject("
+            "feature": null,
+            "trigger": "@Inject(",
+            "exclusion_reason": "Client-only mixin in mods/src/main/resources/server_waypoint-common.mixins.json client list, absent from common/server lists at d9f532f8b5a14c9be4bc47531b05b44fd1dc5773; no server execution path."
         },
         {
             "id": "mods/src/main/java/_959/server_waypoint/mixin/GuiItemRenderStateMixin.java:30:event-mixin",
             "source": "mods/src/main/java/_959/server_waypoint/mixin/GuiItemRenderStateMixin.java",
             "line": 30,
             "kind": "event-mixin",
-            "feature": "idle",
-            "trigger": "@Inject(method = \"<init>\", at = @At(\"RETURN\"))"
+            "feature": null,
+            "trigger": "@Inject(method = \"<init>\", at = @At(\"RETURN\"))",
+            "exclusion_reason": "Client-only mixin in mods/src/main/resources/server_waypoint-common.mixins.json client list, absent from common/server lists at d9f532f8b5a14c9be4bc47531b05b44fd1dc5773; no server execution path."
         },
         {
             "id": "mods/src/main/java/_959/server_waypoint/mixin/GuiRendererItemAlphaMixin.java:26:event-mixin",
             "source": "mods/src/main/java/_959/server_waypoint/mixin/GuiRendererItemAlphaMixin.java",
             "line": 26,
             "kind": "event-mixin",
-            "feature": "idle",
-            "trigger": "@ModifyExpressionValue(method = \"submitBlitFromItemAtlas\","
+            "feature": null,
+            "trigger": "@ModifyExpressionValue(method = \"submitBlitFromItemAtlas\",",
+            "exclusion_reason": "Client-only mixin in mods/src/main/resources/server_waypoint-common.mixins.json client list, absent from common/server lists at d9f532f8b5a14c9be4bc47531b05b44fd1dc5773; no server execution path."
         },
         {
             "id": "mods/src/main/java/_959/server_waypoint/mixin/InventoryNavigationMixin.java:28:event-mixin",
@@ -1705,16 +1722,18 @@
             "source": "mods/src/main/java/_959/server_waypoint/mixin/MinecraftClientMixin.java",
             "line": 17,
             "kind": "event-mixin",
-            "feature": "idle",
-            "trigger": "@Inject("
+            "feature": null,
+            "trigger": "@Inject(",
+            "exclusion_reason": "Client-only mixin in mods/src/main/resources/server_waypoint-common.mixins.json client list, absent from common/server lists at d9f532f8b5a14c9be4bc47531b05b44fd1dc5773; no server execution path."
         },
         {
             "id": "mods/src/main/java/_959/server_waypoint/mixin/OversizedWaypointItemAlphaMixin.java:28:event-mixin",
             "source": "mods/src/main/java/_959/server_waypoint/mixin/OversizedWaypointItemAlphaMixin.java",
             "line": 28,
             "kind": "event-mixin",
-            "feature": "idle",
-            "trigger": "@ModifyExpressionValue(method = \"blitTexture\","
+            "feature": null,
+            "trigger": "@ModifyExpressionValue(method = \"blitTexture\",",
+            "exclusion_reason": "Client-only mixin in mods/src/main/resources/server_waypoint-common.mixins.json client list, absent from common/server lists at d9f532f8b5a14c9be4bc47531b05b44fd1dc5773; no server execution path."
         },
         {
             "id": "mods/src/main/java/_959/server_waypoint/mixin/PlayerManagerMixin.java:18:event-mixin",
@@ -1785,40 +1804,45 @@
             "source": "mods/src/main/java/_959/server_waypoint/mixin/WaypointBlockItemAlphaMixin.java",
             "line": 22,
             "kind": "event-mixin",
-            "feature": "idle",
-            "trigger": "/*@ModifyExpressionValue("
+            "feature": null,
+            "trigger": "/*@ModifyExpressionValue(",
+            "exclusion_reason": "Client-only mixin in mods/src/main/resources/server_waypoint-common.mixins.json client list, absent from common/server lists at d9f532f8b5a14c9be4bc47531b05b44fd1dc5773; no server execution path."
         },
         {
             "id": "mods/src/main/java/_959/server_waypoint/mixin/WorldRendererMixin.java:32:event-mixin",
             "source": "mods/src/main/java/_959/server_waypoint/mixin/WorldRendererMixin.java",
             "line": 32,
             "kind": "event-mixin",
-            "feature": "idle",
-            "trigger": "@Inject("
+            "feature": null,
+            "trigger": "@Inject(",
+            "exclusion_reason": "Client-only mixin in mods/src/main/resources/server_waypoint-common.mixins.json client list, absent from common/server lists at d9f532f8b5a14c9be4bc47531b05b44fd1dc5773; no server execution path."
         },
         {
             "id": "mods/src/main/java/_959/server_waypoint/mixin/WorldRendererMixin.java:51:event-mixin",
             "source": "mods/src/main/java/_959/server_waypoint/mixin/WorldRendererMixin.java",
             "line": 51,
             "kind": "event-mixin",
-            "feature": "idle",
-            "trigger": "/^@Inject("
+            "feature": null,
+            "trigger": "/^@Inject(",
+            "exclusion_reason": "Client-only mixin in mods/src/main/resources/server_waypoint-common.mixins.json client list, absent from common/server lists at d9f532f8b5a14c9be4bc47531b05b44fd1dc5773; no server execution path."
         },
         {
             "id": "mods/src/main/java/_959/server_waypoint/mixin/WorldRendererMixin.java:61:event-mixin",
             "source": "mods/src/main/java/_959/server_waypoint/mixin/WorldRendererMixin.java",
             "line": 61,
             "kind": "event-mixin",
-            "feature": "idle",
-            "trigger": "/^@Inject("
+            "feature": null,
+            "trigger": "/^@Inject(",
+            "exclusion_reason": "Client-only mixin in mods/src/main/resources/server_waypoint-common.mixins.json client list, absent from common/server lists at d9f532f8b5a14c9be4bc47531b05b44fd1dc5773; no server execution path."
         },
         {
             "id": "mods/src/main/java/_959/server_waypoint/mixin/WorldSessionMixin.java:12:event-mixin",
             "source": "mods/src/main/java/_959/server_waypoint/mixin/WorldSessionMixin.java",
             "line": 12,
             "kind": "event-mixin",
-            "feature": "idle",
-            "trigger": "@Inject("
+            "feature": null,
+            "trigger": "@Inject(",
+            "exclusion_reason": "Client-only mixin in mods/src/main/resources/server_waypoint-common.mixins.json client list, absent from common/server lists at d9f532f8b5a14c9be4bc47531b05b44fd1dc5773; no server execution path."
         },
         {
             "id": "mods/src/main/java/_959/server_waypoint/neoforge/ServerWaypointNeoForge.java:137:background",
