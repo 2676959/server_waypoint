@@ -94,3 +94,15 @@ class MeasurementsTest(unittest.TestCase):
         result = self.result()
         result.observations["repetitions"][0]["measurementSeconds"] = float("nan")
         self.assertEqual(Status.INCONCLUSIVE, evaluate(result, CONFIG).status)
+
+    def test_required_action_latency_cannot_be_replaced_by_submission_timing(self):
+        result = self.result("commands")
+        result = dataclasses.replace(result, case=dataclasses.replace(result.case, metrics=("tick-processing", "action-latency", "completed-actions")))
+        for repetition in result.observations["repetitions"]:
+            repetition.update(offeredActions=10, completedActions=10, actionLatencyNs=[1000] * 10, actionLatencyScope="client-issued", actionLatencyClock="client-monotonic")
+        self.assertEqual(Status.INCONCLUSIVE, evaluate(result, CONFIG).status)
+        for repetition in result.observations["repetitions"]:
+            repetition["actionLatencyScope"] = "client-roundtrip"
+        self.assertEqual(Status.PASS, evaluate(result, CONFIG).status)
+        result.observations["repetitions"][0]["completedActions"] = 9
+        self.assertEqual(Status.INCONCLUSIVE, evaluate(result, CONFIG).status)

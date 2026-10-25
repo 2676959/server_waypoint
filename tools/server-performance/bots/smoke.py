@@ -16,7 +16,7 @@ from processes import stop_owned
 from worlds import install_server, boot
 
 
-def run(root, binary, release, wire=False, adversarial=False):
+def run(root, binary, release, wire=False, adversarial=False, capacity=False):
     runtime = next(r for r in load_runtimes(Path(__file__).resolve().parents[1] / "config/runtimes.json") if r.id == "paper-1.21.11")
     runtime = replace(runtime, probe={**runtime.probe, "sha256": sha256(runtime.probe["path"])})
     artifact = next(a for a in load_release(Path(__file__).resolve().parents[1] / "config/releases/4.0.0.json") if a.name == runtime.artifact)
@@ -34,7 +34,7 @@ def run(root, binary, release, wire=False, adversarial=False):
             time.sleep(1)
         probe.send("players.snapshot")
         probe.wait("players.snapshot", 10)
-        for mode, count in ([(mode, 1) for mode in ("vanilla", "compatible", "incompatible")] if wire else [("vanilla", count) for count in (1, 10, 50)]):
+        for mode, count in ([(mode, 1) for mode in ("vanilla", "compatible", "incompatible")] if wire else [("vanilla", count) for count in ((10,) if capacity else (1, 10, 50))]):
             bot_root = create_root(root / f"bots-{mode}-{count}")
             driver = BotDriver(binary, bot_root, str(uuid.uuid4()), str(uuid.uuid4()))
             expected, results, process_samples = [], [], []
@@ -61,6 +61,20 @@ def run(root, binary, release, wire=False, adversarial=False):
                         driver.send("action", action)
                         results.append(driver.wait("action_result"))
                         process_samples.append(whole_process_sample(driver.process.pid))
+                if capacity:
+                    probe.send("players.snapshot")
+                    capacity_before = probe.wait("players.snapshot")["data"]
+                    started = time.monotonic()
+                    for bot in ready["bots"]:
+                        action = {"actionId": "parallel-" + bot["name"], "bot": bot["name"], "operation": "walk", "milliseconds": 500}
+                        expected.append(action)
+                        driver.send("action", action)
+                    for _ in ready["bots"]:
+                        results.append(driver.wait("action_result", 10))
+                    elapsed = time.monotonic() - started
+                    atomic_write(bot_root / "capacity.json", {"schemaVersion": 1, "elapsedSeconds": elapsed, "actions": len(ready["bots"]), "before": capacity_before})
+                    if elapsed >= 3:
+                        raise ValueError("independent bots were serialized by the driver")
                 driver.send("barrier")
                 rates = driver.wait("rate_sample")
                 wire_events = [e["data"] for e in driver.events if e["type"] == "packet_summary"]
@@ -82,6 +96,12 @@ def run(root, binary, release, wire=False, adversarial=False):
                 for player in observed["players"]:
                     if player["inventory"] != [{"slot": 1, "type": "minecraft:stone", "count": 1}]:
                         raise ValueError(f"native inventory move/conservation failed: {player}")
+                if capacity:
+                    positions = {player["name"]: player for player in capacity_before["players"]}
+                    for player in observed["players"]:
+                        initial = positions[player["name"]]
+                        if abs(player["x"] - initial["x"]) + abs(player["z"] - initial["z"]) < 0.1:
+                            raise ValueError("parallel action did not move its native player")
                 if observed.get("waypointLists") != before.get("waypointLists"):
                     raise ValueError("native wire probe unexpectedly mutated committed waypoints")
                 actions = validate_actions(expected, results, {p["name"]: p for p in observed["players"]})
@@ -137,5 +157,6 @@ if __name__ == "__main__":
     parser.add_argument("--release", type=Path, required=True)
     parser.add_argument("--wire", action="store_true")
     parser.add_argument("--adversarial", action="store_true")
+    parser.add_argument("--capacity", action="store_true")
     args = parser.parse_args()
-    run(args.root, args.binary.resolve(), args.release.resolve(), args.wire, args.adversarial)
+    run(args.root, args.binary.resolve(), args.release.resolve(), args.wire, args.adversarial, args.capacity)

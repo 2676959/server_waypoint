@@ -71,3 +71,23 @@ and retained reports for the actual selection.
 The probes have separate Gradle source sets and archives. No performance classes,
 Querz dependency or bot code are added to production JARs. This milestone does not
 repair the production listener or implement later publication gates.
+
+## M1 native helper checkpoints
+
+Tasks 8–9 provide a locked Azalea bot and immutable release codec exporter;
+Task 10 adds native command callbacks, deterministic datasets and storage checks.
+The main audit CLI still blocks unimplemented player/feature adapters. Helpers
+are explicitly partial evidence, with progress tracked in the feature ledger.
+
+```sh
+rtk proxy python3 tools/server-performance/bots/command_smoke.py --behavior --traffic --tier small --root "$SW_PERF_NATIVE_ROOT"
+```
+
+Set `SW_PERF_NATIVE_ROOT` to a new absolute disposable directory. Use `--tier medium`
+for the 10,000-waypoint fixture and ten-actor five-second traffic smoke. The helper
+uses the pinned local runtime and hash-verified cached 4.0.0 artifact. Read its
+`traffic/traffic.json` and exact saved/reopened-state evidence: native callback
+completion, command submission and client-issued completion are separate measures.
+Operator actors are declared for throughput smoke; permission-denial cases use a
+separate non-operator fixture. These helpers do not satisfy timed performance gates,
+client-roundtrip latency, the full platform matrix or the 30-minute soaks.

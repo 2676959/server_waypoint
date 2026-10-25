@@ -104,3 +104,24 @@ def canonical_snapshot(lists):
         if len(set(value["waypoints"])) != len(value["waypoints"]):
             raise ValueError("duplicate native waypoint identity")
     return sorted(({**value, "waypoints": sorted(value["waypoints"])} for value in lists), key=lambda value: (value["dimension"], value["name"]))
+
+
+def planned_actions(tier, actors, seconds, prefix, mutation_offset=0):
+    if not actors or len(set(actors)) != len(actors) or not prefix:
+        raise ValueError("distinct native actor identities and action prefix required")
+    reads = ("/wp list minecraft:overworld perf_00 limit 1", "/wp details list minecraft:overworld perf_00", "/wp help list")
+    actions = []
+    read_index, mutations = 0, mutation_offset
+    for index, (at, operation) in enumerate(workload_schedule(tier, seconds)):
+        if operation == "read":
+            actor = actors[read_index % len(actors)]
+            command = reads[read_index % len(reads)]
+            read_index += 1
+        else:
+            actor = actors[0]
+            mutations += 1
+            if mutations >= 0xEFFFFF:
+                raise ValueError("mutation fixture colour range exhausted")
+            command = f"/wp edit waypoint minecraft:overworld perf_00 wp_00000 set color {0x100000 + mutations:06X}"
+        actions.append((at, {"actionId": f"{prefix}-{index}", "bot": actor, "operation": "command", "command": command}))
+    return tuple(actions)

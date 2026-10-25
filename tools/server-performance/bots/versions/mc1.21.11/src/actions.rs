@@ -15,7 +15,7 @@ pub async fn perform(bot: &Client, data: &Value) -> anyhow::Result<Value> {
                 "invalid command"
             );
             bot.chat(command);
-            tokio::time::sleep(Duration::from_millis(150)).await;
+            tokio::time::sleep(Duration::from_millis(50)).await;
         }
         "edit" => {
             use azalea::protocol::packets::game::ServerboundCustomPayload;

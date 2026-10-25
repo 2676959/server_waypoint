@@ -27,7 +27,7 @@ def snapshot(probe):
     return probe.wait("players.snapshot")["data"]
 
 
-def run(root, tier, behavior=False):
+def run(root, tier, behavior=False, traffic=False):
     tools = Path(__file__).resolve().parents[1]
     runtime = next(r for r in load_runtimes(tools / "config/runtimes.json") if r.id == "paper-1.21.11")
     runtime = replace(runtime, probe={**runtime.probe, "sha256": sha256(runtime.probe["path"])})
@@ -82,22 +82,29 @@ def run(root, tier, behavior=False):
                 before = snapshot(probe)["waypointLists"]
                 driver.send("action", {"actionId": "denied-add", "bot": name, "operation": "command", "command": "/wp add minecraft:overworld denied"})
                 driver.wait("action_result")
-                after = snapshot(probe)["waypointLists"]
+                denied_snapshot = snapshot(probe)
+                after = denied_snapshot["waypointLists"]
+                if not any(player["name"] == name and player["commandEvents"] >= 1 for player in denied_snapshot["players"]):
+                    raise ValueError("denied action lacks server receipt evidence")
                 if before != after:
                     raise ValueError("permission-denied add changed state")
-                atomic_write(root / "permission-denied.json", {"schemaVersion": 1, "before": before, "after": after})
+                atomic_write(root / "permission-denied.json", {"schemaVersion": 1, "before": before, "after": after, "nativeReceipt": denied_snapshot["players"]})
                 execute(probe, f"op {name}")
                 patch = [{"operation": 0, "value": None} for _ in range(10)]
                 patch[4] = {"operation": 1, "value": 1122867}
                 driver.send("action", {"actionId": "stale-edit", "bot": name, "operation": "edit", "edit": {"requestId": 959, "dimension": "minecraft:overworld", "list": "perf_00", "waypoint": "wp_00000", "revision": 6, "patch": patch}})
                 driver.wait("action_result")
-                time.sleep(0.2)
-                driver.send("barrier")
-                driver.wait("rate_sample")
-                summaries = [event["data"] for event in driver.events if event["type"] == "packet_summary"]
-                replies = [packet for peer in summaries[-1]["peers"] for packet in peer["packets"] if packet.get("messageTypeId") == 3]
-                if not replies:
-                    raise ValueError("native stale edit reply missing")
+                deadline = time.monotonic() + 10
+                replies = []
+                while not replies:
+                    driver.send("barrier")
+                    driver.wait("rate_sample")
+                    summaries = [event["data"] for event in driver.events if event["type"] == "packet_summary"]
+                    replies = [packet for peer in summaries[-1]["peers"] for packet in peer["packets"] if packet.get("messageTypeId") == 3]
+                    if time.monotonic() > deadline:
+                        raise ValueError("native stale edit reply missing by deadline")
+                    if not replies:
+                        time.sleep(0.05)
                 reply = bytes.fromhex(replies[-1]["bodyHex"])
                 if int.from_bytes(reply[:8], "big") != 959 or reply[8] != 1 or int.from_bytes(reply[-4:], "big", signed=True) != 7:
                     raise ValueError("stale edit was not rejected at revision 7")
@@ -142,8 +149,24 @@ def run(root, tier, behavior=False):
             atomic_write(root / "reopened.json", {"schemaVersion": 1, **reopened})
             if canonical_snapshot(reopened["waypointLists"]) != canonical_snapshot(replayed):
                 raise ValueError("reopened committed names/revisions differ")
+            if traffic:
+                from command_traffic import run_traffic
+                probe.send("commands.tree")
+                probe.wait("commands.tree")
+                traffic_evidence = run_traffic(root / "traffic", server, runtime, probe, tier)
+                for value in expected["minecraft:overworld"]:
+                    if value["list_name"] == "perf_00":
+                        value["n"] += traffic_evidence["mutations"]
+                        point = next(point for point in value["waypoints"] if point["name"] == "wp_00000")
+                        point["color"] = f"#{0x100000 + traffic_evidence['mutations']:06X}"
         finally:
             stop_owned(process, 15)
+        if traffic:
+            actual = {path.stem.replace("$", ":"): json.loads(path.read_text()) for path in directory.glob("*.json")}
+            decision = persisted_state(canonical_saved(expected), canonical_saved(actual))
+            atomic_write(root / "traffic-saved.json", {"schemaVersion": 1, "decision": decision, "expected": canonical_saved(expected), "actual": canonical_saved(actual)})
+            if decision.status != Status.PASS:
+                raise ValueError("scheduled traffic saved contents differ")
         print(f"native {tier}: exact disk contents and restart verified", flush=True)
 
 
@@ -152,5 +175,6 @@ if __name__ == "__main__":
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--tier", choices=("small", "medium"), default="small")
     parser.add_argument("--behavior", action="store_true")
+    parser.add_argument("--traffic", action="store_true")
     args = parser.parse_args()
-    run(args.root, args.tier, args.behavior)
+    run(args.root, args.tier, args.behavior, args.traffic)

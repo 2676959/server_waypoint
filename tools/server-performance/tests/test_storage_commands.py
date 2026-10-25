@@ -67,3 +67,14 @@ class StorageCommandsTest(unittest.TestCase):
         self.assertEqual(canonical_snapshot(first), canonical_snapshot(second))
         second[0]["revision"] = 6
         self.assertNotEqual(canonical_snapshot(first), canonical_snapshot(second))
+
+    def test_player_traffic_uses_declared_rates_and_unique_action_ids(self):
+        from scenarios.storage_commands import planned_actions
+        actions = planned_actions("medium", [f"actor-{index}" for index in range(10)], 1, "phase")
+        self.assertEqual(55, len(actions))
+        self.assertEqual(55, len({action["actionId"] for _, action in actions}))
+        writes = [action for _, action in actions if " set color " in action["command"]]
+        self.assertEqual(5, len(writes))
+        self.assertEqual({"actor-0"}, {action["bot"] for action in writes})
+        self.assertEqual("/wp edit waypoint minecraft:overworld perf_00 wp_00000 set color 100005", writes[-1]["command"])
+        self.assertEqual(10, len({action["bot"] for _, action in actions}))

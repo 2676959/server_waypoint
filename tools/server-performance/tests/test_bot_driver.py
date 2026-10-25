@@ -126,3 +126,6 @@ class BotDriverTest(unittest.TestCase):
                 driver.abort()
             self.assertLess(time.monotonic() - started, 5)
             self.assertIsNotNone(driver.process.process.poll())
+
+    def test_failed_actions_cannot_hide_in_completed_totals(self):
+        self.assertEqual(Status.INCONCLUSIVE, validate_rates({"offered": 10, "completed": 10, "failed": 1, "pending": 0, "elapsedSeconds": 1, "maxLagSeconds": 0}, 5).status)

@@ -31,6 +31,13 @@ impl ActionLedger {
         Ok(())
     }
 
+    pub fn reject(&mut self, id: &str) -> Result<(), &'static str> {
+        if !self.pending.remove(id) {
+            return Err("unoffered failed action ID");
+        }
+        Ok(())
+    }
+
     pub fn quiescent(&self) -> bool {
         self.pending.is_empty()
     }

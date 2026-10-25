@@ -282,17 +282,78 @@ async fn run() -> anyhow::Result<()> {
     output.emit("ready", json!({"bots": bots, "autoReconnect": false}));
     let started = Instant::now();
     let mut ledger = ActionLedger::new(256);
+    type Job = (String, Value, Instant);
+    type Outcome = (String, String, Result<Value, String>, Instant);
+    let (outcome_tx, mut outcome_rx) = tokio::sync::mpsc::channel::<Outcome>(256);
+    let mut senders = BTreeMap::new();
+    let mut workers = Vec::new();
+    let clients: Vec<_> = state
+        .bots
+        .lock()
+        .unwrap()
+        .iter()
+        .map(|(name, bot)| (name.clone(), bot.clone()))
+        .collect();
+    for (name, bot) in clients {
+        let (sender, mut requests) = tokio::sync::mpsc::channel::<Job>(256);
+        senders.insert(name.clone(), sender);
+        let outcomes = outcome_tx.clone();
+        workers.push(tokio::task::spawn_local(async move {
+            while let Some((id, data, enqueued)) = requests.recv().await {
+                let result = actions::perform(&bot, &data)
+                    .await
+                    .map_err(|error| error.to_string());
+                if outcomes
+                    .send((id, name.clone(), result, enqueued))
+                    .await
+                    .is_err()
+                {
+                    break;
+                }
+            }
+        }));
+    }
     let mut completed = 0_u64;
     let mut offered = 0_u64;
+    let mut failed = 0_u64;
     let mut max_lag = 0_f64;
+    let mut barrier = false;
     loop {
+        if barrier && ledger.quiescent() {
+            let peers: Vec<Value> = state.wire.lock().unwrap().iter().map(|(name, peer)| json!({"name": name, "packets": peer.packets, "pendingTransfers": peer.receiver.pending()})).collect();
+            output.emit("packet_summary", json!({"peers": peers}));
+            output.emit("rate_sample", json!({"offered": offered, "completed": completed, "failed": failed,
+                "pending": offered - completed - failed, "elapsedSeconds": started.elapsed().as_secs_f64(),
+                "maxLagSeconds": max_lag, "barrierAcknowledged": true, "completionScope": "client-issued"}));
+            max_lag = 0.0;
+            barrier = false;
+        }
         let input = tokio::select! {
             biased;
             reason = failure_rx.recv() => {
                 if let Some(reason) = reason { output.emit("error", json!({"reason": reason})); }
                 continue;
             },
-            input = rx.recv() => input,
+            outcome = outcome_rx.recv(), if offered > completed + failed => {
+                let (id, name, result, enqueued) = outcome.ok_or_else(|| anyhow::anyhow!("action worker exited"))?;
+                max_lag = max_lag.max(enqueued.elapsed().as_secs_f64());
+                match result {
+                    Ok(mut evidence) => {
+                        ledger.ack(&id).map_err(anyhow::Error::msg)?;
+                        completed += 1;
+                        evidence["actionId"] = json!(id);
+                        evidence["bot"] = json!(name);
+                        output.emit("action_result", evidence);
+                    }
+                    Err(reason) => {
+                        ledger.reject(&id).map_err(anyhow::Error::msg)?;
+                        failed += 1;
+                        output.emit("error", json!({"reason": reason, "actionId": id, "bot": name}));
+                    }
+                }
+                continue;
+            },
+            input = rx.recv(), if !barrier && offered - completed - failed < 256 => input,
         };
         let Some((line, enqueued)) = input else {
             break;
@@ -317,55 +378,40 @@ async fn run() -> anyhow::Result<()> {
             "action" => {
                 let id = data["actionId"]
                     .as_str()
-                    .ok_or_else(|| anyhow::anyhow!("actionId missing"))?;
-                ledger.offer(id).map_err(anyhow::Error::msg)?;
-                offered += 1;
+                    .ok_or_else(|| anyhow::anyhow!("actionId missing"))?
+                    .to_owned();
                 let name = data["bot"]
                     .as_str()
                     .ok_or_else(|| anyhow::anyhow!("bot missing"))?;
-                let bot = state
-                    .bots
-                    .lock()
-                    .unwrap()
+                let sender = senders
                     .get(name)
-                    .cloned()
                     .ok_or_else(|| anyhow::anyhow!("bot not connected"))?;
-                match actions::perform(&bot, data).await {
-                    Ok(mut evidence) => {
-                        ledger.ack(id).map_err(anyhow::Error::msg)?;
-                        completed += 1;
-                        evidence["actionId"] = json!(id);
-                        evidence["bot"] = json!(name);
-                        output.emit("action_result", evidence);
-                    }
-                    Err(error) => output.emit(
-                        "error",
-                        json!({"reason": error.to_string(), "actionId": id}),
-                    ),
-                }
-                max_lag = max_lag.max(enqueued.elapsed().as_secs_f64());
+                ledger.offer(&id).map_err(anyhow::Error::msg)?;
+                sender
+                    .try_send((id, data.clone(), enqueued))
+                    .map_err(|error| {
+                        anyhow::anyhow!("bounded actor queue rejected action: {error}")
+                    })?;
+                offered += 1;
             }
-            "barrier" | "quiesce" => {
-                let peers: Vec<Value> = state.wire.lock().unwrap().iter().map(|(name, peer)| json!({"name": name, "packets": peer.packets, "pendingTransfers": peer.receiver.pending()})).collect();
-                output.emit("packet_summary", json!({"peers": peers}));
-                output.emit("rate_sample", json!({"offered": offered, "completed": completed,
-                    "pending": offered - completed, "elapsedSeconds": started.elapsed().as_secs_f64(),
-                    "maxLagSeconds": max_lag, "barrierAcknowledged": ledger.quiescent(), "completionScope": "client-issued"}));
-            }
+            "barrier" | "quiesce" => barrier = true,
             "stop" => {
+                for worker in &workers {
+                    worker.abort();
+                }
                 for bot in state.bots.lock().unwrap().values() {
                     bot.disconnect();
                 }
                 tokio::time::sleep(Duration::from_millis(250)).await;
-                output.emit(
-                    "stopped",
-                    json!({"completed": completed, "pending": offered - completed}),
-                );
+                output.emit("stopped", json!({"completed": completed, "failed": failed, "pending": offered - completed - failed}));
                 swarm.abort();
                 return Ok(());
             }
             _ => anyhow::bail!("unsupported command"),
         }
+    }
+    for worker in &workers {
+        worker.abort();
     }
     swarm.abort();
     anyhow::bail!("controller stdin closed before stop")

@@ -74,6 +74,8 @@ def validate_rates(sample, max_lag_seconds):
     keys = ("offered", "completed", "pending", "elapsedSeconds", "maxLagSeconds")
     if any(type(sample.get(k)) not in (int, float) or not math.isfinite(sample[k]) or sample[k] < 0 for k in keys) or sample["elapsedSeconds"] <= 0 or sample["offered"] <= 0:
         return Decision(Status.INCONCLUSIVE, ("missing/invalid driver rate evidence",))
+    if type(sample.get("failed", 0)) is not int or sample.get("failed", 0) != 0:
+        return Decision(Status.INCONCLUSIVE, ("driver reported failed actions",))
     if sample["completed"] > sample["offered"] or sample["completed"] + sample["pending"] != sample["offered"]:
         return Decision(Status.INCONCLUSIVE, ("driver action accounting mismatch",))
     if sample["pending"] or sample["completed"] != sample["offered"] or sample["maxLagSeconds"] > max_lag_seconds:

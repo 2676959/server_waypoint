@@ -31,6 +31,20 @@ def evaluate(result, budgets):
         incomplete.append("missing independent repetitions")
     for index, repetition in enumerate(repetitions, 1):
         prefix = f"repeat {index}"
+        if "completed-actions" in result.case.metrics:
+            offered = repetition.get("offeredActions")
+            completed = repetition.get("completedActions")
+            if type(offered) is not int or type(completed) is not int or offered <= 0 or completed != offered:
+                incomplete.append(f"{prefix}: offered/completed action evidence missing or incomplete")
+        if "action-latency" in result.case.metrics:
+            try:
+                action_latency = summarize(repetition.get("actionLatencyNs", []), "ns")
+                if repetition.get("actionLatencyClock") != "client-monotonic" or repetition.get("actionLatencyScope") != "client-roundtrip":
+                    incomplete.append(f"{prefix}: action latency is not acknowledged client roundtrip time")
+                if action_latency["count"] != repetition.get("completedActions"):
+                    incomplete.append(f"{prefix}: missing per-action latency samples")
+            except (TypeError, ValueError):
+                incomplete.append(f"{prefix}: missing/invalid acknowledged action latency")
         try:
             if any(not math.isfinite(repetition.get(key, 0)) or repetition.get(key, 0) < 0 for key in ("warmupSeconds", "measurementSeconds")):
                 incomplete.append(f"{prefix}: invalid phase duration")

@@ -19,3 +19,13 @@ fn barrier_waits_for_acknowledged_actions() {
     ledger.ack("a").unwrap();
     assert!(ledger.quiescent());
 }
+
+#[test]
+fn failed_action_is_resolved_without_allowing_id_reuse() {
+    let mut ledger = ActionLedger::new(1);
+    ledger.offer("a").unwrap();
+    ledger.reject("a").unwrap();
+    assert!(ledger.quiescent());
+    assert!(ledger.offer("a").is_err());
+    assert!(ledger.reject("a").is_err());
+}
