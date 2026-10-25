@@ -2,7 +2,8 @@
 
 Status: M1 is in progress. M0 and Tasks 8–9 are implemented and validated on the
 first Paper 1.21.11 anchor; Task 10 has native command, permission and persistence
-checkpoints. Real 1/10/50-player smoke and protocol rejection checks pass, while
+checkpoints. Task 11 has native method/terrain/session-restoration checkpoints
+and a retained stop-then-quit cleanup failure. Real 1/10/50-player smoke and protocol rejection checks pass, while
 full remaining-feature/platform workloads and soaks remain unchecked. The original
 M0 inventory defect still reproduces; no source repair has been made. See the
 execution progress for exact hashes, retained roots and proof boundaries.

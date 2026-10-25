@@ -550,7 +550,8 @@
                 "2026-10-24 two-stage native command ACK: /Volumes/ssd/sw-performance-m1-ack-medium-4; 275 correlated command roundtrips, exact persisted content; timed three-repeat acceptance remains separate",
                 "2026-10-25 /Volumes/ssd/sw-performance-m1-read-suggestions-full: 5295 console read leaves with delivered feedback/exact saved state, 51 local custom suggestion paths with matching native provider receipts; remote and other behavior requirements pending",
                 "2026-10-25 /Volumes/ssd/sw-performance-m1-mutation-leaves-final: 43 console storage leaves, exact full properties/revisions/disk/reopen, single-use restore, nonempty-list denial, real config/language reload outcomes; remaining feature/player/permission requirements pending",
-                "2026-10-25 /Volumes/ssd/sw-performance-m1-navigation-{small-targets,medium-targets,medium-isolation}: 31 native method combinations per actor, movement/retarget/edit/teleport, ten-owner isolation and ordinary-item conservation; retained cleanup FAIL for 1/10 post-disconnect tick counters; terrain/protection/lifecycle coverage pending"
+                "2026-10-25 /Volumes/ssd/sw-performance-m1-navigation-{small-targets,medium-targets,medium-isolation}: 31 native method combinations per actor, movement/retarget/edit/teleport, ten-owner isolation and ordinary-item conservation; retained cleanup FAIL for 1/10 post-disconnect tick counters; terrain/protection/lifecycle coverage pending",
+                "2026-10-25 /Volumes/ssd/sw-performance-m1-terrain-small and /Volumes/ssd/sw-performance-m1-terrain-medium-all: exact native cold/warm region pixels, saved terrain files, full client coverage/checksum, active-session save/restart/join restoration; ten owners restore all five methods and same map IDs; same-dimension functional evidence only"
             ],
             "java": "/opt/homebrew/Cellar/openjdk@21/21.0.11/libexec/openjdk.jdk/Contents/Home/bin/java",
             "java_sha256": "04005388bac0c272ea914210ca519ce94b2f873ea3962b9874a6859f74d7f279",
@@ -574,7 +575,7 @@
             ],
             "probe": {
                 "path": "/Volumes/ssd/fabric_mods_repo/server_waypoint/paper/versions/1.21.11-paper/build/libs/server-waypoint-performance-paper-probe.jar",
-                "sha256": "c8f4a74afb726aff4d4fe67585162661b39fc21272c8dd2e523d9a055d3594ee"
+                "sha256": "40f6a2ace07715eb4fba2dd4a2228a7faad4c05cffb800615c12ae788ff89de8"
             }
         },
         {

@@ -1,5 +1,8 @@
 """Native navigation method, target, conservation and cleanup evidence contracts."""
 from itertools import combinations
+import base64
+import binascii
+import zlib
 from models import Decision,Status
 
 METHODS=frozenset(("compass","map","bossbar","actionbar","text_display"))
@@ -75,4 +78,59 @@ def cleanup_counts(expected,actual):
         return Decision(Status.BLOCKED,("post-quiescence resource evidence missing/invalid",))
     if any(actual[key]!=value for key,value in expected.items()):
         return Decision(Status.FAIL,("post-quiescence resource counts differ from declared retained state",))
+    return Decision(Status.PASS)
+
+
+def terrain_roundtrip(region,colors,native,client):
+    if len(colors)!=16384:
+        raise ValueError("independent terrain expectation requires exactly 16384 pixels")
+    if "colorsBase64" not in native:
+        return Decision(Status.BLOCKED,("native terrain bytes missing",))
+    try:
+        actual=base64.b64decode(native["colorsBase64"],validate=True)
+    except (ValueError,TypeError,binascii.Error):
+        return Decision(Status.FAIL,("invalid native terrain byte encoding",))
+    if any(native.get(key)!=value for key,value in region.items()) or actual!=colors:
+        return Decision(Status.FAIL,("native map region or exact terrain pixels differ",))
+    if type(client.get("knownPixels")) is not int or client["knownPixels"]!=16384:
+        return Decision(Status.BLOCKED,("complete native client terrain patch coverage missing",))
+    if client.get("scale")!=region["scale"] or client.get("colorsCrc32")!=zlib.crc32(colors):
+        return Decision(Status.FAIL,("client map scale or reconstructed terrain checksum differs",))
+    return Decision(Status.PASS)
+
+
+def restored_session(expected,native,client):
+    methods=set(expected["methods"])
+    if native.get("uuid")!=expected["uuid"] or set(native.get("methods",[]))!=methods:
+        return Decision(Status.FAIL,("restored owner or method selection differs",))
+    items=native.get("items",[])
+    for method in ("compass","map"):
+        if sum(item.get("amount",0) for item in items if item.get("method")==method)!=(1 if method in methods else 0):
+            return Decision(Status.FAIL,("restored method items missing or duplicated",))
+    if any(item.get("method") not in {"compass","map"} for item in items):
+        return Decision(Status.FAIL,("unrecognized restored protected item",))
+    state=dict(native)
+    for item in items:
+        if item["method"]=="compass":
+            state.update(compassTarget=item.get("compassTarget"),compassCaption=item.get("caption",""))
+        elif item["method"]=="map":
+            state["mapState"]=item.get("mapState",{})
+            if state["mapState"].get("id")!=expected["mapId"]:
+                return Decision(Status.FAIL,("restored owner map identity differs",))
+    history=client.get("actionbar",[])
+    state["actionbar"]=history[-1].get("text","") if history else ""
+    decision=retargeted(expected["target"],state)
+    if decision.status!=Status.PASS:
+        return decision
+    label=expected["target"]["displayName"]
+    bars=client.get("bossbars",{})
+    displays=client.get("textDisplays",{})
+    if len(bars)!=(1 if "bossbar" in methods else 0) or any(label not in value.get("text","") for value in bars.values()):
+        return Decision(Status.FAIL,("restored client bossbar differs",))
+    if "text_display" in methods:
+        display=displays.get(str(native.get("textDisplayId")),{})
+        if len(displays)!=1 or label not in (display.get("text") or ""):
+            return Decision(Status.FAIL,("restored native/client text display identity or text differs",))
+    elif displays:
+        return Decision(Status.FAIL,("unselected client text display retained",))
     return Decision(Status.PASS)

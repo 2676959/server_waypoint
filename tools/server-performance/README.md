@@ -124,6 +124,17 @@ counters; retain that result. These are partial functional checks, not timed
 navigation acceptance, all protection hooks or persistent map-terrain validation.
 See the [navigation observations](../../docs/features/server-performance/validation/2026-10-25-m1-navigation.md).
 
+```sh
+rtk proxy python3 tools/server-performance/bots/terrain_smoke.py --root /Volumes/ssd/sw-perf-terrain-new --count 10
+```
+
+The terrain helper compares all native pixel bytes with independently retained
+region references and actual saved terrain files, requires complete client map
+patch coverage/checksum agreement, then saves/reopens and verifies join restoration
+of all five methods with exact owner map IDs, targets and live effects. It covers
+two regions in one dimension with one or ten independent owners; cross-dimension
+terrain, eviction and shared-map viewers remain separate requirements.
+
 
 Native console read-leaf/provider smoke (functional scope; fresh owned root):
 

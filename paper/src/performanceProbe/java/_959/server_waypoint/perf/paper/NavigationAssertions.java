@@ -5,8 +5,10 @@ import com.google.gson.JsonObject;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import net.minecraft.world.level.saveddata.maps.MapId;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
@@ -17,6 +19,7 @@ import org.bukkit.map.MapView;
 import java.lang.reflect.Field;
 import java.security.MessageDigest;
 import java.util.Collection;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HexFormat;
 import java.util.IdentityHashMap;
@@ -188,13 +191,25 @@ final class NavigationAssertions {
         return result;
     }
 
-    private static JsonObject mapState(MapView view) {
+    private static JsonObject mapState(MapView view) throws Exception {
         JsonObject value = new JsonObject();
         value.addProperty("id", view.getId());
         value.addProperty("dimension", view.getWorld().getKey().toString());
         value.addProperty("centerX", view.getCenterX());
         value.addProperty("centerZ", view.getCenterZ());
         value.addProperty("scale", view.getScale().ordinal());
+        var saved = ((CraftWorld) view.getWorld()).getHandle().getMapData(new MapId(view.getId()));
+        if (saved == null || saved.colors.length != 16384) {
+            throw new IllegalStateException("Native map terrain data absent/invalid");
+        }
+        // Copy the actual saved-data pixels on their owner thread. The
+        // controller compares these bytes with independently saved regions.
+        byte[] colors = saved.colors.clone();
+        value.addProperty("colorsBase64", Base64.getEncoder().encodeToString(colors));
+        value.addProperty("colorsSha256", HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(colors)));
+        var checksum = new java.util.zip.CRC32();
+        checksum.update(colors);
+        value.addProperty("colorsCrc32", checksum.getValue());
         return value;
     }
 

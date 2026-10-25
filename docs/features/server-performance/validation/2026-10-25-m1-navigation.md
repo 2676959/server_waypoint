@@ -21,7 +21,8 @@ terrain, lifecycle or platform matrix.
   text displays and eight maps per peer, with explicit history/map eviction and
   text-clipping counters. Invalid map rectangles are rejected before mutation.
   Map pixels are reconstructed from real color patches; counts and CRC32 are
-  diagnostics, not yet a save/restart terrain correctness assertion.
+  diagnostics in the method checkpoint. The later terrain checkpoint below adds
+  exact native save/restart assertions.
 
 ## Executed functional checks
 
@@ -31,9 +32,9 @@ subsets of the five discovered methods for one and ten real vanilla-protocol
 Azalea players. Each actor has every requested method and its expected native/
 client effects; unselected methods have no active item/display effect. The map
 cursor is independently expected at `(-96, -96)` for target `(320, -61, 320)` in
-the `(512, 512)` region at scale 2. The named `all` command is a separate pending
-command-leaf requirement; enabling all five through individual method commands
-does not claim that leaf was executed.
+the `(512, 512)` region at scale 2. Those runs enabled all five through individual
+method commands; the later terrain checkpoint additionally executes the named
+`all` command and verifies its outcome.
 
 Both runs also verify real movement, retargeting to a different map region,
 waypoint display-name/color/position/identifier edits, refreshed compass/map/live
@@ -87,7 +88,48 @@ made; M1 retains original-release failures for the later repair milestone.
 Python contract tests also reject stale bossbar/actionbar targets, changed
 ordinary-item counts, escaping protected items and missing resource evidence.
 The protection contracts are not native execution of the 22 protection hooks.
-Death/respawn, world changes, active-session reconnect/restart restoration,
-deletion, map terrain persistence/eviction/multiple viewers and the remaining
-native protections still require evidence. Main CLI adapters remain blocked
-until their complete contracts are implemented.
+Death/respawn, world changes, deletion, terrain across dimensions, cache eviction,
+shared-map viewers and the remaining native protections still require evidence.
+Main CLI adapters remain blocked until their complete contracts are implemented.
+
+## Terrain and active-session restart checkpoint
+
+`/Volumes/ssd/sw-performance-m1-terrain-small/` passes same-dimension cold/warm
+region switching and save/restart with one real owner and the map method.
+`/Volumes/ssd/sw-performance-m1-terrain-medium-all/` passes the equivalent ten-owner
+sequence and restores **all five methods** after restart. These are standalone
+functional checks, not timed performance acceptance.
+
+The native probe copies every actual `MapItemSavedData.colors` byte on the owner
+thread. A warm region must contain nonzero terrain and stabilize across repeated
+native observations; the client must have received every pixel and reconstruct
+the matching CRC32. Switching to never-explored B while viewers remain in A must
+produce exactly 16,384 zero bytes on both server and client. The outgoing terrain
+file must have independently expected region metadata and exactly the bytes
+observed before the switch. Returning to A restores those exact bytes. Exploring
+B and switching back produces a separate exact saved B reference.
+
+After an active-session quit and native save/stop, the same server reopens and
+the same offline UUIDs reconnect. Session restoration occurs on join before a new
+navigation command: native targets, method sets, owner map IDs, item counts,
+compass destinations, map cursors and corresponding client live displays match.
+All A pixels remain byte-for-byte exact; switching to B restores its saved bytes
+and clears/replaces the client map appropriately. The ten-owner run retains 30
+terrain snapshots (including the initial blank region), hashes every saved file,
+and records ten passing owner assertions at every terrain/restoration step.
+
+Both active-session disconnects in the ten-owner run clear sessions, tasks,
+bossbars, network-display maps, renderer targets, target indices and tick counters
+to zero after ten further native ticks, while retaining ten legitimate owner-map
+cache entries. This passing lifecycle does not erase the prior stop-then-quit
+failure: the early return applies when the session has already been removed.
+The `all` command leaf is now positively exercised before quit, with actual
+all-method state and client effects. No rendered-color or visual-layout claim is
+made from plaintext packet observations.
+
+RED evidence remains under `/Volumes/ssd/sw-performance-m1-terrain-red/`: native
+pixel observation was absent before the probe extension. New contract tests
+reject changed region metadata, changed pixel bytes, incomplete client pixels,
+a stale checksum, changed owner/map identity, lost/duplicated method items and
+mismatched native/client text-display identity. Current verification: 108 Python
+tests and the Paper probe build pass; the 17 Rust tests are unchanged and green.
