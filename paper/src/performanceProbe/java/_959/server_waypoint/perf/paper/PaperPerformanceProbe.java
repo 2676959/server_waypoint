@@ -107,6 +107,7 @@ public final class PaperPerformanceProbe extends JavaPlugin {
                     emit("scenario.stopped", stopped);
                 }
                 case "storage.snapshot" -> emit("storage.snapshot", StorageAssertions.snapshot());
+                case "navigation.snapshot" -> emit("navigation.snapshot", NavigationAssertions.snapshot());
                 case "commands.feedback-barrier" -> Bukkit.getGlobalRegionScheduler().execute(this, () -> emit("commands.feedback.completed", new JsonObject()));
                 case "commands.restore-tokens" -> emit("commands.restore-tokens", commands.restoreTokens());
                 case "commands.tree" -> emit("commands.tree", commands.tree());

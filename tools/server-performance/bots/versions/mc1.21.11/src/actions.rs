@@ -102,6 +102,14 @@ pub async fn perform(
             tokio::time::sleep(Duration::from_millis(millis)).await;
             bot.walk(WalkDirection::None);
         }
+        "select" => {
+            let slot = data["slot"]
+                .as_u64()
+                .ok_or_else(|| anyhow::anyhow!("hotbar slot missing"))?;
+            anyhow::ensure!(slot <= 8, "invalid hotbar slot");
+            bot.set_selected_hotbar_slot(slot as u8);
+            tokio::time::sleep(Duration::from_millis(100)).await;
+        }
         "inventory" => {
             let from = data["from"].as_u64().unwrap_or(36);
             let to = data["to"].as_u64().unwrap_or(37);

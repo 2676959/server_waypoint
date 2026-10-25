@@ -37,6 +37,7 @@ struct State {
     mode: String,
     acknowledgements: Arc<Mutex<sw_performance_bots::command_ack::PendingAcks>>,
     wire: Arc<Mutex<BTreeMap<String, WireState>>>,
+    effects: Arc<Mutex<BTreeMap<String, sw_performance_bots::effects::Effects>>>,
     failures: Arc<Mutex<Vec<String>>>,
     notifications: Option<tokio::sync::mpsc::Sender<String>>,
 }
@@ -88,6 +89,14 @@ async fn handle_event(bot: Client, event: Event, state: State) -> anyhow::Result
             }
         }
         Event::Packet(packet) => {
+            state
+                .effects
+                .lock()
+                .unwrap()
+                .entry(state.identity.clone())
+                .or_default()
+                .observe(&packet)
+                .map_err(anyhow::Error::msg)?;
             if let ClientboundGamePacket::CustomPayload(packet) = &*packet {
                 let channel = packet.identifier.to_string();
                 let data: &[u8] = &packet.data;
@@ -351,7 +360,14 @@ async fn run() -> anyhow::Result<()> {
     loop {
         if barrier && ledger.quiescent() {
             let peers: Vec<Value> = state.wire.lock().unwrap().iter().map(|(name, peer)| json!({"name": name, "packets": peer.packets, "pendingTransfers": peer.receiver.pending()})).collect();
-            output.emit("packet_summary", json!({"peers": peers}));
+            let effects: BTreeMap<_, _> = state
+                .effects
+                .lock()
+                .unwrap()
+                .iter()
+                .map(|(name, value)| (name.clone(), value.snapshot()))
+                .collect();
+            output.emit("packet_summary", json!({"peers": peers,"effects":effects}));
             output.emit("rate_sample", json!({"offered": offered, "completed": completed, "failed": failed,
                 "pending": offered - completed - failed, "elapsedSeconds": started.elapsed().as_secs_f64(),
                 "maxLagSeconds": max_lag, "barrierAcknowledged": true, "completionScope": "client-issued"}));

@@ -38,6 +38,7 @@ continue running throughout the sample.
 - [Additional Paper/Fabric component measurements and repair decisions](validation/2026-10-25-additional-components.md)
 - [Folia region measurements and Paper comparison](validation/2026-10-25-folia-regions.md)
 - [Original Paper navigation/protection execution requirements](validation/2026-10-24-navigation-requirements.md)
+- [M1 navigation method observations and retained cleanup failure](validation/2026-10-25-m1-navigation.md)
 - [Tool commands](../../../tools/server-performance/README.md)
 
 The plan first delivers a Paper zero-player reproduction, then covers remaining features

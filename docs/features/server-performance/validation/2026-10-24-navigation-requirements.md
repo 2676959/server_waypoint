@@ -31,8 +31,8 @@ interaction. Each requirement below also needs owner-isolation and post-quiescen
 | `onPlayerInventorySlotChange` | `PlayerInventorySlotChangeEvent` | Old/new protected item reconciled; ordinary slot edits preserved. | Pending |
 | `onDeath` | `PlayerDeathEvent` | Protected drops/cursor removed, nested carrier sanitized; ordinary death drops conserved. | Pending |
 | `onRespawn` | `PlayerRespawnEvent` | Missing enabled method items restored exactly once. | Pending |
-| `onJoin` | `PlayerJoinEvent` | Persisted session restored with exact target/methods; one owner tick task; stale protocol state cleared. | Pending |
-| `onQuit` | `PlayerQuitEvent` | Player/session/task/platform/protocol cleanup; persisted legitimate restore data retained. | Pending |
+| `onJoin` | `PlayerJoinEvent` | Persisted session restored with exact target/methods; one owner tick task; stale protocol state cleared. | Partial: native 1/10 joins and owner tasks observed; persisted-session restoration pending. |
+| `onQuit` | `PlayerQuitEvent` | Player/session/task/platform/protocol cleanup; persisted legitimate restore data retained. | Partial FAIL: native 1/10 disconnects clear active resources but retain 1/10 tick counters after prior disable; other lifecycle/protocol assertions pending. |
 
 The five Paper methods are compass, map, bossbar, actionbar and text_display. Verify
 single methods, all supported methods, every smaller nonempty combination, retarget/edit/

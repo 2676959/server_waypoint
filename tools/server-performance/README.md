@@ -109,6 +109,21 @@ Use a fresh root. Other storage/command variants remain BLOCKED until their nati
 behavior coverage is implemented. Operator throughput does not establish non-operator
 command admission or complete command-leaf/suggestion coverage.
 
+Task 11's standalone navigation helper exercises every nonempty method selection,
+real movement, retarget/edit/teleport effects, stop and disconnect cleanup with
+independent native state and normal client packets:
+
+```sh
+rtk proxy python3 tools/server-performance/bots/navigation_smoke.py --root /Volumes/ssd/sw-perf-navigation-new --count 1
+```
+
+Use `--count 10` for ten real actors and a one-owner retarget isolation check.
+Ordinary stone/diamond stacks are seeded and conserved through selections and
+retargeting. The original release can exit 1 for retained post-disconnect tick
+counters; retain that result. These are partial functional checks, not timed
+navigation acceptance, all protection hooks or persistent map-terrain validation.
+See the [navigation observations](../../docs/features/server-performance/validation/2026-10-25-m1-navigation.md).
+
 
 Native console read-leaf/provider smoke (functional scope; fresh owned root):
 
