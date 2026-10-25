@@ -108,3 +108,18 @@ rtk proxy python3 tools/server-performance/run.py run --root /Volumes/ssd/sw-per
 Use a fresh root. Other storage/command variants remain BLOCKED until their native
 behavior coverage is implemented. Operator throughput does not establish non-operator
 command admission or complete command-leaf/suggestion coverage.
+
+
+Native console read-leaf/provider smoke (functional scope; fresh owned root):
+
+```sh
+rtk proxy python3 tools/server-performance/bots/command_leaves_smoke.py --root /Volumes/ssd/sw-perf-leaves-new --baseline /Volumes/ssd/sw-performance-m1-storage-timed/fixtures/navigation-terrain-small/frozen --suggestions
+```
+
+The supplied frozen baseline must have a valid native `baseline.json` manifest.
+The helper executes 5,295 console read leaves and observes 51 local custom suggestion
+paths on the verified anchor. Feedback is captured from the real native console file
+log between delivery-scheduler markers; provider receipts identify the actual invoked
+Brigadier callbacks. `--limit N` makes the read selection partial. Remote providers and
+other command families retain separate requirements; this helper cannot establish a
+complete command family or performance gate.

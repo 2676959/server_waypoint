@@ -20,12 +20,18 @@ final class CommandAssertions {
     private CommandDispatcher<CommandSourceStack> dispatcher;
     private final java.util.Set<CommandNode<CommandSourceStack>> instrumented = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
     private final JsonArray callbacks = new JsonArray();
+    private final java.util.Map<CommandNode<CommandSourceStack>, Integer> providers = new java.util.IdentityHashMap<>();
+    private final JsonArray providerCallbacks = new JsonArray();
+    private long droppedProviderCallbacks;
     private long droppedCallbacks;
     private org.bukkit.plugin.Plugin plugin;
+    private java.util.function.BiConsumer<String, JsonObject> observer;
+    private long commandObservationId;
     private final java.util.Map<java.util.UUID, JsonObject> pending = new java.util.HashMap<>();
 
-    void install(org.bukkit.plugin.Plugin owner) {
+    void install(org.bukkit.plugin.Plugin owner, java.util.function.BiConsumer<String, JsonObject> observer) {
         plugin = owner;
+        this.observer = observer;
         Bukkit.getMessenger().registerOutgoingPluginChannel(owner, "swperf:command_ack");
         Bukkit.getMessenger().registerOutgoingPluginChannel(owner, "swperf:command_ready");
         Bukkit.getMessenger().registerIncomingPluginChannel(owner, "swperf:command_request", (channel, player, bytes) -> {
@@ -79,6 +85,24 @@ final class CommandAssertions {
         }
         Command<CommandSourceStack> original = node.getCommand();
         Command<CommandSourceStack> observed = context -> {
+            JsonObject event = new JsonObject();
+            List<String> path = new ArrayList<>();
+            for (var parsed : context.getNodes()) {
+                var part = parsed.getNode();
+                path.add(part instanceof ArgumentCommandNode<?, ?> ? "<" + part.getName() + ">" : part.getName());
+            }
+            CommandSender actor = context.getSource().getBukkitSender();
+            event.addProperty("path", String.join(" ", path));
+            event.addProperty("input", context.getInput());
+            event.addProperty("actor", actor.getName());
+            boolean console = actor instanceof org.bukkit.command.ConsoleCommandSender;
+            if (console) {
+                event.addProperty("commandObservationId", ++commandObservationId);
+                JsonObject begin = event.deepCopy();
+                // PaperMessageSender enqueues console delivery here too. These
+                // markers surround delivery without replacing the real sender.
+                Bukkit.getGlobalRegionScheduler().execute(plugin, () -> observer.accept("command.begin", begin));
+            }
             long before = allocated();
             long started = System.nanoTime();
             int result = 0;
@@ -92,15 +116,6 @@ final class CommandAssertions {
             } finally {
                 long elapsed = System.nanoTime() - started;
                 long after = allocated();
-                JsonObject event = new JsonObject();
-                List<String> path = new ArrayList<>();
-                for (var parsed : context.getNodes()) {
-                    var part = parsed.getNode();
-                    path.add(part instanceof ArgumentCommandNode<?, ?> ? "<" + part.getName() + ">" : part.getName());
-                }
-                event.addProperty("path", String.join(" ", path));
-                event.addProperty("input", context.getInput());
-                event.addProperty("actor", context.getSource().getBukkitSender().getName());
                 event.addProperty("returned", result);
                 event.addProperty("durationNs", elapsed);
                 event.addProperty("allocatedBytes", before < 0 || after < before ? -1 : after - before);
@@ -116,6 +131,10 @@ final class CommandAssertions {
                 } else {
                     droppedCallbacks++;
                 }
+                if (console) {
+                    JsonObject completed = event.deepCopy();
+                    Bukkit.getGlobalRegionScheduler().execute(plugin, () -> observer.accept("command.end", completed));
+                }
             }
         };
         CommandNode<CommandSourceStack> replacement;
@@ -129,6 +148,63 @@ final class CommandAssertions {
         // Brigadier's documented merge replaces only the existing command callback;
         // requirements, redirects, argument types, suggestions and children stay intact.
         parent.addChild(replacement);
+    }
+
+    private void instrumentSuggestions(CommandNode<CommandSourceStack> node) {
+        if (!(node instanceof ArgumentCommandNode<CommandSourceStack, ?> argument)
+                || argument.getCustomSuggestions() == null || providers.containsKey(node)) {
+            return;
+        }
+        int id = providers.size() + 1;
+        var original = argument.getCustomSuggestions();
+        com.mojang.brigadier.suggestion.SuggestionProvider<CommandSourceStack> observed = (context, builder) -> {
+            long started = System.nanoTime();
+            try {
+                return original.getSuggestions(context, builder).whenComplete((suggestions, error) ->
+                        recordProvider(id, builder.getInput(), started, suggestions, error));
+            } catch (RuntimeException | com.mojang.brigadier.exceptions.CommandSyntaxException exception) {
+                recordProvider(id, builder.getInput(), started, null, exception);
+                throw exception;
+            }
+        };
+        try {
+            // Brigadier's merge API changes only commands. Preserve the native
+            // node/argument/requirement graph and wrap its actual provider field.
+            var field = ArgumentCommandNode.class.getDeclaredField("customSuggestions");
+            field.setAccessible(true);
+            field.set(argument, observed);
+        } catch (ReflectiveOperationException exception) {
+            throw new IllegalStateException("Native Brigadier suggestion observation unavailable", exception);
+        }
+        providers.put(node, id);
+    }
+
+    private void recordProvider(int id, String input, long started,
+            com.mojang.brigadier.suggestion.Suggestions suggestions, Throwable error) {
+        JsonObject event = new JsonObject();
+        event.addProperty("providerId", id);
+        event.addProperty("input", input);
+        event.addProperty("serverObserved", true);
+        event.addProperty("durationNs", System.nanoTime() - started);
+        event.addProperty("clock", "server-monotonic");
+        event.addProperty("scope", "native-provider-completion");
+        JsonArray values = new JsonArray();
+        if (suggestions != null) {
+            for (var suggestion : suggestions.getList()) {
+                values.add(suggestion.getText());
+            }
+        }
+        event.add("suggestions", values);
+        if (error != null) {
+            event.addProperty("exception", error.getClass().getName());
+        }
+        synchronized (providerCallbacks) {
+            if (providerCallbacks.size() < 1000) {
+                providerCallbacks.add(event);
+            } else {
+                droppedProviderCallbacks++;
+            }
+        }
     }
 
     private <T> CommandNode<CommandSourceStack> argumentCopy(ArgumentCommandNode<CommandSourceStack, T> argument, Command<CommandSourceStack> observed) {
@@ -158,6 +234,7 @@ final class CommandAssertions {
         if (prefix.size() > 64 || nodes.size() > 100000) {
             throw new IllegalStateException("Native command tree exceeds bounded inventory");
         }
+        instrumentSuggestions(node);
         instrument(parent, node);
         List<String> path = new ArrayList<>(prefix);
         List<JsonObject> nextArguments = new ArrayList<>(arguments);
@@ -177,6 +254,9 @@ final class CommandAssertions {
         value.addProperty("path", String.join(" ", path));
         value.addProperty("executable", node.getCommand() != null);
         value.addProperty("suggestions", suggestion);
+        if (suggestion) {
+            value.addProperty("providerId", providers.get(node));
+        }
         value.add("arguments", new Gson().toJsonTree(nextArguments));
         nodes.add(value);
         for (CommandNode<CommandSourceStack> child : node.getChildren()) {
@@ -269,6 +349,12 @@ final class CommandAssertions {
         result.addProperty("durationNs", System.nanoTime() - started);
         result.addProperty("clock", "server-monotonic");
         result.add("suggestions", new Gson().toJsonTree(suggestions == null ? List.of() : suggestions));
+        synchronized (providerCallbacks) {
+            result.add("providerCallbacks", providerCallbacks.deepCopy());
+            result.addProperty("droppedProviderCallbacks", droppedProviderCallbacks);
+            providerCallbacks.asList().clear();
+            droppedProviderCallbacks = 0;
+        }
         return result;
     }
 

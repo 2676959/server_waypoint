@@ -25,7 +25,7 @@ public final class PaperPerformanceProbe extends JavaPlugin {
 
     @Override public void onEnable() {
         fixture = new PaperFixtureAdapter();
-        commands.install(this);
+        commands.install(this, this::emit);
         Bukkit.getPluginManager().registerEvents(bots, this);
         Bukkit.getPluginManager().registerEvents(new PaperTickProbe(this, fixture), this);
         Bukkit.getScheduler().runTaskTimer(this, () -> {
@@ -106,6 +106,7 @@ public final class PaperPerformanceProbe extends JavaPlugin {
                     stopped.addProperty("phaseElapsedSeconds", (System.nanoTime() - phaseStarted) / 1_000_000_000.0);
                     emit("scenario.stopped", stopped);
                 }
+                case "commands.feedback-barrier" -> Bukkit.getGlobalRegionScheduler().execute(this, () -> emit("commands.feedback.completed", new JsonObject()));
                 case "commands.restore-tokens" -> emit("commands.restore-tokens", commands.restoreTokens());
                 case "commands.tree" -> emit("commands.tree", commands.tree());
                 case "commands.execute" -> {

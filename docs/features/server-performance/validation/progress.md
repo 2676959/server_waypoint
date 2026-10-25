@@ -133,3 +133,14 @@ Verification: 89 Python tests pass, including new RED/GREEN rejection of changed
 
 
 The separate 2026-10-25 medium JFR diagnostic also passes its selected case, all structured assertions and exact saved/reopened state. Recording: 5,229,630 bytes / 96s, with 22,810 allocation samples and 24 GC events; raw root `/Volumes/ssd/sw-performance-m1-storage-profile/`. Sample weights are estimated whole-JVM allocation, not exact plugin bytes or leak evidence. The native inputs match the unprofiled runs; validation-code refinements have a separate sealed input identity. Both completed roots have no owned live processes.
+
+
+### Task 10 console leaves and local suggestion providers (2026-10-25)
+
+Native `/Volumes/ssd/sw-performance-m1-read-suggestions-full/` executes all 5,295 read-command leaves (root/help/details/list) from the installed 4.0.0 command tree. Every requested input matches its actual native callback path, each has delivered console feedback, no exception is observed, and the complete saved dataset remains exact. The matching callback and output count is 5,295. This is console execution/feedback evidence, not complete player UI semantics or a timed performance gate.
+
+All 51 local custom suggestion paths also invoke their expected native Brigadier provider, with matching input/provider identity, nonempty results and no dropped callbacks. Eleven remote custom suggestion paths remain Task 15 topology requirements. The complete tree still contains 10,663 executable paths: the 5,276 remote paths and 92 remaining local non-read paths have separate pending behavior work.
+
+RED: native feedback proof is absent in `read-leaves-red`; the first observation attempt (`read-leaves-green`) retains a failure because console messages arrive after the callback. Source inspection confirms `PaperMessageSender` schedules console delivery through `PaperScheduler.executeGlobal`. The repaired probe brackets actual delivery on that same scheduler, then uses an explicit global-scheduler barrier and the native file log. It neither copies feedback text nor replaces the real sender. A multiline-log regression preserves full delivered text. Native `suggestions-red` retains missing provider identities; wrappers now observe actual native provider invocation/completion while preserving the dispatcher argument graph.
+
+Verification: 94 Python tests and the Paper 1.21.11 probe build pass; production/probe archives have no overlapping classes. The runtime lock records the new probe bytes and evidence root. All helper servers stopped. No production code, localization or active Stonecutter target changed. Task 10 remains in progress; semantic/player/permission branches, other local command families, navigation/upload/remote dependencies and the rest of M1 remain open.
