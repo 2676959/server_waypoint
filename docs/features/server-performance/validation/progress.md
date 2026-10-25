@@ -82,3 +82,13 @@ Deferred minor (before Task 16 soak acceptance): stream or bound action-ID/event
 Task 8 commit: `8c4672e9`. Task 9 commit is the local commit containing its checked plan steps and runtime pins. No production source, GUI API, translation or active Stonecutter target changed.
 
 Task 9 review fix evidence: `test_error_after_matching_event_is_not_lost`, `test_unmatched_replies_remain_available`, `test_stalled_stdin_has_deadline_and_owned_cleanup`, `failed_complete_transfer_releases_bytes_and_cannot_grow`, `conflicting_metadata_releases_the_transfer`; semantic/multi-frame vectors verified both directions by the immutable release codecs. The native overload test failed before enqueue timing was fixed; the native corrupt-checksum case now emits a sticky error and disconnects. Every owned process in these roots stopped.
+
+### Task 10 foundation checkpoint
+
+Seven focused storage/command tests pass, including deterministic 1,000-waypoint/10-list/3-dimension fixtures and the separate 90%-in-one-list fixture. The native small dataset loads with every declared name count and revision 7. The registered tree contains 19,762 nodes, 10,663 executable paths and 62 custom suggestion providers. This inventory is a coverage requirement, not execution coverage.
+
+Native callback smoke `/Volumes/ssd/sw-performance-m1-command-callback-3/` observes actual `wp help` and `wp list <dimension> <list identifier> limit <page limit>` callbacks, with server-monotonic duration and server-thread allocations. Earlier roots preserve absent-callback failures.
+
+Ruling: observe the native Minecraft dispatcher and acknowledge console batches on the next owner tick. Paper's lifecycle dispatcher maps nodes, and commands nested inside `swperf` queue feature work until that command returns; timing `Bukkit.dispatchCommand` alone measured enqueue/parse cost. Actual callback timing is recorded separately from dispatch submission. Cost if wrong: native callback coverage must remain blocked rather than accepting submission timing. Pinned Minecraft source and Paper bytecode were inspected before this change.
+
+Task 10 remains in progress: complete leaf/suggestion/denial behavior evidence, timed small/medium workloads and save/restart assertions are not checked. This foundation checkpoint does not mark M1 complete.

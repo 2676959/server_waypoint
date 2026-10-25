@@ -16,6 +16,7 @@ import java.util.List;
 public final class PaperPerformanceProbe extends JavaPlugin {
     private PaperFixtureAdapter fixture;
     private final BotAssertions bots = new BotAssertions();
+    private final CommandAssertions commands = new CommandAssertions();
     private ProbeWriter writer;
     private boolean sampling;
     private String phase = "WARMUP";
@@ -104,6 +105,12 @@ public final class PaperPerformanceProbe extends JavaPlugin {
                     stopped.addProperty("phaseElapsedSeconds", (System.nanoTime() - phaseStarted) / 1_000_000_000.0);
                     emit("scenario.stopped", stopped);
                 }
+                case "commands.tree" -> emit("commands.tree", commands.tree());
+                case "commands.execute" -> {
+                    JsonObject acknowledgement = commands.execute(data);
+                    Bukkit.getScheduler().runTask(this, () -> emit("commands.executed", commands.completed(acknowledgement)));
+                }
+                case "commands.suggest" -> emit("commands.suggested", commands.suggest(data));
                 case "players.malformed" -> { bots.sendMalformed(); emit("players.malformed", new JsonObject()); }
                 case "players.snapshot" -> emit("players.snapshot", bots.snapshot(false));
                 case "players.reset" -> emit("players.reset", bots.snapshot(true));

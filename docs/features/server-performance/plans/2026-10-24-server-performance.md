@@ -204,8 +204,8 @@ for this documentation-only step.
 
 **Interfaces:** Produces `storage`/`commands` cases using Azalea and console paths; consumes manifest operation rates and independent saved-state assertions.
 
-- [ ] Write `test_each_command_leaf_has_execution_evidence`, `test_denied_mutation_preserves_revision`, `test_restore_is_single_use`, `test_stale_edit_rejected`, `test_persisted_state_matches_committed_operations`. Assert exact names/revisions/counts and no mutation on permission denial.
-- [ ] Run `rtk proxy python3 -m unittest discover -s tools/server-performance/tests -p 'test_storage_commands.py' -v`; verify new dispatch/assertions fail first.
+- [x] Write `test_each_command_leaf_has_execution_evidence`, `test_denied_mutation_preserves_revision`, `test_restore_is_single_use`, `test_stale_edit_rejected`, `test_persisted_state_matches_committed_operations`. Assert exact names/revisions/counts and no mutation on permission denial.
+- [x] Run `rtk proxy python3 -m unittest discover -s tools/server-performance/tests -p 'test_storage_commands.py' -v`; verify new dispatch/assertions fail first.
 - [ ] Implement read/suggestion rates 10/50/100 and mutation rates 1/5/10 per second; all release command leaves, permission configurations, layout/search/sort/paging/details/help and console/execute-as paths. Add skewed-list fixtures, snapshots/revisions, rename/remove/restore, local teleport, config/language reload and action-log cost cases.
 - [ ] Execute small/medium Paper cases with exact disk validation after save/restart, recording latency and process allocation. Use source-backed command-family grouping only for timing; require separate behavior evidence for each leaf/suggestion and denial branch.
 
