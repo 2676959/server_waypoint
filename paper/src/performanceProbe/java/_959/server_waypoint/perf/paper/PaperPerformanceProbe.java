@@ -105,6 +105,7 @@ public final class PaperPerformanceProbe extends JavaPlugin {
                     stopped.addProperty("phaseElapsedSeconds", (System.nanoTime() - phaseStarted) / 1_000_000_000.0);
                     emit("scenario.stopped", stopped);
                 }
+                case "commands.restore-tokens" -> emit("commands.restore-tokens", commands.restoreTokens());
                 case "commands.tree" -> emit("commands.tree", commands.tree());
                 case "commands.execute" -> {
                     JsonObject acknowledgement = commands.execute(data);

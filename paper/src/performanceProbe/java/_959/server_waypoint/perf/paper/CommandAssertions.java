@@ -185,6 +185,31 @@ final class CommandAssertions {
         return acknowledgement;
     }
 
+    JsonObject restoreTokens() throws ReflectiveOperationException {
+        owner();
+        var plugin = Bukkit.getPluginManager().getPlugin("ServerWaypoint");
+        if (plugin == null) {
+            throw new IllegalStateException("Published plugin absent");
+        }
+        var commandField = plugin.getClass().getDeclaredField("waypointCommand");
+        commandField.setAccessible(true);
+        Object command = commandField.get(plugin);
+        var registryField = command.getClass().getSuperclass().getDeclaredField("restoreRegistry");
+        registryField.setAccessible(true);
+        Object registry = registryField.get(command);
+        JsonArray tokens = new JsonArray();
+        synchronized (registry) {
+            var entriesField = registry.getClass().getDeclaredField("entries");
+            entriesField.setAccessible(true);
+            for (Object token : ((java.util.Map<?, ?>) entriesField.get(registry)).keySet()) {
+                tokens.add(token.toString());
+            }
+        }
+        JsonObject result = new JsonObject();
+        result.add("tokens", tokens);
+        return result;
+    }
+
     JsonObject suggest(JsonObject request) {
         owner();
         String input = request.get("input").getAsString();

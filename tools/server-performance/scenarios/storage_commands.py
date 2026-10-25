@@ -78,3 +78,29 @@ def make_dataset(tier, skewed=False):
             target = candidates[(index // 3) % len(candidates)]
         target["waypoints"].append({"name": f"wp_{index:05}", "initials": "P", "pos": [(index % 100) * 16, -61, -(index // 100) * 16], "color": "#123456", "yaw": 0, "global": True, "keywords": ["perf"], "description": "owned performance fixture"})
     return dataset
+
+
+def canonical_saved(dimensions):
+    """Normalize map iteration order while retaining every saved field and value."""
+    result = {}
+    for dimension, lists in dimensions.items():
+        if len({value["list_name"] for value in lists}) != len(lists):
+            raise ValueError("duplicate saved list identifier")
+        canonical = []
+        for value in lists:
+            waypoints = value["waypoints"]
+            if len({waypoint["name"] for waypoint in waypoints}) != len(waypoints):
+                raise ValueError("duplicate saved waypoint identifier")
+            canonical.append({**value, "waypoints": sorted(waypoints, key=lambda waypoint: waypoint["name"])})
+        result[dimension] = sorted(canonical, key=lambda value: value["list_name"])
+    return result
+
+
+def canonical_snapshot(lists):
+    keys = [(value["dimension"], value["name"]) for value in lists]
+    if len(set(keys)) != len(keys):
+        raise ValueError("duplicate native list identity")
+    for value in lists:
+        if len(set(value["waypoints"])) != len(value["waypoints"]):
+            raise ValueError("duplicate native waypoint identity")
+    return sorted(({**value, "waypoints": sorted(value["waypoints"])} for value in lists), key=lambda value: (value["dimension"], value["name"]))

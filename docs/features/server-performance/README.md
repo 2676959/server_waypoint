@@ -1,10 +1,11 @@
 # Server performance
 
-Status: M0 (Tasks 1–7) implemented and validated on 2026-10-24. The published
-Paper 1.21.11 inventory defect reproduces in all three measured pairs; the medium
-physical hopper case passes all three pairs. The selected report is complete and
-failing. The comprehensive audit, remaining platforms/features, repairs and release
-gates remain later milestones. See the execution progress for evidence and limits.
+Status: M1 is in progress. M0 and Tasks 8–9 are implemented and validated on the
+first Paper 1.21.11 anchor; Task 10 has native command, permission and persistence
+checkpoints. Real 1/10/50-player smoke and protocol rejection checks pass, while
+full remaining-feature/platform workloads and soaks remain unchecked. The original
+M0 inventory defect still reproduces; no source repair has been made. See the
+execution progress for exact hashes, retained roots and proof boundaries.
 
 The first delivery is a comprehensive audit of the published 4.0.0 release across
 different load tiers, followed by repairs and repeated measurements. Future PRs can

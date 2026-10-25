@@ -51,3 +51,19 @@ class StorageCommandsTest(unittest.TestCase):
         self.assertTrue(all(value["n"] == 7 for lists in dataset.values() for value in lists))
         skewed = make_dataset("small", skewed=True)
         self.assertEqual(900, max(len(value["waypoints"]) for lists in skewed.values() for value in lists))
+
+    def test_saved_map_order_does_not_hide_missing_or_changed_fields(self):
+        from scenarios.storage_commands import canonical_saved
+        expected = {"minecraft:overworld": [{"list_name": "b", "n": 7, "waypoints": [{"name": "second", "color": "#112233"}, {"name": "first", "color": "#112233"}]}, {"list_name": "a", "n": 3, "waypoints": []}]}
+        reordered = {"minecraft:overworld": [expected["minecraft:overworld"][1], {"list_name": "b", "n": 7, "waypoints": list(reversed(expected["minecraft:overworld"][0]["waypoints"]))}]}
+        self.assertEqual(canonical_saved(expected), canonical_saved(reordered))
+        reordered["minecraft:overworld"][1]["n"] = 8
+        self.assertNotEqual(canonical_saved(expected), canonical_saved(reordered))
+
+    def test_reopen_compares_keyed_identity_and_preserves_revision(self):
+        from scenarios.storage_commands import canonical_snapshot
+        first = [{"dimension": "minecraft:overworld", "name": "b", "revision": 7, "waypoints": ["second", "first"]}, {"dimension": "minecraft:overworld", "name": "a", "revision": 5, "waypoints": []}]
+        second = [{"dimension": "minecraft:overworld", "name": "a", "revision": 5, "waypoints": []}, {"dimension": "minecraft:overworld", "name": "b", "revision": 7, "waypoints": ["first", "second"]}]
+        self.assertEqual(canonical_snapshot(first), canonical_snapshot(second))
+        second[0]["revision"] = 6
+        self.assertNotEqual(canonical_snapshot(first), canonical_snapshot(second))

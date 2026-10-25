@@ -351,7 +351,7 @@ for this documentation-only step.
 - Public names, phase/status values, units, load defaults and source-set task names must
   remain identical across the specification, contracts and consumers.
 
-Implementation has not started. On a later implementation request, review the plan and
-preserve the user's chosen execution method. Inline execution is the default recommendation
+Implementation progress is recorded in `../validation/progress.md`. Preserve the
+user's chosen execution method when continuing the remaining tasks. Inline execution is the default recommendation
 because native runtime/protocol/fixture capabilities are sequentially coupled and timed
 measurements must remain controlled; task-by-task subagents require the user's choice.

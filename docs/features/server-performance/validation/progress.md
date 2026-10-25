@@ -92,3 +92,11 @@ Native callback smoke `/Volumes/ssd/sw-performance-m1-command-callback-3/` obser
 Ruling: observe the native Minecraft dispatcher and acknowledge console batches on the next owner tick. Paper's lifecycle dispatcher maps nodes, and commands nested inside `swperf` queue feature work until that command returns; timing `Bukkit.dispatchCommand` alone measured enqueue/parse cost. Actual callback timing is recorded separately from dispatch submission. Cost if wrong: native callback coverage must remain blocked rather than accepting submission timing. Pinned Minecraft source and Paper bytecode were inspected before this change.
 
 Task 10 remains in progress: complete leaf/suggestion/denial behavior evidence, timed small/medium workloads and save/restart assertions are not checked. This foundation checkpoint does not mark M1 complete.
+
+### Task 10 behavior/persistence checkpoint
+
+Native small and medium fixture behavior passes under `/Volumes/ssd/sw-performance-m1-persistence-small-3/` and `/Volumes/ssd/sw-performance-m1-persistence-medium-3/`. Each uses one actual compatible Azalea actor (not a claim of medium ten-player load), a hash-verified published JAR, and 1,000 or 10,000 initial waypoints over three dimensions. Permission level 2 is explicitly configured; denial preserves all revisions, a wire edit declaring revision 6 receives STALE_REVISION at actual revision 7, and rename/remove/restore leaves the new list at revision 5. Replaying the restore token changes nothing.
+
+Every saved JSON field/value is compared against the independent seeded dataset plus the committed operations, with only map iteration order canonicalized. Both servers stop/reopen and retain all expected names/revisions. Earlier roots retain fixture failures: an unquoted `#` colour is invalid Brigadier string syntax, and raw map iteration order is not a persistence identity. Neither is classified as a production defect. No source repair was made.
+
+Task 10 timed 30/60-second, three-process repetitions and exhaustive leaf/suggestion coverage remain pending. The 10,663-path tree includes 5,276 remote paths that require Task 15's topology; those requirements remain visible rather than being marked not applicable. Native callback duration/allocation is distinct from dispatch submission duration and process-wide allocation.
