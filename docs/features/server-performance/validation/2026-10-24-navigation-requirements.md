@@ -1,0 +1,50 @@
+# Original Paper navigation/protection requirements
+
+This is an execution inventory, not passing runtime evidence. Source: published release
+revision `d9f532f8b5a14c9be4bc47531b05b44fd1dc5773`,
+`paper/src/main/java/_959/server_waypoint/listener/NavigationProtectionListener.java`.
+
+Every event handler is registered at HIGHEST priority. Native probe scenarios must invoke
+the installed release handlers and distinguish physical client/server events from bounded
+synthetic event dispatch. A passing synthetic handler case does not prove a physical client
+interaction. Each requirement below also needs owner-isolation and post-quiescence checks.
+
+| Hook | Native event | Required independent observations | Execution |
+| --- | --- | --- | --- |
+| `onInventoryClick` | `InventoryClickEvent` | Current/cursor/hotbar, direct allowed slots, shift move, drop/clone/collect, portable storage; ordinary items conserved. | Pending |
+| `onInventoryDrag` | `InventoryDragEvent` | Protected cursor into valid/invalid raw slots; ordinary cursor conserved. | Pending |
+| `onInventoryOpen` | `InventoryOpenEvent` | Remove protected/nested items from invalid top inventory; preserve ordinary contents. | Pending |
+| `onInventoryClose` | `InventoryCloseEvent` | Top inventory and cursor cleanup; reconcile only the owner. | Pending |
+| `onPrepareCraft` | `PrepareItemCraftEvent` | Protected ingredients clear result; ordinary recipe remains craftable. | Pending |
+| `onPrepareResult` | `PrepareResultEvent` | Cartography protected contents clear result; other inventory types and ordinary contents retain results. | Pending |
+| `onCartographyItem` | `CartographyItemEvent` | Protected cartography interaction denied; ordinary interaction allowed. | Pending |
+| `onDrop` | `PlayerDropItemEvent` | Protected drop denied and restored without duplication; ordinary drop allowed. | Pending |
+| `onItemSpawn` | `ItemSpawnEvent` | Direct protected item cancelled; nested protected item sanitized; ordinary carrier/item conserved. | Pending |
+| `onEntityPickup` | `EntityPickupItemEvent` | Direct protected item denied/removed; nested sanitized; ordinary item remains available. | Pending |
+| `onInventoryPickup` | `InventoryPickupItemEvent` | Direct protected item denied/removed; nested sanitized; ordinary item transferred. | Pending |
+| `onInventoryMove` | `InventoryMoveItemEvent` | Protected move cancelled, source cleaned and active owners reconciled; innocent item conservation. | Partial M0 event/physical-container evidence; player fixture pending |
+| `onProtectedBlockInteract` | `PlayerInteractEvent` | Decorated-pot storage denied; compass/lodestone denied; unrelated ordinary interactions allowed. | Pending |
+| `onItemFrameInteract` | `PlayerInteractEntityEvent` | Frame placement and allay equipment protected; nested carrier sanitization preserves ordinary equipment. | Pending |
+| `onArmorStandManipulate` | `PlayerArmorStandManipulateEvent` | Protected held/equipped items denied and sanitized; ordinary armor/equipment preserved. | Pending |
+| `onItemFrameChange` | `PlayerItemFrameChangeEvent` | Place/rotate/remove protected item denied; existing direct/nested item cleaned without deleting innocent carrier. | Pending |
+| `onSwapHands` | `PlayerSwapHandItemsEvent` | Protected hand swap reconciled; owner method counts remain exact. | Pending |
+| `onPlayerInventorySlotChange` | `PlayerInventorySlotChangeEvent` | Old/new protected item reconciled; ordinary slot edits preserved. | Pending |
+| `onDeath` | `PlayerDeathEvent` | Protected drops/cursor removed, nested carrier sanitized; ordinary death drops conserved. | Pending |
+| `onRespawn` | `PlayerRespawnEvent` | Missing enabled method items restored exactly once. | Pending |
+| `onJoin` | `PlayerJoinEvent` | Persisted session restored with exact target/methods; one owner tick task; stale protocol state cleared. | Pending |
+| `onQuit` | `PlayerQuitEvent` | Player/session/task/platform/protocol cleanup; persisted legitimate restore data retained. | Pending |
+
+The five Paper methods are compass, map, bossbar, actionbar and text_display. Verify
+single methods, all supported methods, every smaller nonempty combination, retarget/edit/
+delete effects, movement/arrival, death/respawn, world changes, disconnect/rejoin and
+restart restoration. Native capability discovery must confirm the installed handler set.
+
+Map-cache `release` removes a renderer target but deliberately retains the owner map.
+Therefore an inactive session does not imply that every cache must be empty. Compare
+against declared retained-cache counts; assert renderer targets, active leases, tasks,
+entities and protocol buffers independently. Persisted terrain must survive native save/
+reopen with exact region and color data.
+
+Local teleport and navigation command leaves are shared requirements with Task 10.
+Upload/edit and remote command leaves also depend on Tasks 12 and 15; their discovery
+in the command tree does not satisfy execution coverage.

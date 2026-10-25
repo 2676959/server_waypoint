@@ -209,6 +209,8 @@ for this documentation-only step.
 - [ ] Implement read/suggestion rates 10/50/100 and mutation rates 1/5/10 per second; all release command leaves, permission configurations, layout/search/sort/paging/details/help and console/execute-as paths. Add skewed-list fixtures, snapshots/revisions, rename/remove/restore, local teleport, config/language reload and action-log cost cases.
 - [ ] Execute small/medium Paper cases with exact disk validation after save/restart, recording latency and process allocation. Use source-backed command-family grouping only for timing; require separate behavior evidence for each leaf/suggestion and denial branch.
 
+Task 10 execution checkpoint: acknowledged native `storage:concurrent` runs pass three fresh repetitions at small and medium tiers, with exact saved/reopened contents. See [M1 storage evidence](../validation/2026-10-24-m1-storage.md). The two remaining checkboxes include exhaustive command/suggestion/denial coverage and other variants; they remain open.
+
 ### Task 11: Navigation methods, terrain maps and protection correctness
 
 **Files:** Create `tools/server-performance/scenarios/navigation.py`, `tests/test_navigation_scenarios.py`; create `paper/src/performanceProbe/java/_959/server_waypoint/perf/paper/NavigationAssertions.java`; extend recipes/registry.

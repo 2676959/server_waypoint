@@ -8,9 +8,27 @@ from profiles import whole_process_sample
 from scenarios.storage_commands import planned_actions, acknowledged_latencies
 
 
+def validate_native_samples(samples, players):
+    if type(players) is not int or players <= 0 or not samples:
+        raise ValueError("declared native actor count and samples required")
+    previous = None
+    for sample in samples:
+        tick = sample.get("tickIndex")
+        if sample.get("onlinePlayers") != players or type(tick) is not int or (previous is not None and tick != previous + 1):
+            raise ValueError("native actor count changed or native tick evidence has gaps")
+        previous = tick
+
+
+def validate_command_allocations(callbacks):
+    if not callbacks or any(type(value.get("allocatedBytes")) is not int or value["allocatedBytes"] < 0 for value in callbacks):
+        raise ValueError("native command-thread allocation unavailable")
+
+
 def summarize_window(raw, warmup_seconds):
     if not raw["samples"] or raw["droppedCallbacks"]:
         raise ValueError("native ticks missing or callback evidence dropped")
+    validate_native_samples(raw["samples"],raw["expectedPlayers"])
+    validate_command_allocations(raw["callbacks"])
     if validate_rates(raw["rates"], 5).status != Status.PASS:
         raise ValueError("driver did not fulfill scheduled demand")
     return {"tickNs": [sample["durationNs"] for sample in raw["samples"]],
@@ -127,9 +145,9 @@ def _collect_commands(probe, driver, tier, actors, seconds, phase, prefix, mutat
             raise TimeoutError("native command measurement stop deadline")
         time.sleep(0.01)
     # Counters are cumulative across barriers; this phase owns only the delta.
-    rates = {**rates, **{key:rates[key]-baseline[key] for key in ("offered","completed","failed")}}
+    rates = {**rates, **{key:rates[key]-baseline[key] for key in ("offered","completed","failed","elapsedSeconds")}}
     raw = {"schemaVersion":1,"phase":phase,"actions":[action for _,action in actions],
-           "samples":samples,"callbacks":callbacks,"droppedCallbacks":dropped,
+           "samples":samples,"callbacks":callbacks,"droppedCallbacks":dropped,"expectedPlayers":len(actors),"results":results,
            "seconds":stopped["phaseElapsedSeconds"],"scheduledSeconds":seconds,
            "controllerSeconds":time.monotonic()-started,"processSamples":process_samples,
            "completedWithinWindow":completed_within,"rates":rates,

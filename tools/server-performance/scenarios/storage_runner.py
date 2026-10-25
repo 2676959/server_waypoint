@@ -50,6 +50,7 @@ def execute_case(case, root, partial):
         raise ValueError("locked native bot bytes changed or missing")
     dataset = make_dataset(case.tier)
     repetitions, outcomes, evidence = [], [], []
+    assertions = {}
     def result():
         current = CaseResult(case, Decision(Status.INCONCLUSIVE), owned_root(root)["runId"],
             artifact={"name":artifact.name,"sha256":artifact.sha256,"revision":artifact.revision,"provenance":artifact.provenance},
@@ -58,7 +59,7 @@ def execute_case(case, root, partial):
                         "fixtureSha256":read_document(prepared/"baseline.json")["recipeSha256"]},
             observations={"repetitions":list(repetitions),"profiledDiagnostic":settings.get("profile",False),
                           "actors":"operator; permission-denial and non-operator admission are separate requirements"},
-            paths={"attempts":list(evidence)}, cleanup="see owned attempt records")
+            assertions=dict(assertions), paths={"attempts":list(evidence)}, cleanup="see owned attempt records")
         return replace(current, decision=combine_decisions((*outcomes,evaluate(current,root/"budgets.json"))))
     for index in range(case.repeats):
         with Attempt(root,case.id+f":repeat-{index+1}") as attempt:
@@ -84,6 +85,8 @@ def execute_case(case, root, partial):
                 tree = probe.wait("commands.tree")["data"]
                 atomic_write(attempt.directory/"command-tree.json", {"schemaVersion":1,**tree})
                 bot_root = create_root(attempt.directory/"bots")
+                if sha256(runtime.bot["path"]) != runtime.bot["sha256"]:
+                    raise ValueError("native bot bytes changed before repetition")
                 driver = BotDriver(runtime.bot["path"],bot_root,attempt.record.run_id,attempt.record.attempt_id)
                 driver.send("start",{"address":f"127.0.0.1:{port}","count":case.clients,"mode":"vanilla"})
                 ready = driver.wait("ready",150)
@@ -114,12 +117,12 @@ def execute_case(case, root, partial):
                         raise ValueError(decision.reasons)
                 attempt.transition("WARMUP")
                 warmup = collect_commands(probe,driver,case.tier,actors,case.warmup_seconds,"WARMUP",f"{index}-warm",evidence_path=attempt.directory/"warmup.json")
-                atomic_write(attempt.directory/"warmup.json",warmup)
                 warm_mutations = sum(" set color " in action["command"] for action in warmup["actions"])
                 attempt.transition("MEASURING")
                 measured = collect_commands(probe,driver,case.tier,actors,case.measurement_seconds,"MEASURING",f"{index}-measure",warm_mutations,evidence_path=attempt.directory/"measurement.json")
-                atomic_write(attempt.directory/"measurement.json",measured)
                 repetitions.append(summarize_window(measured,warmup["seconds"]))
+                assertions[f"repeat-{index+1}-native-actors-and-contiguous-ticks"] = True
+                assertions[f"repeat-{index+1}-acknowledged-completed-actions"] = True
                 atomic_write(partial,result())
                 attempt.transition("QUIESCING")
                 if profiled:
@@ -128,6 +131,7 @@ def execute_case(case, root, partial):
                 driver = None
                 probe.send("players.snapshot")
                 final = probe.wait("players.snapshot")["data"]
+                assertions[f"repeat-{index+1}-disconnected"] = not final["players"]
                 if final["players"]:
                     outcomes.append(Decision(Status.FAIL,("storage actors remain after disconnect",)))
                 expected = deepcopy(dataset)
@@ -142,6 +146,7 @@ def execute_case(case, root, partial):
                 stop_owned(process,30)
             actual = {path.stem.replace("$",":"):json.loads(path.read_text()) for path in directory.glob("*.json")}
             correct = canonical_saved(expected) == canonical_saved(actual)
+            assertions[f"repeat-{index+1}-saved-exactly"] = correct
             outcomes.append(Decision(Status.PASS if correct else Status.FAIL,() if correct else ("exact saved storage contents differ",)))
             atomic_write(attempt.directory/"saved.json",{"schemaVersion":1,"expected":canonical_saved(expected),"actual":canonical_saved(actual),"correct":correct})
             process,probe = boot(runtime,server,False,artifact.sha256)
@@ -149,10 +154,13 @@ def execute_case(case, root, partial):
                 probe.send("players.snapshot")
                 reopened = probe.wait("players.snapshot")["data"]
                 correct = canonical_snapshot(reopened["waypointLists"]) == canonical_snapshot(final["waypointLists"])
+                assertions[f"repeat-{index+1}-reopened-exactly"] = correct
                 outcomes.append(Decision(Status.PASS if correct else Status.FAIL,() if correct else ("reopened storage names/revisions differ",)))
                 atomic_write(attempt.directory/"reopened.json",{"schemaVersion":1,**reopened,"correct":correct})
             finally:
                 stop_owned(process,30)
+            if sha256(runtime.bot["path"]) != runtime.bot["sha256"]:
+                raise ValueError("native bot bytes changed during repetition")
             verify_artifact(artifact,release)
             verify_artifact(artifact,server/"plugins/audited.jar")
             attempt.transition("STOPPED")

@@ -34,6 +34,8 @@ continue running throughout the sample.
 - [Coverage requirements ledger](validation/coverage-ledger.md)
 - [Runtime evidence](validation/runtime-evidence.md)
 - [M0 Paper results and retained evidence](validation/2026-10-24-m0-paper.md)
+- [M1 Paper storage concurrency results](validation/2026-10-24-m1-storage.md)
+- [Original Paper navigation/protection execution requirements](validation/2026-10-24-navigation-requirements.md)
 - [Tool commands](../../../tools/server-performance/README.md)
 
 The plan first delivers a Paper zero-player reproduction, then covers remaining features

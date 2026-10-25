@@ -95,7 +95,7 @@ class StorageCommandsTest(unittest.TestCase):
 
     def test_command_window_does_not_hide_missing_ticks_or_dropped_callbacks(self):
         from scenarios.command_workload import summarize_window
-        raw = {"seconds":60,"samples":[{"durationNs":1000}],"actions":[{}],"latencies":[100],"callbacks":[{"allocatedBytes":5}],"completedWithinWindow":1,"droppedCallbacks":0,"rates":{"offered":1,"completed":1,"pending":0,"elapsedSeconds":60,"maxLagSeconds":0}}
+        raw = {"seconds":60,"expectedPlayers":1,"samples":[{"durationNs":1000,"onlinePlayers":1,"tickIndex":1}],"actions":[{}],"latencies":[100],"callbacks":[{"allocatedBytes":5}],"completedWithinWindow":1,"droppedCallbacks":0,"rates":{"offered":1,"completed":1,"pending":0,"elapsedSeconds":60,"maxLagSeconds":0}}
         summary = summarize_window(raw, 30)
         self.assertEqual([1000], summary["tickNs"])
         self.assertEqual(1, summary["completedActions"])
@@ -112,3 +112,22 @@ class StorageCommandsTest(unittest.TestCase):
         config = Path(__file__).resolve().parents[1] / "config"
         cases = expand_cases(config / "features.json", config / "scenarios.json", (), "audit", ("small","medium","stress"))
         self.assertEqual({"small":1,"medium":10,"stress":50}, {case.tier:case.clients for case in cases if case.feature == "storage" and case.variant == "concurrent"})
+
+    def test_command_samples_require_declared_actor_count_and_contiguous_ticks(self):
+        from scenarios.command_workload import validate_native_samples
+        samples = [{"durationNs":100,"onlinePlayers":10,"tickIndex":5},{"durationNs":200,"onlinePlayers":10,"tickIndex":6}]
+        validate_native_samples(samples,10)
+        samples[1]["onlinePlayers"] = 9
+        with self.assertRaises(ValueError):
+            validate_native_samples(samples,10)
+        samples[1]["onlinePlayers"] = 10
+        samples[1]["tickIndex"] = 7
+        with self.assertRaises(ValueError):
+            validate_native_samples(samples,10)
+
+    def test_missing_command_allocation_cannot_pass(self):
+        from scenarios.command_workload import validate_command_allocations
+        validate_command_allocations([{"allocatedBytes":0},{"allocatedBytes":125}])
+        for callbacks in ([],[{}],[{"allocatedBytes":-1}]):
+            with self.assertRaises(ValueError):
+                validate_command_allocations(callbacks)
