@@ -21,6 +21,51 @@ final class CommandAssertions {
     private final java.util.Set<CommandNode<CommandSourceStack>> instrumented = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
     private final JsonArray callbacks = new JsonArray();
     private long droppedCallbacks;
+    private org.bukkit.plugin.Plugin plugin;
+    private final java.util.Map<java.util.UUID, JsonObject> pending = new java.util.HashMap<>();
+
+    void install(org.bukkit.plugin.Plugin owner) {
+        plugin = owner;
+        Bukkit.getMessenger().registerOutgoingPluginChannel(owner, "swperf:command_ack");
+        Bukkit.getMessenger().registerOutgoingPluginChannel(owner, "swperf:command_ready");
+        Bukkit.getMessenger().registerIncomingPluginChannel(owner, "swperf:command_request", (channel, player, bytes) -> {
+            owner();
+            if (bytes.length > 4096 || pending.size() >= 256 || pending.containsKey(player.getUniqueId())) {
+                throw new IllegalStateException("Invalid or overlapping native command acknowledgement marker");
+            }
+            JsonObject request = JsonParser.parseString(new String(bytes, java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
+            String id = request.get("actionId").getAsString();
+            String command = request.get("command").getAsString();
+            if (id.isEmpty() || id.length() > 128 || command.length() > 256 || command.contains("\n")) {
+                throw new IllegalArgumentException("Invalid native command acknowledgement identity");
+            }
+            request.addProperty("expiresNs", System.nanoTime() + 10_000_000_000L);
+            pending.put(player.getUniqueId(), request);
+            JsonObject ready = request.deepCopy();
+            ready.remove("expiresNs");
+            ready.addProperty("stage", "marker-registered");
+            ready.addProperty("serverObserved", true);
+            player.sendPluginMessage(owner, "swperf:command_ready", ready.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        });
+        Bukkit.getScheduler().runTaskTimer(owner, () -> pending.entrySet().removeIf(entry ->
+                Bukkit.getPlayer(entry.getKey()) == null || System.nanoTime() > entry.getValue().get("expiresNs").getAsLong()), 20, 20);
+    }
+
+    private void acknowledge(CommandSender actor, JsonObject event) {
+        if (!(actor instanceof org.bukkit.entity.Player player)) {
+            return;
+        }
+        JsonObject request = pending.get(player.getUniqueId());
+        if (request == null || !request.get("command").getAsString().equals(event.get("input").getAsString())) {
+            return;
+        }
+        pending.remove(player.getUniqueId());
+        JsonObject reply = event.deepCopy();
+        reply.addProperty("stage", "command-completed");
+        reply.addProperty("actionId", request.get("actionId").getAsString());
+        reply.addProperty("command", event.get("input").getAsString());
+        player.sendPluginMessage(plugin, "swperf:command_ack", reply.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    }
 
     private long allocated() {
         var bean = ManagementFactory.getThreadMXBean();
@@ -65,6 +110,7 @@ final class CommandAssertions {
                 if (error != null) {
                     event.addProperty("exception", error);
                 }
+                acknowledge(context.getSource().getBukkitSender(), event);
                 if (callbacks.size() < 1000) {
                     callbacks.add(event);
                 } else {

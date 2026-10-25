@@ -25,6 +25,7 @@ public final class PaperPerformanceProbe extends JavaPlugin {
 
     @Override public void onEnable() {
         fixture = new PaperFixtureAdapter();
+        commands.install(this);
         Bukkit.getPluginManager().registerEvents(bots, this);
         Bukkit.getPluginManager().registerEvents(new PaperTickProbe(this, fixture), this);
         Bukkit.getScheduler().runTaskTimer(this, () -> {

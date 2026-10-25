@@ -32,7 +32,10 @@ use tokio::io::{AsyncBufReadExt, BufReader};
 #[derive(Clone, Default, Component)]
 struct State {
     bots: Arc<Mutex<BTreeMap<String, Client>>>,
+    identity: String,
+    markers: Arc<Mutex<sw_performance_bots::command_ack::PendingAcks>>,
     mode: String,
+    acknowledgements: Arc<Mutex<sw_performance_bots::command_ack::PendingAcks>>,
     wire: Arc<Mutex<BTreeMap<String, WireState>>>,
     failures: Arc<Mutex<Vec<String>>>,
     notifications: Option<tokio::sync::mpsc::Sender<String>>,
@@ -51,7 +54,7 @@ impl State {
 }
 
 async fn handle(bot: Client, event: Event, state: State) -> anyhow::Result<()> {
-    let name = bot.profile().name;
+    let name = state.identity.clone();
     if let Err(error) = handle_event(bot.clone(), event, state.clone()).await {
         if let Some(peer) = state.wire.lock().unwrap().get_mut(&name) {
             peer.receiver.clear();
@@ -70,6 +73,11 @@ async fn handle_event(bot: Client, event: Event, state: State) -> anyhow::Result
                 .lock()
                 .unwrap()
                 .insert(bot.profile().name, bot.clone());
+            payload(
+                &bot,
+                "minecraft:register",
+                b"swperf:command_ack\0swperf:command_ready".to_vec(),
+            );
             if state.mode != "vanilla" {
                 payload(&bot, "minecraft:register", b"server_waypoint:server_handshake\0server_waypoint:message_chunk\0server_waypoint:upload_request".to_vec());
                 payload(
@@ -83,7 +91,20 @@ async fn handle_event(bot: Client, event: Event, state: State) -> anyhow::Result
             if let ClientboundGamePacket::CustomPayload(packet) = &*packet {
                 let channel = packet.identifier.to_string();
                 let data: &[u8] = &packet.data;
-                if channel == "server_waypoint:server_handshake" {
+                if channel == "swperf:command_ack" || channel == "swperf:command_ready" {
+                    anyhow::ensure!(data.len() <= 4096, "oversized command acknowledgement");
+                    let value: Value = serde_json::from_slice(data)?;
+                    let replies = if channel == "swperf:command_ready" {
+                        &state.markers
+                    } else {
+                        &state.acknowledgements
+                    };
+                    replies
+                        .lock()
+                        .unwrap()
+                        .receive(&bot.profile().name, &value)
+                        .map_err(anyhow::Error::msg)?;
+                } else if channel == "server_waypoint:server_handshake" {
                     let (version, server_id, compression) =
                         server_handshake(data).map_err(anyhow::Error::msg)?;
                     anyhow::ensure!(version == 2, "unexpected server protocol");
@@ -130,7 +151,7 @@ async fn handle_event(bot: Client, event: Event, state: State) -> anyhow::Result
             }
         }
         Event::Disconnect(reason) => {
-            let name = bot.profile().name;
+            let name = state.identity.clone();
             state.bots.lock().unwrap().remove(&name);
             state.failure(format!("{name}: disconnected: {reason:?}"));
         }
@@ -234,6 +255,9 @@ async fn run() -> anyhow::Result<()> {
     let (failure_tx, mut failure_rx) = tokio::sync::mpsc::channel(32);
     let state = State {
         mode: mode.clone(),
+        markers: Arc::new(Mutex::new(
+            sw_performance_bots::command_ack::PendingAcks::markers(),
+        )),
         notifications: Some(failure_tx),
         ..State::default()
     };
@@ -242,9 +266,13 @@ async fn run() -> anyhow::Result<()> {
         .reconnect_after(None)
         .join_delay(Duration::from_millis(200));
     for index in 0..count {
+        let identity = format!("swp_reader_{index:02}");
         builder = builder.add_account_with_state(
-            Account::offline(&format!("swp_reader_{index:02}")),
-            state.clone(),
+            Account::offline(&identity),
+            State {
+                identity,
+                ..state.clone()
+            },
         );
     }
     let swarm = tokio::task::spawn_local(builder.start(address));
@@ -298,9 +326,11 @@ async fn run() -> anyhow::Result<()> {
         let (sender, mut requests) = tokio::sync::mpsc::channel::<Job>(256);
         senders.insert(name.clone(), sender);
         let outcomes = outcome_tx.clone();
+        let acknowledgements = state.acknowledgements.clone();
+        let markers = state.markers.clone();
         workers.push(tokio::task::spawn_local(async move {
             while let Some((id, data, enqueued)) = requests.recv().await {
-                let result = actions::perform(&bot, &data)
+                let result = actions::perform(&bot, &data, &acknowledgements, &markers)
                     .await
                     .map_err(|error| error.to_string());
                 if outcomes

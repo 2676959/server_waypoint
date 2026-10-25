@@ -530,7 +530,7 @@
                 "candidate": "0.15.1+mc1.21.11",
                 "verifiedNativeActions": true,
                 "path": "/Volumes/ssd/fabric_mods_repo/server_waypoint/tools/server-performance/bots/versions/mc1.21.11/target/release/sw-performance-bots",
-                "sha256": "d655f8c9339b744e973cfbb1283349211c26cdf0689b301b67c5d00c519fad61",
+                "sha256": "421978c956164013b865445694164f7199b6817784682997b85d06b8bf6986dc",
                 "toolchain": "nightly-2026-07-15",
                 "nativeModes": [
                     "vanilla",
@@ -546,7 +546,8 @@
                 "/Volumes/ssd/sw-performance-m1-command-callback-3: exact small dataset load and actual native command callbacks; full Task 10 workload coverage pending",
                 "/Volumes/ssd/sw-performance-m1-persistence-{small,medium}-3: one real compatible actor at 1,000/10,000 waypoint sizes; denial, stale edit, rename/remove/single-use restore, exact saved JSON and reopened identities/revisions; timed workload coverage pending",
                 "/Volumes/ssd/sw-performance-m1-capacity: 10 independent 500ms moves in 0.522s, all native actors moved; per-actor FIFO workers; /Volumes/ssd/sw-performance-m1-parallel-{wire,swarm}: protocol regressions and 1/10/50 native sessions pass",
-                "/Volumes/ssd/sw-performance-m1-traffic-small and /Volumes/ssd/sw-performance-m1-traffic-medium-3: five-second scheduled smoke, 55/275 native callbacks and exact mutations/saved contents; medium first drain 195 then full completion after 3.34s; performance acceptance INCONCLUSIVE"
+                "/Volumes/ssd/sw-performance-m1-traffic-small and /Volumes/ssd/sw-performance-m1-traffic-medium-3: five-second scheduled smoke, 55/275 native callbacks and exact mutations/saved contents; medium first drain 195 then full completion after 3.34s; performance acceptance INCONCLUSIVE",
+                "2026-10-24 two-stage native command ACK: /Volumes/ssd/sw-performance-m1-ack-medium-4; 275 correlated command roundtrips, exact persisted content; timed three-repeat acceptance remains separate"
             ],
             "java": "/opt/homebrew/Cellar/openjdk@21/21.0.11/libexec/openjdk.jdk/Contents/Home/bin/java",
             "java_sha256": "04005388bac0c272ea914210ca519ce94b2f873ea3962b9874a6859f74d7f279",
@@ -570,7 +571,7 @@
             ],
             "probe": {
                 "path": "/Volumes/ssd/fabric_mods_repo/server_waypoint/paper/versions/1.21.11-paper/build/libs/server-waypoint-performance-paper-probe.jar",
-                "sha256": "6447480370622f0f35bc27e0de45512a414f8a8b565c820422c14e68b8d086cd"
+                "sha256": "8f342195d6d10e96c41a841cd656803aef5f57672e5906524229e6a4d90f4afd"
             }
         },
         {

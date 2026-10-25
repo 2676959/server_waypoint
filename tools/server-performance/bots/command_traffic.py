@@ -10,7 +10,7 @@ from contracts import atomic_write
 from controller import create_root
 from models import Status
 from profiles import whole_process_sample
-from scenarios.storage_commands import planned_actions
+from scenarios.storage_commands import planned_actions, acknowledged_latencies
 
 
 def run_traffic(root, server, runtime, probe, tier, seconds=5):
@@ -34,8 +34,19 @@ def run_traffic(root, server, runtime, probe, tier, seconds=5):
         # admission. Permission-denial behavior has its own non-operator fixture.
         probe.send("commands.execute", {"commands": [f"op {actor}" for actor in actors]})
         probe.wait("commands.executed")
+        prime = []
+        for actor in actors:
+            driver.send("action", {"actionId":f"prime-{actor}","bot":actor,"operation":"command","command":"/wp help","acknowledged":True})
+        for _ in actors:
+            prime.append(driver.wait("action_result", 30))
+        driver.send("barrier")
+        baseline = driver.wait("rate_sample", 30)
+        probe.send("commands.execute", {"commands":[]})
+        probe.wait("commands.executed")
         actions = planned_actions(tier, actors, seconds, str(uuid.uuid4()))
-        evidence.update(ready=ready, actorPermission="operator (vanilla chat-spam exemption)", expected=actions)
+        for _, action in actions:
+            action["acknowledged"] = True
+        evidence.update(priming=prime, ready=ready, actorPermission="operator (vanilla chat-spam exemption)", expected=actions)
         started = time.monotonic()
         index = 0
         process_samples = []
@@ -56,6 +67,7 @@ def run_traffic(root, server, runtime, probe, tier, seconds=5):
             raise ValueError("controller did not offer the declared workload")
         driver.send("barrier")
         rates = driver.wait("rate_sample", 15)
+        rates = {**rates, **{key:rates[key]-baseline[key] for key in ("offered","completed","failed")}}
         evidence.update(rates=rates, driverSamples=process_samples, controllerElapsedSeconds=time.monotonic()-started)
         if validate_rates(rates, 5).status != Status.PASS:
             raise ValueError("driver overloaded/stalled during scheduled smoke")
@@ -91,9 +103,11 @@ def run_traffic(root, server, runtime, probe, tier, seconds=5):
         after = next(value for value in final["waypointLists"] if value["dimension"] == "minecraft:overworld" and value["name"] == "perf_00")
         if after["revision"] != before["revision"] + mutations or after["waypoints"] != before["waypoints"]:
             raise ValueError("scheduled mutations did not preserve names and exact revisions")
-        evidence.update(final=final, mutations=mutations, fulfilled=True,
-                        actionLatencyScope="client-issued only; no client-roundtrip claim",
-                        performanceAcceptance="INCONCLUSIVE: smoke duration and acknowledged client latency missing")
+        results = [event["data"] for event in driver.events if event["type"] == "action_result" and not event["data"]["actionId"].startswith("prime-")]
+        latencies = acknowledged_latencies([action for _, action in actions], results)
+        evidence.update(final=final, mutations=mutations, fulfilled=True, actionLatencyNs=latencies,
+                        actionLatencyClock="client-monotonic", actionLatencyScope="client-roundtrip",
+                        performanceAcceptance="INCONCLUSIVE: smoke duration and independent repetitions missing")
         return evidence
     except BaseException as error:
         evidence.update(fulfilled=False, error=str(error))

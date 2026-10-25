@@ -114,3 +114,12 @@ The medium run observed 195 callbacks at its first drain and needed 3.34s of bou
 Current verification: 83 Python tests; 9 Rust tests; the common/cross-server/probe-contract/exporter Gradle checks and Paper 1.21.11 probe archive pass. Native helper test servers are stopped. Task 10 still needs full runner integration, acknowledged client latency, required timed repetitions and exhaustive leaf/suggestion coverage; Tasks 11–16 remain pending. M1 is not complete.
 
 Local M1 checkpoints so far: `8c4672e9` (Task 8), `b424945d` (Task 9), `62f69665` (Task 10 foundations), `0cd7a33` (Task 10 behavior/persistence). The following local commit contains concurrency/rate-smoke work and this checkpoint.
+
+
+### Task 10 acknowledged command measurement checkpoint
+
+`ded974f` committed the preceding concurrency/traffic work. Command measurements now require two distinct probe messages: native marker registration, followed by the actual command callback acknowledgement. The client starts the command clock after marker registration and stops it at callback acknowledgement. Marker registration overhead is retained separately. Actor, action ID, command, stage and native callback origin must all match; marker-only or client-issued outcomes cannot complete an action-latency sample.
+
+Native `/Volumes/ssd/sw-performance-m1-ack-medium-4/` completes 275 scheduled commands with all matching callbacks, no pending/failed actions, exact revision deltas and full disk validation. The short run's command RTT p50/p95/max are 38.966/40.416/57.974ms; these are smoke diagnostics, not a performance gate. Driver maximum enqueue-to-completion lag is 0.174s. Earlier `ack-medium`, `ack-medium-2` and `ack-medium-3` roots preserve queue/acknowledgement failures while the marker and command could race. The marker-registration acknowledgement resolves that test-harness ordering issue; no release source was changed.
+
+The prepared CLI now routes the explicitly supported `storage:concurrent` case through a native bot workload, declares 1/10/50 tier actors, drains bounded native callbacks during phases, retains raw ticks/action RTT/command-thread allocation and separate server/driver process samples, and validates exact saved/reopened contents. Other command/storage variants remain explicit blockers until their own behavior adapters exist. Full native timing verification is in progress under `/Volumes/ssd/sw-performance-m1-storage-timed/`; do not infer passing repetitions from runner implementation.

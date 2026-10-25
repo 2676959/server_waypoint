@@ -78,3 +78,37 @@ class StorageCommandsTest(unittest.TestCase):
         self.assertEqual({"actor-0"}, {action["bot"] for action in writes})
         self.assertEqual("/wp edit waypoint minecraft:overworld perf_00 wp_00000 set color 100005", writes[-1]["command"])
         self.assertEqual(10, len({action["bot"] for _, action in actions}))
+
+    def test_latency_requires_exact_native_ack_for_every_action(self):
+        from scenarios.storage_commands import acknowledged_latencies
+        action = {"actionId":"phase-1","bot":"alice","command":"/wp help"}
+        event = {"actionId":"phase-1","bot":"alice","clock":"client-monotonic","completionScope":"client-issued","clientElapsedNs":100,"nativeAck":None}
+        with self.assertRaises(ValueError):
+            acknowledged_latencies([action], [event])
+        event.update(completionScope="client-roundtrip", nativeAck={"actionId":"phase-1","command":"wp help","actor":"alice","serverObserved":True,"stage":"command-completed"})
+        self.assertEqual([100], acknowledged_latencies([action], [event]))
+        event["nativeAck"]["actor"] = "bob"
+        with self.assertRaises(ValueError):
+            acknowledged_latencies([action], [event])
+        with self.assertRaises(ValueError):
+            acknowledged_latencies([action], [])
+
+    def test_command_window_does_not_hide_missing_ticks_or_dropped_callbacks(self):
+        from scenarios.command_workload import summarize_window
+        raw = {"seconds":60,"samples":[{"durationNs":1000}],"actions":[{}],"latencies":[100],"callbacks":[{"allocatedBytes":5}],"completedWithinWindow":1,"droppedCallbacks":0,"rates":{"offered":1,"completed":1,"pending":0,"elapsedSeconds":60,"maxLagSeconds":0}}
+        summary = summarize_window(raw, 30)
+        self.assertEqual([1000], summary["tickNs"])
+        self.assertEqual(1, summary["completedActions"])
+        raw["droppedCallbacks"] = 1
+        with self.assertRaises(ValueError):
+            summarize_window(raw, 30)
+        raw["droppedCallbacks"] = 0
+        raw["samples"] = []
+        with self.assertRaises(ValueError):
+            summarize_window(raw, 30)
+
+    def test_concurrent_storage_case_declares_real_tier_actor_count(self):
+        from registry import expand_cases
+        config = Path(__file__).resolve().parents[1] / "config"
+        cases = expand_cases(config / "features.json", config / "scenarios.json", (), "audit", ("small","medium","stress"))
+        self.assertEqual({"small":1,"medium":10,"stress":50}, {case.tier:case.clients for case in cases if case.feature == "storage" and case.variant == "concurrent"})

@@ -125,3 +125,25 @@ def planned_actions(tier, actors, seconds, prefix, mutation_offset=0):
             command = f"/wp edit waypoint minecraft:overworld perf_00 wp_00000 set color {0x100000 + mutations:06X}"
         actions.append((at, {"actionId": f"{prefix}-{index}", "bot": actor, "operation": "command", "command": command}))
     return tuple(actions)
+
+
+def acknowledged_latencies(actions, results):
+    expected = {action["actionId"]: action for action in actions}
+    if len(expected) != len(actions) or len(results) != len(actions):
+        raise ValueError("one acknowledged result required for every distinct offered action")
+    latencies = []
+    seen = set()
+    for event in results:
+        identifier = event.get("actionId")
+        action = expected.get(identifier)
+        ack = event.get("nativeAck") or {}
+        latency = event.get("clientElapsedNs")
+        if action is None or identifier in seen or event.get("bot") != action["bot"] or event.get("clock") != "client-monotonic" or event.get("completionScope") != "client-roundtrip":
+            raise ValueError("action lacks matching client roundtrip result")
+        if ack.get("actionId") != identifier or ack.get("actor") != action["bot"] or ack.get("command") != action["command"][1:] or ack.get("serverObserved") is not True or ack.get("stage") != "command-completed" or ack.get("exception"):
+            raise ValueError("action lacks successful exact native callback acknowledgement")
+        if type(latency) is not int or latency <= 0:
+            raise ValueError("invalid client monotonic roundtrip sample")
+        seen.add(identifier)
+        latencies.append(latency)
+    return latencies

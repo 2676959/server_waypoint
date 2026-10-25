@@ -61,7 +61,8 @@ def main(argv=None):
         selection = read_document(args.root / "selection.json")
         cases = tuple(load_case(value) for value in selection["cases"])
         if args.command == "run":
-            from scenarios.inventory import run_case, run_independent
+            from scenarios import run_case
+            from scenarios.inventory import run_independent
             verify_evidence(args.root, read_document(args.root / "prepared.json"))
             if read_document(args.root / "prepared.json")["inputs"] != input_hashes():
                 raise ValueError("executable suite/config inputs changed since preparation; use a new root")

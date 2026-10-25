@@ -91,3 +91,20 @@ completion, command submission and client-issued completion are separate measure
 Operator actors are declared for throughput smoke; permission-denial cases use a
 separate non-operator fixture. These helpers do not satisfy timed performance gates,
 client-roundtrip latency, the full platform matrix or the 30-minute soaks.
+
+
+Task 10's prepared player runner currently implements `storage:concurrent` on the
+original Paper 1.21.11 anchor. Its default phases are 30s warm-up and 60s measurement,
+with three fresh process repetitions. Marker registration and command completion are
+separate native acknowledgements; command RTT uses one client monotonic clock and
+excludes the separately recorded marker-registration interval. Console callback
+processing/allocation and server/driver whole-process samples are distinct metrics.
+
+```sh
+rtk proxy python3 tools/server-performance/run.py prepare --output /Volumes/ssd/sw-perf-storage-new --suite all --scenarios storage --variants concurrent --tiers small,medium
+rtk proxy python3 tools/server-performance/run.py run --root /Volumes/ssd/sw-perf-storage-new --suite all --scenarios storage --variants concurrent --tiers small,medium --repeats 3
+```
+
+Use a fresh root. Other storage/command variants remain BLOCKED until their native
+behavior coverage is implemented. Operator throughput does not establish non-operator
+command admission or complete command-leaf/suggestion coverage.

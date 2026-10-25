@@ -54,6 +54,10 @@ def input_hashes():
     return result
 
 
+def requires_world(case):
+    return case.feature in ("idle", "world-container", "inventory-regression", "storage", "commands") and (case.clients == 0 or case.feature in ("storage", "commands"))
+
+
 def prepare(args):
     root = create_root(args.output)
     runtimes = load_runtimes(args.runtime_lock)
@@ -79,7 +83,7 @@ def prepare(args):
     worlds = {}
     for runtime in selected:
         for case in cases:
-            if case.runtime != runtime.id or case.clients or case.feature not in ("idle", "world-container", "inventory-regression"):
+            if case.runtime != runtime.id or not requires_world(case):
                 continue
             key = f"{case.fixture}-{case.tier}"
             if key in worlds:
@@ -90,6 +94,6 @@ def prepare(args):
             worlds[key] = str(destination)
     preparation_transition(root, "FIXTURES_VALIDATED")
     atomic_write(root / "prepared.json", {"schemaVersion": 1, "worlds": worlds, "inputs": input_hashes(), "evidence": seal_evidence(root, worlds), "profile": args.profile})
-    atomic_write(root / "environment.json", {"schemaVersion": 1, "platform": platform.platform(), "machine": platform.machine(), "cpu": subprocess.run(["sysctl", "-n", "machdep.cpu.brand_string"], capture_output=True, text=True).stdout.strip() if platform.system() == "Darwin" else platform.processor(), "memory": subprocess.run(["sysctl", "-n", "hw.memsize"], capture_output=True, text=True).stdout.strip() if platform.system() == "Darwin" else "unrecorded", "javaFlags": ["-Xms1G", "-Xmx2G", "-XX:+UseG1GC"], "loadGenerator": "same host; zero clients", "profiledDiagnostic": args.profile})
+    atomic_write(root / "environment.json", {"schemaVersion": 1, "platform": platform.platform(), "machine": platform.machine(), "cpu": subprocess.run(["sysctl", "-n", "machdep.cpu.brand_string"], capture_output=True, text=True).stdout.strip() if platform.system() == "Darwin" else platform.processor(), "memory": subprocess.run(["sysctl", "-n", "hw.memsize"], capture_output=True, text=True).stdout.strip() if platform.system() == "Darwin" else "unrecorded", "javaFlags": ["-Xms1G", "-Xmx2G", "-XX:+UseG1GC"], "loadGenerator": "same host; declared per-case client count", "profiledDiagnostic": args.profile})
     preparation_transition(root, "PREPARED")
     return root

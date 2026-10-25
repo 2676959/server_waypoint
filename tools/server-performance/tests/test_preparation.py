@@ -21,3 +21,9 @@ class PreparationTest(unittest.TestCase):
                 atomic_write(root / changed, {"schemaVersion": 1, "value": "changed"})
                 with self.assertRaises(ValueError):
                     verify_evidence(root, {"evidence": evidence})
+
+    def test_storage_player_case_requires_a_native_saved_world(self):
+        from preparation import requires_world
+        from models import CaseSpec
+        case = CaseSpec("id","paper-1.21.11","storage","concurrent","medium","audit","navigation-terrain",(),(),clients=10)
+        self.assertTrue(requires_world(case))
