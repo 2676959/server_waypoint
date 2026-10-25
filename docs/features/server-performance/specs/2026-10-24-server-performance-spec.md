@@ -30,6 +30,42 @@ The implementation plan is [2026-10-24-server-performance.md](../plans/2026-10-2
 This specification fixes the interfaces and acceptance semantics; the design explains
 their rationale. Calibrations must be recorded, not silently substituted for these defaults.
 
+### Cross-platform server-thread repair scope
+
+User clarification, 2026-10-25: measure server-thread costs first, then decide whether
+a repair is warranted. Running on a tick thread alone does not establish a defect.
+Findings selected for repair must cover every affected supported platform, rather than
+closing a shared finding after a Paper-only improvement. The original-release audit
+still precedes repairs.
+
+- Paper and Folia use the same plugin source and build artifact. Apply every selected
+  fix for their shared implementation once in that build; do not introduce a separate
+  Folia version or disable the fix on Folia because regional timing is healthier.
+  Regional isolation changes impact assessment and validation, while Paper's measured
+  need can justify a shared fix. Verify the same candidate JAR on both runtimes,
+  including concurrent owner-region correctness and performance on Folia.
+- Trace each finding through `common` and the Fabric, Forge, NeoForge, Paper and Folia
+  adapters. Shared fixes belong in their owning shared module; platform-specific fixes
+  stay in their adapter. Record source-backed non-applicability where implementations differ.
+- Explicitly audit search/sort/suggestion scans, live-display text construction and
+  conversion, navigation-map terrain sampling/rendering, terrain-history file access,
+  and inventory protection. Modded text-display NBT save/load and item-tag/container
+  copies require their own measurements; the Paper metadata result does not prove
+  their severity. Paper custom map rendering is not a modded renderer implementation.
+- Keep world, entity and inventory access on the required server or Folia owner thread.
+  Where a confirmed repair uses workers, capture detached inputs on the owner thread,
+  bound pending work, preserve ordering/lifecycle validity and apply results on that
+  owner thread without synchronous waits for worker completion. Merely scheduling work
+  with `MinecraftServer.execute` does not move it off the server thread.
+- Retain per-platform original and candidate measurements for affected runtime/API
+  families, plus correctness regressions. A passing Paper run or successful matrix
+  compilation cannot establish modded or Folia runtime performance acceptance.
+- Before selecting a repair, record measured latency/allocation, workload size and
+  arrival rate, representative tick-budget impact, and measurement limitations. Give
+  each investigated path an explicit repair, defer, or further-measurement decision.
+  Separate unavoidable vanilla work from plugin-added overhead and component screening
+  from full native tick/throughput acceptance; unmeasured hypotheses do not require fixes.
+
 ## 2. Architecture and ownership
 
 | Owner | Files/responsibility |

@@ -35,6 +35,8 @@ continue running throughout the sample.
 - [Runtime evidence](validation/runtime-evidence.md)
 - [M0 Paper results and retained evidence](validation/2026-10-24-m0-paper.md)
 - [M1 Paper storage concurrency results](validation/2026-10-24-m1-storage.md)
+- [Additional Paper/Fabric component measurements and repair decisions](validation/2026-10-25-additional-components.md)
+- [Folia region measurements and Paper comparison](validation/2026-10-25-folia-regions.md)
 - [Original Paper navigation/protection execution requirements](validation/2026-10-24-navigation-requirements.md)
 - [Tool commands](../../../tools/server-performance/README.md)
 

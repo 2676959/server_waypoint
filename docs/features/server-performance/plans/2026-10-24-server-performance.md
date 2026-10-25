@@ -305,6 +305,22 @@ Task 10 execution checkpoint: acknowledged native `storage:concurrent` runs pass
 
 **Interfaces:** Consumes finding IDs with exact reproduction, responsible source and expected behavior; produces one reviewed repair/evidence set per finding. This is an evidence-driven work queue, not permission to invent defects.
 
+Cross-platform acceptance follows the specification's "Cross-platform server-thread
+repair scope" clarification of 2026-10-25. Measure impact before choosing whether to
+repair: record latency/allocation and workload rates, then explicitly repair, defer,
+or require further evidence. Thread placement alone does not justify a change.
+A shared finding selected for repair remains open until every
+affected Fabric/Forge/NeoForge/Paper/Folia runtime/API family has a verified outcome;
+different implementations require explicit applicability decisions. Include modded
+text-display NBT conversion and item/container copies in the audit, alongside shared
+search/display/terrain-history work and each platform's map/protection paths.
+
+Paper and Folia must retain one plugin build. A fix selected for their shared
+implementation applies to both, even when Folia's regional isolation reduces its
+observed TPS impact. Validate the same candidate JAR on Paper and Folia; include
+concurrent owner-region correctness on Folia. Healthy Folia timing does not remove
+a Paper-justified fix from the shared repair scope.
+
 - [ ] For each confirmed finding, add its minimal failing correctness/performance case with original/repaired identities and input rates; write the exact owned file paths and verification commands in that finding's repair record before editing.
 - [ ] Run it to confirm the defect exists in the source candidate being repaired. If the development branch already resolves it, demonstrate that fact and retain the original-release failure rather than creating an unnecessary patch.
 - [ ] Implement the smallest source repair at the owning module; verify Minecraft/API/mixin/Stonecutter contracts as applicable. Preserve permissions, storage lifecycle and item semantics. Do not relax budgets to close findings.

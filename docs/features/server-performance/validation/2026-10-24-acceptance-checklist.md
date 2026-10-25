@@ -32,7 +32,19 @@ three-tier performance acceptance remain pending.
 
 ## Repairs and candidates
 
+- [ ] Measured latency/allocation and workload rates justify each repair decision;
+      low-impact paths may be deferred, and unmeasured costs remain open hypotheses.
 - [ ] Each demonstrated issue has a minimal reproduction, source cause and behavior test.
+- [ ] Paper and Folia use the same candidate plugin JAR with every selected shared
+      fix enabled on both; regional isolation does not exempt Folia from the fix.
+      Concurrent owner-region correctness and performance are validated on Folia.
+- [ ] Every finding traces shared code and Fabric/Forge/NeoForge/Paper/Folia adapters;
+      each affected runtime/API family has candidate measurements, and differing paths
+      have source-backed applicability decisions rather than inferred Paper results.
+- [ ] Search/suggestions, live displays (including modded NBT conversion), map terrain/
+      rendering, terrain-history I/O and inventory protection have explicit findings or
+      measured outcomes. Worker-based repairs preserve owner-thread access, bounded
+      queues and lifecycle/ordering correctness without blocking waits on tick threads.
 - [ ] Repairs preserve item protections, authorization, data integrity and version branches.
 - [ ] Original/rebuilt-development/repaired binaries and findings remain separately identified.
 - [ ] Candidate matrix/soak rerun after final relevant changes, including development-only
