@@ -4,11 +4,13 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-azalea = { version = "=0.15.1", default-features = false }
+azalea = { version = "=0.15.1", default-features = false, features = ["packet-event"] }
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 anyhow = "1"
+flate2 = "1"
+crc32fast = "1"
 
 [profile.release]
 debug = 1

@@ -8,7 +8,11 @@ pub struct ActionLedger {
 
 impl ActionLedger {
     pub fn new(limit: usize) -> Self {
-        Self { limit, seen: HashSet::new(), pending: HashSet::new() }
+        Self {
+            limit,
+            seen: HashSet::new(),
+            pending: HashSet::new(),
+        }
     }
 
     pub fn offer(&mut self, id: &str) -> Result<(), &'static str> {
@@ -21,9 +25,13 @@ impl ActionLedger {
     }
 
     pub fn ack(&mut self, id: &str) -> Result<(), &'static str> {
-        if !self.pending.remove(id) { return Err("unoffered action ID"); }
+        if !self.pending.remove(id) {
+            return Err("unoffered action ID");
+        }
         Ok(())
     }
 
-    pub fn quiescent(&self) -> bool { self.pending.is_empty() }
+    pub fn quiescent(&self) -> bool {
+        self.pending.is_empty()
+    }
 }

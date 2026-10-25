@@ -530,16 +530,19 @@
                 "candidate": "0.15.1+mc1.21.11",
                 "verifiedNativeActions": true,
                 "path": "/Volumes/ssd/fabric_mods_repo/server_waypoint/tools/server-performance/bots/versions/mc1.21.11/target/release/sw-performance-bots",
-                "sha256": "f1c19094695fd3397242d4f5aac8471aec5675fb89f51609aae7ca5c14000a16",
+                "sha256": "df2edde24fda0cdba5bc3dcb97d6061867266e209e98a750bf0c098b2b1736bf",
                 "toolchain": "nightly-2026-07-15",
                 "nativeModes": [
-                    "vanilla"
+                    "vanilla",
+                    "compatible",
+                    "incompatible"
                 ]
             },
             "evidence": [
                 "Paper 1.21.11 build 111; source/bytecode inspection recorded in validation/runtime-evidence.md",
                 "/Volumes/ssd/sw-performance-m0-activity-smoke/activity.json: 100 native ticks, 224 observed transfers, zero players, pause threshold 0, conserved 16 items",
-                "/Volumes/ssd/sw-performance-m1-bots-2: native 1/10/50 identities, movement, inventory and command observations; 3/30/150 completed actions; zero online after stop"
+                "/Volumes/ssd/sw-performance-m1-bots-2: native 1/10/50 identities, movement, inventory and command observations; 3/30/150 completed actions; zero online after stop",
+                "/Volumes/ssd/sw-performance-m1-task9-final: seeded revision/name match, incompatible incoming request rejection, buffer cleanup, queued-overload and malformed-payload regressions"
             ],
             "java": "/opt/homebrew/Cellar/openjdk@21/21.0.11/libexec/openjdk.jdk/Contents/Home/bin/java",
             "java_sha256": "04005388bac0c272ea914210ca519ce94b2f873ea3962b9874a6859f74d7f279",
@@ -558,11 +561,12 @@
                 "fixture",
                 "tick-processing",
                 "zero-player-ticking",
-                "bots"
+                "bots",
+                "wire-protocol"
             ],
             "probe": {
                 "path": "/Volumes/ssd/fabric_mods_repo/server_waypoint/paper/versions/1.21.11-paper/build/libs/server-waypoint-performance-paper-probe.jar",
-                "sha256": "0f6d45aec86a13b544dd1394c7b0f452624e1e5939215d6c09c154ac9067b7d6"
+                "sha256": "0d5a0cda67236872f1e7daa4e57a050645e5d118d438f3cb63211aa338f27d3e"
             }
         },
         {

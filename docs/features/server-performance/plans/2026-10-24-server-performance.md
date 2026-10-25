@@ -193,10 +193,10 @@ for this documentation-only step.
 
 **Interfaces:** Produces `:common:exportPerformanceFixtures -PperformanceArtifact=<published-jar> -PperformanceFixtureOutput=<new-dir>`; schema-identified golden vectors feed Rust compatible/incompatible modes.
 
-- [ ] Write Java/Rust cross-language tests for exact handshake protocol 2, channel registration, compressed chunks, upload/edit/catalog values and invalid header/checksum/sequence/limits. `test_exporter_rejects_wrong_production_class_hash` must reject current build outputs substituted for the release classes.
-- [ ] Run exporter and Rust tests before implementation; verify failure is an absent codec/vector/handshake behavior, rather than ignoring missing fixtures.
-- [ ] Implement audit exporter compilation/runtime classpath against the supplied published JAR plus pinned external dependencies, excluding current `main`/project output classes. Fingerprint actual loaded production classes. Add payload handling through Azalea packet APIs and retain wire fixture round-trip evidence in both directions.
-- [ ] On native Paper, run vanilla, compatible and incompatible joins; require accepted protocol 2, exact downloaded revisions, expected denial for incompatible messages and released buffers on disconnect. Do not claim client Xaero/VoxelMap rendering or Forge envelope coverage here.
+- [x] Write Java/Rust cross-language tests for exact handshake protocol 2, channel registration, compressed chunks, upload/edit/catalog values and invalid header/checksum/sequence/limits. `test_exporter_rejects_wrong_production_class_hash` must reject current build outputs substituted for the release classes.
+- [x] Run exporter and Rust tests before implementation; verify failure is an absent codec/vector/handshake behavior, rather than ignoring missing fixtures.
+- [x] Implement audit exporter compilation/runtime classpath against the supplied published JAR plus pinned external dependencies, excluding current `main`/project output classes. Fingerprint actual loaded production classes. Add payload handling through Azalea packet APIs and retain wire fixture round-trip evidence in both directions.
+- [x] On native Paper, run vanilla, compatible and incompatible joins; require accepted protocol 2, exact downloaded revisions, expected denial for incompatible messages and released buffers on disconnect. Do not claim client Xaero/VoxelMap rendering or Forge envelope coverage here.
 
 ### Task 10: Storage, command leaves, permissions and feedback workloads
 

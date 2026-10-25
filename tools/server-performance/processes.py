@@ -35,15 +35,16 @@ def start_owned(argv, cwd, log, *, stderr_log=None):
     return result
 
 
-def stop_owned(process, grace_seconds):
+def stop_owned(process, grace_seconds, *, graceful_command=b"stop\n"):
     if _OWNED.get(process.owner) is not process:
         raise ValueError("refusing to stop an unowned process")
     child = process.process
     try:
         if child.poll() is None:
             try:
-                child.stdin.write(b"stop\n")
-                child.stdin.flush()
+                if graceful_command is not None:
+                    child.stdin.write(graceful_command)
+                    child.stdin.flush()
             except (BrokenPipeError, OSError):
                 pass
             try:

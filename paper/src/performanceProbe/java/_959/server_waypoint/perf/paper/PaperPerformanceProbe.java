@@ -104,6 +104,7 @@ public final class PaperPerformanceProbe extends JavaPlugin {
                     stopped.addProperty("phaseElapsedSeconds", (System.nanoTime() - phaseStarted) / 1_000_000_000.0);
                     emit("scenario.stopped", stopped);
                 }
+                case "players.malformed" -> { bots.sendMalformed(); emit("players.malformed", new JsonObject()); }
                 case "players.snapshot" -> emit("players.snapshot", bots.snapshot(false));
                 case "players.reset" -> emit("players.reset", bots.snapshot(true));
                 case "snapshot" -> emit("snapshot", fixture.snapshot());

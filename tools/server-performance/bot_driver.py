@@ -2,6 +2,10 @@
 import json
 import math
 import uuid
+import os
+import select
+import time
+from collections import deque
 from contracts import validate_document
 from models import Decision, Status
 
@@ -58,7 +62,8 @@ def validate_ready(ready, server_players, count, mode):
             reasons.append("missing server UUID")
         if (bot.get("name"), bot.get("uuid")) not in observed or bot.get("connected") is not True or bot.get("mode") != mode:
             reasons.append("server-observed identity or negotiated mode missing")
-        if mode != "vanilla" and bot.get("protocolAccepted") is not (mode == "compatible"):
+        native = next((p for p in server_players if p.get("uuid") == bot.get("uuid")), {})
+        if mode != "vanilla" and (bot.get("protocolAccepted") is not (mode == "compatible") or native.get("protocolAccepted") is not (mode == "compatible")):
             reasons.append("native protocol acceptance not proved")
     if ready.get("autoReconnect") is not False:
         reasons.append("automatic reconnect must be disabled")
@@ -105,8 +110,10 @@ class BotDriver:
         self.sequence = 0
         self.offset = 0
         self.events = []
+        self.inbox = deque()
+        os.set_blocking(self.process.process.stdin.fileno(), False)
 
-    def send(self, kind, data=None):
+    def send(self, kind, data=None, timeout=5):
         if kind not in {"start", "action", "barrier", "quiesce", "stop"}:
             raise ValueError("unsupported bot command")
         if kind == "action":
@@ -114,8 +121,22 @@ class BotDriver:
         self.sequence += 1
         value = {"schemaVersion": 1, "runId": self.stream.run_id, "attemptId": self.stream.attempt_id,
                  "sequence": self.sequence, "type": kind, "data": data or {}}
-        self.process.process.stdin.write((json.dumps(value) + "\n").encode())
-        self.process.process.stdin.flush()
+        content = (json.dumps(value) + "\n").encode()
+        if len(content) > 65536:
+            raise ValueError("bot command exceeds 64 KiB")
+        deadline = time.monotonic() + timeout
+        remaining = memoryview(content)
+        while remaining:
+            left = deadline - time.monotonic()
+            if left <= 0:
+                raise TimeoutError("bot stdin write deadline")
+            if not select.select([], [self.process.process.stdin.fileno()], [], left)[1]:
+                raise TimeoutError("bot stdin write deadline")
+            try:
+                written = os.write(self.process.process.stdin.fileno(), remaining)
+                remaining = remaining[written:]
+            except BlockingIOError:
+                continue
 
     def poll(self):
         with self.process.log.open() as source:
@@ -137,15 +158,21 @@ class BotDriver:
         import time
         deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
-            for event in self.poll():
-                if event["type"] == "error":
-                    raise RuntimeError(event["data"])
+            self.inbox.extend(self.poll())
+            if self.stream.failures:
+                raise RuntimeError("; ".join(self.stream.failures))
+            for event in self.inbox:
                 if event["type"] == kind:
+                    self.inbox.remove(event)
                     return event["data"]
             if self.process.process.poll() is not None:
                 raise RuntimeError("bot process exited before expected event")
             time.sleep(0.02)
         raise TimeoutError(f"bot deadline: {kind}")
+
+    def abort(self):
+        from processes import stop_owned
+        stop_owned(self.process, 1, graceful_command=None)
 
     def close(self):
         from processes import stop_owned
@@ -154,4 +181,4 @@ class BotDriver:
                 self.send("stop")
                 self.wait("stopped", 10)
         finally:
-            stop_owned(self.process, 2)
+            stop_owned(self.process, 2, graceful_command=None)

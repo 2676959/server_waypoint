@@ -3,6 +3,7 @@ from pathlib import Path
 import platform
 import shutil
 import subprocess
+import os
 
 from artifacts import sha256, stage_artifacts
 from contracts import atomic_write, load_release, load_runtimes
@@ -39,14 +40,16 @@ def verify_evidence(root, settings):
 
 
 def input_hashes():
-    folders = [TOOLS, REPOSITORY / "paper/src/performanceProbe", REPOSITORY / "cross-server/src/performanceProbe"]
+    folders = [TOOLS, REPOSITORY / "paper/src/performanceProbe", REPOSITORY / "cross-server/src/performanceProbe", REPOSITORY / "common/src/performanceFixtures"]
     result = {}
     for folder in folders:
-        for path in sorted(folder.rglob("*")):
-            if path.suffix not in (".py", ".java", ".json", ".kts", ".yml") or any(part in ("build", ".gradle", "__pycache__") for part in path.relative_to(folder).parts):
-                continue
-            result[str(path.relative_to(REPOSITORY))] = sha256(path)
-    for path in [REPOSITORY / "paper/build.gradle.kts", REPOSITORY / "cross-server/build.gradle.kts"]:
+        for directory, subdirectories, names in os.walk(folder):
+            subdirectories[:] = sorted(name for name in subdirectories if name not in ("build", "target", ".gradle", "__pycache__"))
+            for name in sorted(names):
+                path = Path(directory) / name
+                if path.suffix in (".py", ".java", ".json", ".kts", ".yml", ".rs", ".toml", ".lock"):
+                    result[str(path.relative_to(REPOSITORY))] = sha256(path)
+    for path in [REPOSITORY / "paper/build.gradle.kts", REPOSITORY / "cross-server/build.gradle.kts", REPOSITORY / "common/build.gradle.kts"]:
         result[str(path.relative_to(REPOSITORY))] = sha256(path)
     return result
 

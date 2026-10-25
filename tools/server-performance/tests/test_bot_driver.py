@@ -61,3 +61,68 @@ class BotDriverTest(unittest.TestCase):
 
     def test_successful_zero_demand_cannot_prove_driver_capacity(self):
         self.assertEqual(Status.INCONCLUSIVE, validate_rates({"offered": 0, "completed": 0, "pending": 0, "elapsedSeconds": 1, "maxLagSeconds": 0}, 5).status)
+
+    def test_server_handshake_reply_alone_does_not_prove_compatibility(self):
+        ready = self.ready()
+        ready["bots"][0].update(mode="compatible", protocolAccepted=True)
+        server = [{**ready["bots"][0], "protocolAccepted": False}]
+        self.assertEqual(Status.BLOCKED, validate_ready(ready, server, 1, "compatible").status)
+
+    def child(self, root, messages, sleeping=False):
+        import json
+        script = root / "child"
+        script.write_text("#!" + sys.executable + "\nimport sys,time\nsys.stdout.write(" + repr("".join(json.dumps(message) + "\n" for message in messages)) + ")\nsys.stdout.flush()\n" + ("time.sleep(30)\n" if sleeping else ""))
+        script.chmod(0o700)
+        return script
+
+    def test_error_after_matching_event_is_not_lost(self):
+        import tempfile
+        from bot_driver import BotDriver
+        from controller import create_root
+        from processes import stop_owned
+        with tempfile.TemporaryDirectory() as directory:
+            root = create_root(Path(directory).resolve() / "owned")
+            base = {"schemaVersion": 1, "runId": "run", "attemptId": "attempt"}
+            messages = [{**base, "sequence": 1, "type": "ready", "data": {}}, {**base, "sequence": 2, "type": "error", "data": {"reason": "disconnected"}}]
+            driver = BotDriver(self.child(root, messages), root, "run", "attempt")
+            driver.process.process.wait(timeout=5)
+            try:
+                with self.assertRaisesRegex(RuntimeError, "disconnected"):
+                    driver.wait("ready")
+            finally:
+                stop_owned(driver.process, 1)
+
+    def test_unmatched_replies_remain_available(self):
+        import tempfile
+        from bot_driver import BotDriver
+        from controller import create_root
+        from processes import stop_owned
+        with tempfile.TemporaryDirectory() as directory:
+            root = create_root(Path(directory).resolve() / "owned")
+            base = {"schemaVersion": 1, "runId": "run", "attemptId": "attempt"}
+            messages = [{**base, "sequence": 1, "type": "ready", "data": {}}, {**base, "sequence": 2, "type": "rate_sample", "data": {"completed": 5}}]
+            driver = BotDriver(self.child(root, messages), root, "run", "attempt")
+            driver.process.process.wait(timeout=5)
+            try:
+                driver.wait("ready")
+                self.assertEqual(5, driver.wait("rate_sample")["completed"])
+            finally:
+                stop_owned(driver.process, 1)
+
+    def test_stalled_stdin_has_deadline_and_owned_cleanup(self):
+        import tempfile
+        import time
+        from bot_driver import BotDriver
+        from controller import create_root
+        with tempfile.TemporaryDirectory() as directory:
+            root = create_root(Path(directory).resolve() / "owned")
+            driver = BotDriver(self.child(root, [], sleeping=True), root, "run", "attempt")
+            started = time.monotonic()
+            try:
+                with self.assertRaises(TimeoutError):
+                    for _ in range(100):
+                        driver.send("start", {"padding": "x" * 60000}, timeout=0.1)
+            finally:
+                driver.abort()
+            self.assertLess(time.monotonic() - started, 5)
+            self.assertIsNotNone(driver.process.process.poll())

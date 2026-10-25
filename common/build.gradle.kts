@@ -79,3 +79,47 @@ tasks.register<JavaExec>("verifyFoliaLiveTestControlFixture") {
     }
     dependsOn(tasks.testClasses)
 }
+
+// Audit codecs are loaded exclusively from an explicitly supplied published JAR.
+val performanceArtifact = providers.gradleProperty("performanceArtifact")
+val performanceDependencies by configurations.creating
+val performanceFixtures = sourceSets.create("performanceFixtures") {
+    compileClasspath = files(performanceArtifact.orNull) + performanceDependencies
+    runtimeClasspath = output + compileClasspath
+}
+val performanceFixtureTests by configurations.creating
+val performanceFixturesTest = sourceSets.create("performanceFixturesTest") {
+    compileClasspath = performanceFixtures.output + performanceFixtures.compileClasspath + performanceFixtureTests
+    runtimeClasspath = output + compileClasspath
+}
+dependencies {
+    add(performanceFixtureTests.name, "org.junit.jupiter:junit-jupiter:5.10.2")
+    add(performanceFixtureTests.name, "org.apiguardian:apiguardian-api:1.1.2")
+    add(performanceFixtureTests.name, "org.junit.platform:junit-platform-launcher:1.10.2")
+    add(performanceDependencies.name, "com.google.code.gson:gson:2.10.1")
+    add(performanceDependencies.name, "io.netty:netty-buffer:4.1.118.Final")
+    add(performanceDependencies.name, "net.kyori:adventure-api:4.16.0")
+    add(performanceDependencies.name, "org.joml:joml:1.10.8")
+}
+tasks.named<JavaCompile>(performanceFixtures.compileJavaTaskName) {
+    doFirst { require(performanceArtifact.isPresent) { "Set -PperformanceArtifact to the hash-verified published JAR" } }
+}
+tasks.register<Test>("performanceFixturesTest") {
+    group = "verification"
+    testClassesDirs = performanceFixturesTest.output.classesDirs
+    classpath = performanceFixturesTest.runtimeClasspath
+    useJUnitPlatform()
+}
+tasks.register<JavaExec>("exportPerformanceFixtures") {
+    group = "verification"
+    classpath = performanceFixtures.runtimeClasspath
+    mainClass.set("_959.server_waypoint.perf.ProtocolFixtureExporter")
+    val destination = providers.gradleProperty("performanceFixtureOutput")
+    doFirst {
+        require(performanceArtifact.isPresent && destination.isPresent) {
+            "Set -PperformanceArtifact and -PperformanceFixtureOutput (a new directory)"
+        }
+        args(performanceArtifact.get(), destination.get())
+        providers.gradleProperty("performanceRustFrames").orNull?.let { args(it) }
+    }
+}
