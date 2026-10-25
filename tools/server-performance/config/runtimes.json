@@ -548,7 +548,8 @@
                 "/Volumes/ssd/sw-performance-m1-capacity: 10 independent 500ms moves in 0.522s, all native actors moved; per-actor FIFO workers; /Volumes/ssd/sw-performance-m1-parallel-{wire,swarm}: protocol regressions and 1/10/50 native sessions pass",
                 "/Volumes/ssd/sw-performance-m1-traffic-small and /Volumes/ssd/sw-performance-m1-traffic-medium-3: five-second scheduled smoke, 55/275 native callbacks and exact mutations/saved contents; medium first drain 195 then full completion after 3.34s; performance acceptance INCONCLUSIVE",
                 "2026-10-24 two-stage native command ACK: /Volumes/ssd/sw-performance-m1-ack-medium-4; 275 correlated command roundtrips, exact persisted content; timed three-repeat acceptance remains separate",
-                "2026-10-25 /Volumes/ssd/sw-performance-m1-read-suggestions-full: 5295 console read leaves with delivered feedback/exact saved state, 51 local custom suggestion paths with matching native provider receipts; remote and other behavior requirements pending"
+                "2026-10-25 /Volumes/ssd/sw-performance-m1-read-suggestions-full: 5295 console read leaves with delivered feedback/exact saved state, 51 local custom suggestion paths with matching native provider receipts; remote and other behavior requirements pending",
+                "2026-10-25 /Volumes/ssd/sw-performance-m1-mutation-leaves-final: 43 console storage leaves, exact full properties/revisions/disk/reopen, single-use restore, nonempty-list denial, real config/language reload outcomes; remaining feature/player/permission requirements pending"
             ],
             "java": "/opt/homebrew/Cellar/openjdk@21/21.0.11/libexec/openjdk.jdk/Contents/Home/bin/java",
             "java_sha256": "04005388bac0c272ea914210ca519ce94b2f873ea3962b9874a6859f74d7f279",
@@ -572,7 +573,7 @@
             ],
             "probe": {
                 "path": "/Volumes/ssd/fabric_mods_repo/server_waypoint/paper/versions/1.21.11-paper/build/libs/server-waypoint-performance-paper-probe.jar",
-                "sha256": "3ee2d4d43bb417dbead7e74b79d92f3993ea222b2c3df9ea84c3f7a419001439"
+                "sha256": "979321bd9a891d874439c2708e74940fc5a03c4e663511e4e82bad719d51d8a2"
             }
         },
         {

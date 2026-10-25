@@ -106,6 +106,7 @@ public final class PaperPerformanceProbe extends JavaPlugin {
                     stopped.addProperty("phaseElapsedSeconds", (System.nanoTime() - phaseStarted) / 1_000_000_000.0);
                     emit("scenario.stopped", stopped);
                 }
+                case "storage.snapshot" -> emit("storage.snapshot", StorageAssertions.snapshot());
                 case "commands.feedback-barrier" -> Bukkit.getGlobalRegionScheduler().execute(this, () -> emit("commands.feedback.completed", new JsonObject()));
                 case "commands.restore-tokens" -> emit("commands.restore-tokens", commands.restoreTokens());
                 case "commands.tree" -> emit("commands.tree", commands.tree());

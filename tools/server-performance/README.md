@@ -123,3 +123,17 @@ log between delivery-scheduler markers; provider receipts identify the actual in
 Brigadier callbacks. `--limit N` makes the read selection partial. Remote providers and
 other command families retain separate requirements; this helper cannot establish a
 complete command family or performance gate.
+
+
+Native console storage mutation leaf smoke (functional scope):
+
+```sh
+rtk proxy python3 tools/server-performance/bots/mutation_leaves_smoke.py --root /Volumes/ssd/sw-perf-mutations-new --baseline /Volumes/ssd/sw-performance-m1-storage-timed/fixtures/navigation-terrain-small/frozen --inventory /Volumes/ssd/sw-performance-m1-read-suggestions-full/command-tree.json
+```
+
+The reference inventory seeds independent fixtures; its selected paths must match the
+live native tree before execution. The helper checks 43 storage leaves, every persisted
+property/revision, single-use restore, nonempty-list rejection and actual config/language
+reload behavior. It saves/reopens the server and compares exact contents. Generated
+quick-add color values are explicitly domain-checked before entering the operation ledger.
+This console smoke does not establish remaining player/permission/platform coverage.
