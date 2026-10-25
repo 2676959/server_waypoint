@@ -135,6 +135,17 @@ of all five methods with exact owner map IDs, targets and live effects. It cover
 two regions in one dimension with one or ten independent owners; cross-dimension
 terrain, eviction and shared-map viewers remain separate requirements.
 
+```sh
+rtk proxy python3 tools/server-performance/bots/lifecycle_smoke.py --root /Volumes/ssd/sw-perf-lifecycle-new --count 10
+```
+
+This standalone helper observes actual death/automatic respawn and native world
+transitions with all five methods, checks ordinary death-drop conservation and
+protected-item exclusion, and verifies owner targets/items/live effects. A native
+Nether landing fixture loads its chunks and reads back its floor/walls/clearance
+before travel. Same-dimension respawn preserves level text entities; dimension
+changes replace them. Native receipts and packet state do not establish rendering.
+
 
 Native console read-leaf/provider smoke (functional scope; fresh owned root):
 

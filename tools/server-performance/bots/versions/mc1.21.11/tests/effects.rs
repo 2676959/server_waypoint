@@ -195,3 +195,78 @@ fn bossbar_and_network_only_text_display_updates_and_removals_are_observed() {
     assert!(value["bossbars"].as_object().unwrap().is_empty());
     assert!(value["textDisplays"].as_object().unwrap().is_empty());
 }
+
+#[test]
+fn same_dimension_respawn_preserves_level_entities_but_world_change_discards_them() {
+    use azalea::core::game_type::{GameMode, OptionalGameType};
+    use azalea::protocol::packets::{
+        common::CommonPlayerSpawnInfo,
+        game::{ClientboundAddEntity, ClientboundLogin, ClientboundRespawn},
+    };
+    use azalea::registry::{DataRegistry, builtin::EntityKind, data::DimensionKind};
+    use azalea::world::MinecraftEntityId;
+    let spawn = |dimension: &str| CommonPlayerSpawnInfo {
+        dimension_type: DimensionKind::new_raw(0),
+        dimension: dimension.parse().unwrap(),
+        seed: 0,
+        game_type: GameMode::Survival,
+        previous_game_type: OptionalGameType(None),
+        is_debug: false,
+        is_flat: true,
+        last_death_location: None,
+        portal_cooldown: 0,
+        sea_level: 63,
+    };
+    let mut state = Effects::default();
+    state
+        .observe(&Packet::Login(ClientboundLogin {
+            player_id: MinecraftEntityId(1),
+            hardcore: false,
+            levels: vec![],
+            max_players: 20,
+            chunk_radius: 2,
+            simulation_distance: 2,
+            reduced_debug_info: false,
+            show_death_screen: true,
+            do_limited_crafting: false,
+            common: spawn("minecraft:overworld"),
+            enforces_secure_chat: false,
+        }))
+        .unwrap();
+    state
+        .observe(&Packet::AddEntity(ClientboundAddEntity {
+            id: MinecraftEntityId(42),
+            uuid: "00000000-0000-0000-0000-000000000001".parse().unwrap(),
+            entity_type: EntityKind::TextDisplay,
+            position: Default::default(),
+            movement: Default::default(),
+            x_rot: 0,
+            y_rot: 0,
+            y_head_rot: 0,
+            data: 0,
+        }))
+        .unwrap();
+    state
+        .observe(&Packet::Respawn(ClientboundRespawn {
+            common: spawn("minecraft:overworld"),
+            data_to_keep: 0,
+        }))
+        .unwrap();
+    assert!(
+        state.snapshot()["textDisplays"].get("42").is_some(),
+        "vanilla keeps this ClientLevel on same-world respawn"
+    );
+    state
+        .observe(&Packet::Respawn(ClientboundRespawn {
+            common: spawn("minecraft:the_nether"),
+            data_to_keep: 3,
+        }))
+        .unwrap();
+    assert!(
+        state.snapshot()["textDisplays"]
+            .as_object()
+            .unwrap()
+            .is_empty(),
+        "vanilla replaces ClientLevel on world change"
+    );
+}

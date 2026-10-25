@@ -85,6 +85,9 @@ final class NavigationAssertions {
             value.addProperty("name", player.getName());
             value.addProperty("uuid", uuid.toString());
             value.addProperty("dimension", player.getWorld().getKey().toString());
+            value.addProperty("dead", player.isDead());
+            value.addProperty("health", player.getHealth());
+            value.addProperty("entityId", player.getEntityId());
             value.add("position", position(player.getLocation()));
             Object session = sessions.get(uuid);
             value.add("methods", session == null ? new JsonArray() : methods((Collection<?>) call(session, "enabledMethods")));
@@ -243,7 +246,7 @@ final class NavigationAssertions {
         return (Map<?, ?>) field(object, name);
     }
 
-    private static Object field(Object object, String name) throws ReflectiveOperationException {
+    static Object field(Object object, String name) throws ReflectiveOperationException {
         for (Class<?> type = object.getClass(); type != null; type = type.getSuperclass()) {
             try {
                 Field field = type.getDeclaredField(name);

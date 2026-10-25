@@ -88,3 +88,13 @@ class NavigationScenariosTest(unittest.TestCase):
             self.assertEqual(Status.FAIL,restored_session(expected,value,client).status)
         client["textDisplays"]={"99":{"text":"New 128m"}}
         self.assertEqual(Status.FAIL,restored_session(expected,native,client).status)
+
+    def test_death_preserves_ordinary_drops_without_protected_world_items(self):
+        from scenarios.navigation import death_protection
+        ordinary={"stone-identity":64,"diamond-identity":3}
+        drops={"ordinary":ordinary,"protectedItems":0,"nestedProtectedCarriers":0}
+        world={"ordinary":ordinary,"protectedItems":0,"nestedProtectedCarriers":0}
+        self.assertEqual(Status.PASS,death_protection(ordinary,drops,world).status)
+        self.assertEqual(Status.BLOCKED,death_protection(ordinary,{},world).status)
+        self.assertEqual(Status.FAIL,death_protection(ordinary,{**drops,"protectedItems":1},world).status)
+        self.assertEqual(Status.FAIL,death_protection(ordinary,drops,{**world,"ordinary":{"stone-identity":64}}).status)

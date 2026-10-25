@@ -134,3 +134,15 @@ def restored_session(expected,native,client):
     elif displays:
         return Decision(Status.FAIL,("unselected client text display retained",))
     return Decision(Status.PASS)
+
+
+def death_protection(ordinary,drops,world):
+    for value in (drops,world):
+        if any(key not in value for key in ("ordinary","protectedItems","nestedProtectedCarriers")):
+            return Decision(Status.BLOCKED,("native death/drop/world item observations missing",))
+        if value["protectedItems"]!=0 or value["nestedProtectedCarriers"]!=0:
+            return Decision(Status.FAIL,("protected death item escaped to drops/world",))
+        decision=ordinary_conservation(ordinary,value["ordinary"])
+        if decision.status!=Status.PASS:
+            return decision
+    return Decision(Status.PASS)

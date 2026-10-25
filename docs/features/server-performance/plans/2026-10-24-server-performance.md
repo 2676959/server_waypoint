@@ -218,7 +218,7 @@ Task 10 execution checkpoint: acknowledged native `storage:concurrent` runs pass
 **Interfaces:** Produces `navigation`, `map-terrain`, `protection` cases; exposes before/after session/task/entity/item/map snapshots. Consumes real bot actions and native owner-thread assertions.
 
 - [x] Write `test_all_supported_methods_and_combinations_executed`, `test_retarget_updates_items_and_displays`, `test_nested_item_cannot_escape`, `test_plain_items_not_deleted`, `test_disconnect_cleanup_returns_to_expected_counts`. Assert individual compass/map/bossbar/actionbar/text-display and all supported methods together; enumerate smaller combinations for correctness.
-- [ ] Run focused tests before case implementation. Read the actual release protection handlers and versioned Minecraft API sources before selecting native triggers; add every discovered applicable event/mixin to the ledger.
+- [x] Run focused tests before case implementation. Read the actual release protection handlers and versioned Minecraft API sources before selecting native triggers; add every discovered applicable event/mixin to the ledger.
 - [ ] Implement movement/arrival/edit/delete, stop/start/retarget/death/respawn/world-change/rejoin/session restore; warm/cold map regions/dimensions, persistent terrain, eviction and multiple viewers. Cover inventory, crafting/result/cartography, container/entity/equipment/death protections where implemented; distinguish legitimate cleanup from item loss.
 - [ ] Run small/medium original Paper cases, including save/restart terrain validation and post-quiescence resource counts. Verify ordinary item handling, owner isolation and protected items independently of timing; retain failures without repairing them yet.
 

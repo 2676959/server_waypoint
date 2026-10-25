@@ -17,6 +17,7 @@ public final class PaperPerformanceProbe extends JavaPlugin {
     private PaperFixtureAdapter fixture;
     private final BotAssertions bots = new BotAssertions();
     private final CommandAssertions commands = new CommandAssertions();
+    private final LifecycleAssertions lifecycle = new LifecycleAssertions();
     private ProbeWriter writer;
     private boolean sampling;
     private String phase = "WARMUP";
@@ -27,6 +28,7 @@ public final class PaperPerformanceProbe extends JavaPlugin {
         fixture = new PaperFixtureAdapter();
         commands.install(this, this::emit);
         Bukkit.getPluginManager().registerEvents(bots, this);
+        Bukkit.getPluginManager().registerEvents(lifecycle, this);
         Bukkit.getPluginManager().registerEvents(new PaperTickProbe(this, fixture), this);
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             if (sampling) {
@@ -108,6 +110,9 @@ public final class PaperPerformanceProbe extends JavaPlugin {
                 }
                 case "storage.snapshot" -> emit("storage.snapshot", StorageAssertions.snapshot());
                 case "navigation.snapshot" -> emit("navigation.snapshot", NavigationAssertions.snapshot());
+                case "lifecycle.arm" -> emit("lifecycle.armed", lifecycle.arm());
+                case "lifecycle.prepare-nether" -> emit("lifecycle.nether.prepared", lifecycle.prepareNether());
+                case "lifecycle.snapshot" -> emit("lifecycle.snapshot", lifecycle.snapshot());
                 case "commands.feedback-barrier" -> Bukkit.getGlobalRegionScheduler().execute(this, () -> emit("commands.feedback.completed", new JsonObject()));
                 case "commands.restore-tokens" -> emit("commands.restore-tokens", commands.restoreTokens());
                 case "commands.tree" -> emit("commands.tree", commands.tree());

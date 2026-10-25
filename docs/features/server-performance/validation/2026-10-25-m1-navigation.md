@@ -88,8 +88,9 @@ made; M1 retains original-release failures for the later repair milestone.
 Python contract tests also reject stale bossbar/actionbar targets, changed
 ordinary-item counts, escaping protected items and missing resource evidence.
 The protection contracts are not native execution of the 22 protection hooks.
-Death/respawn, world changes, deletion, terrain across dimensions, cache eviction,
-shared-map viewers and the remaining native protections still require evidence.
+Deletion, terrain across dimensions, cache eviction, shared-map viewers and the
+remaining native protections still require evidence. A later lifecycle checkpoint
+below adds actual deaths, respawns and world changes.
 Main CLI adapters remain blocked until their complete contracts are implemented.
 
 ## Terrain and active-session restart checkpoint
@@ -133,3 +134,54 @@ reject changed region metadata, changed pixel bytes, incomplete client pixels,
 a stale checksum, changed owner/map identity, lost/duplicated method items and
 mismatched native/client text-display identity. Current verification: 108 Python
 tests and the Paper probe build pass; the 17 Rust tests are unchanged and green.
+
+## Actual death, respawn and world transitions
+
+`/Volumes/ssd/sw-performance-m1-lifecycle-small-final/` and
+`/Volumes/ssd/sw-performance-m1-lifecycle-medium-2/` pass with one and ten real
+actors. The probe is explicitly armed to observe normal native lifecycle events;
+it does not synthesize death/respawn/world-change events. Vanilla `kill` triggers
+death, and Azalea's normal automatic-respawn plugin sends the respawn request.
+All five navigation methods are active throughout.
+
+For ten actors, native receipts show ten deaths, ten respawns and twenty world
+transitions, with no dropped observations. Death drops preserve the independently
+seeded ordinary stone/diamond identities and counts (640 stone and 30 diamonds in
+aggregate), while direct tagged navigation items reach neither the death drops
+nor world item entities. Ordinary items may legitimately remain as drops or have
+been picked up after respawn; their combined counts are checked before the world
+travel phase. No nested carrier or inventory-cursor death variant is claimed.
+
+After respawn, each owner has exactly one compass and one map, its original map
+ID and target, and matching native/client bossbar, actionbar and text-display
+state. Actual Nether travel and Overworld return retain those method targets and
+item counts and replace the packet-only text display as its world changes.
+These observations concern packets/native state, not visual layout or rendering.
+
+The landing fixture synchronously loads and force-loads four native Nether
+chunks before placement. It reads back all 625 bedrock floor blocks, 288 wall
+blocks and 2,645 clear interior blocks, then uses distinct player positions inside
+the enclosure. The prepared-state receipt must pass before teleporting an actor.
+
+Retained earlier attempts:
+
+- `lifecycle-red`: native lifecycle observation operation was absent.
+- `lifecycle-small`: the packet observer incorrectly cleared text displays on
+  every respawn and the helper incorrectly required a new display ID. Pinned
+  Minecraft 1.21.11 `ClientPacketListener.handleRespawn` retains the same level
+  for same-dimension respawn, and the native player entity ID is reused. A Rust
+  regression now distinguishes same-world respawn from actual world replacement.
+  No original-release text-display defect is inferred from that observer failure.
+- `lifecycle-small-2`: the corrected one-player lifecycle passes with the earlier
+  console landing setup; it is superseded for fixture validation by the final root.
+- `lifecycle-medium`: death/respawn/conservation pass, but console `fill` ran before
+  destination chunks loaded, leaving no pad; subsequent falls invalidate that
+  fixture's world-transition case. Raw failures and extra death receipts remain.
+- `nether-fixture-red`: verified native landing operation was absent before its
+  implementation.
+
+Current verification: 109 Python tests, 18 Rust tests and the Paper probe build
+pass. Native/probe archives remain isolated and helper processes are stopped.
+No production source or localization changed. Full physical protection, deletion,
+cross-dimension terrain, eviction/shared-map viewers and timed CLI integration
+remain open, so Task 11 and M1 are still in progress.

@@ -530,7 +530,7 @@
                 "candidate": "0.15.1+mc1.21.11",
                 "verifiedNativeActions": true,
                 "path": "/Volumes/ssd/fabric_mods_repo/server_waypoint/tools/server-performance/bots/versions/mc1.21.11/target/release/sw-performance-bots",
-                "sha256": "7ee5c1fad8d0887267279efa83f9a20d886b63e7d18869d3304017fc17130a3a",
+                "sha256": "1f085c30065cb80e8faeaf48d662f2de2060c75c7848eb499ce59c97c6b04153",
                 "toolchain": "nightly-2026-07-15",
                 "nativeModes": [
                     "vanilla",
@@ -551,7 +551,8 @@
                 "2026-10-25 /Volumes/ssd/sw-performance-m1-read-suggestions-full: 5295 console read leaves with delivered feedback/exact saved state, 51 local custom suggestion paths with matching native provider receipts; remote and other behavior requirements pending",
                 "2026-10-25 /Volumes/ssd/sw-performance-m1-mutation-leaves-final: 43 console storage leaves, exact full properties/revisions/disk/reopen, single-use restore, nonempty-list denial, real config/language reload outcomes; remaining feature/player/permission requirements pending",
                 "2026-10-25 /Volumes/ssd/sw-performance-m1-navigation-{small-targets,medium-targets,medium-isolation}: 31 native method combinations per actor, movement/retarget/edit/teleport, ten-owner isolation and ordinary-item conservation; retained cleanup FAIL for 1/10 post-disconnect tick counters; terrain/protection/lifecycle coverage pending",
-                "2026-10-25 /Volumes/ssd/sw-performance-m1-terrain-small and /Volumes/ssd/sw-performance-m1-terrain-medium-all: exact native cold/warm region pixels, saved terrain files, full client coverage/checksum, active-session save/restart/join restoration; ten owners restore all five methods and same map IDs; same-dimension functional evidence only"
+                "2026-10-25 /Volumes/ssd/sw-performance-m1-terrain-small and /Volumes/ssd/sw-performance-m1-terrain-medium-all: exact native cold/warm region pixels, saved terrain files, full client coverage/checksum, active-session save/restart/join restoration; ten owners restore all five methods and same map IDs; same-dimension functional evidence only",
+                "2026-10-25 /Volumes/ssd/sw-performance-m1-lifecycle-small-final and /Volumes/ssd/sw-performance-m1-lifecycle-medium-2: actual 1/10 deaths, automatic respawns, exact ordinary death-drop identities/counts and protected exclusion, all-method owner targets/map IDs/live effects through Nether/Overworld travel; native verified landing fixture; functional evidence only"
             ],
             "java": "/opt/homebrew/Cellar/openjdk@21/21.0.11/libexec/openjdk.jdk/Contents/Home/bin/java",
             "java_sha256": "04005388bac0c272ea914210ca519ce94b2f873ea3962b9874a6859f74d7f279",
@@ -575,7 +576,7 @@
             ],
             "probe": {
                 "path": "/Volumes/ssd/fabric_mods_repo/server_waypoint/paper/versions/1.21.11-paper/build/libs/server-waypoint-performance-paper-probe.jar",
-                "sha256": "40f6a2ace07715eb4fba2dd4a2228a7faad4c05cffb800615c12ae788ff89de8"
+                "sha256": "a0c66ea24cd68c7160ab06a22d07cf28b2ee99304077ccd059d98533fa51a09f"
             }
         },
         {

@@ -29,8 +29,8 @@ interaction. Each requirement below also needs owner-isolation and post-quiescen
 | `onItemFrameChange` | `PlayerItemFrameChangeEvent` | Place/rotate/remove protected item denied; existing direct/nested item cleaned without deleting innocent carrier. | Pending |
 | `onSwapHands` | `PlayerSwapHandItemsEvent` | Protected hand swap reconciled; owner method counts remain exact. | Pending |
 | `onPlayerInventorySlotChange` | `PlayerInventorySlotChangeEvent` | Old/new protected item reconciled; ordinary slot edits preserved. | Pending |
-| `onDeath` | `PlayerDeathEvent` | Protected drops/cursor removed, nested carrier sanitized; ordinary death drops conserved. | Pending |
-| `onRespawn` | `PlayerRespawnEvent` | Missing enabled method items restored exactly once. | Pending |
+| `onDeath` | `PlayerDeathEvent` | Protected drops/cursor removed, nested carrier sanitized; ordinary death drops conserved. | Partial: actual 1/10 deaths conserve seeded ordinary drops, no direct protected items reach drops/world; nested carrier/cursor variants pending. |
+| `onRespawn` | `PlayerRespawnEvent` | Missing enabled method items restored exactly once. | Partial: actual 1/10 automatic respawns restore one compass/map per owner and all live effects; additional variants pending. |
 | `onJoin` | `PlayerJoinEvent` | Persisted session restored with exact target/methods; one owner tick task; stale protocol state cleared. | Partial: native 1/10 joins and tasks observed; map/all-five-method restart restoration, owner map IDs and live client effects pass. Protocol state has separate Task 9 evidence. |
 | `onQuit` | `PlayerQuitEvent` | Player/session/task/platform/protocol cleanup; persisted legitimate restore data retained. | Partial FAIL: stop-then-quit retains 1/10 tick counters. Active-session quit clears counters/resources and preserves legitimate restart restoration. Other lifecycle/protocol assertions pending. |
 

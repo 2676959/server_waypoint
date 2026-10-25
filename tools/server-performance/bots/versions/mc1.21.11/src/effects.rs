@@ -7,6 +7,7 @@ use std::collections::{BTreeMap, VecDeque};
 
 #[derive(Default)]
 pub struct Effects {
+    dimension: Option<String>,
     sequence: u64,
     actionbar_updates: u64,
     actionbar: VecDeque<Value>,
@@ -144,9 +145,20 @@ impl Effects {
                     self.displays.remove(&id.0);
                 }
             }
-            // A world reset discards local entities; bossbars are controlled by
-            // their own remove packets and may intentionally span dimensions.
-            Packet::Respawn(_) => self.displays.clear(),
+            Packet::Login(value) => {
+                self.dimension = Some(value.common.dimension.to_string());
+                self.displays.clear();
+            }
+            // Vanilla replaces ClientLevel only when the dimension changes.
+            // Same-world death/respawn keeps other level entities, including
+            // packet-only text displays. Bossbars have independent removals.
+            Packet::Respawn(value) => {
+                let dimension = value.common.dimension.to_string();
+                if self.dimension.as_ref() != Some(&dimension) {
+                    self.displays.clear();
+                }
+                self.dimension = Some(dimension);
+            }
             Packet::MapItemData(value) => {
                 self.sequence += 1;
                 let mut map =
@@ -202,7 +214,7 @@ impl Effects {
             "nonzeroPixels":map.colors.iter().zip(map.known.iter()).filter(|(color,known)| **known && **color != 0).count(),
             "colorsCrc32":crc32fast::hash(&map.colors[..]),"decorations":map.decorations,
         })).collect();
-        json!({"sequence":self.sequence,"actionbarUpdates":self.actionbar_updates,"actionbar":self.actionbar,"chat":self.chat,
+        json!({"dimension":self.dimension,"sequence":self.sequence,"actionbarUpdates":self.actionbar_updates,"actionbar":self.actionbar,"chat":self.chat,
             "bossbars":self.bossbars,"textDisplays":self.displays,"maps":maps,"droppedHistory":self.dropped_history,
             "evictedMaps":self.evicted_maps,"clippedText":self.clipped_text})
     }
