@@ -146,3 +146,32 @@ def death_protection(ordinary,drops,world):
         if decision.status!=Status.PASS:
             return decision
     return Decision(Status.PASS)
+
+
+def physical_receipts(events,required):
+    for expected in required:
+        selectors={key:value for key,value in expected.items() if key!="cancelled"}
+        matches=[event for event in events if all(event.get(key)==value for key,value in selectors.items())]
+        if not matches:
+            return Decision(Status.BLOCKED,("matching native physical interaction receipt missing",))
+        if len(matches)!=1 or matches[0].get("cancelled") is not expected.get("cancelled"):
+            return Decision(Status.FAIL,("native physical interaction duplicated or cancellation differs",))
+    return Decision(Status.PASS)
+
+
+def physical_drop_spawned(events,entities,requested):
+    decision=physical_receipts(events,[{"event":"drop","cancelled":False,**value} for value in requested])
+    if decision.status!=Status.PASS:
+        return decision
+    for expected in requested:
+        drop=next(event for event in events if event.get("event")=="drop" and all(event.get(key)==value for key,value in expected.items()))
+        identity=drop.get("itemEntityUuid")
+        spawns=[event for event in events if event.get("event")=="item-spawn" and event.get("uuid")==identity]
+        actual=[entity for entity in entities if entity.get("uuid")==identity]
+        if not identity or not spawns or not actual:
+            return Decision(Status.BLOCKED,("correlated native item spawn/world entity missing",))
+        if len(spawns)!=1 or len(actual)!=1 or spawns[0].get("cancelled") is not False:
+            return Decision(Status.FAIL,("ordinary native spawn duplicated or cancelled",))
+        if any(actual[0].get(key)!=expected[key] for key in ("material","amount")):
+            return Decision(Status.FAIL,("actual ordinary world-item identity/count differs",))
+    return Decision(Status.PASS)

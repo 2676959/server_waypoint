@@ -185,3 +185,82 @@ pass. Native/probe archives remain isolated and helper processes are stopped.
 No production source or localization changed. Full physical protection, deletion,
 cross-dimension terrain, eviction/shared-map viewers and timed CLI integration
 remain open, so Task 11 and M1 are still in progress.
+
+## Physical drop, swap and player-menu protection
+
+`/Volumes/ssd/sw-performance-m1-protection-small-final/` and
+`/Volumes/ssd/sw-performance-m1-protection-medium/` pass nine normal protocol
+interaction cases for one and ten owners. These use normal selected-slot,
+player-action and container-click packets; no Bukkit event is synthesized.
+
+1. Compass drop is cancelled and the original owner retains one compass/map.
+2. Map drop is cancelled with the same exact item/target invariants.
+3. Compass swap to offhand is allowed; the native compass occupies slot 40.
+4. Swap back is allowed and restores its original held slot.
+5. A protected item may move into its owner's ordinary storage slot 9.
+6. An attempt to move it into armor is cancelled.
+7. An attempt to move it into the empty player crafting-result slot is cancelled.
+8. An ordinary stone storage move remains allowed.
+9. An ordinary three-diamond drop remains allowed and becomes an actual world item.
+
+The controller confirms each selected hotbar slot on the native server before
+sending a drop/swap. Every case requires matching native actor/slot/cancellation
+receipts, all five owner method targets and live effects, exact item counts/map
+IDs, no invalid protected locations, and full ordinary identity/count conservation.
+The probe samples world items and player inventories within the same owner-thread
+command so an intervening pickup cannot appear to lose or duplicate items.
+Player-menu close receipts independently show clean top inventory and cursor.
+The crafting-result attempt is not a test of an actual protected crafting recipe.
+
+The ten-owner run records 30 drop, 20 swap, 80 click, 40 close and 170 inventory
+slot-change receipts, with zero dropped observations. Twelve protected slot edits
+are observed per actor. All nine case decisions and all 90 owner assertions pass.
+The ten ordinary dropped item UUIDs match uncancelled native spawn receipts and
+actual world entities, each containing three diamonds; aggregate native world
+diamond count is 30. No protected world item is present.
+
+Spawn event counts alone are insufficient: vanilla `give` can create transient
+animation items (`GiveCommand` calls `makeFakeItem`). The positive control therefore
+requires the actual drop UUID to appear in the native world snapshot. Conversely,
+cancelled protected Q drops do not reach `ItemSpawnEvent`; direct/nested protected
+spawn handlers still need their own scenarios.
+
+The bot now accepts explicit player-menu slots 0–45 and validates them without
+silently substituting defaults for malformed input. Drop mode must be boolean;
+unknown physical actions are rejected. Non-command action timing remains explicitly
+client-issued, not an acknowledged performance latency sample. Native RED roots
+retain missing actions (`protection-actions-red`) and missing native receipts
+(`protection-native-red`). The earlier `protection-small` run also passes the nine
+cases before the stronger world-entity/offhand assertions were added.
+
+The action API's original caller was updated to send explicit inventory slots.
+`/Volumes/ssd/sw-performance-m1-physical-action-regression-peaceful/` completes native
+1/10/50-player identity, movement, inventory, command and disconnect checks, but
+its fifty-player phase records three watchdog nonresponse reports and 134 native
+ERROR log entries, including stack lines. The thread dumps are in native command
+tree serialization (`CommandNode.equals`, `ClientboundCommandsPacket` enumeration/
+entry creation). The logger stability decision is **FAIL** despite completed
+actions. The number of reports does not establish three distinct stalls. This
+controlled stress observation occurred while another functional helper shared
+the host and does not attribute the production incident. A subsequent isolated
+`/Volumes/ssd/sw-performance-m1-action-health-guard/` run completes all 1/10/50
+action checks with a PASS native log-health result. That result does not override
+the prior retained FAIL or establish a reproducible production cause.
+
+The prior `physical-action-regression` root retains the 50-player failure: a slime
+killed one bot, invalidating its inventory fixture. The disposable smoke world
+now explicitly uses peaceful difficulty; no release source repair was made.
+
+Current verification: 115 Python tests, 20 Rust tests, Paper probe build and archive
+isolation pass. The two physical protection roots have no ERROR/SEVERE entries.
+A streaming native-log guard now rejects ERROR/SEVERE logger entries and watchdog
+reports independently of successful action checks; missing logs are BLOCKED.
+Tests ensure INFO payload words are not mistaken for logger severity. The bot
+smoke retains a separate health result and fails its process result when native
+stability fails. The physical helper also requires its native log health to pass.
+`/Volumes/ssd/sw-performance-m1-protection-health/` completes the nine one-owner
+cases with the new health field recorded as PASS.
+Applying this stability guard to every prepared case remains Task 16 work.
+Full drag, open/other-container, actual crafting/cartography, nested carrier, equipment/frame,
+block interaction and pickup variants remain pending, together with remaining
+terrain/CLI/timing work. M1 remains in progress.

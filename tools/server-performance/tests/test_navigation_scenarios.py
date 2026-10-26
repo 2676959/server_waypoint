@@ -98,3 +98,23 @@ class NavigationScenariosTest(unittest.TestCase):
         self.assertEqual(Status.BLOCKED,death_protection(ordinary,{},world).status)
         self.assertEqual(Status.FAIL,death_protection(ordinary,{**drops,"protectedItems":1},world).status)
         self.assertEqual(Status.FAIL,death_protection(ordinary,drops,{**world,"ordinary":{"stone-identity":64}}).status)
+
+    def test_physical_protection_requires_matching_native_receipts(self):
+        from scenarios.navigation import physical_receipts
+        required=[{"event":"drop","uuid":"owner-1","cancelled":True}]
+        receipt={"event":"drop","uuid":"owner-1","cancelled":True}
+        self.assertEqual(Status.PASS,physical_receipts([receipt],required).status)
+        self.assertEqual(Status.BLOCKED,physical_receipts([{**receipt,"uuid":"owner-2"}],required).status)
+        self.assertEqual(Status.FAIL,physical_receipts([{**receipt,"cancelled":False}],required).status)
+        self.assertEqual(Status.FAIL,physical_receipts([receipt,receipt],required).status)
+
+    def test_ordinary_drop_is_present_as_the_actual_correlated_world_entity(self):
+        from scenarios.navigation import physical_drop_spawned
+        requested=[{"uuid":"owner-1","material":"minecraft:diamond","amount":3}]
+        events=[{"event":"drop","uuid":"owner-1","cancelled":False,"itemEntityUuid":"item-1","material":"minecraft:diamond","amount":3},
+                {"event":"item-spawn","uuid":"item-1","cancelled":False}]
+        entity={"uuid":"item-1","material":"minecraft:diamond","amount":3}
+        self.assertEqual(Status.PASS,physical_drop_spawned(events,[entity],requested).status)
+        self.assertEqual(Status.BLOCKED,physical_drop_spawned(events,[],requested).status)
+        self.assertEqual(Status.FAIL,physical_drop_spawned(events,[{**entity,"amount":1}],requested).status)
+        self.assertEqual(Status.FAIL,physical_drop_spawned([events[0],{**events[1],"cancelled":True}],[entity],requested).status)

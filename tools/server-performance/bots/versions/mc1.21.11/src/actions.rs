@@ -111,20 +111,27 @@ pub async fn perform(
             tokio::time::sleep(Duration::from_millis(100)).await;
         }
         "inventory" => {
-            let from = data["from"].as_u64().unwrap_or(36);
-            let to = data["to"].as_u64().unwrap_or(37);
-            anyhow::ensure!(
-                (9..=44).contains(&from) && (9..=44).contains(&to) && from != to,
-                "invalid inventory slots"
-            );
+            let (from, to) = sw_performance_bots::action_input::inventory_slots(data)
+                .map_err(anyhow::Error::msg)?;
             let inventory = bot
                 .open_inventory()
                 .ok_or_else(|| anyhow::anyhow!("another container open"))?;
-            inventory.left_click(from as usize);
+            inventory.left_click(from);
             tokio::time::sleep(Duration::from_millis(150)).await;
-            inventory.left_click(to as usize);
+            inventory.left_click(to);
             tokio::time::sleep(Duration::from_millis(150)).await;
             inventory.close();
+        }
+        "drop" | "swap" => {
+            let action = sw_performance_bots::action_input::player_action(data)
+                .map_err(anyhow::Error::msg)?;
+            bot.write_packet(azalea::protocol::packets::game::ServerboundPlayerAction {
+                action,
+                pos: azalea::core::position::BlockPos::new(0, 0, 0),
+                direction: azalea::core::direction::Direction::Down,
+                seq: 0,
+            });
+            tokio::time::sleep(Duration::from_millis(150)).await;
         }
         "disconnect" => bot.disconnect(),
         _ => anyhow::bail!("unsupported action"),

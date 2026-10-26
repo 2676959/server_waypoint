@@ -2,6 +2,7 @@ package _959.server_waypoint.perf.paper;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import io.papermc.paper.event.player.PlayerInventorySlotChangeEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Item;
@@ -13,10 +14,15 @@ import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerSwapHandItemsEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.security.MessageDigest;
 import java.util.Collection;
+import java.util.Arrays;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
@@ -122,6 +128,64 @@ final class LifecycleAssertions implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
+    public void onDrop(PlayerDropItemEvent event) throws Exception {
+        if (armed) {
+            JsonObject value = playerEvent("drop", event.getPlayer());
+            value.addProperty("cancelled", event.isCancelled());
+            value.addProperty("itemEntityUuid", event.getItemDrop().getUniqueId().toString());
+            value.addProperty("material", event.getItemDrop().getItemStack().getType().getKey().toString());
+            value.addProperty("amount", event.getItemDrop().getItemStack().getAmount());
+            value.add("items", classify(List.of(event.getItemDrop().getItemStack())));
+            retain(value);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
+    public void onSwap(PlayerSwapHandItemsEvent event) throws Exception {
+        if (armed) {
+            JsonObject value = playerEvent("swap", event.getPlayer());
+            value.addProperty("cancelled", event.isCancelled());
+            value.add("items", classify(Arrays.asList(event.getMainHandItem(), event.getOffHandItem())));
+            retain(value);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
+    public void onClick(InventoryClickEvent event) throws Exception {
+        if (armed && event.getWhoClicked() instanceof Player player) {
+            JsonObject value = playerEvent("inventory-click", player);
+            value.addProperty("cancelled", event.isCancelled());
+            value.addProperty("rawSlot", event.getRawSlot());
+            value.addProperty("slot", event.getSlot());
+            value.addProperty("action", event.getAction().name());
+            value.addProperty("click", event.getClick().name());
+            value.add("items", classify(Arrays.asList(event.getCurrentItem(), event.getCursor())));
+            retain(value);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onClose(InventoryCloseEvent event) throws Exception {
+        if (armed && event.getPlayer() instanceof Player player) {
+            JsonObject value = playerEvent("inventory-close", player);
+            value.add("topItems", classify(Arrays.asList(event.getView().getTopInventory().getContents())));
+            value.add("cursorItems", classify(List.of(player.getItemOnCursor())));
+            retain(value);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onSlotChange(PlayerInventorySlotChangeEvent event) throws Exception {
+        if (armed) {
+            JsonObject value = playerEvent("inventory-slot-change", event.getPlayer());
+            value.addProperty("slot", event.getSlot());
+            value.add("previous", classify(List.of(event.getOldItemStack())));
+            value.add("current", classify(List.of(event.getNewItemStack())));
+            retain(value);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
     public void onItemSpawn(ItemSpawnEvent event) throws Exception {
         if (armed) {
             JsonObject value = new JsonObject();
@@ -140,12 +204,18 @@ final class LifecycleAssertions implements Listener {
             throw new IllegalStateException("Lifecycle observations must be armed explicitly");
         }
         var items = new java.util.ArrayList<ItemStack>();
+        JsonArray worldEntities = new JsonArray();
         for (var world : Bukkit.getWorlds()) {
             for (Item item : world.getEntitiesByClass(Item.class)) {
                 if (items.size() >= 10000) {
                     throw new IllegalStateException("Lifecycle world-item observation limit");
                 }
                 items.add(item.getItemStack());
+                JsonObject entity = new JsonObject();
+                entity.addProperty("uuid", item.getUniqueId().toString());
+                entity.addProperty("material", item.getItemStack().getType().getKey().toString());
+                entity.addProperty("amount", item.getItemStack().getAmount());
+                worldEntities.add(entity);
             }
         }
         JsonObject result = new JsonObject();
@@ -153,6 +223,16 @@ final class LifecycleAssertions implements Listener {
         result.add("events", events.deepCopy());
         result.addProperty("droppedObservations", dropped);
         result.add("worldItems", classify(items));
+        result.add("worldEntities", worldEntities);
+        // Read world and inventory counts within this same owner-thread
+        // command so an intervening pickup cannot create an apparent loss.
+        JsonObject inventories = new JsonObject();
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            JsonObject inventory = classify(Arrays.asList(player.getInventory().getContents()));
+            inventory.add("cursor", classify(List.of(player.getItemOnCursor())));
+            inventories.add(player.getName(), inventory);
+        }
+        result.add("inventories", inventories);
         return result;
     }
 

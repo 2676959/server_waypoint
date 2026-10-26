@@ -13,6 +13,7 @@ from controller import create_root
 from models import Status
 from profiles import whole_process_sample
 from processes import stop_owned
+from server_health import native_log_health
 from worlds import install_server, boot
 
 
@@ -25,7 +26,7 @@ def run(root, binary, release, wire=False, adversarial=False, capacity=False):
     server = create_root(root / "server")
     port = install_server(runtime, server, runtime.probe["path"], release)
     with (server / "server.properties").open("a") as stream:
-        stream.write("max-players=64\nnetwork-compression-threshold=-1\n")
+        stream.write("max-players=64\nnetwork-compression-threshold=-1\ndifficulty=peaceful\n")
     process, probe = boot(runtime, server, False, sha256(release))
     try:
         if wire:
@@ -57,6 +58,8 @@ def run(root, binary, release, wire=False, adversarial=False, capacity=False):
                 for bot in ready["bots"]:
                     for operation in ("command", "walk", "inventory"):
                         action = {"actionId": str(uuid.uuid4()), "bot": bot["name"], "operation": operation, "command": "/help", "milliseconds": 250}
+                        if operation == "inventory":
+                            action.update({"from": 36, "to": 37})
                         expected.append(action)
                         driver.send("action", action)
                         results.append(driver.wait("action_result"))
@@ -147,7 +150,17 @@ def run(root, binary, release, wire=False, adversarial=False, capacity=False):
             atomic_write(bot_root / "disconnected.json", {"schemaVersion": 1, **disconnected})
             print(f"native {mode} {count} bots: identities/actions/disconnect verified", flush=True)
     finally:
-        stop_owned(process, 15)
+        primary_error = sys.exception()
+        try:
+            stop_owned(process, 15)
+        finally:
+            cleanup_error = sys.exception()
+            health = native_log_health(server / "logs/latest.log")
+            atomic_write(root / "health.json", {"schemaVersion": 1, "decision": health,
+                         "scope": "native-logger-stability", "nativeActionChecksCompleted": primary_error is None,
+                         "primaryError": str(primary_error) if primary_error is not None else None})
+            if primary_error is None and cleanup_error is None and health.status != Status.PASS:
+                raise ValueError("native server stability failed: " + "; ".join(health.reasons))
 
 
 if __name__ == "__main__":

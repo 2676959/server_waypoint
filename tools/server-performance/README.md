@@ -146,6 +146,23 @@ Nether landing fixture loads its chunks and reads back its floor/walls/clearance
 before travel. Same-dimension respawn preserves level text entities; dimension
 changes replace them. Native receipts and packet state do not establish rendering.
 
+```sh
+rtk proxy python3 tools/server-performance/bots/protection_smoke.py --root /Volumes/ssd/sw-perf-protection-new --count 10
+```
+
+This helper uses normal drop/swap/container-click packets and native actor/slot/
+cancellation receipts, with exact owner targets/items and atomic inventory/world
+ordinary-item conservation. It checks nine selected player-menu cases and an
+ordinary drop's actual correlated world entity. It does not cover every protection
+hook, actual crafting recipes, nested carriers, equipment or other containers.
+The original 1/10/50-player smoke uses explicit inventory slots and a peaceful
+disposable world so random mob deaths cannot invalidate action conservation.
+The bot smoke writes a separate `health.json`; native ERROR/SEVERE log entries or
+watchdog reports fail stability even when every action completes. The physical
+helper also checks native log health. Retain prior functional/stability outcomes
+separately; the fifty-player original release has produced watchdog reports during
+native command-tree serialization.
+
 
 Native console read-leaf/provider smoke (functional scope; fresh owned root):
 

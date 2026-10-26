@@ -530,7 +530,7 @@
                 "candidate": "0.15.1+mc1.21.11",
                 "verifiedNativeActions": true,
                 "path": "/Volumes/ssd/fabric_mods_repo/server_waypoint/tools/server-performance/bots/versions/mc1.21.11/target/release/sw-performance-bots",
-                "sha256": "1f085c30065cb80e8faeaf48d662f2de2060c75c7848eb499ce59c97c6b04153",
+                "sha256": "500fe7ed605aa88372404424ae4d2c60c866c40a04309b3d66a762b62388f13a",
                 "toolchain": "nightly-2026-07-15",
                 "nativeModes": [
                     "vanilla",
@@ -552,7 +552,8 @@
                 "2026-10-25 /Volumes/ssd/sw-performance-m1-mutation-leaves-final: 43 console storage leaves, exact full properties/revisions/disk/reopen, single-use restore, nonempty-list denial, real config/language reload outcomes; remaining feature/player/permission requirements pending",
                 "2026-10-25 /Volumes/ssd/sw-performance-m1-navigation-{small-targets,medium-targets,medium-isolation}: 31 native method combinations per actor, movement/retarget/edit/teleport, ten-owner isolation and ordinary-item conservation; retained cleanup FAIL for 1/10 post-disconnect tick counters; terrain/protection/lifecycle coverage pending",
                 "2026-10-25 /Volumes/ssd/sw-performance-m1-terrain-small and /Volumes/ssd/sw-performance-m1-terrain-medium-all: exact native cold/warm region pixels, saved terrain files, full client coverage/checksum, active-session save/restart/join restoration; ten owners restore all five methods and same map IDs; same-dimension functional evidence only",
-                "2026-10-25 /Volumes/ssd/sw-performance-m1-lifecycle-small-final and /Volumes/ssd/sw-performance-m1-lifecycle-medium-2: actual 1/10 deaths, automatic respawns, exact ordinary death-drop identities/counts and protected exclusion, all-method owner targets/map IDs/live effects through Nether/Overworld travel; native verified landing fixture; functional evidence only"
+                "2026-10-25 /Volumes/ssd/sw-performance-m1-lifecycle-small-final and /Volumes/ssd/sw-performance-m1-lifecycle-medium-2: actual 1/10 deaths, automatic respawns, exact ordinary death-drop identities/counts and protected exclusion, all-method owner targets/map IDs/live effects through Nether/Overworld travel; native verified landing fixture; functional evidence only",
+                "2026-10-25 /Volumes/ssd/sw-performance-m1-protection-small-final and /Volumes/ssd/sw-performance-m1-protection-medium: nine physical drop/swap/player-menu cases, native cancellation/slot receipts, exact owner targets/items/map IDs, atomic ordinary conservation and correlated ordinary world entities; /Volumes/ssd/sw-performance-m1-physical-action-regression-peaceful: 1/10/50 native action regression; remaining protections pending; peaceful fifty-player action checks complete but retained watchdog log stability FAIL (3 reports), independent of physical case PASS; isolated /Volumes/ssd/sw-performance-m1-action-health-guard all action checks and native log health PASS, prior shared-host watchdog FAIL retained"
             ],
             "java": "/opt/homebrew/Cellar/openjdk@21/21.0.11/libexec/openjdk.jdk/Contents/Home/bin/java",
             "java_sha256": "04005388bac0c272ea914210ca519ce94b2f873ea3962b9874a6859f74d7f279",
@@ -576,7 +577,7 @@
             ],
             "probe": {
                 "path": "/Volumes/ssd/fabric_mods_repo/server_waypoint/paper/versions/1.21.11-paper/build/libs/server-waypoint-performance-paper-probe.jar",
-                "sha256": "a0c66ea24cd68c7160ab06a22d07cf28b2ee99304077ccd059d98533fa51a09f"
+                "sha256": "d6c796be889631a74339f532032b1a073dd44f25c54af42235816989646eaa16"
             }
         },
         {

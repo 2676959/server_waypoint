@@ -88,6 +88,7 @@ final class NavigationAssertions {
             value.addProperty("dead", player.isDead());
             value.addProperty("health", player.getHealth());
             value.addProperty("entityId", player.getEntityId());
+            value.addProperty("heldSlot", player.getInventory().getHeldItemSlot());
             value.add("position", position(player.getLocation()));
             Object session = sessions.get(uuid);
             value.add("methods", session == null ? new JsonArray() : methods((Collection<?>) call(session, "enabledMethods")));
