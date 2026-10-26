@@ -118,3 +118,31 @@ class NavigationScenariosTest(unittest.TestCase):
         self.assertEqual(Status.BLOCKED,physical_drop_spawned(events,[],requested).status)
         self.assertEqual(Status.FAIL,physical_drop_spawned(events,[{**entity,"amount":1}],requested).status)
         self.assertEqual(Status.FAIL,physical_drop_spawned([events[0],{**events[1],"cancelled":True}],[entity],requested).status)
+
+    def test_nested_escape_oracle_is_independent_of_release_depth_limit(self):
+        from scenarios.navigation import nested_item_outcome
+        graph={"origin":"independent-bukkit-item-graph","complete":True,"protectedUnits":1,"ordinaryLeafUnits":9,"sha256":"before"}
+        expected={**graph,"protectedUnits":0,"sha256":"clean"}
+        sample={"before":graph,"expectedAfter":expected,"after":expected,"worldPresent":True,"spawnCancelled":False,"roundTripValid":True,"installedReleaseContainsBefore":False}
+        recipe={"expectedWorldPresent":True,"expectedBeforeProtected":1,"expectedOrdinaryLeafUnits":9}
+        self.assertEqual(Status.PASS,nested_item_outcome(recipe,sample).status)
+        self.assertEqual(Status.FAIL,nested_item_outcome(recipe,{**sample,"after":{**expected,"protectedUnits":1}}).status)
+        self.assertEqual(Status.BLOCKED,nested_item_outcome(recipe,{**sample,"after":{**expected,"complete":False}}).status)
+
+    def test_nested_sanitization_preserves_exact_declared_carrier_metadata(self):
+        from scenarios.navigation import nested_item_outcome
+        graph={"origin":"independent-bukkit-item-graph","complete":True,"protectedUnits":0,"ordinaryLeafUnits":67,"sha256":"carrier-with-ordinary-metadata"}
+        recipe={"expectedWorldPresent":True,"expectedBeforeProtected":0,"expectedOrdinaryLeafUnits":67}
+        sample={"before":graph,"expectedAfter":graph,"after":graph,"worldPresent":True,"spawnCancelled":False,"roundTripValid":True}
+        self.assertEqual(Status.PASS,nested_item_outcome(recipe,sample).status)
+        self.assertEqual(Status.FAIL,nested_item_outcome(recipe,{**sample,"worldPresent":False}).status)
+        self.assertEqual(Status.FAIL,nested_item_outcome(recipe,{**sample,"after":{**graph,"sha256":"lost-name-or-child"}}).status)
+
+    def test_cancelled_direct_spawn_may_leave_only_the_removed_object_tagged(self):
+        from scenarios.navigation import nested_item_outcome
+        graph={"origin":"independent-bukkit-item-graph","complete":True,"protectedUnits":1,"ordinaryLeafUnits":0,"sha256":"tagged"}
+        expected={**graph,"protectedUnits":0,"sha256":"empty"}
+        recipe={"expectedWorldPresent":False,"expectedBeforeProtected":1,"expectedOrdinaryLeafUnits":0}
+        sample={"before":graph,"expectedAfter":expected,"after":graph,"worldPresent":False,"spawnCancelled":True,"roundTripValid":True}
+        self.assertEqual(Status.PASS,nested_item_outcome(recipe,sample).status)
+        self.assertEqual(Status.FAIL,nested_item_outcome(recipe,{**sample,"worldPresent":True}).status)

@@ -14,12 +14,12 @@ from controller import create_root
 from models import Status
 from processes import stop_owned
 from server_health import native_log_health
-from scenarios.navigation import METHODS, physical_receipts, physical_drop_spawned, restored_session, ordinary_conservation
+from scenarios.navigation import METHODS, physical_receipts, physical_drop_spawned, restored_session, ordinary_conservation, nested_recipes, nested_item_outcome
 from worlds import install_server, boot
 from navigation_smoke import execute, snapshot
 
 
-def run(root, count):
+def run(root, count, case_set="physical"):
     tools = Path(__file__).resolve().parents[1]
     runtime = next(r for r in load_runtimes(tools / "config/runtimes.json") if r.id == "paper-1.21.11")
     runtime = replace(runtime, probe={**runtime.probe, "sha256": sha256(runtime.probe["path"])}, bot={**runtime.bot, "sha256": sha256(runtime.bot["path"])})
@@ -34,6 +34,8 @@ def run(root, count):
     point = {"name": "target", "display_name": "Protected", "initials": "P", "pos": [320, -61, 320], "color": "#112233", "yaw": 0, "global": True, "keywords": [], "description": "Physical protection fixture"}
     (directory / "minecraft$overworld.json").write_text(json.dumps([{"list_name": "protection_fixture", "n": 7, "waypoints": [point]}], indent=4) + "\n")
     evidence = {"schemaVersion": 1, "artifactSha256": artifact.sha256, "probeSha256": runtime.probe["sha256"], "botSha256": runtime.bot["sha256"], "count": count, "scope": "physical-drop-swap-inventory", "steps": []}
+    if case_set == "nested":
+        evidence["scope"] = "native-world-spawn-independent-nested-graph"
     paths = (Path(__file__).resolve(), tools / "bots/navigation_smoke.py", tools / "scenarios/navigation.py", tools / "bot_driver.py", tools / "worlds.py", tools / "server_health.py")
     atomic_write(root / "inputs.json", {"schemaVersion": 1, "files": {str(path.relative_to(tools)): sha256(path) for path in paths}})
     for path in paths:
@@ -95,6 +97,7 @@ def run(root, count):
                 raise ValueError("ordinary fixture count missing")
             ordinary.update(player["ordinary"])
             ids[player["name"]] = next(item["mapState"]["id"] for item in player["items"] if item["method"] == "map")
+        ordinary_by_owner = {player["name"]: player["ordinary"] for player in before["players"]}
         expected_target = {"dimension": "minecraft:overworld", "list": "protection_fixture", "waypoint": "target", "displayName": "Protected", "position": [320, -61, 320], "rgb": 0x112233,
                            "expectedMap": {"centerX": 512, "centerZ": 512, "scale": 2, "cursorX": -96, "cursorZ": -96}}
 
@@ -153,6 +156,55 @@ def run(root, count):
                     raise ValueError("native protection receipts/state/conservation deadline: " + label)
                 time.sleep(0.1)
 
+        if case_set == "nested":
+            for recipe in nested_recipes():
+                for name in names:
+                    probe.send("lifecycle.arm")
+                    probe.wait("lifecycle.armed")
+                    step = {"recipe": recipe, "player": name}
+                    evidence["steps"].append(step)
+                    probe.send("protection.fixture.spawn", {"kind": recipe["kind"], "method": recipe["method"], "player": name})
+                    spawned = probe.wait("protection.fixture.spawned")["data"]
+                    step["spawned"] = spawned
+                    atomic_write(root / "protection.json", evidence)
+                    probe.send("protection.fixture.snapshot", {"entityUuid": spawned["entityUuid"]})
+                    actual = probe.wait("protection.fixture.snapshot")["data"]
+                    decision = nested_item_outcome(recipe, actual)
+                    step.update(sample=actual, decision=decision)
+                    deadline = time.monotonic() + 8
+                    while True:
+                        native = snapshot(probe)
+                        client = packets()
+                        owners = {player["name"]: restored_session({"uuid": identities[player["name"]], "mapId": ids[player["name"]], "methods": METHODS, "target": expected_target}, player, client[player["name"]]) for player in native["players"]}
+                        ordinary_preserved = all(ordinary_conservation(ordinary_by_owner[player["name"]], player["ordinary"]).status == Status.PASS for player in native["players"])
+                        if len(owners) == count and all(value.status == Status.PASS for value in owners.values()) and ordinary_preserved:
+                            break
+                        if time.monotonic() >= deadline:
+                            step.update(native=native, client=client, ownerDecisions=owners, ordinaryPreserved=ordinary_preserved)
+                            raise ValueError("native nested fixture changed unrelated owner state")
+                        time.sleep(0.1)
+                    observed = monitor()
+                    if observed["droppedObservations"]:
+                        raise ValueError("native nested fixture observation overflow")
+                    step.update(native=native, client=client, ownerDecisions=owners, ordinaryPreserved=ordinary_preserved, monitor=observed)
+                    probe.send("protection.fixture.remove", {"entityUuid": spawned["entityUuid"]})
+                    step["cleanup"] = probe.wait("protection.fixture.removed")["data"]
+                    if step["cleanup"].get("worldPresent") is not False or step["cleanup"].get("ownedRemaining") != 0:
+                        raise ValueError("owned nested fixture entity cleanup incomplete")
+                    atomic_write(root / "protection.json", evidence)
+            evidence["allCasesExecuted"] = True
+            evidence["nestedOutcomes"] = dict(Counter(step["decision"].status.value for step in evidence["steps"]))
+            evidence["serverHealth"] = native_log_health(server / "logs/latest.log")
+            if evidence["serverHealth"].status != Status.PASS:
+                raise ValueError("native nested fixture server log health failed")
+            if any(step["decision"].status != Status.PASS for step in evidence["steps"]):
+                raise ValueError("original-release nested item assertions failed or incomplete")
+            evidence["completed"] = True
+            driver.close()
+            driver = None
+            print(f"native {count}-owner independent nested item graphs verified")
+            return
+
         for method in ("compass", "map"):
             select(slot(method))
             start = len(monitor()["events"])
@@ -207,5 +259,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--count", type=int, choices=(1, 10), default=1)
+    parser.add_argument("--case-set", choices=("physical", "nested"), default="physical")
     args = parser.parse_args()
-    run(args.root, args.count)
+    run(args.root, args.count, args.case_set)

@@ -18,6 +18,7 @@ public final class PaperPerformanceProbe extends JavaPlugin {
     private final BotAssertions bots = new BotAssertions();
     private final CommandAssertions commands = new CommandAssertions();
     private final LifecycleAssertions lifecycle = new LifecycleAssertions();
+    private final ProtectionFixtures protection = new ProtectionFixtures(lifecycle);
     private ProbeWriter writer;
     private boolean sampling;
     private String phase = "WARMUP";
@@ -113,6 +114,9 @@ public final class PaperPerformanceProbe extends JavaPlugin {
                 case "lifecycle.arm" -> emit("lifecycle.armed", lifecycle.arm());
                 case "lifecycle.prepare-nether" -> emit("lifecycle.nether.prepared", lifecycle.prepareNether());
                 case "lifecycle.snapshot" -> emit("lifecycle.snapshot", lifecycle.snapshot());
+                case "protection.fixture.spawn" -> emit("protection.fixture.spawned", protection.spawn(data));
+                case "protection.fixture.snapshot" -> emit("protection.fixture.snapshot", protection.snapshot(data));
+                case "protection.fixture.remove" -> emit("protection.fixture.removed", protection.remove(data));
                 case "commands.feedback-barrier" -> Bukkit.getGlobalRegionScheduler().execute(this, () -> emit("commands.feedback.completed", new JsonObject()));
                 case "commands.restore-tokens" -> emit("commands.restore-tokens", commands.restoreTokens());
                 case "commands.tree" -> emit("commands.tree", commands.tree());

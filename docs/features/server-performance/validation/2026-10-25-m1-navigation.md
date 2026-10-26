@@ -264,3 +264,64 @@ Applying this stability guard to every prepared case remains Task 16 work.
 Full drag, open/other-container, actual crafting/cartography, nested carrier, equipment/frame,
 block interaction and pickup variants remain pending, together with remaining
 terrain/CLI/timing work. M1 remains in progress.
+
+## Independent nested-carrier spawn checks
+
+`/Volumes/ssd/sw-performance-m1-nested-small/` executes all eight native spawn
+recipes with one owner: direct protected compass, protected map in a shulker,
+one-layer compass bundle, mixed shulker/two-layer map bundle, depth-eight compass
+bundle, depth-nine map bundle, plain shulker and plain depth-nine bundle. Seven
+decisions pass and the depth-nine case fails. Native logger health passes. The
+earlier `sw-performance-m1-nested-red` root retains the absent fixture operation.
+
+`/Volumes/ssd/sw-performance-m1-nested-medium/` repeats all eight recipes for ten
+owners: 70 PASS and ten FAIL decisions, exclusively the depth-nine cases. All 800
+per-case owner checks pass with ordinary inventories conserved, no observation
+overflow and every owned fixture entity removed after recording its decision.
+All cases execute despite earlier failures, native logger health passes, and the
+helper exits 1. Archived controller inputs match their recorded hashes. The
+one-/ten-owner failures are retained separately; neither is a passing suite run.
+
+These are owned server fixtures created by native `World.dropItem`, with actual
+`ItemSpawnEvent` receipts and world entity lookup. They clone an existing live
+owner's tagged item; no Bukkit event is synthesized. This does not demonstrate
+that a player can construct the carrier through protected inventory interactions.
+Each carrier round-trips through the native item codec before spawning. The
+depth-nine bundle fits vanilla bundle capacity; nested bundles are supported by
+the pinned Minecraft `BundleContents` representation.
+
+The observation oracle reads the public navigation PDC tag and Bukkit bundle/
+container metadata independently of the installed detector. Its diagnostic limits
+(depth 64, 4,096 nodes) throw on exhaustion rather than classifying unvisited data
+as clean. Expected clean carriers are constructed separately from fixed recipes;
+they never consume release sanitizer output. Exact serialized root hashes preserve
+ordinary child identities/counts and carrier display names, lore, PDC markers and
+container metadata. Raw before/after native bytes and full graphs are retained.
+Passive lifecycle classification also uses this independent reader, preventing a
+release detector defect from hiding an escaped descendant in world observations.
+
+**Original-release depth-nine FAIL:** the native codec accepts the fixture, the
+uncancelled spawn remains in the world, and the independent before/after graphs
+each contain one protected map plus nine ordinary diamonds. Before/after root
+hashes are identical; the separately constructed clean hash differs. The installed
+release's `containsNavigationItem` reports false. Its recursive detector returns
+false when `depth > 8`, and `onItemSpawn` gates cleanup on that detector. Depth
+eight is cleaned successfully. The diagnostic detector result is recorded but is
+never used as the correctness oracle. No production repair has been made.
+
+Direct protected spawn cancellation passes; shulker/mixed/depth-one/eight cases
+preserve every declared ordinary child and carrier byte after protected removal.
+Both plain controls retain their exact metadata/contents. Cases continue after a
+failure, and owned fixture entity removal occurs only after the decision is
+recorded. Cleanup and later controls cannot override an earlier failure.
+
+Verification: 118 Python tests and the Paper probe build pass; the Rust observer
+is unchanged from its 20-test passing checkpoint. The nine-case native physical
+regression at `/Volumes/ssd/sw-performance-m1-independent-graph-regression/` passes
+with the independent lifecycle reader and PASS native log health. Probe/production
+archives have zero overlapping classes, the runtime probe hash matches, and owned
+servers/bots are stopped. No production or localization changes were made.
+
+These are functional observations, not timed navigation acceptance. Other
+protection hooks, carrier inputs, deletion/terrain boundaries and prepared CLI
+integration remain pending; Task 11 and M1 remain in progress.

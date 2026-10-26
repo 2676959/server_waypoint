@@ -222,6 +222,12 @@ Task 10 execution checkpoint: acknowledged native `storage:concurrent` runs pass
 - [ ] Implement movement/arrival/edit/delete, stop/start/retarget/death/respawn/world-change/rejoin/session restore; warm/cold map regions/dimensions, persistent terrain, eviction and multiple viewers. Cover inventory, crafting/result/cartography, container/entity/equipment/death protections where implemented; distinguish legitimate cleanup from item loss.
 - [ ] Run small/medium original Paper cases, including save/restart terrain validation and post-quiescence resource counts. Verify ordinary item handling, owner isolation and protected items independently of timing; retain failures without repairing them yet.
 
+Task 11 checkpoint (2026-10-26): native one-/ten-owner nested spawn suites execute
+all eight recipes, retaining depth-nine bundle escapes (1/10 failures). Direct,
+shallower and plain controls pass; independent item graphs, exact carrier metadata,
+owner isolation and entity cleanup are recorded in [navigation evidence](../validation/2026-10-25-m1-navigation.md).
+The remaining implementation and full original-Paper case checkboxes stay open.
+
 ### Task 12: Synchronization, upload/edit traffic and chat sharing
 
 **Files:** Create `tools/server-performance/scenarios/sync_upload.py`, `tests/test_sync_upload.py`; extend Azalea protocol actions and production-codec vectors.

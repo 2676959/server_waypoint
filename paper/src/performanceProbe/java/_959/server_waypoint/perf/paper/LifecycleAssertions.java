@@ -236,14 +236,29 @@ final class LifecycleAssertions implements Listener {
         return result;
     }
 
+    JsonObject spawnReceipt(java.util.UUID id) {
+        owner();
+        JsonObject found = null;
+        for (var event : events) {
+            JsonObject value = event.getAsJsonObject();
+            if (value.get("event").getAsString().equals("item-spawn") && value.get("uuid").getAsString().equals(id.toString())) {
+                if (found != null) {
+                    throw new IllegalStateException("Duplicate native spawn receipt");
+                }
+                found = value;
+            }
+        }
+        if (found == null || dropped != 0) {
+            throw new IllegalStateException("Complete native spawn receipt absent");
+        }
+        return found.deepCopy();
+    }
+
     private JsonObject classify(Collection<ItemStack> stacks) throws Exception {
         var plugin = Bukkit.getPluginManager().getPlugin("ServerWaypoint");
         if (plugin == null) {
             throw new IllegalStateException("Installed release absent");
         }
-        Object manager = NavigationAssertions.field(plugin, "navigationItemManager");
-        var direct = manager.getClass().getMethod("isNavigationItem", ItemStack.class);
-        var contains = manager.getClass().getMethod("containsNavigationItem", ItemStack.class);
         int protectedItems = 0;
         int nestedCarriers = 0;
         Map<String, Integer> ordinary = new TreeMap<>();
@@ -251,9 +266,10 @@ final class LifecycleAssertions implements Listener {
             if (stack == null || stack.getType().isAir()) {
                 continue;
             }
-            if ((Boolean) direct.invoke(manager, stack)) {
+            JsonObject graph = ItemGraphAssertions.inspect(stack);
+            if (graph.getAsJsonObject("root").get("tagged").getAsBoolean()) {
                 protectedItems += stack.getAmount();
-            } else if ((Boolean) contains.invoke(manager, stack)) {
+            } else if (graph.get("protectedUnits").getAsLong() != 0) {
                 nestedCarriers += stack.getAmount();
             } else {
                 ItemStack identity = stack.clone();

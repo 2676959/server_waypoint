@@ -163,6 +163,20 @@ helper also checks native log health. Retain prior functional/stability outcomes
 separately; the fifty-player original release has produced watchdog reports during
 native command-tree serialization.
 
+```sh
+rtk proxy python3 tools/server-performance/bots/protection_smoke.py --root /Volumes/ssd/sw-perf-nested-new --count 10 --case-set nested
+```
+
+The nested selection creates owned fixtures through native `World.dropItem`, using
+clones of live owner navigation items. It observes actual spawn events and world
+entities rather than synthesizing Bukkit events. An independent PDC/container graph
+reader checks protected descendants; separately constructed clean carriers preserve
+ordinary children, names, lore and metadata exactly. Cases include shulkers, mixed
+containers, bundles at depths one/eight/nine, and plain controls. This is a controlled
+server fixture, not proof that players can construct the carriers through inventory
+UI. Every case is retained before owned entity cleanup; the original release exits
+1 when the depth-nine item escapes even if later controls pass.
+
 
 Native console read-leaf/provider smoke (functional scope; fresh owned root):
 

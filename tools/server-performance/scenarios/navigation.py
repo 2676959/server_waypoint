@@ -175,3 +175,38 @@ def physical_drop_spawned(events,entities,requested):
         if any(actual[0].get(key)!=expected[key] for key in ("material","amount")):
             return Decision(Status.FAIL,("actual ordinary world-item identity/count differs",))
     return Decision(Status.PASS)
+
+
+def nested_item_outcome(recipe,sample):
+    graphs=[sample.get(key,{}) for key in ("before","expectedAfter","after")]
+    for graph in graphs:
+        if graph.get("origin")!="independent-bukkit-item-graph" or graph.get("complete") is not True or not graph.get("sha256"):
+            return Decision(Status.BLOCKED,("complete independent item-graph observation missing",))
+        if any(type(graph.get(key)) is not int or graph[key]<0 for key in ("protectedUnits","ordinaryLeafUnits")):
+            return Decision(Status.BLOCKED,("independent item-graph counts invalid",))
+    before,expected,after=graphs
+    ordinary=recipe["expectedOrdinaryLeafUnits"]
+    if sample.get("roundTripValid") is not True or before["protectedUnits"]!=recipe["expectedBeforeProtected"] or before["ordinaryLeafUnits"]!=ordinary or expected["protectedUnits"]!=0 or expected["ordinaryLeafUnits"]!=ordinary:
+        return Decision(Status.BLOCKED,("native nested fixture differs from declared independent recipe",))
+    if type(sample.get("worldPresent")) is not bool or type(sample.get("spawnCancelled")) is not bool:
+        return Decision(Status.BLOCKED,("native world-presence/spawn receipt missing",))
+    visible=recipe["expectedWorldPresent"]
+    if sample["worldPresent"]!=visible or sample["spawnCancelled"] is visible:
+        return Decision(Status.FAIL,("protected spawn escaped or innocent carrier was removed",))
+    if visible and (after["protectedUnits"]!=0 or after["ordinaryLeafUnits"]!=ordinary or after["sha256"]!=expected["sha256"]):
+        return Decision(Status.FAIL,("nested protected item escaped or ordinary carrier metadata/contents changed",))
+    return Decision(Status.PASS)
+
+
+def nested_recipes():
+    return tuple({"kind":kind,"method":method,"expectedWorldPresent":visible,
+                  "expectedBeforeProtected":protected,"expectedOrdinaryLeafUnits":ordinary}
+                 for kind,method,visible,protected,ordinary in (
+                     ("direct","compass",False,1,0),
+                     ("shulker","map",True,1,67),
+                     ("bundle-1","compass",True,1,1),
+                     ("mixed","map",True,1,69),
+                     ("bundle-8","compass",True,1,8),
+                     ("bundle-9","map",True,1,9),
+                     ("plain-shulker","compass",True,0,67),
+                     ("plain-bundle-9","map",True,0,9)))

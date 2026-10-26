@@ -3,7 +3,7 @@
 Status: M1 is in progress. M0 and Tasks 8–9 are implemented and validated on the
 first Paper 1.21.11 anchor; Task 10 has native command, permission and persistence
 checkpoints. Task 11 has native method/terrain/session-restoration checkpoints
-and a retained stop-then-quit cleanup failure. Real 1/10/50-player actions and
+and retained stop-then-quit cleanup and depth-nine nested-item escape failures. Real 1/10/50-player actions and
 protocol rejection have functional evidence; a retained 50-player run emits
 watchdog nonresponse reports. Remaining feature/platform workloads, complete
 stability checks and soaks remain unchecked. The original
