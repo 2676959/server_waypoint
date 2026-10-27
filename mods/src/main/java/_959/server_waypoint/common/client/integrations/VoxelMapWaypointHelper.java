@@ -13,6 +13,7 @@ import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import _959.server_waypoint.common.util.SyncedWaypointName;
+import _959.server_waypoint.mixin.voxelmap.VoxelMapWorldAccessor;
 import _959.server_waypoint.util.WaypointInitials;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
@@ -21,6 +22,7 @@ import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
@@ -42,6 +44,19 @@ import static _959.server_waypoint.common.util.TextHelper.getDimensionColor;
 
 public final class VoxelMapWaypointHelper {
     private VoxelMapWaypointHelper() {
+    }
+
+    public static boolean isReady() {
+        Minecraft client = Minecraft.getInstance();
+        return client != null && isReady(VoxelConstants.getVoxelMapInstance(), client.level);
+    }
+
+    static boolean isReady(VoxelMap voxelMap, ClientLevel currentWorld) {
+        // VoxelMap creates its managers before loading a world. Its tick loads the .points file
+        // after binding this world reference; client-thread callers must wait for that binding.
+        return currentWorld != null && voxelMap != null
+                && voxelMap.getWaypointManager() != null && voxelMap.getDimensionManager() != null
+                && ((VoxelMapWorldAccessor) voxelMap).sw$getWorld() == currentWorld;
     }
 
     /** Resolves a tracked marker to its complete server snapshot, including its owning dimension. */

@@ -42,4 +42,11 @@ class MapModIntegrationsTest {
     void syncNowSkipsAMapModThatIsNotInstalled() {
         assertFalse(MapModIntegrations.syncNow(UploadTarget.XAERO, null));
     }
+
+    //? if voxelmap {
+    @Test
+    void voxelMapIsNotReadyBeforeAWorldIsLoaded() {
+        assertFalse(MapModIntegrations.find(UploadTarget.VOXELMAP).orElseThrow().isReady());
+    }
+    //?}
 }

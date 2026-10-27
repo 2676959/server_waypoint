@@ -18,24 +18,38 @@ import java.util.Optional;
  */
 public final class MapModIntegrations {
     private static final List<MapModIntegration> INTEGRATIONS = createIntegrations();
+    private static final MapModSyncCoordinator AUTOMATIC_SYNC = new MapModSyncCoordinator(INTEGRATIONS);
 
     private MapModIntegrations() {
     }
 
     public static void onClientWaypointSync(ClientWaypointSyncEvent event, WaypointClientMod waypointClientMod) {
-        // Integrated worlds retain their map mod waypoints between sessions.
-        if (event.type() == ClientWaypointSyncEvent.Type.ALL_SYNCED && WaypointServerMod.runsWithClient()) {
-            return;
-        }
         ClientConfig clientConfig = WaypointClientMod.getClientConfig();
         if (clientConfig == null) {
             return;
         }
-        for (MapModIntegration integration : INTEGRATIONS) {
-            if (integration.isEnabled(clientConfig)) {
-                integration.onClientWaypointSync(event, waypointClientMod);
-            }
+        AUTOMATIC_SYNC.onAutomaticSync(event, waypointClientMod, clientConfig, WaypointServerMod.runsWithClient());
+    }
+
+    /** The mod cache can be current while VoxelMap's separate marker file is stale. */
+    public static void onUnchangedClientWaypointSync(WaypointClientMod waypointClientMod) {
+        ClientConfig clientConfig = WaypointClientMod.getClientConfig();
+        if (clientConfig != null) {
+            AUTOMATIC_SYNC.onUnchangedSync(waypointClientMod, clientConfig, WaypointServerMod.runsWithClient());
         }
+    }
+
+    public static void tickPendingSync(WaypointClientMod waypointClientMod) {
+        ClientConfig clientConfig = WaypointClientMod.getClientConfig();
+        if (clientConfig == null || WaypointClientMod.getNetworkState() != WaypointClientMod.ClientNetworkState.SYNC_FINISHED) {
+            AUTOMATIC_SYNC.clearPending();
+            return;
+        }
+        AUTOMATIC_SYNC.tick(waypointClientMod, clientConfig);
+    }
+
+    public static void clearPendingSync() {
+        AUTOMATIC_SYNC.clearPending();
     }
 
     /** Manual recovery ignores auto-sync preferences and always rewrites installed, ready maps. */

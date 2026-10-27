@@ -1,6 +1,11 @@
 package _959.server_waypoint.common.client;
 
 import _959.server_waypoint.common.client.gui.TestFont;
+import _959.server_waypoint.common.client.integrations.ClientWaypointSyncEvent;
+import _959.server_waypoint.common.client.integrations.MapModIntegration;
+import _959.server_waypoint.common.client.integrations.MapModIntegrations;
+import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
+import _959.server_waypoint.core.network.upload.UploadTarget;
 import _959.server_waypoint.common.server.LocalWaypointUpload;
 import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.core.network.codec.ChunkedMessageManager;
@@ -18,6 +23,7 @@ import sun.misc.Unsafe;
 import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +36,11 @@ class ClientHandshakeMapSyncTest {
     private final Map<Field, Object> previousValues = new LinkedHashMap<>();
     @TempDir Path directory;
     private WaypointClientMod client;
+    private Unsafe unsafe;
+    private Field coordinatorField;
+    private Object previousCoordinator;
+    private final MarkerStorage voxelMap = new MarkerStorage(UploadTarget.VOXELMAP);
+    private final MarkerStorage xaero = new MarkerStorage(UploadTarget.XAERO);
 
     @BeforeEach
     void awaitInitialUpdates() throws ReflectiveOperationException {
@@ -49,7 +60,14 @@ class ClientHandshakeMapSyncTest {
         setStatic(LocalWaypointUpload.class, "handler", null);
         Field unsafeField = Unsafe.class.getDeclaredField("theUnsafe");
         unsafeField.setAccessible(true);
-        Unsafe unsafe = (Unsafe) unsafeField.get(null);
+        unsafe = (Unsafe) unsafeField.get(null);
+        coordinatorField = MapModIntegrations.class.getDeclaredField("AUTOMATIC_SYNC");
+        coordinatorField.setAccessible(true);
+        previousCoordinator = coordinatorField.get(null);
+        var coordinatorConstructor = coordinatorField.getType().getDeclaredConstructor(List.class);
+        coordinatorConstructor.setAccessible(true);
+        unsafe.putObject(unsafe.staticFieldBase(coordinatorField), unsafe.staticFieldOffset(coordinatorField),
+                coordinatorConstructor.newInstance(List.of(xaero, voxelMap)));
         Minecraft minecraft = (Minecraft) unsafe.allocateInstance(Minecraft.class);
         Field font = Minecraft.class.getDeclaredField("font");
         font.setAccessible(true);
@@ -67,6 +85,8 @@ class ClientHandshakeMapSyncTest {
 
     @AfterEach
     void restoreState() throws IllegalAccessException {
+        unsafe.putObject(unsafe.staticFieldBase(coordinatorField), unsafe.staticFieldOffset(coordinatorField),
+                previousCoordinator);
         for (var entry : previousValues.entrySet()) {
             entry.getKey().set(null, entry.getValue());
         }
@@ -83,6 +103,58 @@ class ClientHandshakeMapSyncTest {
     void unchangedHandshakeCompletesWithoutAccessingVoxelMapStorage() throws ReflectiveOperationException {
         setStatic(ClientConfig.class, "isVoxelMapLoaded", true);
         assertUnchangedHandshakeCompletes();
+    }
+
+    @Test
+    void unchangedHandshakeRestoresVoxelMapAfterItsWorldIsReady() throws ReflectiveOperationException {
+        setStatic(ClientConfig.class, "isVoxelMapLoaded", true);
+        setStatic(ClientConfig.class, "isXaerosMinimapLoaded", true);
+        receiveUpdates(List.of());
+        client.tickChunkedMessages();
+        assertEquals(List.of("personal", "sw:stale"), voxelMap.markers);
+
+        voxelMap.ready = true;
+        client.tickChunkedMessages();
+
+        assertEquals(List.of("personal", "sw:cached"), voxelMap.markers);
+        assertEquals(List.of("personal", "sw:stale"), xaero.markers);
+    }
+
+    @Test
+    void leavingServerCancelsThePendingHandshakeRepair() throws ReflectiveOperationException {
+        setStatic(ClientConfig.class, "isVoxelMapLoaded", true);
+        receiveUpdates(List.of());
+        client.onLeaveServer();
+        voxelMap.ready = true;
+        // Even after a later connection reaches SYNC_FINISHED, old work must not survive.
+        setStatic(WaypointClientMod.class, "networkState", WaypointClientMod.ClientNetworkState.SYNC_FINISHED);
+        MapModIntegrations.tickPendingSync(client);
+
+        assertEquals(List.of("personal", "sw:stale"), voxelMap.markers);
+    }
+
+    @Test
+    void unchangedIntegratedHandshakeDoesNotRebuildVoxelMap() throws ReflectiveOperationException {
+        setStatic(ClientConfig.class, "isVoxelMapLoaded", true);
+        setStatic(WaypointServerMod.class, "runsWithClient", true);
+        voxelMap.ready = true;
+        receiveUpdates(List.of());
+        MapModIntegrations.tickPendingSync(client);
+
+        assertEquals(List.of("personal", "sw:stale"), voxelMap.markers);
+    }
+
+    @Test
+    void disablingAutoSyncBeforeReadinessCancelsTheHandshakeRepair() throws ReflectiveOperationException {
+        setStatic(ClientConfig.class, "isVoxelMapLoaded", true);
+        receiveUpdates(List.of());
+        WaypointClientMod.getClientConfig().setAutoSyncToVoxelMap(false);
+        client.tickChunkedMessages();
+        voxelMap.ready = true;
+        WaypointClientMod.getClientConfig().setAutoSyncToVoxelMap(true);
+        client.tickChunkedMessages();
+
+        assertEquals(List.of("personal", "sw:stale"), voxelMap.markers);
     }
     //?}
 
@@ -128,5 +200,34 @@ class ClientHandshakeMapSyncTest {
             previousValues.put(field, field.get(null));
         }
         field.set(null, value);
+    }
+
+    private static final class MarkerStorage implements MapModIntegration {
+        private final UploadTarget target;
+        private final List<String> markers = new ArrayList<>(List.of("personal", "sw:stale"));
+        private boolean ready;
+
+        private MarkerStorage(UploadTarget target) { this.target = target; }
+        @Override public UploadTarget uploadTarget() { return target; }
+        @Override public WaypointData collectUpload(UploadRequestBuffer request) { throw new AssertionError(); }
+        @Override public boolean isInstalled() {
+            return target == UploadTarget.VOXELMAP ? ClientConfig.isVoxelMapLoaded : ClientConfig.isXaerosMinimapLoaded;
+        }
+        @Override public boolean isEnabled(ClientConfig config) {
+            return target == UploadTarget.VOXELMAP ? config.isAutoSyncToVoxelMap()
+                    : config.isAutoSyncToXaerosMinimap() && ready;
+        }
+        @Override public boolean isReady() { return ready; }
+        @Override public void onClientWaypointSync(ClientWaypointSyncEvent event, WaypointClientMod client) {
+            syncAll(client);
+        }
+        @Override public void syncAll(WaypointClientMod client) {
+            markers.removeIf(marker -> marker.startsWith("sw:"));
+            for (String dimension : client.getDimensionNames()) {
+                for (WaypointList list : client.getWaypointListsByDimensionName(dimension)) {
+                    markers.add("sw:" + list.name());
+                }
+            }
+        }
     }
 }

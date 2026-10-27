@@ -30,8 +30,7 @@ public final class VoxelMapIntegration implements MapModIntegration {
 
     @Override
     public boolean isReady() {
-        // Auto sync writes to VoxelMap as soon as waypoints arrive, so being in a world is enough.
-        return true;
+        return VoxelMapWaypointHelper.isReady();
     }
 
     @Override

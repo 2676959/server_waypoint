@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "server_waypoint-common.refmap.json",
   "client": [
+    "VoxelMapWorldAccessor",
     "VoxelMapGuiAddWaypointMixin",
     "VoxelMapGuiListWaypointsMixin",
     "VoxelMapGuiListWaypointsItemMixin",

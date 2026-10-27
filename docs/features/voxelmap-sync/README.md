@@ -7,3 +7,6 @@ Status: implemented 2026-10-07; the Gradle builds, tests and live checks are sti
 
 - [Forge and NeoForge design](specs/2026-10-07-voxelmap-forge-neoforge-design.md)
 - [Validation record](validation/2026-10-07-voxelmap-forge-neoforge.md)
+- [Handshake reconciliation design](specs/2026-10-27-voxelmap-reconciliation-design.md)
+- [Handshake reconciliation plan](plans/2026-10-27-voxelmap-reconciliation.md)
+- [Handshake reconciliation validation](validation/2026-10-27-voxelmap-reconciliation.md)

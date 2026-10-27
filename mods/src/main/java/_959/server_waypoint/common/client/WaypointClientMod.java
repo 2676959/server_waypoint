@@ -285,6 +285,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     }
 
     public void onLeaveServer() {
+        MapModIntegrations.clearPendingSync();
         this.remoteCatalogs.clear();
         this.chunkedMessages.clearAll();
         this.uploadChunkedMessages.clearAll();
@@ -315,6 +316,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     }
 
     public void onJoinServer() {
+        MapModIntegrations.clearPendingSync();
         LOGGER.info("join server");
         // Switching servers through a proxy (e.g. Velocity) does not trigger the disconnect that normally runs
         // onLeaveServer(), so flush any pending edits from the previous server to its own file before we
@@ -491,6 +493,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     }
 
     public void tickChunkedMessages() {
+        MapModIntegrations.tickPendingSync(this);
         if (!WaypointServerMod.runsWithClient() && (networkState == ClientNetworkState.HANDSHAKE_FINISHED
                 || networkState == ClientNetworkState.SYNC_FINISHED)) {
             var request = this.remoteCatalogs.poll();
@@ -629,6 +632,8 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
         WaypointManagerScreen.updateAllWidgets();
         if (!updates.isEmpty()) {
             MapModIntegrations.onClientWaypointSync(ClientWaypointSyncEvent.allSynced(), this);
+        } else {
+            MapModIntegrations.onUnchangedClientWaypointSync(this);
         }
     }
 
