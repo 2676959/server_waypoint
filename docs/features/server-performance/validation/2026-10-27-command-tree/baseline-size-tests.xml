@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="_959.server_waypoint.command.ListCommandOptionsTest" tests="3" skipped="0" failures="2" errors="0" timestamp="2026-10-27T17:17:01.962Z" hostname="Mac-mini.local" time="0.103">
+  <properties/>
+  <testcase name="localAndRemoteBranchesStaySmall(Path)" classname="_959.server_waypoint.command.ListCommandOptionsTest" time="0.071">
+    <failure message="org.opentest4j.AssertionFailedError: Local list expanded to 9791 nodes ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: Local list expanded to 9791 nodes ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+	at org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+	at org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:214)
+	at _959.server_waypoint.command.ListCommandOptionsTest.localAndRemoteBranchesStaySmall(ListCommandOptionsTest.java:57)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+</failure>
+  </testcase>
+  <testcase name="optionCombinationsKeepTheirValuesAndNativeArgumentBounds()" classname="_959.server_waypoint.command.ListCommandOptionsTest" time="0.024"/>
+  <testcase name="optionTreeStaysSmallBeforeAndAfterVanillaStyleCopy()" classname="_959.server_waypoint.command.ListCommandOptionsTest" time="0.003">
+    <failure message="org.opentest4j.AssertionFailedError: List options expanded to 2448 nodes ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: List options expanded to 2448 nodes ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+	at org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+	at org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:214)
+	at _959.server_waypoint.command.ListCommandOptionsTest.optionTreeStaysSmallBeforeAndAfterVanillaStyleCopy(ListCommandOptionsTest.java:47)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+</failure>
+  </testcase>
+  <system-out><![CDATA[Command branch nodes: local=9791, remote=9801
+List option nodes: server=2448, copied=2448
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

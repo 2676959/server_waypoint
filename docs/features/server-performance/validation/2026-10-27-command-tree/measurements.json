@@ -1,0 +1,299 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-27",
+  "minecraft": "26.3",
+  "java": "25",
+  "baselineCommit": "04c5ac185e285a92364307c667b4fe7c481817eb",
+  "scope": "Isolated native command-copy and command-packet fixture; no live server or player actions",
+  "warmupsPerProcess": 3,
+  "measuredSamplesPerProcess": 7,
+  "variants": {
+    "baseline": {
+      "sourceSha256": "84e6cf2900181b66d30a0eb81a6092d71e7fa541bbd556c823a26078b3641295",
+      "samples": [
+        {
+          "sample": 0,
+          "serverNodes": 19580,
+          "copiedNodes": 19580,
+          "packetNodes": 19580,
+          "bytes": 284320,
+          "copyMs": 249.771,
+          "packetMs": 1001.549
+        },
+        {
+          "sample": 1,
+          "serverNodes": 19580,
+          "copiedNodes": 19580,
+          "packetNodes": 19580,
+          "bytes": 284320,
+          "copyMs": 287.937,
+          "packetMs": 850.853
+        },
+        {
+          "sample": 2,
+          "serverNodes": 19580,
+          "copiedNodes": 19580,
+          "packetNodes": 19580,
+          "bytes": 284320,
+          "copyMs": 252.865,
+          "packetMs": 653.755
+        },
+        {
+          "sample": 3,
+          "serverNodes": 19580,
+          "copiedNodes": 19580,
+          "packetNodes": 19580,
+          "bytes": 284320,
+          "copyMs": 242.243,
+          "packetMs": 690.575
+        },
+        {
+          "sample": 4,
+          "serverNodes": 19580,
+          "copiedNodes": 19580,
+          "packetNodes": 19580,
+          "bytes": 284320,
+          "copyMs": 245.852,
+          "packetMs": 670.746
+        },
+        {
+          "sample": 5,
+          "serverNodes": 19580,
+          "copiedNodes": 19580,
+          "packetNodes": 19580,
+          "bytes": 284320,
+          "copyMs": 259.358,
+          "packetMs": 670.604
+        },
+        {
+          "sample": 6,
+          "serverNodes": 19580,
+          "copiedNodes": 19580,
+          "packetNodes": 19580,
+          "bytes": 284320,
+          "copyMs": 249.287,
+          "packetMs": 718.378
+        }
+      ],
+      "medianCopyMs": 249.771,
+      "medianPacketMs": 690.575
+    },
+    "candidate": {
+      "sourceSha256": "9ecc96dfeef98070c17d71d92d6a5d67cbbf240b38c33f2b4a469b563ee836d0",
+      "samples": [
+        {
+          "sample": 0,
+          "serverNodes": 2652,
+          "copiedNodes": 2652,
+          "packetNodes": 2652,
+          "bytes": 44227,
+          "copyMs": 5.418,
+          "packetMs": 12.748
+        },
+        {
+          "sample": 1,
+          "serverNodes": 2652,
+          "copiedNodes": 2652,
+          "packetNodes": 2652,
+          "bytes": 44227,
+          "copyMs": 5.644,
+          "packetMs": 12.691
+        },
+        {
+          "sample": 2,
+          "serverNodes": 2652,
+          "copiedNodes": 2652,
+          "packetNodes": 2652,
+          "bytes": 44227,
+          "copyMs": 5.462,
+          "packetMs": 12.249
+        },
+        {
+          "sample": 3,
+          "serverNodes": 2652,
+          "copiedNodes": 2652,
+          "packetNodes": 2652,
+          "bytes": 44227,
+          "copyMs": 5.426,
+          "packetMs": 12.524
+        },
+        {
+          "sample": 4,
+          "serverNodes": 2652,
+          "copiedNodes": 2652,
+          "packetNodes": 2652,
+          "bytes": 44227,
+          "copyMs": 4.874,
+          "packetMs": 11.835
+        },
+        {
+          "sample": 5,
+          "serverNodes": 2652,
+          "copiedNodes": 2652,
+          "packetNodes": 2652,
+          "bytes": 44227,
+          "copyMs": 4.826,
+          "packetMs": 11.871
+        },
+        {
+          "sample": 6,
+          "serverNodes": 2652,
+          "copiedNodes": 2652,
+          "packetNodes": 2652,
+          "bytes": 44227,
+          "copyMs": 5.207,
+          "packetMs": 12.297
+        }
+      ],
+      "medianCopyMs": 5.418,
+      "medianPacketMs": 12.297
+    }
+  },
+  "initialVariants": {
+    "baseline": {
+      "sourceSha256": "84e6cf2900181b66d30a0eb81a6092d71e7fa541bbd556c823a26078b3641295",
+      "samples": [
+        {
+          "sample": 0,
+          "serverNodes": 19580,
+          "copiedNodes": 19580,
+          "packetNodes": 19580,
+          "bytes": 284320,
+          "copyMs": 334.893,
+          "packetMs": 832.664
+        },
+        {
+          "sample": 1,
+          "serverNodes": 19580,
+          "copiedNodes": 19580,
+          "packetNodes": 19580,
+          "bytes": 284320,
+          "copyMs": 331.409,
+          "packetMs": 636.381
+        },
+        {
+          "sample": 2,
+          "serverNodes": 19580,
+          "copiedNodes": 19580,
+          "packetNodes": 19580,
+          "bytes": 284320,
+          "copyMs": 315.5,
+          "packetMs": 669.265
+        },
+        {
+          "sample": 3,
+          "serverNodes": 19580,
+          "copiedNodes": 19580,
+          "packetNodes": 19580,
+          "bytes": 284320,
+          "copyMs": 317.264,
+          "packetMs": 649.712
+        },
+        {
+          "sample": 4,
+          "serverNodes": 19580,
+          "copiedNodes": 19580,
+          "packetNodes": 19580,
+          "bytes": 284320,
+          "copyMs": 313.931,
+          "packetMs": 657.784
+        },
+        {
+          "sample": 5,
+          "serverNodes": 19580,
+          "copiedNodes": 19580,
+          "packetNodes": 19580,
+          "bytes": 284320,
+          "copyMs": 316.791,
+          "packetMs": 673.398
+        },
+        {
+          "sample": 6,
+          "serverNodes": 19580,
+          "copiedNodes": 19580,
+          "packetNodes": 19580,
+          "bytes": 284320,
+          "copyMs": 318.678,
+          "packetMs": 676.218
+        }
+      ],
+      "medianCopyMs": 317.264,
+      "medianPacketMs": 669.265
+    },
+    "candidate": {
+      "sourceSha256": "9ecc96dfeef98070c17d71d92d6a5d67cbbf240b38c33f2b4a469b563ee836d0",
+      "samples": [
+        {
+          "sample": 0,
+          "serverNodes": 2652,
+          "copiedNodes": 2652,
+          "packetNodes": 2652,
+          "bytes": 44227,
+          "copyMs": 5.555,
+          "packetMs": 12.697
+        },
+        {
+          "sample": 1,
+          "serverNodes": 2652,
+          "copiedNodes": 2652,
+          "packetNodes": 2652,
+          "bytes": 44227,
+          "copyMs": 5.847,
+          "packetMs": 12.168
+        },
+        {
+          "sample": 2,
+          "serverNodes": 2652,
+          "copiedNodes": 2652,
+          "packetNodes": 2652,
+          "bytes": 44227,
+          "copyMs": 5.22,
+          "packetMs": 11.667
+        },
+        {
+          "sample": 3,
+          "serverNodes": 2652,
+          "copiedNodes": 2652,
+          "packetNodes": 2652,
+          "bytes": 44227,
+          "copyMs": 5.408,
+          "packetMs": 11.881
+        },
+        {
+          "sample": 4,
+          "serverNodes": 2652,
+          "copiedNodes": 2652,
+          "packetNodes": 2652,
+          "bytes": 44227,
+          "copyMs": 5.501,
+          "packetMs": 12.118
+        },
+        {
+          "sample": 5,
+          "serverNodes": 2652,
+          "copiedNodes": 2652,
+          "packetNodes": 2652,
+          "bytes": 44227,
+          "copyMs": 4.803,
+          "packetMs": 11.785
+        },
+        {
+          "sample": 6,
+          "serverNodes": 2652,
+          "copiedNodes": 2652,
+          "packetNodes": 2652,
+          "bytes": 44227,
+          "copyMs": 5.081,
+          "packetMs": 11.853
+        }
+      ],
+      "medianCopyMs": 5.408,
+      "medianPacketMs": 11.881
+    }
+  },
+  "packagedWorktreeJar": {
+    "path": "mods/versions/26.3-fabric/build/libs/server_waypoint-4.0.0-fabric-mc26.3.jar",
+    "sha256": "a049fd79feda40ccdc5cc139e4383404b09fca6ed5364f9d2c62667fccace6c5",
+    "includesPreexistingEdits": true
+  }
+}

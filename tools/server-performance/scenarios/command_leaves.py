@@ -4,7 +4,8 @@ from probe_driver import ProbeStream
 
 ARGUMENTS = {"dimension":"minecraft:overworld", "list identifier":"perf_00",
              "waypoint identifier":"wp_00000", "page number":"1", "page limit":"1",
-             "search query":"perf"}
+             "search query":"perf", "list sort mode":"name", "list sort order":"ascending",
+             "list view":"lists"}
 
 
 def read_cases(tree):

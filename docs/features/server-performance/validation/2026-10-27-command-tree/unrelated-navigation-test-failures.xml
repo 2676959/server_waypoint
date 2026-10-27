@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="_959.server_waypoint.common.server.navigation.ModMenuClickCleanupTest" tests="5" skipped="0" failures="5" errors="0" timestamp="2026-10-27T17:21:20.645Z" hostname="Mac-mini.local" time="0.005">
+  <properties/>
+  <testcase name="customContainerComponentsRetainTheExistingCleanupScope()" classname="_959.server_waypoint.common.server.navigation.ModMenuClickCleanupTest" time="0.003">
+    <failure message="java.lang.NullPointerException: Components not bound yet" type="java.lang.NullPointerException">java.lang.NullPointerException: Components not bound yet
+	at java.base/java.util.Objects.requireNonNull(Objects.java:246)
+	at net.minecraft.core.Holder$Reference.components(Holder.java:273)
+	at net.minecraft.world.item.ItemStack.&lt;init&gt;(ItemStack.java:250)
+	at net.minecraft.world.item.ItemStack.&lt;init&gt;(ItemStack.java:246)
+	at _959.server_waypoint.common.server.navigation.ModMenuClickCleanupTest.customContainerComponentsRetainTheExistingCleanupScope(ModMenuClickCleanupTest.java:83)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+</failure>
+  </testcase>
+  <testcase name="ordinaryNestedContentsArePreservedAndResultsFollowChanges()" classname="_959.server_waypoint.common.server.navigation.ModMenuClickCleanupTest" time="0.0">
+    <failure message="java.lang.NullPointerException: Components not bound yet" type="java.lang.NullPointerException">java.lang.NullPointerException: Components not bound yet
+	at java.base/java.util.Objects.requireNonNull(Objects.java:246)
+	at net.minecraft.core.Holder$Reference.components(Holder.java:273)
+	at net.minecraft.world.item.ItemStack.&lt;init&gt;(ItemStack.java:250)
+	at net.minecraft.world.item.ItemStack.&lt;init&gt;(ItemStack.java:246)
+	at _959.server_waypoint.common.server.navigation.ModMenuClickCleanupTest.ordinaryNestedContentsArePreservedAndResultsFollowChanges(ModMenuClickCleanupTest.java:64)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+</failure>
+  </testcase>
+  <testcase name="nestedDetectionDoesNotSanitizeTheOriginalStack()" classname="_959.server_waypoint.common.server.navigation.ModMenuClickCleanupTest" time="0.001">
+    <failure message="java.lang.NullPointerException: Components not bound yet" type="java.lang.NullPointerException">java.lang.NullPointerException: Components not bound yet
+	at java.base/java.util.Objects.requireNonNull(Objects.java:246)
+	at net.minecraft.core.Holder$Reference.components(Holder.java:273)
+	at net.minecraft.world.item.ItemStack.&lt;init&gt;(ItemStack.java:250)
+	at net.minecraft.world.item.ItemStack.&lt;init&gt;(ItemStack.java:246)
+	at _959.server_waypoint.common.server.navigation.ModMenuClickCleanupTest.marked(ModMenuClickCleanupTest.java:92)
+	at _959.server_waypoint.common.server.navigation.ModMenuClickCleanupTest.nestedDetectionDoesNotSanitizeTheOriginalStack(ModMenuClickCleanupTest.java:54)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+</failure>
+  </testcase>
+  <testcase name="ordinaryAndEmptyStacksDoNotNeedCleanup()" classname="_959.server_waypoint.common.server.navigation.ModMenuClickCleanupTest" time="0.0">
+    <failure message="java.lang.NullPointerException: Components not bound yet" type="java.lang.NullPointerException">java.lang.NullPointerException: Components not bound yet
+	at java.base/java.util.Objects.requireNonNull(Objects.java:246)
+	at net.minecraft.core.Holder$Reference.components(Holder.java:273)
+	at net.minecraft.world.item.ItemStack.&lt;init&gt;(ItemStack.java:250)
+	at net.minecraft.world.item.ItemStack.&lt;init&gt;(ItemStack.java:242)
+	at _959.server_waypoint.common.server.navigation.ModMenuClickCleanupTest.ordinaryAndEmptyStacksDoNotNeedCleanup(ModMenuClickCleanupTest.java:41)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+</failure>
+  </testcase>
+  <testcase name="directMarkersNeedCleanup()" classname="_959.server_waypoint.common.server.navigation.ModMenuClickCleanupTest" time="0.001">
+    <failure message="java.lang.NullPointerException: Components not bound yet" type="java.lang.NullPointerException">java.lang.NullPointerException: Components not bound yet
+	at java.base/java.util.Objects.requireNonNull(Objects.java:246)
+	at net.minecraft.core.Holder$Reference.components(Holder.java:273)
+	at net.minecraft.world.item.ItemStack.&lt;init&gt;(ItemStack.java:250)
+	at net.minecraft.world.item.ItemStack.&lt;init&gt;(ItemStack.java:246)
+	at _959.server_waypoint.common.server.navigation.ModMenuClickCleanupTest.marked(ModMenuClickCleanupTest.java:92)
+	at _959.server_waypoint.common.server.navigation.ModMenuClickCleanupTest.directMarkersNeedCleanup(ModMenuClickCleanupTest.java:47)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+</failure>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

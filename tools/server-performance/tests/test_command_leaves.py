@@ -6,6 +6,14 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 
 
 class CommandLeavesTest(unittest.TestCase):
+    def test_compact_list_values_supply_executable_reads_and_suggestion_prefixes(self):
+        from scenarios.command_leaves import read_cases, suggestion_cases
+        prefix = "wp list sort <list sort mode> order <list sort order> view "
+        tree = {"origin": "native-minecraft-command-dispatcher", "nodes": [
+            {"path": prefix + "<list view>", "executable": True, "suggestions": True, "providerId": 12}]}
+        self.assertEqual("wp list sort name order ascending view lists", read_cases(tree)[0]["command"])
+        self.assertEqual("wp list sort name order ascending view ", suggestion_cases(tree)[0]["input"])
+
     def test_native_read_leaf_templates_preserve_repeated_options(self):
         from scenarios.command_leaves import read_cases
         path = "wp list <dimension> <list identifier> search <search query> sort default page <page number> limit <page limit> view flat search <search query>"

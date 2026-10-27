@@ -1,0 +1,46 @@
+Configuration on demand is an incubating feature.
+Running Stonecutter 0.9.7
+
+> Configure project :mods:26.3-fabric
+Fabric Loom: 1.15.5
+
+> Task :cross-server:updateModInfo UP-TO-DATE
+> Task :common:processResources UP-TO-DATE
+> Task :mods:26.3-fabric:stonecutterPrepare UP-TO-DATE
+> Task :mods:26.3-fabric:stonecutterGenerate UP-TO-DATE
+> Task :cross-server:compileJava UP-TO-DATE
+> Task :mods:26.3-fabric:processResources UP-TO-DATE
+> Task :cross-server:processResources NO-SOURCE
+> Task :cross-server:classes UP-TO-DATE
+> Task :cross-server:jar UP-TO-DATE
+> Task :common:compileJava UP-TO-DATE
+> Task :common:classes UP-TO-DATE
+> Task :common:jar UP-TO-DATE
+> Task :mods:26.3-fabric:compileJava UP-TO-DATE
+> Task :mods:26.3-fabric:classes UP-TO-DATE
+> Task :mods:26.3-fabric:compileIssue35Probe
+
+> Task :mods:26.3-fabric:issue35Probe
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.joml.MemUtil$MemUtilUnsafe (file:/Volumes/ssd/gradle_home/caches/modules-2/files-2.1/org.joml/joml/1.10.9/438e036486bad66b189bff385dd07dea4f74a146/joml-1.10.9.jar)
+WARNING: Please consider reporting this to the maintainers of class org.joml.MemUtil$MemUtilUnsafe
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+ISSUE35 sample=0 serverNodes=19580 copiedNodes=19580 packetNodes=19580 bytes=284320 copyMs=249.771 packetMs=1001.549
+ISSUE35 sample=1 serverNodes=19580 copiedNodes=19580 packetNodes=19580 bytes=284320 copyMs=287.937 packetMs=850.853
+ISSUE35 sample=2 serverNodes=19580 copiedNodes=19580 packetNodes=19580 bytes=284320 copyMs=252.865 packetMs=653.755
+ISSUE35 sample=3 serverNodes=19580 copiedNodes=19580 packetNodes=19580 bytes=284320 copyMs=242.243 packetMs=690.575
+ISSUE35 sample=4 serverNodes=19580 copiedNodes=19580 packetNodes=19580 bytes=284320 copyMs=245.852 packetMs=670.746
+ISSUE35 sample=5 serverNodes=19580 copiedNodes=19580 packetNodes=19580 bytes=284320 copyMs=259.358 packetMs=670.604
+ISSUE35 sample=6 serverNodes=19580 copiedNodes=19580 packetNodes=19580 bytes=284320 copyMs=249.287 packetMs=718.378
+
+[Incubating] Problems report is available at: file:///Volumes/ssd/fabric_mods_repo/server_waypoint/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.5.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 15s
+12 actionable tasks: 2 executed, 10 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.5.1/userguide/configuration_cache_enabling.html

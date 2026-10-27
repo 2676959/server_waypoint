@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="_959.server_waypoint.command.ListCommandOptionsTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-10-27T17:24:24.161Z" hostname="Mac-mini.local" time="0.038">
+  <properties/>
+  <testcase name="localAndRemoteBranchesStaySmall(Path)" classname="_959.server_waypoint.command.ListCommandOptionsTest" time="0.005"/>
+  <testcase name="optionCombinationsKeepTheirValuesAndNativeArgumentBounds()" classname="_959.server_waypoint.command.ListCommandOptionsTest" time="0.031"/>
+  <testcase name="optionTreeStaysSmallBeforeAndAfterVanillaStyleCopy()" classname="_959.server_waypoint.command.ListCommandOptionsTest" time="0.0"/>
+  <testcase name="invalidValuesReportTheirPositionBeforeRunningTheCommand()" classname="_959.server_waypoint.command.ListCommandOptionsTest" time="0.0"/>
+  <testcase name="valueSuggestionsAndExecutionWorkThroughNestedRedirects()" classname="_959.server_waypoint.command.ListCommandOptionsTest" time="0.0"/>
+  <system-out><![CDATA[Command branch nodes: local=1327, remote=1337
+List option nodes: server=332, copied=332
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

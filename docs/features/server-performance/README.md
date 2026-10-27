@@ -27,6 +27,7 @@ continue running throughout the sample.
 
 ## Documents
 
+- [Issue #35 command-tree reduction and native 26.3 measurements](validation/2026-10-27-command-tree.md)
 - [Approved design](specs/2026-10-24-server-performance-design.md)
 - [Implementation specification](specs/2026-10-24-server-performance-spec.md)
 - [Implementation plan](plans/2026-10-24-server-performance.md)
