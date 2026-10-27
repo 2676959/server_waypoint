@@ -1,13 +1,12 @@
 """CLI preparation and evidence input identity. No production builds are substituted."""
 from pathlib import Path
-import platform
 import shutil
-import subprocess
 import os
 
 from artifacts import sha256, stage_artifacts
 from contracts import atomic_write, load_release, load_runtimes
 from controller import create_root, preparation_transition
+from environment import collect_environment
 from models import Status
 from preflight import check_runtime
 from selection import select_cases
@@ -19,7 +18,7 @@ REPOSITORY = TOOLS.parents[1]
 
 def seal_evidence(root, worlds):
     root = Path(root)
-    paths = [root / name for name in ("runtime-lock.json", "release.json", "budgets.json", "selection.json")]
+    paths = [root / name for name in ("runtime-lock.json", "release.json", "budgets.json", "selection.json", "environment.json")]
     for value in worlds.values():
         world = Path(value)
         if root not in world.parents:
@@ -93,7 +92,7 @@ def prepare(args):
             prepare_world(runtime, TOOLS / "config/worlds" / f"{key}.json", destination)
             worlds[key] = str(destination)
     preparation_transition(root, "FIXTURES_VALIDATED")
+    atomic_write(root / "environment.json", collect_environment(selected, args.profile))
     atomic_write(root / "prepared.json", {"schemaVersion": 1, "worlds": worlds, "inputs": input_hashes(), "evidence": seal_evidence(root, worlds), "profile": args.profile})
-    atomic_write(root / "environment.json", {"schemaVersion": 1, "platform": platform.platform(), "machine": platform.machine(), "cpu": subprocess.run(["sysctl", "-n", "machdep.cpu.brand_string"], capture_output=True, text=True).stdout.strip() if platform.system() == "Darwin" else platform.processor(), "memory": subprocess.run(["sysctl", "-n", "hw.memsize"], capture_output=True, text=True).stdout.strip() if platform.system() == "Darwin" else "unrecorded", "javaFlags": ["-Xms1G", "-Xmx2G", "-XX:+UseG1GC"], "loadGenerator": "same host; declared per-case client count", "profiledDiagnostic": args.profile})
     preparation_transition(root, "PREPARED")
     return root

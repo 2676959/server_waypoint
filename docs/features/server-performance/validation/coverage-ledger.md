@@ -2,6 +2,24 @@
 
 Source revision: `d9f532f8b5a14c9be4bc47531b05b44fd1dc5773`. Static requirements only; execution evidence is pending.
 
+Current-development changes on 2026-10-26 remove the Paper inventory-transfer
+handler and the mod backend's allay/item-entity tick injections at the user's
+request. Their rows below remain records of the published release. See
+[hopper removal](2026-10-26-hopper-transfer-removal.md) and
+[modded tick-scan removal](2026-10-26-modded-tick-scan-removal.md) for the current
+scope and validation; event-driven mod protection remains enabled.
+Post-click mod validation is now conditional on the involved stacks; see the
+[ordinary-click fast path](2026-10-26-menu-click-fast-path.md). The published-release
+inventory below remains unchanged.
+Current-development changes on 2026-10-27 additionally remove recursive item
+detection and cleanup on both backends; only top-level tags are checked. Normal
+bundle/shulker insertion guards remain. See [top-level protection validation](2026-10-27-top-level-protection.md) for the current policy.
+
+Current-development changes on 2026-10-27 also retain world/equipment item removal
+while removing the reconciliation requests from those removal paths. See
+[removal-event reconciliation validation](2026-10-27-removal-reconciliation.md).
+Other placement-denial and inventory/lifecycle reconciliation remain enabled.
+
 Every command execution/suggestion registration, server event/mixin injection, channel registration, identified scheduler/tick call and configuration field below must be covered by its family. Parameterized command builders require runtime leaf expansion in Task 10; one source registration can create several leaves. Client-only mixins/rendering are outside server performance scope.
 
 Client-only exclusions below are derived from the release mixin metadata and initializer declarations. Shared/client+server mixins remain mapped.

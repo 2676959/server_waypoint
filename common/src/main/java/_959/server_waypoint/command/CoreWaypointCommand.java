@@ -70,6 +70,7 @@ import _959.server_waypoint.core.waypoint.WaypointIconPolicy;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.Message;
+import com.mojang.brigadier.LiteralMessage;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
@@ -2609,7 +2610,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                     if (listName.startsWith(currentInput)) {
                         builder.suggest(
                                 escapeListName(listName),
-                                getMessageFromComponent(parse(list.displayName()))
+                                suggestionTooltip(list.displayName())
                         );
                     }
                 }
@@ -2637,13 +2638,22 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                     if (name.startsWith(currentInput)) {
                         builder.suggest(
                                 _959.server_waypoint.util.StringCommandBuilder.escapeArgument(name),
-                                getMessageFromComponent(parse(waypoint.displayName()))
+                                suggestionTooltip(waypoint.displayName())
                         );
                     }
                 }
                 return builder.buildFuture();
             }
         }
+    }
+
+    private Message suggestionTooltip(String displayName) {
+        Component component = parse(displayName);
+        if (component instanceof net.kyori.adventure.text.TextComponent literal
+                && literal.children().isEmpty() && literal.style().isEmpty()) {
+            return new LiteralMessage(literal.content());
+        }
+        return getMessageFromComponent(component);
     }
 
     private CompletableFuture<Suggestions> getInitialsSuggestions(CommandContext<S> context, SuggestionsBuilder builder, String argName) {

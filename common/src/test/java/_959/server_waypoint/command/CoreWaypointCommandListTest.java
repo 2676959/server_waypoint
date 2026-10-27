@@ -127,6 +127,37 @@ class CoreWaypointCommandListTest {
     }
 
     @Test
+    void waypointSuggestionsPreserveEscapingAndPlainOrFormattedTooltips() {
+        CommandDispatcher<TestSource> tooltipDispatcher = new CommandDispatcher<>();
+        List<Component> platformTooltips = new ArrayList<>();
+        new TestWaypointCommand(this.server, this.sender) {
+            @Override
+            protected Message getMessageFromComponent(Component component) {
+                platformTooltips.add(component);
+                return () -> {
+                    StringBuilder text = new StringBuilder();
+                    net.kyori.adventure.text.flattener.ComponentFlattener.basic().flatten(component, text::append);
+                    return text.toString();
+                };
+            }
+        }.register(tooltipDispatcher);
+        this.server.putWaypointList("overworld", new WaypointList("tooltips", 1, List.of(
+                new SimpleWaypoint("plain name", "Plain label", "P", new WaypointPos(0, 0, 0),
+                        0xFFFFFF, 0, false, List.of(), ""),
+                new SimpleWaypoint("styled", "{\"text\":\"Golden label\",\"color\":\"gold\"}", "S",
+                        new WaypointPos(0, 0, 0), 0xFFFFFF, 0, false, List.of(), ""))));
+        var suggestions = tooltipDispatcher.getCompletionSuggestions(
+                tooltipDispatcher.parse("wp details waypoint overworld tooltips ", this.source)).join().getList();
+        assertEquals(2, suggestions.size());
+        var plain = suggestions.stream().filter(s -> s.getText().equals("\"plain name\"")).findFirst().orElseThrow();
+        assertEquals("Plain label", plain.getTooltip().getString());
+        var styled = suggestions.stream().filter(s -> s.getText().equals("styled")).findFirst().orElseThrow();
+        assertEquals("Golden label", styled.getTooltip().getString());
+        assertTrue(platformTooltips.contains(Component.text("Golden label",
+                net.kyori.adventure.text.format.NamedTextColor.GOLD)));
+    }
+
+    @Test
     void failedBroadcastChatDoesNotStopOtherReadersOrFollowingCommands() throws CommandSyntaxException {
         this.sender.broadcastPlayers = List.of("failed", "reader");
         this.sender.failedChatPlayer = "failed";
@@ -673,7 +704,7 @@ class CoreWaypointCommandListTest {
     private record TestSource(String dimensionName, WaypointPos position) {
     }
 
-    private static final class TestWaypointCommand
+    private static class TestWaypointCommand
             extends CoreWaypointCommand<TestSource, String, Object, String, String, NamespacedId> {
         @Override
         protected NamespacedId toIconId(NamespacedId iconArgument) {

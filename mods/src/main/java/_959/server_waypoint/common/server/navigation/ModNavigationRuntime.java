@@ -101,7 +101,6 @@ public final class ModNavigationRuntime {
         boolean changed = false;
         for (Slot slot : menu.slots) {
             ItemStack stack = slot.getItem();
-            changed |= ModNavigationItemManager.cleanNestedNavigationItems(stack);
             if (ModNavigationItemData.isNavigationItem(stack)
                     && slot.container != player.getInventory()) {
                 slot.set(ItemStack.EMPTY);
@@ -109,8 +108,6 @@ public final class ModNavigationRuntime {
             }
         }
 
-        ItemStack carried = menu.getCarried();
-        changed |= ModNavigationItemManager.cleanNestedNavigationItems(carried);
         changed |= this.itemManager.validateDirectInventory(player, this.enabledItemMethods(player));
 
         if (restoreItems) {

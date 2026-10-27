@@ -128,6 +128,9 @@ tasks.processResources {
     inputs.property("java_version", targetJavaVersion)
 
     filesMatching(listOf("*.mixins.json")) {
+        filter { line: String ->
+            if (line.trim() == "\"CustomDataAccessor\"," && stonecutter.eval(stonecutter.current.version, "<1.20.5")) "" else line
+        }
         expand("java_version" to targetJavaVersion)
         filter { line: String ->
             if (line.trim() == "\"refmap\": \"server_waypoint-common.refmap.json\",") "" else line

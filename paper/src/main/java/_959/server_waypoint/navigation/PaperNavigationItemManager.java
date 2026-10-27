@@ -3,14 +3,11 @@ package _959.server_waypoint.navigation;
 import _959.server_waypoint.ModInfo;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.ShulkerBox;
 import org.bukkit.entity.Player;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.inventory.meta.BlockStateMeta;
-import org.bukkit.inventory.meta.BundleMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
@@ -24,9 +21,9 @@ import java.util.Set;
 
 public final class PaperNavigationItemManager {
     private static final int OFFHAND_SLOT = 40;
-    private static final int MAX_NESTING_DEPTH = 8;
 
     private final NamespacedKey navigationItemKey = new NamespacedKey(ModInfo.MOD_ID, "navigation_item");
+    private final String navigationItemTag = this.navigationItemKey.toString();
 
     public ItemStack tag(ItemStack item) {
         item.setAmount(1);
@@ -38,29 +35,12 @@ public final class PaperNavigationItemManager {
     }
 
     public boolean isNavigationItem(@Nullable ItemStack item) {
-        if (isEmpty(item) || !item.hasItemMeta()) {
-            return false;
-        }
-        return item.getItemMeta().getPersistentDataContainer()
-                .getOrDefault(this.navigationItemKey, PersistentDataType.BOOLEAN, false);
-    }
-
-    public boolean containsNavigationItem(@Nullable ItemStack item) {
-        return this.containsNavigationItem(item, 0);
+        return !isEmpty(item) && PaperNavigationItemReader.isNavigationItem(
+                CraftItemStack.unwrap(item), this.navigationItemTag);
     }
 
     public boolean isPortableStorage(@Nullable ItemStack item) {
-        if (isEmpty(item) || !item.hasItemMeta()) {
-            return false;
-        }
-        ItemMeta meta = item.getItemMeta();
-        if (meta instanceof BundleMeta) {
-            return true;
-        }
-        if (meta instanceof BlockStateMeta blockStateMeta) {
-            return blockStateMeta.getBlockState() instanceof ShulkerBox;
-        }
-        return false;
+        return !isEmpty(item) && PaperNavigationItemReader.isPortableStorage(CraftItemStack.unwrap(item));
     }
 
     public Optional<NavigationMethod> method(@Nullable ItemStack item) {
@@ -132,15 +112,11 @@ public final class PaperNavigationItemManager {
             ItemStack item = inventory.getItem(slot);
             if (this.isMethod(item, method)) {
                 inventory.clear(slot);
-            } else if (this.removeNestedNavigationItems(item)) {
-                inventory.setItem(slot, item);
             }
         }
         ItemStack cursor = player.getItemOnCursor();
         if (this.isMethod(cursor, method)) {
             player.setItemOnCursor(null);
-        } else if (this.removeNestedNavigationItems(cursor)) {
-            player.setItemOnCursor(cursor);
         }
         this.removeFromInvalidInventory(player.getOpenInventory().getTopInventory());
     }
@@ -155,10 +131,6 @@ public final class PaperNavigationItemManager {
 
         for (int slot = 0; slot < inventory.getSize(); slot++) {
             ItemStack item = inventory.getItem(slot);
-            if (this.removeNestedNavigationItems(item)) {
-                inventory.setItem(slot, item);
-                changed = true;
-            }
             if (!this.isNavigationItem(item)) {
                 continue;
             }
@@ -183,10 +155,6 @@ public final class PaperNavigationItemManager {
         }
 
         ItemStack cursor = player.getItemOnCursor();
-        if (this.removeNestedNavigationItems(cursor)) {
-            player.setItemOnCursor(cursor);
-            changed = true;
-        }
         if (this.isNavigationItem(cursor)) {
             Optional<NavigationMethod> method = this.method(cursor);
             boolean allowedCursorItem = session != null
@@ -221,9 +189,6 @@ public final class PaperNavigationItemManager {
             if (this.isNavigationItem(item)) {
                 inventory.clear(slot);
                 changed = true;
-            } else if (this.removeNestedNavigationItems(item)) {
-                inventory.setItem(slot, item);
-                changed = true;
             }
         }
         return changed;
@@ -235,26 +200,16 @@ public final class PaperNavigationItemManager {
             ItemStack item = inventory.getItem(slot);
             if (this.isNavigationItem(item)) {
                 inventory.clear(slot);
-            } else if (this.removeNestedNavigationItems(item)) {
-                inventory.setItem(slot, item);
             }
         }
         this.sanitizeCursor(player);
         this.removeFromInvalidInventory(player.getOpenInventory().getTopInventory());
     }
 
-    public boolean removeNestedNavigationItems(@Nullable ItemStack item) {
-        return this.removeNestedNavigationItems(item, 0);
-    }
-
     public boolean sanitizeCursor(Player player) {
         ItemStack cursor = player.getItemOnCursor();
         if (this.isNavigationItem(cursor)) {
             player.setItemOnCursor(null);
-            return true;
-        }
-        if (this.removeNestedNavigationItems(cursor)) {
-            player.setItemOnCursor(cursor);
             return true;
         }
         return false;
@@ -276,79 +231,6 @@ public final class PaperNavigationItemManager {
             locations.add(ItemLocation.cursorLocation());
         }
         return locations;
-    }
-
-    private boolean containsNavigationItem(@Nullable ItemStack item, int depth) {
-        if (isEmpty(item) || depth > MAX_NESTING_DEPTH) {
-            return false;
-        }
-        if (this.isNavigationItem(item)) {
-            return true;
-        }
-        ItemMeta meta = item.getItemMeta();
-        if (meta instanceof BundleMeta bundleMeta) {
-            for (ItemStack bundledItem : bundleMeta.getItems()) {
-                if (this.containsNavigationItem(bundledItem, depth + 1)) {
-                    return true;
-                }
-            }
-        }
-        if (meta instanceof BlockStateMeta blockStateMeta) {
-            BlockState state = blockStateMeta.getBlockState();
-            if (state instanceof ShulkerBox shulkerBox) {
-                for (ItemStack storedItem : shulkerBox.getSnapshotInventory().getContents()) {
-                    if (this.containsNavigationItem(storedItem, depth + 1)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    private boolean removeNestedNavigationItems(@Nullable ItemStack item, int depth) {
-        if (isEmpty(item) || depth > MAX_NESTING_DEPTH || !item.hasItemMeta()) {
-            return false;
-        }
-        boolean changed = false;
-        ItemMeta meta = item.getItemMeta();
-        if (meta instanceof BundleMeta bundleMeta) {
-            List<ItemStack> retainedItems = new ArrayList<>();
-            for (ItemStack bundledItem : bundleMeta.getItems()) {
-                if (this.isNavigationItem(bundledItem)) {
-                    changed = true;
-                    continue;
-                }
-                if (this.removeNestedNavigationItems(bundledItem, depth + 1)) {
-                    changed = true;
-                }
-                retainedItems.add(bundledItem);
-            }
-            if (changed) {
-                bundleMeta.setItems(retainedItems);
-                item.setItemMeta(bundleMeta);
-            }
-        } else if (meta instanceof BlockStateMeta blockStateMeta) {
-            BlockState state = blockStateMeta.getBlockState();
-            if (state instanceof ShulkerBox shulkerBox) {
-                Inventory nestedInventory = shulkerBox.getSnapshotInventory();
-                for (int slot = 0; slot < nestedInventory.getSize(); slot++) {
-                    ItemStack storedItem = nestedInventory.getItem(slot);
-                    if (this.isNavigationItem(storedItem)) {
-                        nestedInventory.clear(slot);
-                        changed = true;
-                    } else if (this.removeNestedNavigationItems(storedItem, depth + 1)) {
-                        nestedInventory.setItem(slot, storedItem);
-                        changed = true;
-                    }
-                }
-                if (changed) {
-                    blockStateMeta.setBlockState(shulkerBox);
-                    item.setItemMeta(blockStateMeta);
-                }
-            }
-        }
-        return changed;
     }
 
     private static boolean isAllowedDirectSlot(int slot) {

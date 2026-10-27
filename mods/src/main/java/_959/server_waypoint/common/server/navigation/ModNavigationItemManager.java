@@ -5,26 +5,13 @@ import _959.server_waypoint.navigation.NavigationResult;
 import _959.server_waypoint.navigation.NavigationSession;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.BundleItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.ShulkerBoxBlock;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-
-//? if >= 1.20.5 {
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.item.component.BundleContents;
-import net.minecraft.world.item.component.ItemContainerContents;
-//?} else {
-/*import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
-*///?}
 
 /** Server-thread-only direct-inventory operations for session-owned items. */
 public final class ModNavigationItemManager {
@@ -132,15 +119,11 @@ public final class ModNavigationItemManager {
             ItemStack stack = inventory.getItem(slot);
             if (ModNavigationItemData.isNavigationItem(stack)) {
                 inventory.setItem(slot, ItemStack.EMPTY);
-            } else {
-                cleanNestedNavigationItems(stack);
             }
         }
         ItemStack carried = player.containerMenu.getCarried();
         if (ModNavigationItemData.isNavigationItem(carried)) {
             player.containerMenu.setCarried(ItemStack.EMPTY);
-        } else {
-            cleanNestedNavigationItems(carried);
         }
         inventory.setChanged();
     }
@@ -180,7 +163,6 @@ public final class ModNavigationItemManager {
 
         for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
             ItemStack stack = inventory.getItem(slot);
-            changed |= cleanNestedNavigationItems(stack);
             if (!ModNavigationItemData.isNavigationItem(stack)) {
                 continue;
             }
@@ -253,120 +235,8 @@ public final class ModNavigationItemManager {
         return ModNavigationItemData.method(stack).filter(method::equals).isPresent();
     }
 
-    static boolean cleanNestedNavigationItems(ItemStack containerStack) {
-        if (containerStack.isEmpty()) {
-            return false;
-        }
-        //? if >= 1.20.5 {
-        boolean changed = cleanBundleContents(containerStack);
-        changed |= cleanContainerContents(containerStack);
-        return changed;
-        //?} else {
-        /*CompoundTag tag = containerStack.getTag();
-        if (tag == null) {
-            return false;
-        }
-        boolean changed = false;
-        if (containerStack.getItem() instanceof BundleItem) {
-            changed |= cleanSerializedItemList(tag, "Items");
-        }
-        if (containerStack.getItem() instanceof BlockItem blockItem
-                && blockItem.getBlock() instanceof ShulkerBoxBlock
-                && tag.contains("BlockEntityTag", Tag.TAG_COMPOUND)) {
-            changed |= cleanSerializedItemList(tag.getCompound("BlockEntityTag"), "Items");
-        }
-        return changed;
-        *///?}
+    /** Checks only the involved stack's top-level protection marker. */
+    static boolean needsNavigationCleanup(ItemStack stack) {
+        return ModNavigationItemData.isNavigationItem(stack);
     }
-
-    //? if >= 1.20.5 {
-    private static boolean cleanBundleContents(ItemStack bundle) {
-        if (!(bundle.getItem() instanceof BundleItem)) {
-            return false;
-        }
-        BundleContents contents = bundle.getOrDefault(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY);
-        //? if >= 26.3 {
-        /*List<ItemStack> items = contents.itemCopies().toList();
-        BundleContents.Mutable cleaned = new BundleContents.Mutable();
-        *///?} else {
-        List<ItemStack> items = contents.itemCopyStream().toList();
-        BundleContents.Mutable cleaned = new BundleContents.Mutable(BundleContents.EMPTY);
-        //?}
-        boolean changed = false;
-        for (ItemStack item : items) {
-            if (ModNavigationItemData.isNavigationItem(item)) {
-                changed = true;
-                continue;
-            }
-            changed |= cleanNestedNavigationItems(item);
-            cleaned.tryInsert(item);
-        }
-        if (changed) {
-            bundle.set(DataComponents.BUNDLE_CONTENTS, cleaned.toImmutable());
-        }
-        return changed;
-    }
-
-    private static boolean cleanContainerContents(ItemStack container) {
-        ItemContainerContents contents = container.getOrDefault(
-                DataComponents.CONTAINER,
-                ItemContainerContents.EMPTY
-        );
-        //? if >= 26.3 {
-        /*List<ItemStack> items = new ArrayList<>(contents.itemCopies().toList());
-        *///?} elif >= 26 {
-        List<ItemStack> items = new ArrayList<>(contents.allItemsCopyStream().toList());
-        //?} else {
-        /*List<ItemStack> items = new ArrayList<>(contents.stream().toList());
-        *///?}
-        boolean changed = false;
-        for (int slot = 0; slot < items.size(); slot++) {
-            ItemStack item = items.get(slot);
-            if (ModNavigationItemData.isNavigationItem(item)) {
-                items.set(slot, ItemStack.EMPTY);
-                changed = true;
-            } else {
-                changed |= cleanNestedNavigationItems(item);
-            }
-        }
-        if (changed) {
-            container.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(items));
-        }
-        return changed;
-    }
-    //?} else {
-    /*private static boolean cleanSerializedItemList(CompoundTag parent, String key) {
-        if (!parent.contains(key, Tag.TAG_LIST)) {
-            return false;
-        }
-        ListTag items = parent.getList(key, Tag.TAG_COMPOUND);
-        ListTag cleaned = new ListTag();
-        boolean changed = false;
-        for (Tag serialized : items) {
-            CompoundTag itemTag = (CompoundTag) serialized;
-            ItemStack item = ItemStack.of(itemTag);
-            if (ModNavigationItemData.isNavigationItem(item)) {
-                changed = true;
-                continue;
-            }
-            if (cleanNestedNavigationItems(item)) {
-                CompoundTag cleanedItemTag = itemTag.copy();
-                CompoundTag cleanedStackTag = item.getTag();
-                if (cleanedStackTag == null) {
-                    cleanedItemTag.remove("tag");
-                } else {
-                    cleanedItemTag.put("tag", cleanedStackTag.copy());
-                }
-                cleaned.add(cleanedItemTag);
-                changed = true;
-            } else {
-                cleaned.add(itemTag.copy());
-            }
-        }
-        if (changed) {
-            parent.put(key, cleaned);
-        }
-        return changed;
-    }
-    *///?}
 }

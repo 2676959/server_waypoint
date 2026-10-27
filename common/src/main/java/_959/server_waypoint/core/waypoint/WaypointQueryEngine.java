@@ -122,12 +122,13 @@ public final class WaypointQueryEngine {
 
     private static ListResult queryList(String dimensionName, WaypointList waypointList, String filter, Query query) {
         boolean includeAll = filter.isEmpty();
-        boolean listMatched = !includeAll && matchesText(waypointList.name(), filter);
+        TextMatcher matcher = new TextMatcher(filter);
+        boolean listMatched = !includeAll && matcher.matches(waypointList.name());
         List<SimpleWaypoint> waypointSnapshots = new ArrayList<>();
         Map<SimpleWaypoint, SimpleWaypoint> liveWaypointsBySnapshot = new IdentityHashMap<>();
         for (WaypointList.WaypointSnapshot entry : waypointList.snapshotWaypoints()) {
             SimpleWaypoint snapshot = entry.snapshot();
-            if (includeAll || listMatched || matchesWaypoint(snapshot, filter)) {
+            if (includeAll || listMatched || matchesWaypoint(snapshot, matcher)) {
                 waypointSnapshots.add(snapshot);
                 liveWaypointsBySnapshot.put(snapshot, entry.liveWaypoint());
             }
@@ -152,12 +153,12 @@ public final class WaypointQueryEngine {
         return new ListResult(waypointList, Collections.unmodifiableList(waypoints), includeAll || listMatched);
     }
 
-    private static boolean matchesWaypoint(SimpleWaypoint waypoint, String filter) {
-        if (matchesText(waypoint.name(), filter)) {
+    private static boolean matchesWaypoint(SimpleWaypoint waypoint, TextMatcher matcher) {
+        if (matcher.matches(waypoint.name())) {
             return true;
         }
         for (String keyword : waypoint.keywords()) {
-            if (matchesText(keyword, filter)) {
+            if (matcher.matches(keyword)) {
                 return true;
             }
         }
@@ -166,52 +167,66 @@ public final class WaypointQueryEngine {
 
     /** Shared identifier/keyword filtering for local and immutable remote query adapters. */
     public static boolean matchesFilter(String text, String filterText) {
-        return matchesText(text, filterText == null ? "" : filterText.trim().toLowerCase(Locale.ROOT));
-    }
-
-    private static boolean matchesText(String text, String filter) {
         if (text == null) {
             return false;
         }
+        String filter = filterText == null ? "" : filterText.trim().toLowerCase(Locale.ROOT);
         String normalizedText = text.toLowerCase(Locale.ROOT);
-        return normalizedText.contains(filter) || matchesFuzzyText(normalizedText, filter);
+        // Standalone callers must retain the allocation-free substring fast path.
+        return normalizedText.contains(filter) || new TextMatcher(filter).matchesFuzzyText(normalizedText);
     }
 
-    private static boolean matchesFuzzyText(String normalizedText, String filter) {
-        if (filter.length() < 3 || !containsLetter(filter)) {
-            return false;
+    /** Request-local scratch state: never shared between concurrent queries or stored on waypoints. */
+    private static final class TextMatcher {
+        private final String filter;
+        private final List<String> filterTokens;
+        private int[][] distanceRows;
+
+        private TextMatcher(String filter) {
+            this.filter = filter;
+            this.filterTokens = filter.length() >= 3 && containsLetter(filter) ? searchTokens(filter) : List.of();
         }
 
-        List<String> textTokens = searchTokens(normalizedText);
-        if (textTokens.isEmpty()) {
-            return false;
-        }
-
-        List<String> filterTokens = searchTokens(filter);
-        if (filterTokens.isEmpty()) {
-            return false;
-        }
-
-        for (String filterToken : filterTokens) {
-            if (!matchesAnyToken(textTokens, filterToken)) {
+        private boolean matches(String text) {
+            if (text == null) {
                 return false;
             }
+            String normalizedText = text.toLowerCase(Locale.ROOT);
+            return normalizedText.contains(this.filter) || this.matchesFuzzyText(normalizedText);
         }
-        return true;
-    }
 
-    private static boolean matchesAnyToken(List<String> textTokens, String filterToken) {
-        if (filterToken.length() < 3) {
+        private boolean matchesFuzzyText(String normalizedText) {
+            if (this.filterTokens.isEmpty()) {
+                return false;
+            }
+
+            List<String> textTokens = searchTokens(normalizedText);
+            for (String filterToken : this.filterTokens) {
+                if (!this.matchesAnyToken(textTokens, filterToken)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private boolean matchesAnyToken(List<String> textTokens, String filterToken) {
+            if (filterToken.length() < 3) {
+                return false;
+            }
+            int maxDistance = maxFuzzyDistance(filterToken.length());
+            for (String textToken : textTokens) {
+                if (Math.abs(textToken.length() - filterToken.length()) > maxDistance) {
+                    continue;
+                }
+                if (this.distanceRows == null || this.distanceRows[0].length <= filterToken.length()) {
+                    this.distanceRows = new int[][]{new int[filterToken.length() + 1], new int[filterToken.length() + 1]};
+                }
+                if (damerauLevenshteinDistance(textToken, filterToken, maxDistance, this.distanceRows) <= maxDistance) {
+                    return true;
+                }
+            }
             return false;
         }
-        int maxDistance = maxFuzzyDistance(filterToken.length());
-        for (String textToken : textTokens) {
-            if (Math.abs(textToken.length() - filterToken.length()) <= maxDistance
-                    && damerauLevenshteinDistance(textToken, filterToken, maxDistance) <= maxDistance) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private static int maxFuzzyDistance(int length) {
@@ -252,10 +267,10 @@ public final class WaypointQueryEngine {
         return tokens;
     }
 
-    private static int damerauLevenshteinDistance(String left, String right, int maxDistance) {
+    private static int damerauLevenshteinDistance(String left, String right, int maxDistance, int[][] rows) {
         int[] previousPreviousRow = null;
-        int[] previousRow = new int[right.length() + 1];
-        int[] currentRow = new int[right.length() + 1];
+        int[] previousRow = rows[0];
+        int[] currentRow = rows[1];
 
         for (int column = 0; column <= right.length(); column++) {
             previousRow[column] = column;

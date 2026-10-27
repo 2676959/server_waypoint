@@ -12,6 +12,7 @@
     "CompassItemNavigationMixin",
     "CommandSourceStackAccessor",
     "CraftingMenuNavigationMixin",
+    "CustomDataAccessor",
     "DecoratedPotBlockEntityNavigationMixin",
     "DecoratedPotBlockNavigationMixin",
     "InventoryNavigationMixin",

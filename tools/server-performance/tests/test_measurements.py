@@ -10,6 +10,7 @@ from budgets import evaluate
 from reporting import report_axes, combine_decisions, write_report
 from models import CaseSpec, CaseResult, Decision, Status, RunRecord
 from profiles import start_jfr
+from contracts import atomic_write, read_document
 
 CONFIG = Path(__file__).resolve().parents[1] / "config/budgets.json"
 
@@ -89,6 +90,37 @@ class MeasurementsTest(unittest.TestCase):
             write_report(RunRecord("run", (failed, passed), (result.case.id,)), Path(directory))
             document = json.loads((Path(directory) / "report.json").read_text())
             self.assertEqual("FAIL", document["axes"]["decision"]["status"])
+
+    def test_report_uses_captured_system_build_instead_of_reporting_host(self):
+        environment = {
+            "schemaVersion": 1, "capturedAt": "2026-10-27T12:00:00+00:00",
+            "platform": "saved-platform", "machine": "arm64", "machineModel": "Mac16,10",
+            "osVersion": "26.5", "osBuild": "25F71", "kernel": "25.5.0",
+            "cpu": "Apple M4", "physicalCores": 10, "logicalCores": 10,
+            "memoryBytes": 17179869184, "cpuMaxHz": None,
+            "javaFlags": ["-Xms1G", "-Xmx2G", "-XX:+UseG1GC"],
+            "javaRuntimes": [{"id": "paper-test", "java": "/saved/jdk/bin/java", "version": 'openjdk version "21.0.9"\nTest VM | build 42'}],
+            "loadGenerator": "same host", "profiledDiagnostic": False,
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            atomic_write(root / "environment.json", environment)
+            result = self.result()
+            write_report(RunRecord("run", (result,), (result.case.id,)), root)
+            self.assertEqual(environment, read_document(root / "report.json").get("environment"))
+            markdown = (root / "report.md").read_text()
+            for value in ("Apple M4", "Mac16,10", "25F71", "16.00 GiB", "21.0.9", "/saved/jdk/bin/java", "-XX:+UseG1GC", "same host"):
+                self.assertIn(value, markdown)
+            self.assertIn("Test VM &#124; build 42", markdown)
+            self.assertIn("OS-managed", markdown)
+
+    def test_missing_system_snapshot_is_explicit_and_never_reconstructed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_report(RunRecord("run", (), ()), root)
+            self.assertIn("environment", read_document(root / "report.json"))
+            self.assertIsNone(read_document(root / "report.json")["environment"])
+            self.assertIn("System information was not recorded for this run", (root / "report.md").read_text())
 
     def test_nonfinite_phase_window_cannot_pass(self):
         result = self.result()

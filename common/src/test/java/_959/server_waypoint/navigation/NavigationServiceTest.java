@@ -731,6 +731,66 @@ class NavigationServiceTest {
     }
 
     @Test
+    void ticksWithoutSessionDoNotAdvanceFirstLiveDisplayUpdate() {
+        for (int i = 0; i < 4; i++) {
+            this.service.tickPlayer(this.firstPlayer);
+        }
+        this.service.navigate(this.firstPlayer, target("Target", 10, 64, 0));
+        this.platform.snapshotCount = 0;
+
+        for (int i = 0; i < 4; i++) {
+            this.service.tickPlayer(this.firstPlayer);
+        }
+        assertEquals(0, this.platform.snapshotCount);
+        this.service.tickPlayer(this.firstPlayer);
+        assertEquals(1, this.platform.snapshotCount);
+        assertEquals(1, this.handlers.get(NavigationMethod.ACTIONBAR).updateCount);
+    }
+
+    @Test
+    void itemOnlyTicksDoNotAdvanceNewLiveDisplayUpdate() {
+        this.service.navigate(
+                this.firstPlayer,
+                target("Target", 10, 64, 0),
+                Set.of(NavigationMethod.COMPASS, NavigationMethod.MAP)
+        );
+        for (int i = 0; i < 4; i++) {
+            this.service.tickPlayer(this.firstPlayer);
+        }
+        this.service.enableMethod(this.firstPlayer, NavigationMethod.ACTIONBAR);
+        this.platform.snapshotCount = 0;
+
+        for (int i = 0; i < 4; i++) {
+            this.service.tickPlayer(this.firstPlayer);
+        }
+        assertEquals(0, this.platform.snapshotCount);
+        this.service.tickPlayer(this.firstPlayer);
+        assertEquals(1, this.platform.snapshotCount);
+        assertEquals(1, this.handlers.get(NavigationMethod.ACTIONBAR).updateCount);
+        assertEquals(0, this.handlers.get(NavigationMethod.COMPASS).updateCount);
+        assertEquals(0, this.handlers.get(NavigationMethod.MAP).updateCount);
+    }
+
+    @Test
+    void ticksWithAllMethodsDisabledDoNotAdvanceLiveDisplayUpdate() {
+        this.service.navigate(this.firstPlayer, target("Target", 10, 64, 0));
+        this.service.disableMethod(this.firstPlayer, NavigationMethod.ACTIONBAR);
+        for (int i = 0; i < 4; i++) {
+            this.service.tickPlayer(this.firstPlayer);
+        }
+        this.service.enableMethod(this.firstPlayer, NavigationMethod.ACTIONBAR);
+        this.platform.snapshotCount = 0;
+
+        for (int i = 0; i < 4; i++) {
+            this.service.tickPlayer(this.firstPlayer);
+        }
+        assertEquals(0, this.platform.snapshotCount);
+        this.service.tickPlayer(this.firstPlayer);
+        assertEquals(1, this.platform.snapshotCount);
+        assertEquals(1, this.handlers.get(NavigationMethod.ACTIONBAR).updateCount);
+    }
+
+    @Test
     void tickDoesNotSnapshotItemOnlySessions() {
         this.service.navigate(
                 this.firstPlayer,

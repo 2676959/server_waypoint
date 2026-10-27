@@ -1,6 +1,8 @@
 package _959.server_waypoint.mixin;
 
 import _959.server_waypoint.common.server.navigation.ModNavigationHooks;
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 //? if >= 26 {
@@ -25,12 +27,15 @@ public abstract class AbstractContainerMenuNavigationMixin {
             /*ClickType input,
             *///?}
             Player player,
-            CallbackInfo ci
+            CallbackInfo ci,
+            @Share("serverWaypointValidateMenu") LocalBooleanRef validateMenu
     ) {
         AbstractContainerMenu menu = (AbstractContainerMenu) (Object) this;
         if (ModNavigationHooks.shouldBlockMenuClick(menu, slotIndex, button, input.name(), player)) {
             ci.cancel();
+            return;
         }
+        validateMenu.set(ModNavigationHooks.menuClickNeedsValidation(menu, slotIndex, button, input.name(), player));
     }
 
     @Inject(method = "clicked", at = @At("TAIL")/*? if >= 26 {*/, remap = false/*?}*/)
@@ -43,9 +48,14 @@ public abstract class AbstractContainerMenuNavigationMixin {
             /*ClickType input,
             *///?}
             Player player,
-            CallbackInfo ci
+            CallbackInfo ci,
+            @Share("serverWaypointValidateMenu") LocalBooleanRef validateMenu
     ) {
-        ModNavigationHooks.afterMenuClick(player, (AbstractContainerMenu) (Object) this);
+        AbstractContainerMenu menu = (AbstractContainerMenu) (Object) this;
+        if (validateMenu.get()
+                || ModNavigationHooks.menuClickNeedsValidation(menu, slotIndex, button, input.name(), player)) {
+            ModNavigationHooks.afterMenuClick(player, menu);
+        }
     }
 
     @Inject(method = "removed", at = @At("HEAD")/*? if >= 26 {*/, remap = false/*?}*/)

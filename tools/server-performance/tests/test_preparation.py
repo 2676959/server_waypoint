@@ -10,10 +10,10 @@ from preparation import seal_evidence, verify_evidence
 
 class PreparationTest(unittest.TestCase):
     def test_changed_fixture_or_copied_config_is_rejected(self):
-        for changed in ("fixtures/test/fixture/manifest.json", "budgets.json", "runtime-lock.json", "selection.json"):
+        for changed in ("fixtures/test/fixture/manifest.json", "budgets.json", "runtime-lock.json", "selection.json", "environment.json"):
             with self.subTest(changed=changed), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory).resolve()
-                for name in ("budgets.json", "runtime-lock.json", "selection.json", "release.json", "fixtures/test/baseline.json", "fixtures/test/fixture/manifest.json"):
+                for name in ("budgets.json", "runtime-lock.json", "selection.json", "release.json", "environment.json", "fixtures/test/baseline.json", "fixtures/test/fixture/manifest.json"):
                     atomic_write(root / name, {"schemaVersion": 1, "value": "original"})
                 worlds = {"test": str(root / "fixtures/test")}
                 evidence = seal_evidence(root, worlds)

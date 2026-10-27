@@ -512,17 +512,27 @@ public final class NavigationService<P> {
         Objects.requireNonNull(player, "player");
         this.platform.assertPlayerThread(player);
         UUID playerUuid = this.platform.playerUuid(player);
+        NavigationSession session = this.sessions.get(playerUuid);
+        if (session == null) {
+            return;
+        }
+        boolean hasLiveDisplay = false;
+        for (NavigationMethod method : session.enabledMethods()) {
+            if (method.isLiveDisplay()) {
+                hasLiveDisplay = true;
+                break;
+            }
+        }
+        if (!hasLiveDisplay) {
+            return;
+        }
+
         int tickCounter = this.tickCounters.merge(playerUuid, 1, Integer::sum);
         if (tickCounter < this.updateIntervalTicks) {
             return;
         }
         this.tickCounters.remove(playerUuid);
 
-        NavigationSession session = this.sessions.get(playerUuid);
-        if (session == null || session.enabledMethods().stream()
-                .noneMatch(NavigationMethod::isLiveDisplay)) {
-            return;
-        }
         NavigationSnapshot snapshot = this.platform.snapshot(player, session.target());
         for (NavigationMethod method : session.enabledMethods()) {
             if (!method.isLiveDisplay()) {

@@ -192,6 +192,21 @@ class WaypointQueryEngineTest {
     }
 
     @Test
+    void repeatedFuzzyComparisonsKeepDifferentTokenLengthsAndKeywordMatchesIndependent() {
+        WaypointFilesManagerCore filesManager = createFilesManager();
+        SimpleWaypoint keywordMatch = new SimpleWaypoint("port", "P", new WaypointPos(0, 0, 0),
+                0xFFFFFF, 0, false, List.of("village ships"), "");
+        addDimension(filesManager, "minecraft:overworld", list("markers",
+                waypoint("village ships", 0, 0, 0), waypoint("irrelevant mountain", 0, 0, 0),
+                keywordMatch, waypoint("village", 0, 0, 0)));
+        WaypointQueryEngine engine = new WaypointQueryEngine(filesManager);
+        for (int i = 0; i < 3; i++) {
+            var result = engine.queryAll(new WaypointQueryEngine.Query("vilage shpis", WaypointSorting.SortMode.NAME, null));
+            assertEquals(List.of("port", "village ships"), waypointNames(result.dimensions().get(0).lists().get(0)));
+        }
+    }
+
+    @Test
     void filterMatchesKeywordsButNotFormattedDisplayNames() {
         WaypointFilesManagerCore filesManager = createFilesManager();
         SimpleWaypoint waypoint = new SimpleWaypoint(

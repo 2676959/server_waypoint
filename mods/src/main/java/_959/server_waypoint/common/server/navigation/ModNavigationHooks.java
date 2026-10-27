@@ -4,9 +4,7 @@ import _959.server_waypoint.common.server.WaypointServerMod;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.animal.allay.Allay;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -77,6 +75,29 @@ public final class ModNavigationHooks {
         return blocked;
     }
 
+    public static boolean menuClickNeedsValidation(
+            AbstractContainerMenu menu,
+            int slotIndex,
+            int button,
+            String clickType,
+            Player player
+    ) {
+        if (!(player instanceof ServerPlayer serverPlayer)) {
+            return false;
+        }
+        if (ModNavigationItemManager.needsNavigationCleanup(menu.getCarried())) {
+            return true;
+        }
+        if (slotIndex >= 0 && slotIndex < menu.slots.size()
+                && ModNavigationItemManager.needsNavigationCleanup(menu.slots.get(slotIndex).getItem())) {
+            return true;
+        }
+        return "SWAP".equals(clickType)
+                && button >= 0
+                && button < serverPlayer.getInventory().getContainerSize()
+                && ModNavigationItemManager.needsNavigationCleanup(serverPlayer.getInventory().getItem(button));
+    }
+
     public static void afterMenuClick(Player player, AbstractContainerMenu menu) {
         ModNavigationRuntime runtime = runtime();
         if (runtime != null && player instanceof ServerPlayer serverPlayer) {
@@ -131,14 +152,6 @@ public final class ModNavigationHooks {
         return ModNavigationItemData.isNavigationItem(stack);
     }
 
-    public static void sanitizeAllay(Allay allay) {
-        ItemStack heldItem = allay.getItemInHand(InteractionHand.MAIN_HAND);
-        if (ModNavigationItemData.isNavigationItem(heldItem)) {
-            allay.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
-        }
-        removeNavigationItems(allay.getInventory());
-    }
-
     public static void sanitizeArmorStand(ArmorStand armorStand) {
         sanitizeArmorStandSlot(armorStand, EquipmentSlot.MAINHAND);
         sanitizeArmorStandSlot(armorStand, EquipmentSlot.OFFHAND);
@@ -166,14 +179,6 @@ public final class ModNavigationHooks {
         }
         return stack.getItem() instanceof BlockItem blockItem
                 && blockItem.getBlock() instanceof ShulkerBoxBlock;
-    }
-
-    private static void removeNavigationItems(Container container) {
-        for (int slot = 0; slot < container.getContainerSize(); slot++) {
-            if (ModNavigationItemData.isNavigationItem(container.getItem(slot))) {
-                container.setItem(slot, ItemStack.EMPTY);
-            }
-        }
     }
 
     private static void sanitizeArmorStandSlot(ArmorStand armorStand, EquipmentSlot slot) {

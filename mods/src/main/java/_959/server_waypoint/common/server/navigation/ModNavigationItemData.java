@@ -2,6 +2,7 @@ package _959.server_waypoint.common.server.navigation;
 
 import _959.server_waypoint.navigation.NavigationMethod;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.Nullable;
@@ -9,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Optional;
 
 //? if >= 1.20.5 {
+import _959.server_waypoint.mixin.CustomDataAccessor;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.component.CustomData;
 //?}
@@ -20,6 +22,7 @@ import net.minecraft.world.item.component.CustomData;
 public final class ModNavigationItemData {
     private static final String NAVIGATION_ITEM_KEY = "server_waypoint:navigation_item";
     private static final String MARKER_VALUE = "true";
+    private static final StringTag MARKER_TAG = StringTag.valueOf(MARKER_VALUE);
 
     private ModNavigationItemData() {
     }
@@ -37,8 +40,12 @@ public final class ModNavigationItemData {
         if (stack.isEmpty()) {
             return false;
         }
-        CompoundTag tag = copyTag(stack);
-        return tag != null && MARKER_VALUE.equals(readString(tag, NAVIGATION_ITEM_KEY));
+        //? if >= 1.20.5 {
+        CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+        return data != null && hasMarker(((CustomDataAccessor) (Object) data).serverWaypoint$getTag());
+        //?} else {
+        /*return hasMarker(stack.getTag());
+        *///?}
     }
 
     public static Optional<NavigationMethod> method(ItemStack stack) {
@@ -58,21 +65,7 @@ public final class ModNavigationItemData {
         tag.putString(NAVIGATION_ITEM_KEY, MARKER_VALUE);
     }
 
-    private static @Nullable CompoundTag copyTag(ItemStack stack) {
-        //? if >= 1.20.5 {
-        return stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-        //?} else {
-        /*CompoundTag tag = stack.getTag();
-        return tag == null ? null : tag.copy();
-        *///?}
-    }
-
-    private static @Nullable String readString(CompoundTag tag, String key) {
-        //? if >= 1.21.5 {
-        return tag.getString(key).orElse(null);
-        //?} else {
-        /*String value = tag.getString(key);
-        return value.isEmpty() ? null : value;
-        *///?}
+    static boolean hasMarker(@Nullable CompoundTag tag) {
+        return tag != null && MARKER_TAG.equals(tag.get(NAVIGATION_ITEM_KEY));
     }
 }

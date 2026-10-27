@@ -203,3 +203,229 @@ The isolated `/Volumes/ssd/sw-performance-m1-action-health-guard/` rerun complet
 **Original-release FAIL:** `/Volumes/ssd/sw-performance-m1-nested-small/` records seven PASS/one FAIL; `/Volumes/ssd/sw-performance-m1-nested-medium/` records 70 PASS/ten FAIL. All failures are valid depth-nine bundles retaining a protected map in an actual uncancelled world entity. The installed detector reports false at its depth limit; the independent reader finds the tagged descendant. Depth-eight/direct/shulker/mixed and both plain controls pass. All cases continue after failures and helpers exit 1. All 800 medium owner checks pass, ordinary inventories remain exact, observation overflow is zero and owned entity cleanup completes. Native log health passes; controller snapshots match hashes. No source repair is made. The missing native fixture RED root remains retained. Other protection hooks and full Task 11 timing/CLI/terrain boundaries remain pending; M1 is in progress.
 
 Verification: 118 Python tests and Paper probe build pass; Rust unchanged from its 20-test checkpoint. The nine-case native one-owner physical regression passes with the independent lifecycle reader at `/Volumes/ssd/sw-performance-m1-independent-graph-regression/`, including log health. Production/probe classes remain isolated, runtime probe hash is updated, and owned servers/bots stopped. No production/localization edits or push.
+
+
+## Focused priority performance repairs (2026-10-26)
+
+At the user's direction, current-development inventory and shared query/completion
+repairs were implemented before the wider audit completes, with runtime validation
+limited to Paper/Fabric. The [repair report](2026-10-26-priority-repairs.md) records
+exact binaries, native tick/allocation comparisons, real hopper and player controls,
+review corrections and retained failures. Paper and Folia retain one plugin build.
+
+The independent depth-nine bundle escape remains unchanged: seven nested cases pass
+and `bundle-9/map` fails on both frozen pre-fix and final candidates. No original
+FAIL is reclassified, and this checkpoint does not complete the wider Task 11/18–20
+coverage, all-version runtime matrix or soaks. No commit or deployment accompanies
+this user-scoped repair.
+
+
+## 2026-10-26 — remaining Paper transfer-protection cost
+
+User-directed follow-up holds the optimized plugin, items, event dispatch and saved
+world constant and toggles only execution of the production inventory-transfer
+protection callback. Three fresh matched pairs (including reversed order) cover
+100/1,000 synthetic events per tick and actual hopper circulation. Each case uses
+200 warm-up ticks and 600 measured native ticks.
+
+- All six runs and 10,800 measured native ticks passed independent input/hash,
+  native-clock containment/continuity, identical per-tick dispatch/movement,
+  zero-player/unpaused, 512 force-loaded hopper and 128-carrier conservation checks.
+- Real transfers: full native mean MSPT 1.7805 disabled / 1.9129 enabled;
+  p95 2.5774 / 3.8414 ms. Paired mean deltas range +0.0872 to +0.1988 ms.
+  Net callback cost averages 11.38 microseconds and 1,016 allocated bytes per event.
+- 1,000 synthetic events/tick: full native mean MSPT 1.5572 / 3.3326; timed batch
+  mean 0.3069 / 2.3085 ms; allocation 0 / 1,016,000 bytes per batch.
+- Every physical 600-tick window lasts approximately 30 seconds and observes
+  exactly 11,008 transfers in both modes. Tick rate remains near 20 TPS; this
+  does not imply zero CPU/allocation overhead. Reused synthetic events and real
+  hopper events have different measured per-event timings and remain separate.
+- The same optimized Paper JAR SHA-256 is
+  `d9447d77c08040b535958a985bfa30d17c9ed9583b1c8cf3a43528b52dd3fa95`.
+  The probe retains a registered listener in both modes, preserving Paper event
+  dispatch and its listener-present hopper path. Other plugin hooks remain enabled.
+- One early probe setup failed before measurement; its raw log/source/JAR remain
+  retained. Corrected short pilots are excluded from the three full pairs.
+  All measured samples, including a one-off baseline batch allocation, are retained.
+- No production implementation changes, Fabric/Folia rerun, policy changes or
+  resolution of the existing depth-nine nested-spawn failure are claimed. Original
+  failures and the broader incomplete audit remain unchanged. No commit or push.
+
+[Full comparison and proof boundaries](2026-10-26-protection-cost.md).
+Raw logs, samples, exact inputs and reproducible sources:
+`/Volumes/ssd/sw-performance-protection-cost-20261026/`.
+
+
+## 2026-10-26 — remove automatic hopper transfer protection
+
+The user requested removal after reviewing the enabled/disabled baseline. Deleted
+`NavigationProtectionListener.onInventoryMove` and its event import (13 lines).
+The shared Paper/Folia source now registers no `InventoryMoveItemEvent` handler;
+automatic transfers no longer scan, cancel or schedule cleanup through that hook.
+No equivalent mod-backend hopper-transfer hook was found. Other protection hooks
+and the native reader remain in use.
+
+- The same native probe fails before removal when a protected compass transfer is
+  cancelled; the expected failed command/log are retained. It passes all 27
+  assertions against the new JAR, including direct/nested push/pull event controls,
+  preserved source contents and remaining world-spawn/ground-item pickup event checks.
+- A tagged compass physically visits all four hoppers in a ring with its item data
+  intact. Across 200 native ticks, the fixture records 3,584 observed inventory
+  increases, conserves 128 top-level carriers and retains 512 force-loaded hoppers,
+  zero players and unpaused ticking.
+- All 37 Paper tests pass. All four supported Paper targets compile. Active
+  Stonecutter targets remain unchanged; no Fabric/Folia runtime rerun is claimed.
+- New Paper 1.21.11 JAR SHA-256:
+  `8e7a375cbf7132e064f6b8a670afb1671f779d1ccfaf8cf342046e5ffaf15f45`.
+- The previous timing report remains a pre-removal artifact comparison. This
+  focused removal has functional validation, not a new timing/allocation comparison.
+  Original audit failures remain retained. No commit, push or deployment.
+
+[Scope, commands and evidence](2026-10-26-hopper-transfer-removal.md).
+Retained native sources/artifacts/logs/results:
+`/Volumes/ssd/sw-hopper-transfer-removal-20261026/`.
+
+
+## 2026-10-26 — remove continuous modded allay/item-entity protection
+
+User-directed removal deletes the allay `tick` sanitizer and dropped-item `tick`
+protection injections from the shared Fabric/Forge/NeoForge sources. The unused
+allay sanitizer and its private container helper/imports are also removed: 33
+deleted lines across three Java files. Event-driven allay handoff, dropped-item
+assignment and player-pickup guards remain registered.
+
+- The unchanged native Fabric probe fails before removal on allay held/stored
+  marker retention and dropped-item survival/ticking. Its expected failure status,
+  complete result and raw logs remain retained. All setup event guards pass.
+- After removal, all 16 native assertions pass over 200 server ticks. The allay
+  preserves both protected contents and the in-place-tagged dropped item survives
+  with its full stack unchanged. Actual entity counters are 196 ticks each; ordinary
+  allay/item controls and the retained event-driven guards pass. No clients connect.
+- All 927 Fabric 1.21.11 tests pass. Fabric/Forge/NeoForge 1.21.11 and Fabric 26.1.2
+  compile successfully. Only the three intended class entries differ in the frozen
+  before/after named-development Fabric JARs; diagnostic classes are excluded.
+- New named-development Fabric JAR SHA-256:
+  `b2c02638d0d20bb1b58a578af7855f327b267f0bf1841871a7ae197d3f69a322`.
+- Remaining Stonecutter markers are balanced and active targets are unchanged.
+  No Paper edits, Forge/NeoForge runtime launch, new timing/allocation result,
+  all-version gate or broader audit completion is claimed. Original failures remain
+  retained. No commit, push or deployment. Localization impact: none.
+
+[Source scope, commands and runtime proof boundaries](2026-10-26-modded-tick-scan-removal.md).
+External source/artifact/log/result root:
+`/Volumes/ssd/sw-modded-tick-scan-removal-20261026/`.
+
+
+## 2026-10-26 — skip full cleanup after ordinary modded menu clicks
+
+The user requested removal of unconditional post-click menu/player cleanup for
+ordinary interactions. The shared mod Mixin now records relevant clicked/cursor/
+swap inputs in an invocation-local MixinExtras boolean and only validates after
+a relevant pre- or post-click payload. Nested detection reuses the existing
+versioned cleanup on a copy of a touched carrier. Plain items take a bounded
+negative path. Menu-close cleanup and existing denial handling remain.
+
+- The same native Fabric probe fails three ordinary-click isolation assertions
+  before the change and passes all 18 controls after it. Source-empty shift-click,
+  newly marked result cursor, direct/nested items, active-session allowed pickup,
+  denied chest deposits/hotbar/offhand swaps and menu-close cleanup are covered.
+  There are no connected clients; menu calls use a native player/dummy connection.
+- Across 300 measured ticks/case and ten ordinary pickups/tick, unrelated chest
+  reads fall from 530/batch to zero in every after sample. Plain batch mean time
+  changes 0.520 to 0.066 ms, allocation 425,005 to 2,815 B. Shulker-filled batch
+  mean time changes 7.357 to 0.034 ms, allocation 14,124,564 to 2,191 B.
+- The native tick timing ring is read on the following overworld callback using
+  the recorded tick index; all 1,200 timing samples have consecutive IDs and
+  native processing duration at least the timed work. All outliers are retained.
+  This is one matched development pair, not physical UI latency or a release gate.
+- All 932 Fabric 1.21.11 tests pass. Production source compiles on all three
+  loaders at 1.21.11, Fabric 26.1.2, and Fabric/Forge 1.20.1; test sources compile
+  at Fabric 26.1.2/1.20.1. Active Stonecutter targets are unchanged.
+- Only ModNavigationHooks, ModNavigationItemManager and the menu Mixin class
+  entries differ between the frozen artifacts. Read-only review reports no
+  actionable issues. New named-development Fabric JAR SHA-256:
+  `a92edce9624f8903836c7168cf9578d4a37af068bf3805ad53a3fa28bdd02c66`.
+- Original audit failures and previous policy removals remain retained. No Paper
+  changes, production incident attribution, Forge/NeoForge runtime run or full
+  matrix/soak completion is claimed. Localization impact: none. No commit/push.
+
+[Implementation, timing tables and proof boundaries](2026-10-26-menu-click-fast-path.md).
+Sources, frozen artifacts, raw checks/timings, build and test evidence:
+`/Volumes/ssd/sw-menu-click-fast-path-20261026/`.
+
+
+## 2026-10-27 — top-level protection tags only
+
+User-directed policy change removes recursive detection and cleanup from Paper/
+Folia and shared Fabric/Forge/NeoForge sources. Click, lifecycle, inventory,
+cursor, spawn/pickup/death and equipment handling now checks direct markers only.
+Existing nested protected items are preserved. Normal player bundle/shulker
+insertion remains blocked. A reproduced Paper empty-bundle guard gap was repaired
+with native item-type recognition, without materializing Bukkit metadata.
+
+- 37 Paper and 933 Fabric 1.21.11 tests pass; 25 Fabric and 35 Paper native checks
+  pass with zero connected clients. Expected REDs, native fixture failures and an
+  intermediate versioned-test compile failure remain retained separately.
+- Selected production compilation covers all three mod loaders at 1.21.11,
+  Fabric 1.20.1/26.1.2 and Paper 1.21.11/26.2. Extra test-source and Paper
+  performance-probe compilation pass. Active Stonecutter targets are unchanged.
+- No new timing/allocation result, physical client-input proof or Folia/Forge/
+  NeoForge runtime claim. Historical release nested-protection audit expectations
+  remain historical; they are not a current recursive-protection guarantee.
+- This checkpoint does not complete Task 10, the broader M1 audit or a release
+  gate. Localization impact: none. No commit, push or deployment.
+
+[Policy, exact commands, artifacts and proof boundaries](2026-10-27-top-level-protection.md).
+Evidence root: `/Volumes/ssd/sw-top-level-protection-20261027/`.
+
+
+## 2026-10-27 — non-copying marker reads
+
+Paper uses borrowed native stacks for read-only marker/type checks. Modded reads
+the existing custom-data tag through a versioned accessor and compares one cached
+string tag. Legacy mod targets read their existing stack tag directly. Marker
+formats, normal writes, insertion guards and rollback snapshots remain unchanged.
+
+- 37 Paper and 933 Fabric unit tests pass; native integration checks pass 35 on
+  Paper / 25 on Fabric before and after. Six raw-NBT unit cases replace tests
+  whose transformed-item behavior is covered by those native controls.
+- In 1,000-read batches, Paper marker allocation changes 64,000 to zero bytes;
+  modded small marked changes 192,000 to zero and large marked 5,792,000 to zero.
+  Fabric large marked mean work changes 1.7758 to 0.0541 ms. Paper timing is mixed
+  across cases; no general Paper CPU/latency win or full-MSPT claim is made.
+- All four Paper targets and selected modern/legacy mod targets compile. Remapped
+  Fabric 1.20.1/1.20.6/1.21.11 artifacts validate versioned accessor absence or
+  intermediary target/field mapping. All five loader registration filters are
+  checked. Active Stonecutter targets are unchanged; review has no actionable
+  findings. Other loader runtimes/full matrix remain outside this checkpoint.
+- Original failures and raw samples remain retained. No audit completion, commit,
+  push or deployment. Localization impact: none.
+
+[Exact measurements and proof boundaries](2026-10-27-marker-read.md).
+Evidence root: `/Volumes/ssd/sw-marker-read-20261027/`.
+
+
+## 2026-10-27 — remove reconciliation after world/equipment item removal
+
+The selected Paper/Folia spawn, pickup, allay/armor-stand equipment cleanup and
+non-PLACE frame paths retain cancellation/removal and denial feedback, while
+removing actor and all-active-player reconciliation requests. The now-unused
+all-active-player helper is deleted. Placement-denial and unrelated inventory/
+lifecycle reconciliation remain.
+
+- The unchanged native Paper probe with two registered active sessions retains
+  the expected baseline failure: 23 controls pass and eight no-queue checks fail.
+  Final: all 31 checks pass; removal cases queue zero tasks, and a 24-spawn burst
+  changes 48 to zero. Five retained actor-only request cases still queue one each.
+- 37 Paper and 687 common tests pass. All four supported Paper APIs compile.
+  Only the listener class differs between frozen production artifacts; review
+  has no actionable findings and active Stonecutter targets are unchanged.
+- Queue counts describe scheduling demand for native dummy-connection players,
+  not executed online-player scans, physical input or full tick/allocation metrics.
+  No Folia runtime or broader audit completion is claimed.
+- These removal events no longer request automatic restoration. Other triggers
+  can still restore missing navigation items. Localization impact: none. No
+  commit, push or deployment.
+
+[Exact scope, queue receipts, artifacts and commands](2026-10-27-removal-reconciliation.md).
+Evidence root: `/Volumes/ssd/sw-removal-reconcile-20261027/`.

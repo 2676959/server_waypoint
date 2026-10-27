@@ -59,6 +59,7 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
     private WaypointServerPlugin waypointServer;
     private WaypointCommand waypointCommand;
     private NavigationService<Player> navigationService;
+    private NavigationProtectionListener navigationListener;
     private PaperNavigationItemManager navigationItemManager;
     private PaperNavigationMapCache navigationMapCache;
     private PaperMessageSender messageSender;
@@ -143,7 +144,7 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
                 this.navigationService,
                 uploadCoordinator
         );
-        NavigationProtectionListener navigationListener = new NavigationProtectionListener(
+        this.navigationListener = new NavigationProtectionListener(
                 this,
                 waypointServer,
                 this.navigationService,
@@ -177,6 +178,10 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
 
     @Override
     public void onDisable() {
+        if (this.navigationListener != null) {
+            this.navigationListener.shutdown();
+            this.navigationListener = null;
+        }
         if (crossServer != null) crossServer.stop();
         if (this.c2sPacketHandler != null) {
             this.c2sPacketHandler.resetSession();

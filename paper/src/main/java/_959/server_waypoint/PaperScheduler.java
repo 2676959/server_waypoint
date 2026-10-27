@@ -48,9 +48,13 @@ public final class PaperScheduler {
     }
 
     public ScheduledTask runNextTick(Entity entity, Runnable action) {
+        return this.runNextTick(entity, action, null);
+    }
+
+    public ScheduledTask runNextTick(Entity entity, Runnable action, Runnable retired) {
         Objects.requireNonNull(entity, "entity");
         Objects.requireNonNull(action, "action");
-        return entity.getScheduler().run(this.plugin, ignored -> action.run(), null);
+        return entity.getScheduler().run(this.plugin, ignored -> action.run(), retired);
     }
 
     public ScheduledTask runAtFixedRate(

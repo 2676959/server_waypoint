@@ -47,6 +47,15 @@ and 130 for interruption. An expected release defect still exits 1. Filtered
 reports are partial release evidence. One repetition is a smoke/calibration run
 and does not establish the default three-repeat acceptance result.
 
+`report.md` includes a system build reference, and `report.json` embeds the captured
+`environment.json`. Preparation records the OS version/build, kernel, machine model,
+architecture, CPU/core counts, RAM, selected Java executable versions/builds, JVM flags
+and load-generator placement. This snapshot is sealed with the run inputs. Optional
+values unavailable from the OS remain explicitly unavailable; reporting never substitutes
+the reporting machine's current configuration for a missing run snapshot. CPU frequency
+is OS-managed with no suite cap; an OS-reported maximum, when available, is a reference
+value, not a measurement of frequency or thermal throttling during the workload.
+
 Use a separately prepared `--profile` root for JFR diagnostic reruns. The same
 instrumentation is present in both members of a pair. Profiles stay local. Raw
 native tick samples, named-server-thread workload allocations, whole-process

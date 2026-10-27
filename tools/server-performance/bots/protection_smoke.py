@@ -19,12 +19,18 @@ from worlds import install_server, boot
 from navigation_smoke import execute, snapshot
 
 
-def run(root, count, case_set="physical"):
+def run(root, count, case_set="physical", candidate=None):
     tools = Path(__file__).resolve().parents[1]
     runtime = next(r for r in load_runtimes(tools / "config/runtimes.json") if r.id == "paper-1.21.11")
     runtime = replace(runtime, probe={**runtime.probe, "sha256": sha256(runtime.probe["path"])}, bot={**runtime.bot, "sha256": sha256(runtime.bot["path"])})
     artifact = next(a for a in load_release(tools / "config/releases/4.0.0.json") if a.name == runtime.artifact)
     release = Path("/Volumes/ssd/sw-performance-m0-audit/artifacts") / artifact.name
+    if candidate is not None:
+        release = Path(candidate).absolute()
+        if release.is_symlink() or not release.is_file():
+            raise ValueError("candidate must be a regular non-symlink JAR")
+        artifact = replace(artifact, sha256=sha256(release), size=release.stat().st_size,
+                           revision="development-candidate", provenance="development-candidate")
     verify_artifact(artifact, release)
     root = create_root(root)
     server = create_root(root / "server")
@@ -34,6 +40,7 @@ def run(root, count, case_set="physical"):
     point = {"name": "target", "display_name": "Protected", "initials": "P", "pos": [320, -61, 320], "color": "#112233", "yaw": 0, "global": True, "keywords": [], "description": "Physical protection fixture"}
     (directory / "minecraft$overworld.json").write_text(json.dumps([{"list_name": "protection_fixture", "n": 7, "waypoints": [point]}], indent=4) + "\n")
     evidence = {"schemaVersion": 1, "artifactSha256": artifact.sha256, "probeSha256": runtime.probe["sha256"], "botSha256": runtime.bot["sha256"], "count": count, "scope": "physical-drop-swap-inventory", "steps": []}
+    evidence["artifactProvenance"] = artifact.provenance
     if case_set == "nested":
         evidence["scope"] = "native-world-spawn-independent-nested-graph"
     paths = (Path(__file__).resolve(), tools / "bots/navigation_smoke.py", tools / "scenarios/navigation.py", tools / "bot_driver.py", tools / "worlds.py", tools / "server_health.py")
@@ -198,7 +205,7 @@ def run(root, count, case_set="physical"):
             if evidence["serverHealth"].status != Status.PASS:
                 raise ValueError("native nested fixture server log health failed")
             if any(step["decision"].status != Status.PASS for step in evidence["steps"]):
-                raise ValueError("original-release nested item assertions failed or incomplete")
+                raise ValueError("native nested item assertions failed or incomplete")
             evidence["completed"] = True
             driver.close()
             driver = None
@@ -260,5 +267,6 @@ if __name__ == "__main__":
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--count", type=int, choices=(1, 10), default=1)
     parser.add_argument("--case-set", choices=("physical", "nested"), default="physical")
+    parser.add_argument("--candidate", type=Path, help="Explicit development candidate JAR; retain its own hash and provenance")
     args = parser.parse_args()
-    run(args.root, args.count, args.case_set)
+    run(args.root, args.count, args.case_set, args.candidate)

@@ -300,6 +300,13 @@ The remaining implementation and full original-Paper case checkboxes stay open.
 
 **Interfaces:** Consumes original-release failing case IDs/control evidence; produces a focused development-source repair with unchanged protection semantics and a separately hashed candidate artifact.
 
+Focused user-directed checkpoint, 2026-10-26: the [priority repair plan](2026-10-26-priority-repairs.md)
+and [Paper/Fabric measurements](../validation/2026-10-26-priority-repairs.md) record the
+inventory read-path repair and shared query/completion allocation reductions. The user
+limited runtime testing for this change to Paper/Fabric and authorized these targeted
+repairs before the wider audit completes. The unchanged depth-nine bundle failure is
+retained explicitly. This checkpoint does not close the broader checklist below.
+
 - [ ] Write focused behavior cases for plain/meta-heavy items, direct/nested tags, shulker/bundle depth boundaries, mutations between repeated checks, denied moves, innocent-item preservation and duplicate cleanup. Retain the native failing performance reproduction before changing production code.
 - [ ] Run `rtk ./gradlew :paper:1.21.11-paper:test --tests '*PaperNavigationItemProtectionTest' --console=plain --max-workers=2` and the native workload against unrepaired development and original release separately. Record differences rather than assuming equal behavior.
 - [ ] Verify direct read-only tag APIs on each supported Paper target; minimize metadata reconstruction, avoid duplicate conversions and inspect container types before reconstruction. Do not introduce unvalidated caches, skip nested protection, or add product compatibility handling. Use readable Stonecutter predicates where APIs differ.

@@ -60,13 +60,13 @@ final class ProtectionFixtures {
         JsonObject expectedAfter = ItemGraphAssertions.inspect(expected);
         Object plugin = Bukkit.getPluginManager().getPlugin("ServerWaypoint");
         Object manager = NavigationAssertions.field(plugin, "navigationItemManager");
-        boolean productContains = (Boolean) manager.getClass().getMethod("containsNavigationItem", ItemStack.class).invoke(manager, actual);
+        boolean productTagged = (Boolean) manager.getClass().getMethod("isNavigationItem", ItemStack.class).invoke(manager, actual);
         var location = player.getLocation().add(1.5, 0.5, 1.5);
         location.getWorld().getChunkAt(location.getBlockX() >> 4, location.getBlockZ() >> 4);
         Item entity = location.getWorld().dropItem(location, actual.clone());
         entity.setPickupDelay(32767);
         UUID id = entity.getUniqueId();
-        owned.put(id, new Entry(entity, before, expectedAfter, beforeBytes, valid, productContains));
+        owned.put(id, new Entry(entity, before, expectedAfter, beforeBytes, valid, productTagged));
         JsonObject key = new JsonObject();
         key.addProperty("entityUuid", id.toString());
         return snapshot(key);
@@ -87,7 +87,7 @@ final class ProtectionFixtures {
         result.addProperty("worldPresent", entry.entity().getWorld().getEntity(id) != null);
         result.addProperty("spawnCancelled", spawn.get("cancelled").getAsBoolean());
         result.addProperty("roundTripValid", entry.roundTripValid());
-        result.addProperty("installedReleaseContainsBefore", entry.productContains());
+        result.addProperty("installedTopLevelTagBefore", entry.productTagged());
         result.addProperty("beforeItemBytesBase64", Base64.getEncoder().encodeToString(entry.beforeBytes()));
         if (!after.getType().isAir() && after.getAmount() > 0) {
             result.addProperty("afterItemBytesBase64", Base64.getEncoder().encodeToString(after.serializeAsBytes()));
@@ -194,6 +194,6 @@ final class ProtectionFixtures {
         }
     }
 
-    private record Entry(Item entity, JsonObject before, JsonObject expected, byte[] beforeBytes, boolean roundTripValid, boolean productContains) {
+    private record Entry(Item entity, JsonObject before, JsonObject expected, byte[] beforeBytes, boolean roundTripValid, boolean productTagged) {
     }
 }

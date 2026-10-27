@@ -345,6 +345,9 @@ tasks.processResources {
     inputs.properties(replaceProperties)
 
     filesMatching(listOf("*.mixins.json")) {
+        filter { line: String ->
+            if (line.trim() == "\"CustomDataAccessor\"," && stonecutter.eval(stonecutter.current.version, "<1.20.5")) "" else line
+        }
         expand("java_version" to targetJavaVersion)
     }
 

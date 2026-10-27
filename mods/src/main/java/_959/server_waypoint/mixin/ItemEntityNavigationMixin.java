@@ -18,15 +18,6 @@ public abstract class ItemEntityNavigationMixin {
         }
     }
 
-    @Inject(method = "tick", at = @At("HEAD"), cancellable = true/*? if >= 26 {*/, remap = false/*?}*/)
-    private void discardNavigationItemBeforeTick(CallbackInfo ci) {
-        ItemEntity itemEntity = (ItemEntity) (Object) this;
-        if (ModNavigationHooks.isNavigationItem(itemEntity.getItem())) {
-            itemEntity.discard();
-            ci.cancel();
-        }
-    }
-
     @Inject(method = "playerTouch", at = @At("HEAD"), cancellable = true/*? if >= 26 {*/, remap = false/*?}*/)
     private void discardNavigationItemEntity(Player player, CallbackInfo ci) {
         ItemEntity itemEntity = (ItemEntity) (Object) this;

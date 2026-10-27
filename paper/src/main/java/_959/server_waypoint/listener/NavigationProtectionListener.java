@@ -29,7 +29,6 @@ import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
-import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryPickupItemEvent;
 import org.bukkit.event.inventory.InventoryType;
@@ -74,6 +73,7 @@ public final class NavigationProtectionListener implements Listener {
     private final PaperScheduler scheduler;
     private final Map<NavigationMethod, PaperItemNavigationHandler> itemHandlers;
     private final Set<UUID> reconciling = ConcurrentHashMap.newKeySet();
+    private final PendingPlayerReconciliations pendingReconciliations = new PendingPlayerReconciliations();
     private final Map<UUID, Integer> lastDenialMessageTick = new ConcurrentHashMap<>();
     private final Map<UUID, ScheduledTask> navigationTickTasks = new ConcurrentHashMap<>();
 
@@ -108,9 +108,9 @@ public final class NavigationProtectionListener implements Listener {
         ItemStack current = event.getCurrentItem();
         ItemStack cursor = event.getCursor();
         ItemStack hotbarItem = this.hotbarItem(event, player);
-        boolean currentNavigation = this.itemManager.containsNavigationItem(current);
-        boolean cursorNavigation = this.itemManager.containsNavigationItem(cursor);
-        boolean hotbarNavigation = this.itemManager.containsNavigationItem(hotbarItem);
+        boolean currentNavigation = this.itemManager.isNavigationItem(current);
+        boolean cursorNavigation = this.itemManager.isNavigationItem(cursor);
+        boolean hotbarNavigation = this.itemManager.isNavigationItem(hotbarItem);
         if (!currentNavigation && !cursorNavigation && !hotbarNavigation) {
             return;
         }
@@ -147,7 +147,7 @@ public final class NavigationProtectionListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onInventoryDrag(InventoryDragEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)
-                || !this.itemManager.containsNavigationItem(event.getOldCursor())) {
+                || !this.itemManager.isNavigationItem(event.getOldCursor())) {
             return;
         }
         InventoryView view = event.getView();
@@ -186,14 +186,14 @@ public final class NavigationProtectionListener implements Listener {
         if (changed) {
             this.sendDeduplicated(player);
         }
-        this.reconcile(player, true);
+        this.reconcileNextTick(player, true);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPrepareCraft(PrepareItemCraftEvent event) {
         boolean containsNavigationItem = false;
         for (ItemStack item : event.getInventory().getMatrix()) {
-            if (this.itemManager.containsNavigationItem(item)) {
+            if (this.itemManager.isNavigationItem(item)) {
                 containsNavigationItem = true;
                 break;
             }
@@ -213,7 +213,7 @@ public final class NavigationProtectionListener implements Listener {
             return;
         }
         for (ItemStack item : event.getView().getTopInventory().getContents()) {
-            if (this.itemManager.containsNavigationItem(item)) {
+            if (this.itemManager.isNavigationItem(item)) {
                 event.setResult(null);
                 if (event.getView().getPlayer() instanceof Player player) {
                     this.sendMovementDenied(player);
@@ -230,7 +230,7 @@ public final class NavigationProtectionListener implements Listener {
             return;
         }
         for (ItemStack item : event.getInventory().getContents()) {
-            if (this.itemManager.containsNavigationItem(item)) {
+            if (this.itemManager.isNavigationItem(item)) {
                 event.setCancelled(true);
                 this.sendMovementDenied(player);
                 this.reconcileNextTick(player, true);
@@ -241,7 +241,7 @@ public final class NavigationProtectionListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onDrop(PlayerDropItemEvent event) {
-        if (this.itemManager.containsNavigationItem(event.getItemDrop().getItemStack())) {
+        if (this.itemManager.isNavigationItem(event.getItemDrop().getItemStack())) {
             event.setCancelled(true);
             this.sendMovementDenied(event.getPlayer());
             this.reconcileNextTick(event.getPlayer(), true);
@@ -250,62 +250,31 @@ public final class NavigationProtectionListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onItemSpawn(ItemSpawnEvent event) {
-        ItemStack item = event.getEntity().getItemStack();
-        if (!this.itemManager.containsNavigationItem(item)) {
+        if (!this.itemManager.isNavigationItem(event.getEntity().getItemStack())) {
             return;
         }
-        if (this.itemManager.isNavigationItem(item)) {
-            event.setCancelled(true);
-        } else if (this.itemManager.removeNestedNavigationItems(item)) {
-            event.getEntity().setItemStack(item);
-        }
-        this.reconcileActivePlayers();
+        event.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onEntityPickup(EntityPickupItemEvent event) {
-        ItemStack item = event.getItem().getItemStack();
-        if (!this.itemManager.containsNavigationItem(item)) {
+        if (!this.itemManager.isNavigationItem(event.getItem().getItemStack())) {
             return;
         }
-        if (this.itemManager.isNavigationItem(item)) {
-            event.setCancelled(true);
-            event.getItem().remove();
-            if (event.getEntity() instanceof Player player) {
-                this.sendMovementDenied(player);
-                this.reconcileNextTick(player, true);
-            }
-        } else if (this.itemManager.removeNestedNavigationItems(item)) {
-            event.getItem().setItemStack(item);
+        event.setCancelled(true);
+        event.getItem().remove();
+        if (event.getEntity() instanceof Player player) {
+            this.sendMovementDenied(player);
         }
-        this.reconcileActivePlayers();
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onInventoryPickup(InventoryPickupItemEvent event) {
-        ItemStack item = event.getItem().getItemStack();
-        if (!this.itemManager.containsNavigationItem(item)) {
+        if (!this.itemManager.isNavigationItem(event.getItem().getItemStack())) {
             return;
         }
-        if (this.itemManager.isNavigationItem(item)) {
-            event.setCancelled(true);
-            event.getItem().remove();
-        } else if (this.itemManager.removeNestedNavigationItems(item)) {
-            event.getItem().setItemStack(item);
-        }
-        this.reconcileActivePlayers();
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onInventoryMove(InventoryMoveItemEvent event) {
-        if (this.itemManager.containsNavigationItem(event.getItem())) {
-            event.setCancelled(true);
-            Inventory source = event.getSource();
-            this.scheduler.runNextTick(source, () -> {
-                this.itemManager.removeFromInvalidInventory(source);
-                this.reconcileActivePlayers();
-            });
-        }
+        event.setCancelled(true);
+        event.getItem().remove();
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -315,7 +284,7 @@ public final class NavigationProtectionListener implements Listener {
         }
         Material clickedType = event.getClickedBlock().getType();
         boolean protectedInteraction = clickedType == Material.DECORATED_POT
-                && this.itemManager.containsNavigationItem(event.getItem());
+                && this.itemManager.isNavigationItem(event.getItem());
         protectedInteraction |= clickedType == Material.LODESTONE
                 && this.itemManager.isMethod(event.getItem(), NavigationMethod.COMPASS);
         if (!protectedInteraction) {
@@ -332,7 +301,7 @@ public final class NavigationProtectionListener implements Listener {
     public void onItemFrameInteract(PlayerInteractEntityEvent event) {
         ItemStack heldItem = event.getPlayer().getInventory().getItem(event.getHand());
         if (event.getRightClicked() instanceof ItemFrame
-                && this.itemManager.containsNavigationItem(heldItem)) {
+                && this.itemManager.isNavigationItem(heldItem)) {
             event.setCancelled(true);
             this.sendMovementDenied(event.getPlayer());
             this.reconcileNextTick(event.getPlayer(), true);
@@ -340,16 +309,19 @@ public final class NavigationProtectionListener implements Listener {
         }
         if (event.getRightClicked() instanceof Allay allay) {
             ItemStack allayItem = allay.getEquipment().getItemInMainHand();
-            if (!this.itemManager.containsNavigationItem(heldItem)
-                    && !this.itemManager.containsNavigationItem(allayItem)) {
+            boolean allayNavigation = this.itemManager.isNavigationItem(allayItem);
+            if (!this.itemManager.isNavigationItem(heldItem)
+                    && !allayNavigation) {
                 return;
             }
             event.setCancelled(true);
-            if (this.itemManager.containsNavigationItem(allayItem)) {
-                this.sanitizeEquipmentItem(allay, EquipmentSlot.HAND, allayItem);
+            if (allayNavigation) {
+                this.sanitizeEquipmentItem(allay, EquipmentSlot.HAND);
             }
             this.sendMovementDenied(event.getPlayer());
-            this.reconcileNextTick(event.getPlayer(), true);
+            if (!allayNavigation) {
+                this.reconcileNextTick(event.getPlayer(), true);
+            }
         }
     }
 
@@ -357,51 +329,50 @@ public final class NavigationProtectionListener implements Listener {
     public void onArmorStandManipulate(PlayerArmorStandManipulateEvent event) {
         ItemStack playerItem = event.getPlayerItem();
         ItemStack armorStandItem = event.getArmorStandItem();
-        if (!this.itemManager.containsNavigationItem(playerItem)
-                && !this.itemManager.containsNavigationItem(armorStandItem)) {
+        boolean armorStandNavigation = this.itemManager.isNavigationItem(armorStandItem);
+        if (!this.itemManager.isNavigationItem(playerItem)
+                && !armorStandNavigation) {
             return;
         }
         event.setCancelled(true);
-        if (this.itemManager.containsNavigationItem(armorStandItem)) {
-            this.sanitizeEquipmentItem(event.getRightClicked(), event.getSlot(), armorStandItem);
+        if (armorStandNavigation) {
+            this.sanitizeEquipmentItem(event.getRightClicked(), event.getSlot());
         }
         this.sendMovementDenied(event.getPlayer());
-        this.reconcileNextTick(event.getPlayer(), true);
+        if (!armorStandNavigation) {
+            this.reconcileNextTick(event.getPlayer(), true);
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onItemFrameChange(PlayerItemFrameChangeEvent event) {
         ItemStack item = event.getItemStack();
-        if (!this.itemManager.containsNavigationItem(item)) {
+        if (!this.itemManager.isNavigationItem(item)) {
             return;
         }
         event.setCancelled(true);
-        if (event.getAction() != PlayerItemFrameChangeEvent.ItemFrameChangeAction.PLACE) {
-            if (this.itemManager.isNavigationItem(item)) {
-                event.getItemFrame().setItem(new ItemStack(Material.AIR), false);
-            } else {
-                ItemStack sanitizedItem = item.clone();
-                this.itemManager.removeNestedNavigationItems(sanitizedItem);
-                event.getItemFrame().setItem(sanitizedItem, false);
-            }
-            this.reconcileActivePlayers();
+        boolean placement = event.getAction() == PlayerItemFrameChangeEvent.ItemFrameChangeAction.PLACE;
+        if (!placement) {
+            event.getItemFrame().setItem(new ItemStack(Material.AIR), false);
         }
         this.sendMovementDenied(event.getPlayer());
-        this.reconcileNextTick(event.getPlayer(), true);
+        if (placement) {
+            this.reconcileNextTick(event.getPlayer(), true);
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onSwapHands(PlayerSwapHandItemsEvent event) {
-        if (this.itemManager.containsNavigationItem(event.getMainHandItem())
-                || this.itemManager.containsNavigationItem(event.getOffHandItem())) {
+        if (this.itemManager.isNavigationItem(event.getMainHandItem())
+                || this.itemManager.isNavigationItem(event.getOffHandItem())) {
             this.reconcileNextTick(event.getPlayer(), true);
         }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerInventorySlotChange(PlayerInventorySlotChangeEvent event) {
-        if (this.itemManager.containsNavigationItem(event.getOldItemStack())
-                || this.itemManager.containsNavigationItem(event.getNewItemStack())) {
+        if (this.itemManager.isNavigationItem(event.getOldItemStack())
+                || this.itemManager.isNavigationItem(event.getNewItemStack())) {
             this.reconcileNextTick(event.getPlayer(), true);
         }
     }
@@ -411,14 +382,10 @@ public final class NavigationProtectionListener implements Listener {
         List<ItemStack> drops = event.getDrops();
         for (int index = drops.size() - 1; index >= 0; index--) {
             ItemStack item = drops.get(index);
-            if (!this.itemManager.containsNavigationItem(item)) {
+            if (!this.itemManager.isNavigationItem(item)) {
                 continue;
             }
-            if (this.itemManager.isNavigationItem(item)) {
-                drops.remove(index);
-            } else if (this.itemManager.removeNestedNavigationItems(item)) {
-                drops.set(index, item);
-            }
+            drops.remove(index);
         }
         Player player = event.getPlayer();
         this.itemManager.sanitizeCursor(player);
@@ -445,16 +412,29 @@ public final class NavigationProtectionListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        this.playerDisconnect.accept(player);
-        ScheduledTask tickTask = this.navigationTickTasks.remove(player.getUniqueId());
-        if (tickTask != null) {
-            tickTask.cancel();
+        this.pendingReconciliations.remove(player.getUniqueId());
+        try {
+            this.playerDisconnect.accept(player);
+            ScheduledTask tickTask = this.navigationTickTasks.remove(player.getUniqueId());
+            if (tickTask != null) {
+                tickTask.cancel();
+            }
+            this.navigationService.removePlayer(player);
+            this.itemManager.purgeAll(player);
+            this.lastDenialMessageTick.remove(player.getUniqueId());
+            this.reconciling.remove(player.getUniqueId());
+            this.navigationPlatform.unregisterPlayer(player.getUniqueId());
+        } finally {
+            // Purging items can itself emit inventory events during disconnect.
+            this.pendingReconciliations.remove(player.getUniqueId());
         }
-        this.navigationService.removePlayer(player);
-        this.itemManager.purgeAll(player);
-        this.lastDenialMessageTick.remove(player.getUniqueId());
-        this.reconciling.remove(player.getUniqueId());
-        this.navigationPlatform.unregisterPlayer(player.getUniqueId());
+    }
+
+    public void shutdown() {
+        this.pendingReconciliations.close();
+        this.navigationTickTasks.values().forEach(ScheduledTask::cancel);
+        this.navigationTickTasks.clear();
+        this.lastDenialMessageTick.clear();
     }
 
     private ItemStack hotbarItem(InventoryClickEvent event, Player player) {
@@ -469,11 +449,16 @@ public final class NavigationProtectionListener implements Listener {
     }
 
     private void reconcileNextTick(Player player, boolean restoreMissing) {
-        this.scheduler.runNextTick(player, () -> {
-            if (player.isOnline()) {
-                this.reconcile(player, restoreMissing);
-            }
-        });
+        this.pendingReconciliations.request(
+                player.getUniqueId(),
+                restoreMissing,
+                (action, retired) -> this.scheduler.runNextTick(player, action, retired) != null,
+                restore -> {
+                    if (player.isOnline()) {
+                        this.reconcile(player, restore);
+                    }
+                }
+        );
     }
 
     private void reconcile(Player player, boolean restoreMissing) {
@@ -526,30 +511,8 @@ public final class NavigationProtectionListener implements Listener {
         }
     }
 
-    private void sanitizeEquipmentItem(
-            LivingEntity entity,
-            EquipmentSlot slot,
-            ItemStack item
-    ) {
-        ItemStack sanitizedItem = null;
-        if (!this.itemManager.isNavigationItem(item)) {
-            sanitizedItem = item.clone();
-            this.itemManager.removeNestedNavigationItems(sanitizedItem);
-        }
-        entity.getEquipment().setItem(slot, sanitizedItem, true);
-        this.reconcileActivePlayers();
-    }
-
-    private void reconcileActivePlayers() {
-        for (UUID playerUuid : this.navigationPlatform.registeredPlayerUuids()) {
-            if (this.navigationService.findSession(playerUuid).isEmpty()) {
-                continue;
-            }
-            this.navigationPlatform.executePlayer(
-                    playerUuid,
-                    player -> this.reconcileNextTick(player, true)
-            );
-        }
+    private void sanitizeEquipmentItem(LivingEntity entity, EquipmentSlot slot) {
+        entity.getEquipment().setItem(slot, null, true);
     }
 
     private void sendMovementDenied(Player player) {

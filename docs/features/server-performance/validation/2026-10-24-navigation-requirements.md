@@ -9,6 +9,11 @@ the installed release handlers and distinguish physical client/server events fro
 synthetic event dispatch. A passing synthetic handler case does not prove a physical client
 interaction. Each requirement below also needs owner-isolation and post-quiescence checks.
 
+Current-development policy change, 2026-10-26: the user requested removal of
+`onInventoryMove` after the enabled/disabled cost comparison. The row below remains
+an inventory of the original published release, not an expected protection in the
+new development build. See [removal validation](2026-10-26-hopper-transfer-removal.md).
+
 | Hook | Native event | Required independent observations | Execution |
 | --- | --- | --- | --- |
 | `onInventoryClick` | `InventoryClickEvent` | Current/cursor/hotbar, direct allowed slots, shift move, drop/clone/collect, portable storage; ordinary items conserved. | Partial: actual 1/10-owner storage moves allowed, armor/result-slot attempts cancelled, ordinary move control conserved; other click modes/nested storage pending. |
