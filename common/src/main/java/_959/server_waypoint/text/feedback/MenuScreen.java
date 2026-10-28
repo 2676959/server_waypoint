@@ -29,6 +29,12 @@ public final class MenuScreen {
 
     public static Component menu(Viewer viewer, DimensionStyle dims, @Nullable PlacedWaypoint navigation,
                                  boolean remoteAvailable) {
+        return menu(viewer, dims, navigation, remoteAvailable, navigation == null ? null : navigation.reference(dims));
+    }
+
+    /** The caller resolves a navigation reference using its target collection's permissions. */
+    public static Component menu(Viewer viewer, DimensionStyle dims, @Nullable PlacedWaypoint navigation,
+                                 boolean remoteAvailable, @Nullable Component navigationReference) {
         String here = Objects.requireNonNullElse(viewer.dimension(), "minecraft:overworld");
         ChatLines lines = new ChatLines();
         List<Component> extras = new ArrayList<>();
@@ -36,15 +42,21 @@ public final class MenuScreen {
             extras.add(Chat.link(viewer, translatable("wp.menu.open_gui"), AQUA, Click.run("/wp_gui"),
                     Tooltip.of("wp.menu.open_gui.tooltip").line("wp.menu.open_gui.detail")));
         }
+        if (viewer.can(Viewer.Permission.PRIVATE)) {
+            extras.add(Chat.link(viewer, translatable("wp.menu.private"), AQUA, Click.run("/wp private"),
+                    Tooltip.of("wp.menu.private.tooltip")));
+        }
         extras.add(Chat.link(viewer, translatable("wp.menu.help"), GRAY, Click.run("/wp help"),
                 Tooltip.of("wp.menu.help.tooltip").line("wp.menu.help.detail")));
         if (viewer.can(Viewer.Permission.RELOAD)) {
             extras.add(Chat.link(viewer, translatable("wp.menu.reload"), GRAY, Click.suggest("/wp reload"),
                     Tooltip.of("wp.menu.reload.tooltip").hint("wp.hint.confirm")));
         }
-        lines.line(translatable("wp.menu.title", GOLD), text("   "), Chat.join(extras));
+        lines.line(translatable(viewer.scope() == _959.server_waypoint.core.collection.WaypointScope.PRIVATE
+                ? "wp.menu.private.title" : "wp.menu.title", GOLD), text("   "), Chat.join(extras));
 
-        group(lines, "wp.menu.browse", Chat.join(
+        if (viewer.scope() == _959.server_waypoint.core.collection.WaypointScope.SHARED
+                || viewer.can(Viewer.Permission.LIST)) group(lines, "wp.menu.browse", Chat.join(
                 Chat.link(viewer, translatable("wp.menu.this_dimension"), AQUA, Click.run("/wp list"),
                         Tooltip.of(translatable("wp.menu.this_dimension.tooltip", dims.name(here)))),
                 Chat.link(viewer, translatable("wp.all"), AQUA, Click.run("/wp list all"), Tooltip.of("wp.all.tooltip")),
@@ -65,7 +77,7 @@ public final class MenuScreen {
             Component navigationLink = Chat.link(viewer, translatable("wp.menu.navigation"), LIGHT_PURPLE,
                     Click.run("/wp navigate"), Tooltip.of("wp.menu.navigation.tooltip"));
             group(lines, "wp.menu.travel", navigation == null ? navigationLink : Chat.join(
-                    translatable("wp.menu.navigation_to", GRAY, navigationLink, navigation.reference(dims)),
+                    translatable("wp.menu.navigation_to", GRAY, navigationLink, Objects.requireNonNull(navigationReference)),
                     Chat.link(viewer, translatable("wp.navigation.stop"), RED, Click.run("/wp navigate disable"),
                             Tooltip.of("wp.navigation.stop.tooltip"))));
         }

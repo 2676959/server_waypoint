@@ -25,7 +25,7 @@ class MenuScreenTest {
         Component menu = MenuScreen.menu(Fixtures.player(), Fixtures.dims(Fixtures.player()), mainHome(), true);
 
         assertEquals(List.of(
-                "Server Waypoint   Open GUI · Help · Reload",
+                "Server Waypoint   Open GUI · Private · Help · Reload",
                 "Browse",
                 "  This dimension · All · Remote · Search",
                 "Create",
@@ -34,6 +34,7 @@ class MenuScreenTest {
                 "  Navigation to [MH] Main Home · Stop",
                 "Transfer",
                 "  Download · Upload"), lines(menu));
+        assertEquals("/wp private", clickOf(menu, "Private"));
         assertEquals("/wp_gui", clickOf(menu, "Open GUI"));
         assertEquals("/wp help", clickOf(menu, "Help"));
         assertEquals("/wp reload", clickOf(menu, "Reload"));

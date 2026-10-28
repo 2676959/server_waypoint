@@ -17,7 +17,7 @@ JUnit 5, Gradle Kotlin DSL, and Stonecutter across Fabric, Forge, NeoForge, and 
 
 **Spec:** [Private and local waypoint design](../specs/2026-10-16-private-waypoint-design.md).
 
-Status: implementation in progress; Tasks 1–2 verified on 2026-10-23. Prepared on 2026-10-16 against branch
+Status: implementation in progress; Tasks 1–2 verified on 2026-10-23 and Task 3 on 2026-10-28. Prepared on 2026-10-16 against branch
 `feature/private-waypoint`. Exact proposed class names below are implementation contracts,
 not claims that those classes already exist.
 
@@ -166,23 +166,23 @@ Add `command/CoreWaypointCommandPrivateTest.java` and extend command-builder/res
 **Interfaces:** produces `/wp private` and its spec-defined command subtree. Shared remains the
 ordinary `/wp` scope. Existing command syntax builders take explicit server scope where relevant.
 
-- [ ] Add tests for private menu/help, list creation, full waypoint properties, list/waypoint
+- [x] Add tests for private menu/help, list creation, full waypoint properties, list/waypoint
   details/edit/remove, restore, navigation, and teleport using the same identifiers in all stores.
   Verify every private action/suggestion link retains its prefix.
-- [ ] Assert ordinary players get list/add/edit/remove/navigate; default private teleport is denied
+- [x] Assert ordinary players get list/add/edit/remove/navigate; default private teleport is denied
   until granted. Assert existing shared grants do not authorize another owner's private access.
-- [ ] Assert no-player sources fail without touching storage, privileged execute-as follows the
+- [x] Assert no-player sources fail without touching storage, privileged execute-as follows the
   executing player's identity and existing commander feedback, and private changes have no shared
   player broadcast.
-- [ ] Test restore's ten-minute expiry, single-use behavior, wrong owner/collection, name conflict,
+- [x] Test restore's ten-minute expiry, single-use behavior, wrong owner/collection, name conflict,
   and quota rejection. Failed restore attempts must not consume a valid token.
-- [ ] Run the focused tests to establish failures. Parameterize the existing command registration,
+- [x] Run the focused tests to establish failures. Parameterize the existing command registration,
   query lookup, permission selection, and feedback context rather than duplicating the entire
   `CoreWaypointCommand`. Resolve one scope at invocation and carry it through asynchronous work.
-- [ ] Add all applicable common translations, with MessageFormat placeholder consistency.
-- [ ] Run `rtk proxy ./gradlew :common:test --tests '*CoreWaypointCommand*Test' --tests '*StringCommandBuilderTest' --tests '*WaypointRestoreRegistryTest' --tests '*Platform*Permission*Test'`.
+- [x] Add all applicable common translations, with MessageFormat placeholder consistency.
+- [x] Run `rtk proxy ./gradlew :common:test --tests '*CoreWaypointCommand*Test' --tests '*StringCommandBuilderTest' --tests '*WaypointRestoreRegistryTest' --tests '*Platform*Permission*Test'`.
   Expected: passing scoped command and existing permission contracts.
-- [ ] Review generated links, source resolution, private persistence outcomes, and permission
+- [x] Review generated links, source resolution, private persistence outcomes, and permission
   descriptors; no dedicated other-player administration or private upload/download extension.
 
 ## Task 4: Owner-only protocol and separate client server caches

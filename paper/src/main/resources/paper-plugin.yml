@@ -14,3 +14,24 @@ dependencies:
       load: BEFORE
       required: false
       join-classpath: true
+
+# Leave nodes unset by default so CommandPermission levels remain reloadable.
+permissions:
+  server_waypoint.command.private.list:
+    description: Browse your private waypoints
+    default: false
+  server_waypoint.command.private.add:
+    description: Create and restore your private waypoints
+    default: false
+  server_waypoint.command.private.edit:
+    description: Edit your private waypoints
+    default: false
+  server_waypoint.command.private.remove:
+    description: Remove your private waypoints
+    default: false
+  server_waypoint.command.private.navigate:
+    description: Navigate to your private waypoints
+    default: false
+  server_waypoint.command.private.tp:
+    description: Teleport to your private waypoints
+    default: false

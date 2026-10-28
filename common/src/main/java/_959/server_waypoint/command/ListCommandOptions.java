@@ -42,15 +42,15 @@ final class ListCommandOptions<S> {
 
     private final Factory<S> factory;
     private final Function<String, Command<S>> reserved;
-    private final Command<S> command;
+    private final PreparableCommand<S> command;
 
     ListCommandOptions(Factory<S> factory, Function<String, Command<S>> reserved) {
         this.factory = factory;
         this.reserved = reserved;
-        this.command = this::execute;
+        this.command = this::prepare;
     }
 
-    private int execute(CommandContext<S> context) throws CommandSyntaxException {
+    private Command<S> prepare(CommandContext<S> context) throws CommandSyntaxException {
         String mode = option(context, SORT_MODE_ARG, SORT_MODES);
         String order = option(context, SORT_ORDER_ARG, SORT_ORDERS);
         String view = option(context, LIST_VIEW_ARG, VIEWS);
@@ -60,7 +60,7 @@ final class ListCommandOptions<S> {
             throw invalidOption(context, SORT_ORDER_ARG);
         }
         ListView listView = view == null ? ListView.DEFAULT : ListView.valueOf(view.toUpperCase(Locale.ROOT));
-        return factory.create(sortMode, "descending".equals(order), listView).run(context);
+        return factory.create(sortMode, "descending".equals(order), listView);
     }
 
     private static <S> String option(CommandContext<S> context, String name, List<String> values)

@@ -567,5 +567,16 @@
   "wp.remote.tp.cancelled": "המעבר ל-{0} בוטל.",
   "wp.remote.tp.unsupported": "השרת הזה לא יכול להעביר שחקנים לשרתים אחרים.",
   "wp.remote.tp.invalid_request": "{0} שלח תשובה שלא תואמת לבקשה.",
-  "wp.remote.tp.internal_error": "במעבר ל-{0} אירעה שגיאה פנימית."
+  "wp.remote.tp.internal_error": "במעבר ל-{0} אירעה שגיאה פנימית.",
+    "wp.menu.private": "פרטיים",
+    "wp.menu.private.tooltip": "נקודות הציון הפרטיות שלך",
+    "wp.menu.private.title": "נקודות ציון פרטיות",
+    "wp.error.private.permission": "אין לך עוד הרשאה לפעולה פרטית זו.",
+    "wp.error.private.list_quota": "הגעת למגבלת הרשימות הפרטיות שלך.",
+    "wp.error.private.waypoint_quota": "הגעת למגבלת נקודות הציון הפרטיות שלך.",
+    "wp.error.private.storage": "לא ניתן לטעון או לשמור את נקודות הציון הפרטיות שלך. יש לנסות שוב.",
+    "wp.error.private.command": "לא ניתן לבצע את הפקודה הפרטית.",
+    "wp.help.topic.private": "פרטיים",
+    "wp.help.private.run": "ניהול נקודות הציון הפרטיות שלך",
+    "wp.help.private.note": "אותן פקודות כמו במשותפים; שיגור דורש הרשאה נפרדת"
 }

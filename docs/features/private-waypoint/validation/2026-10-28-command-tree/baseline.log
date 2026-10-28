@@ -1,0 +1,53 @@
+Configuration on demand is an incubating feature.
+Running Stonecutter 0.9.7
+
+> Configure project :mods:26.3-fabric
+Fabric Loom: 1.15.5
+
+> Task :cross-server:updateModInfo UP-TO-DATE
+> Task :common:processResources UP-TO-DATE
+> Task :cross-server:compileJava UP-TO-DATE
+> Task :common:compileJava UP-TO-DATE
+> Task :common:classes UP-TO-DATE
+> Task :common:jar UP-TO-DATE
+> Task :cross-server:processResources NO-SOURCE
+> Task :cross-server:classes UP-TO-DATE
+> Task :cross-server:jar UP-TO-DATE
+> Task :mods:26.3-fabric:stonecutterPrepare
+> Task :mods:26.3-fabric:stonecutterGenerate
+
+> Task :mods:26.3-fabric:compileJava
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/26.3-fabric/build/generated/stonecutter/main/java/_959/server_waypoint/common/util/XaerosWaypointHelper.java:47: warning: [deprecation] getColor() in Waypoint has been deprecated
+                colorIndexToRgb(waypoint.getColor()),
+                                        ^
+1 warning
+
+> Task :mods:26.3-fabric:processResources UP-TO-DATE
+> Task :mods:26.3-fabric:classes
+> Task :mods:26.3-fabric:compilePrivateCommandTreeProbe
+
+> Task :mods:26.3-fabric:privateCommandTreeProbe
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.joml.MemUtil$MemUtilUnsafe (file:/Volumes/ssd/gradle_home/caches/modules-2/files-2.1/org.joml/joml/1.10.9/438e036486bad66b189bff385dd07dea4f74a146/joml-1.10.9.jar)
+WARNING: Please consider reporting this to the maintainers of class org.joml.MemUtil$MemUtilUnsafe
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[17:11:30] [main/INFO]: Internal translations: en_us, zh_hk, zh_tw, es_es, he_il, zh_cn
+PRIVATE_TREE sample=0 serverNodes=4307 copiedNodes=4306 packetNodes=4306 bytes=73381 copyMs=14.238 packetMs=33.993
+PRIVATE_TREE sample=1 serverNodes=4307 copiedNodes=4306 packetNodes=4306 bytes=73381 copyMs=14.024 packetMs=35.845
+PRIVATE_TREE sample=2 serverNodes=4307 copiedNodes=4306 packetNodes=4306 bytes=73381 copyMs=20.210 packetMs=33.550
+PRIVATE_TREE sample=3 serverNodes=4307 copiedNodes=4306 packetNodes=4306 bytes=73381 copyMs=12.042 packetMs=30.602
+PRIVATE_TREE sample=4 serverNodes=4307 copiedNodes=4306 packetNodes=4306 bytes=73381 copyMs=10.339 packetMs=28.452
+PRIVATE_TREE sample=5 serverNodes=4307 copiedNodes=4306 packetNodes=4306 bytes=73381 copyMs=9.861 packetMs=28.938
+PRIVATE_TREE sample=6 serverNodes=4307 copiedNodes=4306 packetNodes=4306 bytes=73381 copyMs=10.405 packetMs=28.346
+
+[Incubating] Problems report is available at: file:///Volumes/ssd/fabric_mods_repo/server_waypoint/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.5.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 11s
+12 actionable tasks: 5 executed, 7 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.5.1/userguide/configuration_cache_enabling.html

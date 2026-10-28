@@ -567,5 +567,16 @@
   "wp.remote.tp.cancelled": "Se canceló el cambio a {0}.",
   "wp.remote.tp.unsupported": "Este servidor no puede llevar jugadores a otros servidores.",
   "wp.remote.tp.invalid_request": "{0} respondió algo que no coincide con la solicitud.",
-  "wp.remote.tp.internal_error": "El cambio a {0} tuvo un error interno."
+  "wp.remote.tp.internal_error": "El cambio a {0} tuvo un error interno.",
+    "wp.menu.private": "Privados",
+    "wp.menu.private.tooltip": "Tus puntos de ruta privados",
+    "wp.menu.private.title": "Puntos de ruta privados",
+    "wp.error.private.permission": "Ya no tienes permiso para esta acción privada.",
+    "wp.error.private.list_quota": "Has alcanzado el límite de listas privadas.",
+    "wp.error.private.waypoint_quota": "Has alcanzado el límite de puntos de ruta privados.",
+    "wp.error.private.storage": "No se pudieron cargar o guardar tus puntos de ruta privados. Inténtalo de nuevo.",
+    "wp.error.private.command": "No se pudo ejecutar el comando privado.",
+    "wp.help.topic.private": "Privados",
+    "wp.help.private.run": "Gestiona tus propios puntos de ruta privados",
+    "wp.help.private.note": "Usa los mismos comandos que los compartidos; el teletransporte requiere otro permiso"
 }

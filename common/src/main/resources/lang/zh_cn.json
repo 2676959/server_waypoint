@@ -577,5 +577,16 @@
   "wp.remote.tp.cancelled": "切换到{0}已取消。",
   "wp.remote.tp.unsupported": "这个服务器无法把玩家切换到其他服务器。",
   "wp.remote.tp.invalid_request": "{0}的回复与请求不符。",
-  "wp.remote.tp.internal_error": "切换到{0}时发生内部错误。"
+  "wp.remote.tp.internal_error": "切换到{0}时发生内部错误。",
+    "wp.menu.private": "私人",
+    "wp.menu.private.tooltip": "你的私人路径点",
+    "wp.menu.private.title": "私人路径点",
+    "wp.error.private.permission": "你已无权执行此私人操作。",
+    "wp.error.private.list_quota": "已达到私人列表数量上限。",
+    "wp.error.private.waypoint_quota": "已达到私人路径点数量上限。",
+    "wp.error.private.storage": "无法加载或保存你的私人路径点，请重试。",
+    "wp.error.private.command": "无法执行私人路径点命令。",
+    "wp.help.topic.private": "私人",
+    "wp.help.private.run": "管理你自己的私人路径点",
+    "wp.help.private.note": "用法与共享路径点相同；传送需要单独授权"
 }

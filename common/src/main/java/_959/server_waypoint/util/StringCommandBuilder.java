@@ -16,6 +16,15 @@ import static _959.server_waypoint.util.ColorUtils.rgbToNameOrHexCode;
 public class StringCommandBuilder {
     public static final String WAYPOINT_COMMAND_WITH_SLASH = "/" + WAYPOINT_COMMAND;
 
+    /** Scopes a complete command or help syntax, leaving identifiers and already scoped commands intact. */
+    public static String inScope(WaypointScope scope, String command) {
+        if (scope != WaypointScope.PRIVATE || !(command.equals("/wp") || command.startsWith("/wp "))
+                || command.equals("/wp private") || command.startsWith("/wp private ")) {
+            return command;
+        }
+        return commandPrefix(scope) + command.substring(WAYPOINT_COMMAND_WITH_SLASH.length());
+    }
+
     public static String commandPrefix(WaypointScope scope) {
         return scope == WaypointScope.PRIVATE ? WAYPOINT_COMMAND_WITH_SLASH + " private" : WAYPOINT_COMMAND_WITH_SLASH;
     }

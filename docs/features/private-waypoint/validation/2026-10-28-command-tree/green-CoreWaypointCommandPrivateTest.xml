@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="_959.server_waypoint.command.CoreWaypointCommandPrivateTest" tests="19" skipped="0" failures="0" errors="0" timestamp="2026-10-28T21:19:10.539Z" hostname="Mac-mini.local" time="0.104">
+  <properties/>
+  <testcase name="privateListDenialHidesBrowseAndHelpAndSharedMenuExposesPrivate()" classname="_959.server_waypoint.command.CoreWaypointCommandPrivateTest" time="0.01"/>
+  <testcase name="suggestionsUseOnlyExecutingOwner()" classname="_959.server_waypoint.command.CoreWaypointCommandPrivateTest" time="0.006"/>
+  <testcase name="scopedClickGuardMeasuresThePrivatePrefix()" classname="_959.server_waypoint.command.CoreWaypointCommandPrivateTest" time="0.003"/>
+  <testcase name="menuHelpDetailsAndActionsKeepPrivatePrefix()" classname="_959.server_waypoint.command.CoreWaypointCommandPrivateTest" time="0.004"/>
+  <testcase name="emptyListLifecycleAndQuotaFailureDoNotLeakLists()" classname="_959.server_waypoint.command.CoreWaypointCommandPrivateTest" time="0.006"/>
+  <testcase name="privateNavigationRefreshAndRemovalKeepCollectionIdentity()" classname="_959.server_waypoint.command.CoreWaypointCommandPrivateTest" time="0.006"/>
+  <testcase name="propertyEditsAndClearOperationsUseThePrivateStore()" classname="_959.server_waypoint.command.CoreWaypointCommandPrivateTest" time="0.012"/>
+  <testcase name="invalidListOptionsFailAtTheArgumentBeforeStorageOrScheduling()" classname="_959.server_waypoint.command.CoreWaypointCommandPrivateTest" time="0.003"/>
+  <testcase name="commandTreeCopyChecksPrivateListPermissionOnceForTheBranch()" classname="_959.server_waypoint.command.CoreWaypointCommandPrivateTest" time="0.004"/>
+  <testcase name="quotaAndCollisionFailuresDoNotConsumeRestore()" classname="_959.server_waypoint.command.CoreWaypointCommandPrivateTest" time="0.006"/>
+  <testcase name="restoreIsOwnerAndCollectionBoundAndSingleUse()" classname="_959.server_waypoint.command.CoreWaypointCommandPrivateTest" time="0.006"/>
+  <testcase name="boundedOptionSuggestionsDoNotLoadAnOwnerStore()" classname="_959.server_waypoint.command.CoreWaypointCommandPrivateTest" time="0.003"/>
+  <testcase name="isolatesIdenticalNamesAndPersistsFullProperties()" classname="_959.server_waypoint.command.CoreWaypointCommandPrivateTest" time="0.006"/>
+  <testcase name="executeAsUsesExecutingPlayerInsteadOfTheOriginalCommander()" classname="_959.server_waypoint.command.CoreWaypointCommandPrivateTest" time="0.004"/>
+  <testcase name="noPlayerFailsBeforeStorageAndPrivateTeleportUsesDedicatedGrant()" classname="_959.server_waypoint.command.CoreWaypointCommandPrivateTest" time="0.004"/>
+  <testcase name="failedPersistenceSuppressesSuccessAndPreservesRestoreToken()" classname="_959.server_waypoint.command.CoreWaypointCommandPrivateTest" time="0.006"/>
+  <testcase name="sharedMenuAndNavigationUseThePrivateTargetsTeleportPermission()" classname="_959.server_waypoint.command.CoreWaypointCommandPrivateTest" time="0.004"/>
+  <testcase name="queuedWorkRetainsAuthenticatedOwnerAndRechecksPermission()" classname="_959.server_waypoint.command.CoreWaypointCommandPrivateTest" time="0.004"/>
+  <testcase name="privateOptionsAndOwnerSuggestionsWorkThroughNestedRedirects()" classname="_959.server_waypoint.command.CoreWaypointCommandPrivateTest" time="0.004"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

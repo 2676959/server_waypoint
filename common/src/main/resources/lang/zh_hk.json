@@ -567,5 +567,16 @@
   "wp.remote.tp.cancelled": "切換到{0}已取消。",
   "wp.remote.tp.unsupported": "這個伺服器無法把玩家切換到其他伺服器。",
   "wp.remote.tp.invalid_request": "{0}的回覆與請求不符。",
-  "wp.remote.tp.internal_error": "切換到{0}時發生內部錯誤。"
+  "wp.remote.tp.internal_error": "切換到{0}時發生內部錯誤。",
+    "wp.menu.private": "私人",
+    "wp.menu.private.tooltip": "你的私人路標",
+    "wp.menu.private.title": "私人路標",
+    "wp.error.private.permission": "你已無權執行此私人操作。",
+    "wp.error.private.list_quota": "已達到私人列表數量上限。",
+    "wp.error.private.waypoint_quota": "已達到私人路標數量上限。",
+    "wp.error.private.storage": "無法載入或儲存你的私人路標，請重試。",
+    "wp.error.private.command": "無法執行私人路標指令。",
+    "wp.help.topic.private": "私人",
+    "wp.help.private.run": "管理你自己的私人路標",
+    "wp.help.private.note": "用法與共享路標相同；傳送需要獨立授權"
 }

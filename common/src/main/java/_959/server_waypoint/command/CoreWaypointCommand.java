@@ -1,6 +1,11 @@
 package _959.server_waypoint.command;
 
 import _959.server_waypoint.core.collection.WaypointCollectionKey;
+import _959.server_waypoint.core.collection.WaypointScope;
+import _959.server_waypoint.core.collection.PrivateWaypointStore;
+import _959.server_waypoint.core.WaypointFilesManagerCore;
+import com.mojang.brigadier.tree.ArgumentCommandNode;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import _959.server_waypoint.text.chat.ChatIcons;
 import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.crossserver.authorization.RemotePermissions;
@@ -126,7 +131,12 @@ import static net.kyori.adventure.text.Component.translatable;
 public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     protected final PlatformMessageSender<S, P> sender;
     private final WaypointServerCore waypointServer;
-    private final WaypointQueryEngine waypointQueryEngine;
+    // Brigadier handlers are synchronous. These bindings bridge the shared registration helpers;
+    // queued commands capture their authenticated collection before scheduling and borrow on execution.
+    // No binding or borrowed manager escapes the callback, including suggestion construction.
+    private final ThreadLocal<WaypointScope> commandMode = ThreadLocal.withInitial(() -> WaypointScope.SHARED);
+    private final ThreadLocal<PrivateInvocation> privateInvocation = new ThreadLocal<>();
+
     private final RemoteWaypointCommand<S> remoteCommand;
     private volatile RemoteTeleportInitiator<S> remoteTeleport = (source, selection, feedback) -> feedback.accept(new RemoteTeleportInitiator.Feedback(Result.UNSUPPORTED));
 
@@ -219,7 +229,6 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
             Supplier<ArgumentType<I>> iconArgument
     ) {
         this.waypointServer = waypointServer;
-        this.waypointQueryEngine = new WaypointQueryEngine(waypointServer);
         this.sender = sender;
         var remotePermissions = new RemotePermissions<>(permissionManager, () -> CONFIG.CommandPermission(), this::getPlayer);
         this.remoteCommand = new RemoteWaypointCommand<>(waypointServer::remoteCatalogStore, sender::sendMessage,
@@ -251,6 +260,82 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         this.permissionKeys = permissionManager.keys;
     }
 
+    private final class PrivateInvocation {
+        private final WaypointCommandScope scope;
+        private final P player;
+        private final List<Runnable> afterPersistence;
+        private final List<Runnable> onPersisted;
+
+        private PrivateInvocation(WaypointCommandScope scope, P player, List<Runnable> afterPersistence,
+                                  List<Runnable> onPersisted) {
+            this.scope = scope;
+            this.player = player;
+            this.afterPersistence = afterPersistence;
+            this.onPersisted = onPersisted;
+        }
+    }
+
+    private boolean isPrivate() {
+        return commandMode.get() == WaypointScope.PRIVATE;
+    }
+
+    private WaypointFilesManagerCore files() {
+        return isPrivate() ? Objects.requireNonNull(privateInvocation.get(), "Private invocation").scope.files() : waypointServer;
+    }
+
+    private WaypointCollectionKey collectionKey() {
+        return isPrivate() ? Objects.requireNonNull(privateInvocation.get(), "Private invocation").scope.collection()
+                : WaypointCollectionKey.shared();
+    }
+
+    private WaypointQueryEngine queryEngine() {
+        return new WaypointQueryEngine(files());
+    }
+
+    private P executingPlayer(S source) {
+        PrivateInvocation invocation = privateInvocation.get();
+        return invocation == null ? getPlayer(source) : invocation.player;
+    }
+
+    private <T> T inPrivateMode(Supplier<T> action) {
+        return inMode(WaypointScope.PRIVATE, action);
+    }
+
+    private <T> T inMode(WaypointScope scope, Supplier<T> action) {
+        WaypointScope previous = commandMode.get();
+        commandMode.set(scope);
+        try {
+            return action.get();
+        } finally {
+            if (previous == WaypointScope.SHARED) commandMode.remove();
+            else commandMode.set(previous);
+        }
+    }
+
+    private void afterPersistence(Runnable action) {
+        PrivateInvocation invocation = privateInvocation.get();
+        if (invocation == null) action.run();
+        else invocation.afterPersistence.add(action);
+    }
+
+    private void onPersisted(Runnable action) {
+        PrivateInvocation invocation = privateInvocation.get();
+        if (invocation == null) action.run();
+        else invocation.onPersisted.add(action);
+    }
+
+    private void sendMessage(S source, Component message) {
+        afterPersistence(() -> sender.sendMessage(source, message));
+    }
+
+    private void sendError(S source, Component message) {
+        afterPersistence(() -> sender.sendError(source, message));
+    }
+
+    private void sendPlayerMessage(P player, Component message) {
+        afterPersistence(() -> sender.sendPlayerMessage(player, message));
+    }
+
     /** Install the connection-scoped source service; the lifecycle owner must close it before replacement. */
     public final void setRemoteTeleportInitiator(RemoteTeleportInitiator<S> initiator) {
         this.remoteTeleport = Objects.requireNonNull(initiator, "initiator");
@@ -262,6 +347,11 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     protected abstract WaypointPos toWaypointPos(S source, B blockPositionArgument);
     protected abstract boolean isDimensionValid(S source, D dimensionArgument);
     protected abstract void executeByServer(S source, Runnable task);
+
+    /** Source-aware command work. Platforms may distinguish this from delayed background persistence. */
+    protected void executeCollectionCommand(S source, Runnable task) {
+        executeByServer(source, task);
+    }
     protected abstract D getSourceDimension(S source);
     protected abstract WaypointPos getSourcePosition(S source);
     protected abstract float getSourceYaw(S source);
@@ -288,44 +378,48 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
 
     /** Who made a change, as broadcasts name them: the player by account name, otherwise the sender. */
     private Component actorName(S source) {
-        P player = getPlayer(source);
+        P player = executingPlayer(source);
         return player == null ? this.sender.getSenderName(source) : playerName(player, text(getPlayerName(player)));
     }
 
     private boolean hasAddPermission(S source) {
-        return this.permissionManager.hasPermission(source, this.permissionKeys.add(), CONFIG.CommandPermission().add());
+        return this.permissionManager.hasPermission(source, isPrivate() ? this.permissionKeys.privateAdd() : this.permissionKeys.add(),
+                isPrivate() ? CONFIG.CommandPermission().privateAdd() : CONFIG.CommandPermission().add());
     }
 
     private boolean hasEditPermission(S source) {
-        return this.permissionManager.hasPermission(source, this.permissionKeys.edit(), CONFIG.CommandPermission().edit());
+        return this.permissionManager.hasPermission(source, isPrivate() ? this.permissionKeys.privateEdit() : this.permissionKeys.edit(),
+                isPrivate() ? CONFIG.CommandPermission().privateEdit() : CONFIG.CommandPermission().edit());
     }
 
     private boolean hasRemovePermission(S source) {
-        return this.permissionManager.hasPermission(source, this.permissionKeys.remove(), CONFIG.CommandPermission().remove());
+        return this.permissionManager.hasPermission(source, isPrivate() ? this.permissionKeys.privateRemove() : this.permissionKeys.remove(),
+                isPrivate() ? CONFIG.CommandPermission().privateRemove() : CONFIG.CommandPermission().remove());
     }
 
     private boolean hasTpPermission(S source) {
-        return this.permissionManager.hasPermission(source, this.permissionKeys.tp(), CONFIG.CommandPermission().tp());
+        return this.permissionManager.hasPermission(source, isPrivate() ? this.permissionKeys.privateTp() : this.permissionKeys.tp(),
+                isPrivate() ? CONFIG.CommandPermission().privateTp() : CONFIG.CommandPermission().tp());
     }
 
     private boolean hasReloadPermission(S source) {
-        return this.permissionManager.hasPermission(source, this.permissionKeys.reload(), CONFIG.CommandPermission().reload());
+        return !isPrivate() && this.permissionManager.hasPermission(source, this.permissionKeys.reload(), CONFIG.CommandPermission().reload());
     }
 
     private boolean hasNavigatePermission(S source) {
         return this.permissionManager.hasPermission(
                 source,
-                this.permissionKeys.navigate(),
-                CONFIG.CommandPermission().navigate()
+                isPrivate() ? this.permissionKeys.privateNavigate() : this.permissionKeys.navigate(),
+                isPrivate() ? CONFIG.CommandPermission().privateNavigate() : CONFIG.CommandPermission().navigate()
         );
     }
 
     private boolean hasUploadPermission(S source) {
-        return this.permissionManager.hasPermission(source, this.permissionKeys.upload(), CONFIG.CommandPermission().upload());
+        return !isPrivate() && this.permissionManager.hasPermission(source, this.permissionKeys.upload(), CONFIG.CommandPermission().upload());
     }
 
     private boolean hasUploadDeletePermission(S source) {
-        return this.permissionManager.hasPermission(source, this.permissionKeys.uploadDelete(), CONFIG.CommandPermission().uploadDelete());
+        return !isPrivate() && this.permissionManager.hasPermission(source, this.permissionKeys.uploadDelete(), CONFIG.CommandPermission().uploadDelete());
     }
 
     /**
@@ -335,11 +429,11 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
      */
     protected final Viewer viewer(S source) {
         Set<Viewer.Permission> permissions = permissions(this.sender.viewingSource(source));
-        P player = getPlayer(source);
-        boolean hasMod = player != null
+        P player = executingPlayer(source);
+        boolean hasMod = !isPrivate() && player != null
                 && (this.sender.canSendChunkedMessage(player) || usesLocalUpload(source, player));
         return new Viewer(permissions, hasMod, this.sender.isPlainTextReceiver(source),
-                toDimensionName(getSourceDimension(source)), getSourcePosition(source), getSourceYaw(source), chatIcons());
+                toDimensionName(getSourceDimension(source)), getSourcePosition(source), getSourceYaw(source), chatIcons(), commandMode.get());
     }
 
     /**
@@ -348,6 +442,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
      */
     private Set<Viewer.Permission> permissions(S source) {
         Set<Viewer.Permission> permissions = EnumSet.noneOf(Viewer.Permission.class);
+        if (isPrivate() && privateAllowed(source, LIST_COMMAND)) permissions.add(Viewer.Permission.LIST);
         if (hasAddPermission(source)) permissions.add(Viewer.Permission.ADD);
         if (hasEditPermission(source)) permissions.add(Viewer.Permission.EDIT);
         if (hasRemovePermission(source)) permissions.add(Viewer.Permission.REMOVE);
@@ -356,8 +451,9 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         if (hasReloadPermission(source)) permissions.add(Viewer.Permission.RELOAD);
         if (hasUploadPermission(source)) permissions.add(Viewer.Permission.UPLOAD);
         if (hasUploadDeletePermission(source)) permissions.add(Viewer.Permission.UPLOAD_DELETE);
-        if (this.remoteCommand.canList(source)) permissions.add(Viewer.Permission.REMOTE_LIST);
-        if (this.remoteCommand.canTeleport(source)) permissions.add(Viewer.Permission.REMOTE_TP);
+        if (!isPrivate() && this.remoteCommand.canList(source)) permissions.add(Viewer.Permission.REMOTE_LIST);
+        if (!isPrivate() && this.remoteCommand.canTeleport(source)) permissions.add(Viewer.Permission.REMOTE_TP);
+        if (!isPrivate() && privateAvailable(source)) permissions.add(Viewer.Permission.PRIVATE);
         return permissions;
     }
 
@@ -652,7 +748,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                 getString(context, WAYPOINT_NAME_ARG), (fileManager, list, waypoint) -> {
                     Viewer viewer = viewer(source);
                     DimensionStyle dims = dimensions(source, viewer);
-                    this.sender.sendMessage(source, color
+                    sendMessage(source, color
                             ? PickerScreens.color(dims, fileManager.getDimensionName(), list, waypoint)
                             : PickerScreens.facing(dims, fileManager.getDimensionName(), list, waypoint));
                 });
@@ -662,13 +758,13 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     /** /wp add without arguments: the lists of the player's dimension to add a waypoint where they stand. */
     private int executeAddPicker(S source, int page) {
         if (getPlayer(source) == null) {
-            this.sender.sendError(source, Errors.playerOnly());
+            sendError(source, Errors.playerOnly());
             return 0;
         }
         Viewer viewer = viewer(source);
         String dimension = toDimensionName(getSourceDimension(source));
-        WaypointFileManager fileManager = this.waypointServer.getWaypointFileManager(dimension);
-        this.sender.sendMessage(source, PickerScreens.add(dimensions(source, viewer), dimension,
+        WaypointFileManager fileManager = files().getWaypointFileManager(dimension);
+        sendMessage(source, PickerScreens.add(dimensions(source, viewer), dimension,
                 fileManager == null ? List.of() : fileManager.getWaypointLists(), page, CONFIG.defaultPageLimit()));
         return Command.SINGLE_SUCCESS;
     }
@@ -725,8 +821,146 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         return RequiredArgumentBuilder.<S, String>argument(name, string()).suggests(suggestions);
     }
 
-    @SuppressWarnings("unchecked")
     public @NotNull LiteralCommandNode<S> build() {
+        LiteralCommandNode<S> shared = buildShared();
+        LiteralArgumentBuilder<S> privateRoot = LiteralArgumentBuilder.<S>literal("private")
+                .executes(context -> executePrivate(context, "", shared.getCommand()));
+        for (CommandNode<S> child : shared.getChildren()) {
+            if (Set.of(HELP_COMMAND, ADD_COMMAND, LIST_COMMAND, DETAILS_COMMAND, EDIT_COMMAND,
+                    RESTORE_COMMAND, REMOVE_COMMAND, NAVIGATE_COMMAND, TP_COMMAND).contains(child.getName())) {
+                privateRoot.then(privateNode(child, child.getName(), true));
+            }
+        }
+        shared.addChild(privateRoot.build());
+        return shared;
+    }
+
+    /** Reuses the grammar and its handlers; the wrapper resolves ownership before any lookup. */
+    private CommandNode<S> privateNode(CommandNode<S> original, String action, boolean actionRoot) {
+        ArgumentBuilder<S, ?> copy = original.createBuilder();
+        // Brigadier prunes a denied action root before walking its descendants. Rechecking the
+        // same permission at every argument node adds provider calls during login/tree refresh.
+        copy.requires(source -> inPrivateMode(() -> original.canUse(source)
+                && (!actionRoot || privateAllowed(source, action))));
+        if (original.getCommand() != null) {
+            copy.executes(context -> executePrivate(context, action, original.getCommand()));
+        }
+        if (original instanceof ArgumentCommandNode<S, ?> argument && argument.getCustomSuggestions() != null) {
+            @SuppressWarnings("unchecked")
+            RequiredArgumentBuilder<S, Object> argumentCopy = (RequiredArgumentBuilder<S, Object>) copy;
+            argumentCopy.suggests((context, builder) -> {
+                S source = context.getLastChild().getSource();
+                P player = getPlayer(source);
+                if (player == null || !inPrivateMode(() -> privateAllowed(source, action))) return Suggestions.empty();
+                // Enum/format/player suggestions use parsed arguments or live source state only.
+                // Only collection identity providers need to open the owner's files.
+                if (!(argument.getCustomSuggestions() instanceof CollectionSuggestions<?>)) {
+                    return argument.getCustomSuggestions().getSuggestions(context, builder);
+                }
+                WaypointCollectionKey key = WaypointCollectionKey.privateFor(sender.playerActor(player).playerId());
+                try {
+                    return withPrivateCollection(key, player, new java.util.ArrayList<>(), () ->
+                            argument.getCustomSuggestions().getSuggestions(context, builder));
+                } catch (IOException | PrivateWaypointStore.QuotaExceededException exception) {
+                    return Suggestions.empty();
+                }
+            });
+        }
+        for (CommandNode<S> child : original.getChildren()) {
+            if (action.equals(HELP_COMMAND) && Set.of(UPLOAD_COMMAND, DOWNLOAD_COMMAND, "remote", RELOAD_COMMAND, "private")
+                    .contains(child.getName())) continue;
+            copy.then(privateNode(child, action, false));
+        }
+        return copy.build();
+    }
+
+    private boolean privateAvailable(S source) {
+        return inPrivateMode(() -> List.of(LIST_COMMAND, ADD_COMMAND, EDIT_COMMAND, REMOVE_COMMAND,
+                NAVIGATE_COMMAND, TP_COMMAND).stream().anyMatch(action -> privateAllowed(source, action)));
+    }
+
+    private boolean privateAllowed(S source, String action) {
+        return switch (action) {
+            case ADD_COMMAND, RESTORE_COMMAND -> hasAddPermission(source);
+            case EDIT_COMMAND -> hasEditPermission(source);
+            case REMOVE_COMMAND -> hasRemovePermission(source);
+            case NAVIGATE_COMMAND -> hasNavigatePermission(source);
+            case TP_COMMAND -> hasTpPermission(source);
+            case LIST_COMMAND, DETAILS_COMMAND -> permissionManager.hasPermission(source, permissionKeys.privateList(),
+                    CONFIG.CommandPermission().privateList());
+            default -> true;
+        };
+    }
+
+    private int executePrivate(CommandContext<S> context, String action, Command<S> command) throws CommandSyntaxException {
+        // Keep syntax rejection on Brigadier's dispatch path, before UUID resolution, storage,
+        // or an asynchronous platform executor. The prepared handler captures validated values.
+        Command<S> executable = PreparableCommand.prepare(command, context);
+        S source = context.getSource();
+        P player = getPlayer(source);
+        if (player == null) {
+            sender.sendError(source, Errors.playerOnly());
+            return 0;
+        }
+        WaypointCollectionKey key = WaypointCollectionKey.privateFor(sender.playerActor(player).playerId());
+        executeCollectionCommand(source, () -> {
+            if (!inPrivateMode(() -> privateAllowed(source, action))) {
+                sender.sendError(source, Errors.of("wp.error.private.permission"));
+                return;
+            }
+            List<Runnable> afterPersistence = new java.util.ArrayList<>();
+            try {
+                withPrivateCollection(key, player, afterPersistence, () -> executable.run(context));
+            } catch (PrivateWaypointStore.QuotaExceededException exception) {
+                sender.sendError(source, Errors.of(exception.quota() == PrivateWaypointStore.Quota.LISTS
+                        ? "wp.error.private.list_quota" : "wp.error.private.waypoint_quota"));
+                return;
+            } catch (IOException exception) {
+                WaypointServerCore.LOGGER.warn("Private command storage failed for {}", key.ownerUuid(), exception);
+                sender.sendError(source, Errors.of("wp.error.private.storage"));
+                return;
+            } catch (CommandSyntaxException exception) {
+                sender.sendError(source, Errors.of("wp.error.private.command"));
+                return;
+            }
+            afterPersistence.forEach(Runnable::run);
+        });
+        return Command.SINGLE_SUCCESS;
+    }
+
+    @FunctionalInterface
+    private interface ScopedAction<T> {
+        T run() throws CommandSyntaxException;
+    }
+
+    private <T> T withPrivateCollection(WaypointCollectionKey key, P player, List<Runnable> afterPersistence,
+                                        ScopedAction<T> action) throws IOException, CommandSyntaxException {
+        // Bridge Brigadier's checked exception through the storage operation without losing its type.
+        CommandSyntaxException[] syntaxFailure = new CommandSyntaxException[1];
+        List<Runnable> onPersisted = new java.util.ArrayList<>();
+        T result = waypointServer.withCollection(key, files -> {
+            PrivateInvocation previous = privateInvocation.get();
+            privateInvocation.set(new PrivateInvocation(new WaypointCommandScope(key, files), player, afterPersistence, onPersisted));
+            try {
+                return inPrivateMode(() -> {
+                    try {
+                        return action.run();
+                    } catch (CommandSyntaxException exception) {
+                        syntaxFailure[0] = exception;
+                        return null;
+                    }
+                });
+            } finally {
+                if (previous == null) privateInvocation.remove();
+                else privateInvocation.set(previous);
+            }
+        }, () -> onPersisted.forEach(Runnable::run));
+        if (syntaxFailure[0] != null) throw syntaxFailure[0];
+        return result;
+    }
+
+    @SuppressWarnings("unchecked")
+    private @NotNull LiteralCommandNode<S> buildShared() {
         return (LiteralCommandNode<S>) literal(WAYPOINT_COMMAND)
                 .executes(context -> {
                     executeMenu((S) context.getSource());
@@ -1030,15 +1264,15 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     /** /wp upload: the map mods and their modes, for a player whose client has the mod. */
     private int executeUploadPanel(S source) {
         if (getPlayer(source) == null) {
-            this.sender.sendError(source, Errors.playerOnly());
+            sendError(source, Errors.playerOnly());
             return 0;
         }
         Viewer viewer = viewer(source);
         if (!viewer.hasMod()) {
-            this.sender.sendError(source, Errors.of("wp.error.upload.no_mod"));
+            sendError(source, Errors.of("wp.error.upload.no_mod"));
             return 0;
         }
-        this.sender.sendMessage(source, UploadScreens.panel(viewer));
+        sendMessage(source, UploadScreens.panel(viewer));
         return Command.SINGLE_SUCCESS;
     }
 
@@ -1046,26 +1280,29 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     private void executeMenu(S source) {
         Viewer viewer = viewer(source);
         if (viewer.plainText()) {
-            this.sender.sendMessage(source, HelpScreen.index(viewer));
+            sendMessage(source, HelpScreen.index(viewer));
             return;
         }
         boolean remoteAvailable = viewer.can(Viewer.Permission.REMOTE_LIST)
                 && !this.waypointServer.remoteCatalogStore().snapshot().isEmpty();
-        this.sender.sendMessage(source, MenuScreen.menu(viewer, dimensions(source, viewer),
-                navigationTarget(source), remoteAvailable));
+        PlacedWaypoint navigation = navigationTarget(source);
+        Component reference = navigation == null ? null : navigation.reference(
+                dimensions(source, navigation.collectionKey().scope()));
+        sendMessage(source, MenuScreen.menu(viewer, dimensions(source, viewer),
+                navigation, remoteAvailable, reference));
     }
 
     private LiteralArgumentBuilder<S> helpCommandNode() {
         LiteralArgumentBuilder<S> help = literal(HELP_COMMAND);
         help.executes(context -> {
-            this.sender.sendMessage(context.getSource(), HelpScreen.index(viewer(context.getSource())));
+            sendMessage(context.getSource(), HelpScreen.index(viewer(context.getSource())));
             return Command.SINGLE_SUCCESS;
         });
         for (HelpTopics.Topic topic : HelpTopics.Topic.values()) {
             help.then(LiteralArgumentBuilder.<S>literal(topic.id())
-                    .requires(source -> topic.readableBy(new Viewer(permissions(source), false, false, null, null, 0F)))
+                    .requires(source -> topic.readableBy(new Viewer(permissions(source), false, false, null, null, 0F, ChatIcons.NONE, commandMode.get())))
                     .executes(context -> {
-                        this.sender.sendMessage(context.getSource(), HelpScreen.topic(viewer(context.getSource()), topic,
+                        sendMessage(context.getSource(), HelpScreen.topic(viewer(context.getSource()), topic,
                                 this.isNavigationMethodSupported(NavigationMethod.TEXT_DISPLAY)));
                         return Command.SINGLE_SUCCESS;
                     }));
@@ -1075,7 +1312,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
 
     /** The player's navigation target, if they may navigate and are navigating. */
     private @Nullable PlacedWaypoint navigationTarget(S source) {
-        P player = getPlayer(source);
+        P player = executingPlayer(source);
         if (player == null || !hasNavigatePermission(source)) {
             return null;
         }
@@ -1085,8 +1322,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
 
     /** The live waypoint behind a navigation target, or a stand-in made from the target when it is gone. */
     private PlacedWaypoint place(NavigationTarget target) {
-        WaypointFileManager fileManager = target.collectionKey().equals(WaypointCollectionKey.shared())
-                ? this.waypointServer.getWaypointFileManager(target.dimensionName()) : null;
+        WaypointFileManager fileManager = target.collectionKey().equals(collectionKey())
+                ? files().getWaypointFileManager(target.dimensionName()) : null;
         WaypointList list = fileManager == null ? null : fileManager.getWaypointListByName(target.listName());
         SimpleWaypoint waypoint = list == null ? null : list.getWaypointByName(target.waypointName());
         if (list == null || waypoint == null) {
@@ -1099,7 +1336,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     }
 
     private void runIfPlayerExists(S source, Consumer<P> playerAction) {
-        P player = getPlayer(source);
+        P player = executingPlayer(source);
         if (player != null) {
             playerAction.accept(player);
         }
@@ -1111,9 +1348,9 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     private void runWithSelectorTarget(S source, D dimensionArgument, Consumer<@NotNull WaypointFileManager> foundAction) {
         String dimensionName = toDimensionName(dimensionArgument);
         if (isDimensionValid(source, dimensionArgument)) {
-            WaypointFileManager fileManager = this.waypointServer.getWaypointFileManager(dimensionName);
+            WaypointFileManager fileManager = files().getWaypointFileManager(dimensionName);
             if (fileManager == null) {
-                this.sender.sendError(source, Errors.noLists(dimensions(source), dimensionName));
+                sendError(source, Errors.noLists(dimensions(source), dimensionName));
             } else {
                 foundAction.accept(fileManager);
             }
@@ -1126,7 +1363,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         runWithSelectorTarget(source, dimensionArgument, (fileManager) -> {
             WaypointList waypointList = fileManager.getWaypointListByName(listName);
             if (waypointList == null) {
-                this.sender.sendError(source, Errors.noList(dimensions(source), fileManager.getDimensionName(), listName));
+                sendError(source, Errors.noList(dimensions(source), fileManager.getDimensionName(), listName));
             } else if (waypointList.isEmpty()) {
                 foundEmptyAction.accept(fileManager, waypointList);
             } else {
@@ -1136,7 +1373,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     }
 
     private void runWithSelectorTarget(S source, D dimensionArgument, String listName, String name, TriConsumer<@NotNull WaypointFileManager, @NotNull WaypointList, @NotNull SimpleWaypoint> action) {
-        BiConsumer<WaypointFileManager, WaypointList> missing = (fileManager, waypointList) -> this.sender.sendError(source,
+        BiConsumer<WaypointFileManager, WaypointList> missing = (fileManager, waypointList) -> sendError(source,
                 Errors.noWaypoint(dimensions(source), fileManager.getDimensionName(), listName, name));
         runWithSelectorTarget(source, dimensionArgument, listName, (fileManager, waypointList) -> {
             SimpleWaypoint waypoint = waypointList.getWaypointByName(name);
@@ -1149,26 +1386,32 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     }
 
     private void sendDimensionError(S source, String dimensionName) {
-        this.sender.sendError(source, Errors.noDimension(dimensions(source), dimensionName));
+        sendError(source, Errors.noDimension(dimensions(source), dimensionName));
     }
 
     private void sendPosArgumentError(S source) {
-        this.sender.sendError(source, Errors.of("wp.error.position"));
+        sendError(source, Errors.of("wp.error.position"));
     }
 
     private void sendHexColorCodeError(S source, String hexColorCode) {
-        this.sender.sendError(source, Errors.of("wp.error.color", text(hexColorCode)));
+        sendError(source, Errors.of("wp.error.color", text(hexColorCode)));
     }
 
     private DimensionStyle dimensions(S source) {
         return dimensions(source, viewer(source));
     }
 
+    /** Navigation can be viewed through either prefix; its target selects the action permissions. */
+    private DimensionStyle dimensions(S source, WaypointScope scope) {
+        return inMode(scope, () -> dimensions(source));
+    }
+
     /** A player who reads a broadcast: whether they may teleport is known, where they stand isn't. */
     private Viewer recipientViewer(P player) {
-        boolean teleport = this.permissionManager.checkPlayerPermission(player, this.permissionKeys.tp(),
-                CONFIG.CommandPermission().tp());
-        return new Viewer(teleport ? Set.of(Viewer.Permission.TP) : Set.of(), false, false, null, null, 0F, chatIcons());
+        boolean teleport = this.permissionManager.checkPlayerPermission(player,
+                isPrivate() ? this.permissionKeys.privateTp() : this.permissionKeys.tp(),
+                isPrivate() ? CONFIG.CommandPermission().privateTp() : CONFIG.CommandPermission().tp());
+        return new Viewer(teleport ? Set.of(Viewer.Permission.TP) : Set.of(), false, false, null, null, 0F, chatIcons(), commandMode.get());
     }
 
     /**
@@ -1176,6 +1419,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
      * line is built for its reader.
      */
     private void broadcast(S source, ChunkedMessage update, Function<DimensionStyle, Component> line) {
+        // Task 4 introduces owner-only scoped payloads. Shared payloads must never carry Private data.
+        if (isPrivate()) return;
         Iterable<? extends P> recipients = this.sender.getBroadcastPlayers(source);
         this.sender.broadcastChunkedMessage(recipients, update);
         P actor = getPlayer(source);
@@ -1183,7 +1428,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         for (P player : recipients) {
             if (!player.equals(actor)) {
                 try {
-                    this.sender.sendPlayerMessage(player, line.apply(DimensionStyle.local(recipientViewer(player), types)));
+                    sendPlayerMessage(player, line.apply(DimensionStyle.local(recipientViewer(player), types)));
                 } catch (RuntimeException exception) {
                     PlayerActionLog.Actor recipient = this.sender.playerActor(player);
                     WaypointServerCore.LOGGER.warn(
@@ -1209,16 +1454,16 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
             return false;
         }
         if (description != null && !isValidInput(description)) {
-            this.sender.sendError(source, Errors.of("wp.error.formatted_text"));
+            sendError(source, Errors.of("wp.error.formatted_text"));
             return false;
         }
         if (keywords != null) {
             if (keywords.size() > MAX_KEYWORDS) {
-                this.sender.sendError(source, Errors.of("wp.error.keywords.too_many", text(MAX_KEYWORDS)));
+                sendError(source, Errors.of("wp.error.keywords.too_many", text(MAX_KEYWORDS)));
                 return false;
             }
             if (hasDuplicateKeywords(keywords)) {
-                this.sender.sendError(source, Errors.of("wp.error.keywords.duplicate"));
+                sendError(source, Errors.of("wp.error.keywords.duplicate"));
                 return false;
             }
             for (String keyword : keywords) {
@@ -1234,7 +1479,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         if (value.length() <= maximum) {
             return true;
         }
-        this.sender.sendError(source, Errors.of("wp.error.too_long", text(argument), text(maximum)));
+        sendError(source, Errors.of("wp.error.too_long", text(argument), text(maximum)));
         return false;
     }
 
@@ -1302,7 +1547,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
             }
             return icon;
         } catch (IllegalArgumentException invalid) {
-            this.sender.sendError(source, Errors.of("wp.error.icon", text(value.toString())));
+            sendError(source, Errors.of("wp.error.icon", text(value.toString())));
             return null;
         }
     }
@@ -1319,12 +1564,12 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
             return;
         }
         try {
-            this.waypointServer.updateWaypointList(
+            files().updateWaypointList(
                     EditTarget.list(dimensionName, listIdentifier),
                     null,
                     patch,
                     result -> {
-                        if (result.status() == EditResultStatus.SUCCESS) {
+                        if (!isPrivate() && result.status() == EditResultStatus.SUCCESS) {
                             ChunkedMessageManager.validateEncodable(new WaypointListUpdateMessage(
                                     dimensionName,
                                     Objects.requireNonNull(result.beforeSnapshot()).name(),
@@ -1342,7 +1587,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                         WaypointList after = Objects.requireNonNull(result.afterSnapshot());
                         saveChanges(source, fileManager, "list_edit", "dimension", dimensionName, "list", before.name(), "new_list", after.name());
                         this.navigationService.refreshListIdentity(
-                                WaypointCollectionKey.shared(), dimensionName,
+                                collectionKey(), dimensionName,
                                 before.name(),
                                 after.name(),
                                 after.displayName()
@@ -1354,7 +1599,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                         );
                         Component actor = actorName(source);
                         this.broadcast(source, update, dims -> Broadcasts.updatedList(dims, actor, dimensionName, after));
-                        this.sender.sendMessage(source, DetailsScreen.list(dimensions(source), dimensionName,
+                        sendMessage(source, DetailsScreen.list(dimensions(source), dimensionName,
                                 after, DetailsScreen.updated(patch)));
                     }
             );
@@ -1376,12 +1621,12 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
             return;
         }
         try {
-            this.waypointServer.updateWaypoint(
+            files().updateWaypoint(
                     EditTarget.waypoint(dimensionName, listIdentifier, waypointIdentifier),
                     null,
                     patch,
                     result -> {
-                        if (result.status() == EditResultStatus.SUCCESS) {
+                        if (!isPrivate() && result.status() == EditResultStatus.SUCCESS) {
                             ChunkedMessageManager.validateEncodable(new WaypointModificationMessage(
                                     dimensionName,
                                     Objects.requireNonNull(result.listSnapshot()).name(),
@@ -1404,8 +1649,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                         SimpleWaypoint after = Objects.requireNonNull(result.afterSnapshot());
                         saveChanges(source, fileManager, "edit", "dimension", dimensionName, "list", list.name(), "waypoint", before.name(), "new_waypoint", after.name());
                         this.navigationService.refreshTarget(
-                                new NavigationTarget(WaypointCollectionKey.shared(), dimensionName, list, before),
-                                new NavigationTarget(WaypointCollectionKey.shared(), dimensionName, list, after)
+                                new NavigationTarget(collectionKey(), dimensionName, list, before),
+                                new NavigationTarget(collectionKey(), dimensionName, list, after)
                         );
                         WaypointModificationMessage update = new WaypointModificationMessage(
                                 dimensionName,
@@ -1418,7 +1663,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                         );
                         Component actor = actorName(source);
                         this.broadcast(source, update, dims -> Broadcasts.updated(dims, actor, dimensionName, list, after));
-                        this.sender.sendMessage(source, DetailsScreen.waypoint(dimensions(source), dimensionName,
+                        sendMessage(source, DetailsScreen.waypoint(dimensions(source), dimensionName,
                                 list, after, DetailsScreen.updated(patch)));
                     }
             );
@@ -1438,13 +1683,13 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                 ChunkedMessageManager.MAX_MESSAGE_BYTES,
                 exception
         );
-        this.sender.sendError(source, Errors.of("wp.error.encoding"));
+        sendError(source, Errors.of("wp.error.encoding"));
     }
 
     private void executeListDetails(S source, D dimensionArgument, String listIdentifier) {
         BiConsumer<WaypointFileManager, WaypointList> action = (fileManager, waypointList) -> {
             Viewer viewer = viewer(source);
-            this.sender.sendMessage(source, DetailsScreen.list(dimensions(source, viewer), fileManager.getDimensionName(),
+            sendMessage(source, DetailsScreen.list(dimensions(source, viewer), fileManager.getDimensionName(),
                     waypointList, null));
         };
         runWithSelectorTarget(source, dimensionArgument, listIdentifier, action, action);
@@ -1459,31 +1704,32 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         runWithSelectorTarget(source, dimensionArgument, listIdentifier, waypointIdentifier,
                 (fileManager, waypointList, waypoint) -> {
                     Viewer viewer = viewer(source);
-                    this.sender.sendMessage(source, DetailsScreen.waypoint(dimensions(source, viewer),
+                    sendMessage(source, DetailsScreen.waypoint(dimensions(source, viewer),
                             fileManager.getDimensionName(), waypointList, waypoint, null));
                 });
     }
 
     private void sendEditError(S source, EditResultStatus status, String dimension, String list, @Nullable String waypoint) {
-        this.sender.sendError(source, Errors.edit(dimensions(source), status, dimension, list, waypoint));
+        sendError(source, Errors.edit(dimensions(source), status, dimension, list, waypoint));
     }
 
     private String restoreOwner(S source) {
-        P player = getPlayer(source);
-        return player == null ? this.sender.getSenderName(source).toString() : getPlayerName(player);
+        P player = executingPlayer(source);
+        return collectionKey() + ":" + (player == null ? this.sender.getSenderName(source).toString()
+                : this.sender.playerActor(player).playerId());
     }
 
     private void executeRestore(S source, String token) {
         String owner = this.restoreOwner(source);
         this.restoreRegistry.lookup(owner, token).ifPresentOrElse(entry ->
-                this.waypointServer.restoreWaypoint(
+                files().restoreWaypoint(
                         entry.dimensionName(),
                         entry.listIdentifier(),
                         entry.waypoint(),
                         result -> {
                             switch (result.status()) {
                                 case RESTORED -> {
-                                    this.restoreRegistry.consume(owner, token);
+                                    onPersisted(() -> this.restoreRegistry.consume(owner, token));
                                     WaypointFileManager fileManager = Objects.requireNonNull(result.fileManager());
                                     WaypointList list = Objects.requireNonNull(result.waypointList());
                                     SimpleWaypoint waypoint = Objects.requireNonNull(result.waypointSnapshot());
@@ -1498,17 +1744,17 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                                             WaypointModificationType.ADD,
                                             result.syncNum()
                                     ), dims -> Broadcasts.restored(dims, actor, entry.dimensionName(), list, waypoint));
-                                    this.sender.sendMessage(source, Results.restored(dimensions(source),
+                                    sendMessage(source, Results.restored(dimensions(source),
                                             entry.dimensionName(), list, waypoint));
                                 }
-                                case DIMENSION_NOT_FOUND, LIST_NOT_FOUND -> this.sender.sendError(source,
+                                case DIMENSION_NOT_FOUND, LIST_NOT_FOUND -> sendError(source,
                                         Errors.of("wp.error.restore.list_missing"));
-                                case IDENTIFIER_COLLISION -> this.sender.sendError(source,
+                                case IDENTIFIER_COLLISION -> sendError(source,
                                         Errors.of("wp.error.restore.collision"));
                             }
                         }
                 ),
-                () -> this.sender.sendError(source, Errors.of("wp.error.restore.invalid"))
+                () -> sendError(source, Errors.of("wp.error.restore.invalid"))
         );
     }
 
@@ -1526,7 +1772,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
             return;
         }
         if (isDimensionValid(source, dimensionArgument)) {
-            this.waypointServer.addWaypointList(
+            files().addWaypointList(
                     dimensionName,
                     listName,
                     listName,
@@ -1537,10 +1783,10 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                         Component actor = actorName(source);
                         this.broadcast(source, new WaypointModificationMessage(dimensionName, listName, listName, null, null, ADD_LIST, SERVER_N),
                                 dims -> Broadcasts.createdList(dims, actor, dimensionName, created));
-                        this.sender.sendMessage(source, Results.createdList(dimensions(source), dimensionName, created));
+                        sendMessage(source, Results.createdList(dimensions(source), dimensionName, created));
                         saveChanges(source, result.fileManager(), "list_add", "dimension", dimensionName, "list", listName);
                     }
-                    case EXISTS -> this.sender.sendError(source,
+                    case EXISTS -> sendError(source,
                             Errors.listExists(dimensions(source), dimensionName, result.waypointList()));
                 }
             });
@@ -1563,7 +1809,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                 description,
                 icon
         );
-        this.waypointServer.addWaypoint(dimensionName, listName, listName, newWaypoint, result -> {
+        files().addWaypoint(dimensionName, listName, listName, newWaypoint, result -> {
             switch (result.status()) {
                 case ADDED -> {
                     saveChanges(source, result.fileManager(), "add", "dimension", dimensionName, "list", listName, "waypoint", name);
@@ -1579,9 +1825,9 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                             WaypointModificationType.ADD,
                             result.syncNum()
                     ), dims -> Broadcasts.added(dims, actor, dimensionName, list, added));
-                    this.sender.sendMessage(source, Results.added(dimensions(source), dimensionName, list, added));
+                    sendMessage(source, Results.added(dimensions(source), dimensionName, list, added));
                 }
-                case DUPLICATE -> this.sender.sendError(source, Errors.waypointExists(dimensions(source), dimensionName,
+                case DUPLICATE -> sendError(source, Errors.waypointExists(dimensions(source), dimensionName,
                         result.waypointList(), result.waypointSnapshot()));
             }
         });
@@ -1638,12 +1884,12 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     private void executeRemoveList(S source, D dimensionArgument, String listName) {
 //        runWithSelectorTarget(source, dimensionArgument, listName,
 //                (fileManager, waypointList) ->
-//                        this.sender.sendError(source, translatable("waypoint.remove.list.nonempty", text(listName))),
+//                        sendError(source, translatable("waypoint.remove.list.nonempty", text(listName))),
 //                (fileManager, waypointList) -> {
 //                    fileManager.removeWaypointListByName(listName);
 //                    String dimensionName = fileManager.getDimensionName();
 //                    this.sender.broadcastWaypointModification(source, new WaypointModificationMessage(dimensionName, listName, null, null, REMOVE_LIST, WaypointList.REMOVE_LIST));
-//                    this.sender.sendMessage(source, translatable("waypoint.remove.list.success", text(listName)));
+//                    sendMessage(source, translatable("waypoint.remove.list.success", text(listName)));
 //                    saveChanges(source, fileManager);
 //                });
         String dimensionName = toDimensionName(dimensionArgument);
@@ -1651,7 +1897,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
             sendDimensionError(source, dimensionName);
             return;
         }
-        this.waypointServer.removeWaypointList(dimensionName, listName, result -> {
+        files().removeWaypointList(dimensionName, listName, result -> {
             switch (result.status()) {
                 case REMOVED -> {
                     WaypointFileManager fileManager = Objects.requireNonNull(result.fileManager());
@@ -1659,12 +1905,12 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                     Component actor = actorName(source);
                     this.broadcast(source, new WaypointModificationMessage(dimensionName, listName, waypointList.displayName(), null, null, REMOVE_LIST, waypointList.getSyncNum() + 1),
                             dims -> Broadcasts.removedList(dims, actor, dimensionName, waypointList));
-                    this.sender.sendMessage(source, Results.removedList(dimensions(source), dimensionName, waypointList));
+                    sendMessage(source, Results.removedList(dimensions(source), dimensionName, waypointList));
                     saveChanges(source, fileManager, "list_remove", "dimension", dimensionName, "list", listName);
                 }
-                case DIMENSION_NOT_FOUND -> this.sender.sendError(source, Errors.noLists(dimensions(source), dimensionName));
-                case LIST_NOT_FOUND -> this.sender.sendError(source, Errors.noList(dimensions(source), dimensionName, listName));
-                case NON_EMPTY -> this.sender.sendError(source, Errors.listNotEmpty(dimensions(source), dimensionName,
+                case DIMENSION_NOT_FOUND -> sendError(source, Errors.noLists(dimensions(source), dimensionName));
+                case LIST_NOT_FOUND -> sendError(source, Errors.noList(dimensions(source), dimensionName, listName));
+                case NON_EMPTY -> sendError(source, Errors.listNotEmpty(dimensions(source), dimensionName,
                         Objects.requireNonNull(result.waypointList())));
             }
         });
@@ -1676,7 +1922,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
             sendDimensionError(source, dimensionName);
             return;
         }
-        this.waypointServer.removeWaypoint(dimensionName, listName, name, result -> {
+        files().removeWaypoint(dimensionName, listName, name, result -> {
             switch (result.status()) {
                 case REMOVED -> {
                     WaypointFileManager fileManager = Objects.requireNonNull(result.fileManager());
@@ -1693,7 +1939,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                     );
                     WaypointList list = Objects.requireNonNull(result.waypointList());
                     this.navigationService.removeTarget(new NavigationTarget(
-                            WaypointCollectionKey.shared(), dimensionName, list, waypoint));
+                            collectionKey(), dimensionName, list, waypoint));
                     Component actor = actorName(source);
                     this.broadcast(source, buffer, dims -> Broadcasts.removed(dims, actor, dimensionName, list, waypoint));
                     String token = this.restoreRegistry.register(
@@ -1702,11 +1948,11 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                             listName,
                             waypoint
                     );
-                    this.sender.sendMessage(source, Results.removed(dimensions(source), dimensionName, list, waypoint, token));
+                    sendMessage(source, Results.removed(dimensions(source), dimensionName, list, waypoint, token));
                 }
-                case DIMENSION_NOT_FOUND -> this.sender.sendError(source, Errors.noLists(dimensions(source), dimensionName));
-                case LIST_NOT_FOUND -> this.sender.sendError(source, Errors.noList(dimensions(source), dimensionName, listName));
-                case LIST_EMPTY, WAYPOINT_NOT_FOUND -> this.sender.sendError(source,
+                case DIMENSION_NOT_FOUND -> sendError(source, Errors.noLists(dimensions(source), dimensionName));
+                case LIST_NOT_FOUND -> sendError(source, Errors.noList(dimensions(source), dimensionName, listName));
+                case LIST_EMPTY, WAYPOINT_NOT_FOUND -> sendError(source,
                         Errors.noWaypoint(dimensions(source), dimensionName, listName, name));
             }
         });
@@ -1726,7 +1972,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                                 "list", listName, "waypoint", name);
                         throw exception;
                     }
-                    this.sender.sendPlayerMessage(player, Results.teleported(
+                    sendPlayerMessage(player, Results.teleported(
                             DimensionStyle.local(recipientViewer(player), getDimensionTypes(source)),
                             playerName(player, getPlayerDisplayName(player)), fileManager.getDimensionName(), waypointList, waypoint));
                 }));
@@ -1750,7 +1996,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                 waypointName,
                 (fileManager, waypointList, waypoint) -> {
                     NavigationTarget target = new NavigationTarget(
-                            WaypointCollectionKey.shared(),
+                            collectionKey(),
                             fileManager.getDimensionName(),
                             waypointList,
                             waypoint
@@ -1797,7 +2043,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                 waypointName,
                 (fileManager, waypointList, waypoint) -> {
                     NavigationTarget target = new NavigationTarget(
-                            WaypointCollectionKey.shared(),
+                            collectionKey(),
                             fileManager.getDimensionName(),
                             waypointList,
                             waypoint
@@ -1832,7 +2078,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                     "dimension", previous == null ? null : previous.target().dimensionName(),
                     "list", previous == null ? null : previous.target().listName(),
                     "waypoint", previous == null ? null : previous.target().waypointName());
-            this.sender.sendMessage(source, NavigationScreens.stopped(dimensions(source),
+            sendMessage(source, NavigationScreens.stopped(previous == null ? dimensions(source)
+                    : dimensions(source, previous.target().collectionKey().scope()),
                     previous == null ? null : place(previous.target())));
         } else {
             sendNavigationResult(source, result);
@@ -1854,7 +2101,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         }
         NavigationResult status = this.navigationService.status(player);
         if (status.session() == null) {
-            this.sender.sendMessage(source, NavigationScreens.idle(dimensions(source)));
+            sendMessage(source, NavigationScreens.idle(dimensions(source)));
         } else {
             sendNavigationResult(source, status);
         }
@@ -1868,9 +2115,9 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         }
         NavigationSession session = this.navigationService.status(player).session();
         if (session == null) {
-            this.sender.sendError(source, NavigationScreens.notNavigating(viewer(source)));
+            sendError(source, NavigationScreens.notNavigating(viewer(source)));
         } else {
-            this.sender.sendMessage(source, NavigationScreens.textDisplay(viewer(source),
+            sendMessage(source, NavigationScreens.textDisplay(viewer(source),
                     session.textDisplayTransformation(), null));
         }
     }
@@ -1927,14 +2174,14 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
             sendNavigationResult(source, result);
             return;
         }
-        this.sender.sendMessage(source, NavigationScreens.textDisplay(viewer(source),
+        sendMessage(source, NavigationScreens.textDisplay(viewer(source),
                 result.session().textDisplayTransformation(), updated));
     }
 
     private @Nullable P getNavigationPlayer(S source) {
-        P player = getPlayer(source);
+        P player = executingPlayer(source);
         if (player == null) {
-            this.sender.sendError(source, Errors.playerOnly());
+            sendError(source, Errors.playerOnly());
         }
         return player;
     }
@@ -1959,11 +2206,11 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
             default -> { }
         }
         if (result.code() == NavigationResult.Code.NO_ACTIVE_SESSION) {
-            this.sender.sendError(source, NavigationScreens.notNavigating(viewer(source)));
+            sendError(source, NavigationScreens.notNavigating(viewer(source)));
             return;
         }
         if (!result.successful()) {
-            this.sender.sendError(source, NavigationScreens.failure(result));
+            sendError(source, NavigationScreens.failure(result));
             return;
         }
         if (session == null) {
@@ -1979,14 +2226,14 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                     NavigationScreens.methodName(Objects.requireNonNull(result.method())));
             default -> null;
         };
-        this.sender.sendMessage(source, NavigationScreens.panel(dimensions(source), place(session.target()),
+        sendMessage(source, NavigationScreens.panel(dimensions(source, session.target().collectionKey().scope()), place(session.target()),
                 session.enabledMethods(), supportedNavigationMethods(), updated));
     }
 
     private void executeDownload(S source) {
         WaypointData waypointData = this.waypointServer.toWorldWaypointData();
         if (waypointData == null) {
-            this.sender.sendError(source, Errors.of("wp.error.download.nothing"));
+            sendError(source, Errors.of("wp.error.download.nothing"));
             return;
         }
         this.sendDownload(source, waypointData, waypointCount(waypointData));
@@ -1996,7 +2243,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         runWithSelectorTarget(source, dimensionArgument, (fileManager) -> {
             String dimensionName = fileManager.getDimensionName();
             if (fileManager.hasNoWaypoints()) {
-                this.sender.sendError(source, Errors.of("wp.error.download.empty", dimensions(source).name(dimensionName)));
+                sendError(source, Errors.of("wp.error.download.empty", dimensions(source).name(dimensionName)));
                 return;
             }
             WaypointData waypointData = WaypointData.dimension(fileManager.toDimensionWaypointData());
@@ -2008,7 +2255,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         runWithSelectorTarget(source, dimensionArgument, listName,
                 (fileManager, waypointList) -> this.sendDownload(source,
                         WaypointData.waypointList(fileManager.getDimensionName(), waypointList), waypointList.size()),
-                (fileManager, waypointList) -> this.sender.sendError(source, Errors.of("wp.error.download.empty",
+                (fileManager, waypointList) -> sendError(source, Errors.of("wp.error.download.empty",
                         WaypointRefs.label(waypointList.displayName(), waypointList.name()))));
     }
 
@@ -2033,16 +2280,16 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                 this.sender.sendChunkedMessage(source, message);
         if (!delivery.queued()) {
             PlayerActionLog.log(actor, "download", "rejected", "waypoints", waypoints);
-            this.sender.sendError(source, Errors.of("wp.error.delivery"));
+            sendError(source, Errors.of("wp.error.delivery"));
             return;
         }
         delivery.completion().whenComplete((result, exception) -> {
             if (exception == null && result != null && result.delivered()) {
                 PlayerActionLog.log(actor, "download", "success", "waypoints", waypoints);
-                this.sender.sendMessage(source, Results.sent(waypoints));
+                sendMessage(source, Results.sent(waypoints));
             } else {
                 PlayerActionLog.log(actor, "download", "failed", "waypoints", waypoints);
-                this.sender.sendError(source, Errors.of("wp.error.delivery"));
+                sendError(source, Errors.of("wp.error.delivery"));
             }
         });
     }
@@ -2095,16 +2342,16 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         try {
             target = UploadTarget.valueOf(uploadSource.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException exception) {
-            this.sender.sendError(source, Errors.of("wp.error.upload.source", text(uploadSource)));
+            sendError(source, Errors.of("wp.error.upload.source", text(uploadSource)));
             return;
         }
-        P player = getPlayer(source);
+        P player = executingPlayer(source);
         if (player == null) {
-            this.sender.sendError(source, Errors.playerOnly());
+            sendError(source, Errors.playerOnly());
             return;
         }
         if (!usesLocalUpload(source, player) && !this.sender.canSendChunkedMessage(player)) {
-            this.sender.sendError(source, Errors.of("wp.error.upload.no_mod"));
+            sendError(source, Errors.of("wp.error.upload.no_mod"));
             return;
         }
 
@@ -2120,7 +2367,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
             dimensions = List.of(dimensionName);
         }
         if (dimensions.isEmpty()) {
-            this.sender.sendError(source, Errors.of("wp.error.upload.request"));
+            sendError(source, Errors.of("wp.error.upload.request"));
             return;
         }
 
@@ -2129,7 +2376,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                 this.sender.commandSenderActor(source)
         );
         if (beginResult.status() == UploadCoordinator.BeginStatus.BUSY) {
-            this.sender.sendError(source, Errors.of("wp.error.upload.busy"));
+            sendError(source, Errors.of("wp.error.upload.busy"));
             return;
         }
         if (beginResult.status() == UploadCoordinator.BeginStatus.COOLDOWN) {
@@ -2137,7 +2384,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                     1L,
                     (beginResult.cooldownRemaining().toMillis() + 999L) / 1_000L
             );
-            this.sender.sendError(source, Errors.of("wp.error.upload.cooldown", text(remainingSeconds)));
+            sendError(source, Errors.of("wp.error.upload.cooldown", text(remainingSeconds)));
             return;
         }
         UploadRequestBuffer request = Objects.requireNonNull(beginResult.request());
@@ -2151,10 +2398,10 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                     request.requestId(),
                     "upload request delivery failed"
             )) {
-                this.sender.sendPlayerMessage(player, Errors.of("wp.error.upload.delivery"));
+                sendPlayerMessage(player, Errors.of("wp.error.upload.delivery"));
             }
         });
-        this.sender.sendMessage(source, UploadScreens.requested(deleteMissing));
+        sendMessage(source, UploadScreens.requested(deleteMissing));
     }
 
     private LiteralArgumentBuilder<S> navigationCommandNode() {
@@ -2419,8 +2666,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
             Viewer viewer = viewer(source);
             DimensionStyle dims = dimensions(source, viewer);
             int pageLimit = query.pageLimit(CONFIG.defaultPageLimit());
-            this.sender.sendMessage(source, query.searching()
-                    ? DimensionScreens.allSearch(dims, this.waypointQueryEngine.queryAll(engineQuery(source, query)),
+            sendMessage(source, query.searching()
+                    ? DimensionScreens.allSearch(dims, queryEngine().queryAll(engineQuery(source, query)),
                     query, pageLimit)
                     : DimensionScreens.all(dims, knownDimensions(source), query, pageLimit));
             return;
@@ -2431,12 +2678,12 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         String listName = fixedListName != null
                 ? fixedListName
                 : scope == ListScope.WAYPOINT_LIST ? getString(context, LIST_NAME_ARG) : null;
-        this.sender.sendMessage(source, listScreen(source, dimensionArgument, listName, query));
+        sendMessage(source, listScreen(source, dimensionArgument, listName, query));
     }
 
     private int executeDimensionList(S source, int page) {
         Viewer viewer = viewer(source);
-        this.sender.sendMessage(source, DimensionScreens.dimensionList(dimensions(source, viewer),
+        sendMessage(source, DimensionScreens.dimensionList(dimensions(source, viewer),
                 knownDimensions(source), page, CONFIG.defaultPageLimit()));
         return Command.SINGLE_SUCCESS;
     }
@@ -2444,10 +2691,10 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     /** The loaded dimensions and those with waypoint files, each with its lists. */
     private List<DimensionScreens.DimensionLists> knownDimensions(S source) {
         Set<String> ids = new java.util.LinkedHashSet<>(getDimensionTypes(source).keySet());
-        ids.addAll(this.waypointServer.getFileManagerMap().keySet());
+        ids.addAll(files().getFileManagerMap().keySet());
         List<DimensionScreens.DimensionLists> dimensions = new java.util.ArrayList<>();
         for (String id : ids) {
-            WaypointFileManager fileManager = this.waypointServer.getWaypointFileManager(id);
+            WaypointFileManager fileManager = files().getWaypointFileManager(id);
             dimensions.add(new DimensionScreens.DimensionLists(id,
                     fileManager == null ? List.of() : fileManager.getWaypointLists()));
         }
@@ -2471,21 +2718,21 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
             return Errors.noDimension(dims, dimension);
         }
         int pageLimit = query.pageLimit(CONFIG.defaultPageLimit());
-        WaypointFileManager fileManager = this.waypointServer.getWaypointFileManager(dimension);
+        WaypointFileManager fileManager = files().getWaypointFileManager(dimension);
         WaypointQueryEngine.Query engineQuery = engineQuery(source, query);
         if (listName == null) {
             List<WaypointList> lists = fileManager == null ? List.of() : fileManager.getWaypointLists();
             ListScreen.Totals totals = new ListScreen.Totals(lists.size(),
                     lists.stream().mapToInt(WaypointList::size).sum());
             return ListScreen.dimension(dims, dimension, totals,
-                    this.waypointQueryEngine.queryDimension(dimension, engineQuery), query, pageLimit);
+                    queryEngine().queryDimension(dimension, engineQuery), query, pageLimit);
         }
         WaypointList list = fileManager == null ? null : fileManager.getWaypointListByName(listName);
         if (list == null) {
             return Errors.noList(dims, dimension, listName);
         }
         return ListScreen.list(dims, dimension, list,
-                this.waypointQueryEngine.queryList(dimension, listName, engineQuery), query, pageLimit);
+                queryEngine().queryList(dimension, listName, engineQuery), query, pageLimit);
     }
 
     /** The search and sort of a list query, measured from the source's position. */
@@ -2498,11 +2745,11 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     private int executeTargetHint(S source, String hintKey, HelpTopics.Topic plainTopic) {
         Viewer viewer = viewer(source);
         if (viewer.plainText()) {
-            this.sender.sendMessage(source, HelpScreen.topic(viewer, plainTopic,
+            sendMessage(source, HelpScreen.topic(viewer, plainTopic,
                     isNavigationMethodSupported(NavigationMethod.TEXT_DISPLAY)));
             return Command.SINGLE_SUCCESS;
         }
-        this.sender.sendMessage(source, new ChatLines()
+        sendMessage(source, new ChatLines()
                 .add(translatable(hintKey, NamedTextColor.GRAY))
                 .add(listScreen(source, getSourceDimension(source), null, ListQuery.DEFAULT))
                 .build());
@@ -2530,12 +2777,12 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         executeByServer(source, () -> {
             this.waypointServer.reload();
             PlayerActionLog.log(actor, "reload", "completed");
-            this.sender.sendMessage(source, Results.reloaded(getExternalLoadedLanguages()));
+            sendMessage(source, Results.reloaded(getExternalLoadedLanguages()));
         });
     }
 
     private PlayerActionLog.Context actor(S source) {
-        P player = getPlayer(source);
+        P player = executingPlayer(source);
         PlayerActionLog.Actor executor = player == null
                 ? new PlayerActionLog.Actor(null, this.sender.getSenderName(source) instanceof net.kyori.adventure.text.TextComponent text
                         ? text.content() : "server")
@@ -2545,13 +2792,17 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
 
     private void saveChanges(S source, WaypointFileManager fileManager, String action, Object... fields) {
         PlayerActionLog.Context actor = actor(source);
+        if (isPrivate()) {
+            afterPersistence(() -> PlayerActionLog.log(actor, action, "success", fields));
+            return;
+        }
         executeByServer(source, () -> {
             try {
                 this.waypointServer.saveWaypointFile(fileManager);
                 PlayerActionLog.log(actor, action, "success", fields);
             } catch (IOException e) {
                 PlayerActionLog.log(actor, action, "save_failed", fields);
-                this.sender.sendError(source, Errors.of("wp.error.save", text(fileManager.getDimensionFile().toString())));
+                sendError(source, Errors.of("wp.error.save", text(fileManager.getDimensionFile().toString())));
                 throw new RuntimeException(e);
             }
         });
@@ -2602,11 +2853,14 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         return "\"" + string + "\"";
     }
 
-    private class WaypointListSuggestion implements SuggestionProvider<S> {
+    /** Marker for providers that need the invocation's borrowed collection manager. */
+    private interface CollectionSuggestions<T> extends SuggestionProvider<T> {}
+
+    private class WaypointListSuggestion implements CollectionSuggestions<S> {
         @Override
         public CompletableFuture<Suggestions> getSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
             D dimension = getDefaultDimension(context.getLastChild());
-            WaypointFileManager fileManager = CoreWaypointCommand.this.waypointServer.getWaypointFileManager(toDimensionName(dimension));
+            WaypointFileManager fileManager = CoreWaypointCommand.this.files().getWaypointFileManager(toDimensionName(dimension));
             if (fileManager == null) {
                 return Suggestions.empty();
             } else {
@@ -2625,12 +2879,12 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         }
     }
 
-    private class WaypointNameSuggestion implements SuggestionProvider<S> {
+    private class WaypointNameSuggestion implements CollectionSuggestions<S> {
         @Override
         public CompletableFuture<Suggestions> getSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
             CommandContext<S> currentContext = context.getLastChild();
             D dimension = getDefaultDimension(currentContext);
-            WaypointFileManager fileManager = CoreWaypointCommand.this.waypointServer.getWaypointFileManager(toDimensionName(dimension));
+            WaypointFileManager fileManager = CoreWaypointCommand.this.files().getWaypointFileManager(toDimensionName(dimension));
             if (fileManager == null) {
                 return Suggestions.empty();
             }

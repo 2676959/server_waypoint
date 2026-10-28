@@ -54,6 +54,10 @@ public final class CommandTreeProbe {
         root.addChild(wp);
         root.addChild(literal("waypoint").redirect(wp).build());
 
+        measure(root, false);
+    }
+
+    static void measure(RootCommandNode<Object> root, boolean complete) throws Exception {
         var fill = Commands.class.getDeclaredMethod("fillUsableCommands",
                 CommandNode.class, CommandNode.class, Object.class, java.util.Map.class);
         fill.setAccessible(true);
@@ -76,7 +80,13 @@ public final class CommandTreeProbe {
         };
         var denied = new RootCommandNode<Object>();
         fill.invoke(null, root, denied, false, new HashMap<CommandNode<Object>, CommandNode<Object>>());
-        if (!denied.getChild("wp").getChildren().isEmpty()) throw new AssertionError("Permission filter failed");
+        if (complete) {
+            var privateRoot = denied.getChild("wp").getChild("private");
+            if (privateRoot.getChild("list") != null || privateRoot.getChild("add") != null
+                    || privateRoot.getChild("tp") != null) throw new AssertionError("Private permission filter failed");
+        } else if (!denied.getChild("wp").getChildren().isEmpty()) {
+            throw new AssertionError("Permission filter failed");
+        }
 
         for (int sample = -3; sample < 7; sample++) {
             var copied = new RootCommandNode<Object>();
@@ -97,10 +107,14 @@ public final class CommandTreeProbe {
                         || restored.getChild("waypoint").getRedirect() != restored.getChild("wp") || buffer.isReadable()) {
                     throw new AssertionError("Packet round trip failed");
                 }
+                if (complete && (restored.getChild("wp").getChild("private").getChild("list") == null
+                        || restored.getChild("run").getRedirect() != restored)) {
+                    throw new AssertionError("Private subtree or nested redirect round trip failed");
+                }
                 if (sample >= 0) {
                     System.out.printf(java.util.Locale.ROOT,
-                            "ISSUE35 sample=%d serverNodes=%d copiedNodes=%d packetNodes=%d bytes=%d copyMs=%.3f packetMs=%.3f%n",
-                            sample, count(root), count(copied), count(restored), bytes,
+                            "%s sample=%d serverNodes=%d copiedNodes=%d packetNodes=%d bytes=%d copyMs=%.3f packetMs=%.3f%n",
+                            complete ? "PRIVATE_TREE" : "ISSUE35", sample, count(root), count(copied), count(restored), bytes,
                             (copyEnd - begin) / 1_000_000.0, (packetEnd - copyEnd) / 1_000_000.0);
                 }
             } finally {

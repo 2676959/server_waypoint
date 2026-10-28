@@ -51,6 +51,7 @@ public final class WaypointRefs {
     /** Collection-aware reference for navigation and source-aware feedback. */
     public static Component reference(DimensionStyle dims, WaypointScope scope, String dimension,
                                       WaypointList list, SimpleWaypoint waypoint) {
+        dims = dims.withScope(scope);
         if (scope == WaypointScope.SHARED) {
             return reference(dims, dimension, list, waypoint);
         }

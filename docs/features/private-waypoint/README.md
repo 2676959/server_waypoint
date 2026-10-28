@@ -1,7 +1,8 @@
 # Private and local waypoints
 
 Status: implementation in progress. Collection-aware navigation and owner storage (plan Tasks 1–2)
-were verified on 2026-10-23. Commands, synchronization, Local, and manager integration remain pending.
+were verified on 2026-10-23; private commands, permissions, and feedback (Task 3) on 2026-10-28.
+Synchronization, Local, manager integration, and live acceptance remain pending.
 
 This feature adds two independent waypoint collections alongside existing shared server waypoints:
 
@@ -19,6 +20,8 @@ there is no automatic mirroring between collections.
 - [Design specification](specs/2026-10-16-private-waypoint-design.md)
 - [Implementation plan](plans/2026-10-16-private-waypoint.md)
 - [Validation checklist](validation/2026-10-16-private-waypoint-checklist.md)
+- [Private command validation](validation/2026-10-28-private-commands.md)
+- [Command performance validation](validation/2026-10-28-command-performance.md)
 - [Execution evidence and progress](validation/execution/progress.md)
 
 ## Delivery stages

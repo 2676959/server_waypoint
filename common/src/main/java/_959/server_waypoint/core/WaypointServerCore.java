@@ -99,13 +99,24 @@ public abstract class WaypointServerCore extends WaypointFilesManagerCore {
 
     /** Borrows one collection for the complete operation, including its persistence outcome. */
     public <T> T withCollection(WaypointCollectionKey key, PrivateWaypointStore.Operation<T> operation) throws IOException {
+        return withCollection(key, operation, () -> {});
+    }
+
+    /** Commit hooks run after saving under the private owner gate; they must not borrow another store. */
+    public <T> T withCollection(WaypointCollectionKey key, PrivateWaypointStore.Operation<T> operation,
+                                 Runnable persisted) throws IOException {
         Objects.requireNonNull(key, "key");
         Objects.requireNonNull(operation, "operation");
-        if (key.scope() == WaypointScope.SHARED) return operation.apply(this);
+        Objects.requireNonNull(persisted, "persisted");
+        if (key.scope() == WaypointScope.SHARED) {
+            T value = operation.apply(this);
+            persisted.run();
+            return value;
+        }
         this.privateStorageLifecycle.readLock().lock();
         try {
             if (this.privateWaypoints == null) throw new IllegalStateException("Private storage is not loaded");
-            return this.privateWaypoints.withOwner(key.ownerUuid(), operation);
+            return this.privateWaypoints.withOwner(key.ownerUuid(), operation, persisted);
         } finally {
             this.privateStorageLifecycle.readLock().unlock();
         }

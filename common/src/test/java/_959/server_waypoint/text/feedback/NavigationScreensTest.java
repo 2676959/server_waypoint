@@ -89,6 +89,16 @@ class NavigationScreensTest {
     }
 
     @Test
+    void sharedTargetViewedFromPrivateKeepsSharedActions() {
+        var viewer = Fixtures.player().withScope(_959.server_waypoint.core.collection.WaypointScope.PRIVATE);
+        Component panel = NavigationScreens.panel(Fixtures.dims(viewer), MAIN_HOME,
+                EnumSet.of(NavigationMethod.ACTIONBAR), ALL, null);
+        assertTrue(runCommands(panel).stream().noneMatch(command -> command.startsWith("/wp private")));
+        assertEquals("/wp navigate minecraft:overworld \"Home Bases\" \"Main Home\"",
+                clickOf(NavigationScreens.stopped(Fixtures.dims(viewer), MAIN_HOME), "Resume"));
+    }
+
+    @Test
     void privatePanelAndStoppedResumeKeepThePrivatePrefix() {
         PlacedWaypoint target = new PlacedWaypoint(WaypointCollectionKey.privateFor(UUID.randomUUID()),
                 OVERWORLD, HOME, HOME.getWaypointByName("Main Home"));

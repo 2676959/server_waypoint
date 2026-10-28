@@ -754,6 +754,11 @@ class CoreWaypointCommandNavigationTest {
 
     private static final class TestPermissionKeys extends PermissionKeys<String> {
         @Override
+        protected PermissionKey createPrivatePermissionKey(String action) {
+            return new PermissionKey("server_waypoint.command.private." + action);
+        }
+
+        @Override
         protected PermissionKey createAddPermissionKey() {
             return new PermissionKey("add");
         }

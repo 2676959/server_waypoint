@@ -97,6 +97,10 @@ final class CommandHarness {
     final CommandDispatcher<Source> dispatcher = new CommandDispatcher<>();
 
     CommandHarness(Path directory) {
+        this(directory, navigation());
+    }
+
+    CommandHarness(Path directory, NavigationService<Object> navigation) {
         this.server = new WaypointServerCore(directory) {
             @Override
             public void saveWaypointFile(_959.server_waypoint.core.WaypointFileManager manager) throws java.io.IOException {
@@ -112,7 +116,7 @@ final class CommandHarness {
         this.dimensionTypes.put("minecraft:overworld", "minecraft:overworld");
         this.dimensionTypes.put("minecraft:the_nether", "minecraft:the_nether");
         this.dimensionTypes.put("minecraft:the_end", "minecraft:the_end");
-        this.command = new TestCommand(this);
+        this.command = new TestCommand(this, navigation);
         this.command.register(this.dispatcher);
     }
 
@@ -236,8 +240,8 @@ final class CommandHarness {
             return this.harness.chatIcons;
         }
 
-        private TestCommand(CommandHarness harness) {
-            super(harness.server, harness.sender, permissions(), navigation(),
+        private TestCommand(CommandHarness harness, NavigationService<Object> navigation) {
+            super(harness.server, harness.sender, permissions(), navigation,
                     new UploadCoordinator<>(harness.server, (player, message) -> {
                     }, packet -> {
                     }, player -> true, player -> true, navigation(), harness.sender::playerActor),
@@ -373,6 +377,11 @@ final class CommandHarness {
 
     private static PermissionManager<Source, String, Object> permissions() {
         PermissionKeys<String> keys = new PermissionKeys<>() {
+            @Override
+            protected PermissionKey createPrivatePermissionKey(String action) {
+                return new PermissionKey("server_waypoint.command.private." + action);
+            }
+
             @Override
             protected PermissionKey createAddPermissionKey() {
                 return new PermissionKey("add");

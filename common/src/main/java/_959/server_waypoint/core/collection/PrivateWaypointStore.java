@@ -42,8 +42,14 @@ public final class PrivateWaypointStore implements AutoCloseable {
     }
 
     public <T> T withOwner(UUID ownerUuid, Operation<T> operation) throws IOException {
+        return withOwner(ownerUuid, operation, () -> {});
+    }
+
+    /** Runs a non-reentrant commit hook after persistence, while the owner gate is still held. */
+    public <T> T withOwner(UUID ownerUuid, Operation<T> operation, Runnable persisted) throws IOException {
         Objects.requireNonNull(ownerUuid, "ownerUuid");
         Objects.requireNonNull(operation, "operation");
+        Objects.requireNonNull(persisted, "persisted");
         this.rejectReentrantLifecycle();
         this.lifecycle.readLock().lock();
         try {
@@ -71,6 +77,7 @@ public final class PrivateWaypointStore implements AutoCloseable {
                     throw failure;
                 }
                 this.flush(owner);
+                persisted.run();
                 return value;
             } finally {
                 this.releaseOwner(ownerUuid, owner);

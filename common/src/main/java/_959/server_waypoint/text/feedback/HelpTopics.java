@@ -25,7 +25,7 @@ public final class HelpTopics {
     }
 
     public enum Topic {
-        LIST, DETAILS, ADD, EDIT, REMOVE, TP, NAVIGATE, UPLOAD, DOWNLOAD, REMOTE, RELOAD;
+        LIST, DETAILS, ADD, EDIT, REMOVE, TP, NAVIGATE, UPLOAD, DOWNLOAD, REMOTE, RELOAD, PRIVATE;
 
         public String id() {
             return this.name().toLowerCase(Locale.ROOT);
@@ -37,8 +37,12 @@ public final class HelpTopics {
 
         /** Whether the viewer may use the commands this topic is about. */
         public boolean readableBy(Viewer viewer) {
+            if (viewer.scope() == _959.server_waypoint.core.collection.WaypointScope.PRIVATE
+                    && (this == UPLOAD || this == DOWNLOAD || this == REMOTE || this == RELOAD || this == PRIVATE)) return false;
             return switch (this) {
-                case LIST, DETAILS, DOWNLOAD -> true;
+                case LIST, DETAILS -> viewer.scope() == _959.server_waypoint.core.collection.WaypointScope.SHARED
+                        || viewer.can(Viewer.Permission.LIST);
+                case DOWNLOAD -> true;
                 case ADD -> viewer.can(Viewer.Permission.ADD);
                 case EDIT -> viewer.can(Viewer.Permission.EDIT);
                 case REMOVE -> viewer.can(Viewer.Permission.REMOVE);
@@ -47,6 +51,7 @@ public final class HelpTopics {
                 case UPLOAD -> viewer.can(Viewer.Permission.UPLOAD);
                 case REMOTE -> viewer.can(Viewer.Permission.REMOTE_LIST) || viewer.can(Viewer.Permission.REMOTE_TP);
                 case RELOAD -> viewer.can(Viewer.Permission.RELOAD);
+                case PRIVATE -> viewer.can(Viewer.Permission.PRIVATE);
             };
         }
     }
@@ -106,6 +111,8 @@ public final class HelpTopics {
 
     public static Content content(Topic topic, boolean textDisplay) {
         return switch (topic) {
+            case PRIVATE -> new Content(List.of(usage("/wp private [<command>]", "/wp private", "wp.help.private.run",
+                    note("wp.help.private.note"))), List.of());
             case LIST -> new Content(List.of(
                     usage("/wp list [<dimension> [<list>]]", "/wp list ", "wp.help.list.browse",
                             note("wp.help.list.browse.note")),

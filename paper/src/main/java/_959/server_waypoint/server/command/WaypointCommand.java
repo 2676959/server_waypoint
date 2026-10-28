@@ -121,6 +121,13 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
     }
 
     @Override
+    protected void executeCollectionCommand(CommandSourceStack source, Runnable task) {
+        // Brigadier already runs on the source's owning thread. Source/player APIs must stay here;
+        // executeByServer is a delayed async persistence queue on Paper.
+        task.run();
+    }
+
+    @Override
     protected void executeByServer(CommandSourceStack source, Runnable task) {
         this.scheduler.runAsyncDelayed(task, 20L);
     }

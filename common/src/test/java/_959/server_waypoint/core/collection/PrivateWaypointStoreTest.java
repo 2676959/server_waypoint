@@ -28,6 +28,55 @@ class PrivateWaypointStoreTest {
     @TempDir Path root;
 
     @Test
+    void persistedHookRunsAfterSaveAndBeforeTheNextOwnerOperation() throws Exception {
+        UUID owner = UUID.randomUUID();
+        AtomicInteger committed = new AtomicInteger();
+        var worker = Executors.newSingleThreadExecutor();
+        java.util.concurrent.Future<?>[] next = new java.util.concurrent.Future<?>[1];
+        try (PrivateWaypointStore store = new PrivateWaypointStore(root, PrivateWaypointConfig::new)) {
+            store.withOwner(owner, files -> {
+                files.addWaypointList(OVERWORLD, "Homes", "Homes", result -> {});
+                assertEquals(0, committed.get());
+                return null;
+            }, () -> {
+                assertTrue(Files.isRegularFile(root.resolve(owner.toString()).resolve("minecraft$overworld.json")));
+                // The lifecycle still rejects reentrant borrowing while this hook owns the gate.
+                assertThrows(IllegalStateException.class, () -> store.withOwner(owner, files -> null));
+                CountDownLatch waiting = new CountDownLatch(1);
+                next[0] = worker.submit(() -> {
+                    waiting.countDown();
+                    return store.withOwner(owner, files -> {
+                        assertEquals(1, committed.get());
+                        return null;
+                    });
+                });
+                assertTrue(assertDoesNotThrow(() -> waiting.await(2, TimeUnit.SECONDS)));
+                assertThrows(java.util.concurrent.TimeoutException.class, () -> next[0].get(100, TimeUnit.MILLISECONDS));
+                committed.incrementAndGet();
+            });
+            next[0].get(2, TimeUnit.SECONDS);
+            store.withOwner(owner, files -> {
+                assertEquals(1, committed.get());
+                Path file = files.getWaypointFileManager(OVERWORLD).getDimensionFile();
+                Files.delete(file);
+                Files.createDirectory(file);
+                Files.writeString(file.resolve("blocked"), "block save");
+                return null;
+            });
+            assertThrows(IOException.class, () -> store.withOwner(owner, files -> {
+                files.addWaypointList(OVERWORLD, "Dirty", "Dirty", result -> {});
+                return null;
+            }, committed::incrementAndGet));
+            assertEquals(1, committed.get());
+            Path file = root.resolve(owner.toString()).resolve("minecraft$overworld.json");
+            Files.delete(file.resolve("blocked"));
+            Files.delete(file);
+        } finally {
+            worker.shutdownNow();
+        }
+    }
+
+    @Test
     void ownersAndDimensionsPersistIndependentlyAndSharedRemainsEmpty() throws Exception {
         UUID alice = UUID.randomUUID();
         UUID bob = UUID.randomUUID();

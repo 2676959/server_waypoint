@@ -46,6 +46,7 @@ public final class NavigationScreens {
     /** Navigating to [MH] Main Home · 25 m, the methods as toggles, then Stop · Change target. */
     public static Component panel(DimensionStyle dims, PlacedWaypoint target, Set<NavigationMethod> enabled,
                                   Set<NavigationMethod> supported, @Nullable Component updated) {
+        dims = dims.withScope(target.collectionKey().scope());
         Viewer viewer = dims.viewer();
         String prefix = commandPrefix(target.collectionKey().scope());
         ChatLines lines = new ChatLines();
@@ -102,6 +103,7 @@ public final class NavigationScreens {
     /** ✔ Stopped navigating   Resume */
     public static Component stopped(DimensionStyle dims, @Nullable PlacedWaypoint previous) {
         Viewer viewer = dims.viewer();
+        if (previous != null) viewer = viewer.withScope(previous.collectionKey().scope());
         Component resume = previous == null ? null : Chat.control(viewer, translatable("wp.navigation.resume"), LIGHT_PURPLE,
                 Click.run(navigateCmd(previous.collectionKey().scope(), previous.dimension(), previous.list().name(), previous.waypoint().name())),
                 Tooltip.of("wp.navigation.resume.tooltip",

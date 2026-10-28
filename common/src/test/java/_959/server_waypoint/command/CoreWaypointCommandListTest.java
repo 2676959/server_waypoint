@@ -701,10 +701,10 @@ class CoreWaypointCommandListTest {
         }
     }
 
-    private record TestSource(String dimensionName, WaypointPos position) {
+    record TestSource(String dimensionName, WaypointPos position) {
     }
 
-    private static class TestWaypointCommand
+    static class TestWaypointCommand
             extends CoreWaypointCommand<TestSource, String, Object, String, String, NamespacedId> {
         @Override
         protected NamespacedId toIconId(NamespacedId iconArgument) {
@@ -771,20 +771,25 @@ class CoreWaypointCommandListTest {
             return CompletableFuture.completedFuture(ChunkedMessageSendResult.DELIVERED);
         }
 
-        private TestWaypointCommand(WaypointServerCore server, TestMessageSender sender) {
+        TestWaypointCommand(WaypointServerCore server, TestMessageSender sender) {
             this(server, sender, permissionManager(true));
         }
 
-        private TestWaypointCommand(
+        TestWaypointCommand(
                 WaypointServerCore server,
                 TestMessageSender sender,
                 PermissionManager<TestSource, String, Object> permissionManager
         ) {
+            this(server, sender, permissionManager, navigationService());
+        }
+
+        TestWaypointCommand(WaypointServerCore server, TestMessageSender sender,
+                PermissionManager<TestSource, String, Object> permissionManager, NavigationService<Object> navigation) {
             super(
                     server,
                     sender,
                     permissionManager,
-                    navigationService(),
+                    navigation,
                     new UploadCoordinator<>(
                             server,
                             (player, message) -> {
@@ -793,7 +798,7 @@ class CoreWaypointCommandListTest {
                             },
                             player -> true,
                             player -> true,
-                            navigationService(),
+                            navigation,
                             player -> new PlayerActionLog.Actor(new UUID(0L, 0L), "player")
                     ),
                     StringArgumentType::string,
@@ -902,6 +907,11 @@ class CoreWaypointCommandListTest {
         ) {
             PermissionKeys<String> keys = new PermissionKeys<>() {
                 @Override
+                protected PermissionKey createPrivatePermissionKey(String action) {
+                    return new PermissionKey("server_waypoint.command.private." + action);
+                }
+
+                @Override
                 protected PermissionKey createAddPermissionKey() {
                     return new PermissionKey("add");
                 }
@@ -973,7 +983,7 @@ class CoreWaypointCommandListTest {
         }
     }
 
-    private static final class TestMessageSender implements PlatformMessageSender<TestSource, Object> {
+    static class TestMessageSender implements PlatformMessageSender<TestSource, Object> {
         private final List<Component> messages = new ArrayList<>();
         private final List<Component> errors = new ArrayList<>();
         private boolean capable = true;

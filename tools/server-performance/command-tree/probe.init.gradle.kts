@@ -13,6 +13,21 @@ gradle.beforeProject {
             val main = extensions.getByType(SourceSetContainer::class.java).named("main")
             val commonMain = common.extensions.getByType(SourceSetContainer::class.java).named("main")
             val toolchains = extensions.getByType(JavaToolchainService::class.java)
+            val privateOutput = layout.buildDirectory.dir("private-command-tree-probe/classes")
+            val privateCompile = tasks.register("compilePrivateCommandTreeProbe", JavaCompile::class.java) {
+                source(rootProject.file("tools/server-performance/command-tree/CommandTreeProbe.java"))
+                source(rootProject.file("tools/server-performance/command-tree/PrivateCommandTreeProbe.java"))
+                classpath = main.get().compileClasspath + commonMain.get().output
+                destinationDirectory.set(privateOutput)
+                javaCompiler.set(toolchains.compilerFor { languageVersion.set(JavaLanguageVersion.of(25)) })
+                dependsOn(common.tasks.named("classes"))
+            }
+            tasks.register("privateCommandTreeProbe", JavaExec::class.java) {
+                dependsOn(privateCompile)
+                classpath = project.files(privateOutput) + main.get().runtimeClasspath
+                mainClass.set("_959.server_waypoint.command.PrivateCommandTreeProbe")
+                javaLauncher.set(toolchains.launcherFor { languageVersion.set(JavaLanguageVersion.of(25)) })
+            }
             val baselineSource = findProperty("issue35BaselineSource")?.toString()
             val variant = if (baselineSource == null) "candidate" else "baseline"
             val output = layout.buildDirectory.dir("issue35-probe/$variant-classes")

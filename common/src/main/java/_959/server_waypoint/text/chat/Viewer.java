@@ -1,6 +1,8 @@
 package _959.server_waypoint.text.chat;
 
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.core.collection.WaypointScope;
+import _959.server_waypoint.util.StringCommandBuilder;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
@@ -19,7 +21,8 @@ public record Viewer(
         @Nullable String dimension,
         @Nullable WaypointPos position,
         float yaw,
-        ChatIcons icons
+        ChatIcons icons,
+        WaypointScope scope
 ) {
     public enum Permission {
         ADD,
@@ -31,7 +34,9 @@ public record Viewer(
         UPLOAD,
         UPLOAD_DELETE,
         REMOTE_LIST,
-        REMOTE_TP
+        REMOTE_TP,
+        PRIVATE,
+        LIST
     }
 
     public Viewer {
@@ -39,6 +44,19 @@ public record Viewer(
         permissions = permissions.isEmpty()
                 ? Set.of()
                 : Collections.unmodifiableSet(EnumSet.copyOf(permissions));
+    }
+
+    public Viewer(Set<Permission> permissions, boolean hasMod, boolean plainText,
+                  @Nullable String dimension, @Nullable WaypointPos position, float yaw, ChatIcons icons) {
+        this(permissions, hasMod, plainText, dimension, position, yaw, icons, WaypointScope.SHARED);
+    }
+
+    public Viewer withScope(WaypointScope scope) {
+        return new Viewer(permissions, hasMod, plainText, dimension, position, yaw, icons, scope);
+    }
+
+    public String command(String command) {
+        return StringCommandBuilder.inScope(scope, command);
     }
 
     /** A text-only viewer, including builds without native chat objects. */

@@ -1,6 +1,12 @@
 package _959.server_waypoint.command.permission;
 
 public abstract class PermissionKeys<K> {
+    protected final PermissionKey privateList;
+    protected final PermissionKey privateAdd;
+    protected final PermissionKey privateEdit;
+    protected final PermissionKey privateRemove;
+    protected final PermissionKey privateNavigate;
+    protected final PermissionKey privateTp;
     protected final PermissionKey add;
     protected final PermissionKey edit;
     protected final PermissionKey remove;
@@ -25,6 +31,12 @@ public abstract class PermissionKeys<K> {
     protected abstract PermissionKey createRemoteTpPermissionKey();
 
     protected PermissionKeys() {
+        this.privateList = createPrivatePermissionKey("list");
+        this.privateAdd = createPrivatePermissionKey("add");
+        this.privateEdit = createPrivatePermissionKey("edit");
+        this.privateRemove = createPrivatePermissionKey("remove");
+        this.privateNavigate = createPrivatePermissionKey("navigate");
+        this.privateTp = createPrivatePermissionKey("tp");
         this.add = createAddPermissionKey();
         this.edit = createEditPermissionKey();
         this.remove = createRemovePermissionKey();
@@ -75,6 +87,32 @@ public abstract class PermissionKeys<K> {
 
     public PermissionKey remoteTp() {
         return this.remoteTp;
+    }
+
+    protected abstract PermissionKey createPrivatePermissionKey(String action);
+
+    public PermissionKey privateList() {
+        return this.privateList;
+    }
+
+    public PermissionKey privateAdd() {
+        return this.privateAdd;
+    }
+
+    public PermissionKey privateEdit() {
+        return this.privateEdit;
+    }
+
+    public PermissionKey privateRemove() {
+        return this.privateRemove;
+    }
+
+    public PermissionKey privateNavigate() {
+        return this.privateNavigate;
+    }
+
+    public PermissionKey privateTp() {
+        return this.privateTp;
     }
 
     public class PermissionKey {

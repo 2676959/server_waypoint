@@ -1,0 +1,204 @@
+{
+    "git_head": "cf98a281b38ef8637c228b4b7a56b05576eaffc8",
+    "host": {
+        "platform": "macOS-26.5-arm64-arm-64bit-Mach-O",
+        "machine": "arm64",
+        "processor": "Apple M4"
+    },
+    "baseline_sources": {
+        "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java": "a9d2c5b4d233a1610308785f6819e3b885783bc2c32476c29221954a3dd58911",
+        "common/src/main/java/_959/server_waypoint/command/ListCommandOptions.java": "9ecc96dfeef98070c17d71d92d6a5d67cbbf240b38c33f2b4a469b563ee836d0",
+        "tools/server-performance/command-tree/CommandTreeProbe.java": "16e5aa977b09c75eac2abdc0d5b425dbd4d0f0f4468faec8563fc9a5b9f53484",
+        "tools/server-performance/command-tree/PrivateCommandTreeProbe.java": "a9e92add165f3c19440d633b9373c19b89bef382e648de8feaf57d4e619944a8",
+        "tools/server-performance/command-tree/probe.init.gradle.kts": "9bdd6abee85b7b6398e14fcd8646716b718f34a3bb7bc48130ddc3ce5b5b9b2b"
+    },
+    "fixture": "Actual CoreWaypointCommand registration, empty catalog, all navigation methods, native Brigadier string argument adapters; no game server.",
+    "baseline": {
+        "warmups": 3,
+        "samples": [
+            {
+                "sample": 0,
+                "server_nodes": 4307,
+                "copied_nodes": 4306,
+                "decoded_nodes": 4306,
+                "bytes": 73381,
+                "copy_ms": 14.238,
+                "packet_ms": 33.993
+            },
+            {
+                "sample": 1,
+                "server_nodes": 4307,
+                "copied_nodes": 4306,
+                "decoded_nodes": 4306,
+                "bytes": 73381,
+                "copy_ms": 14.024,
+                "packet_ms": 35.845
+            },
+            {
+                "sample": 2,
+                "server_nodes": 4307,
+                "copied_nodes": 4306,
+                "decoded_nodes": 4306,
+                "bytes": 73381,
+                "copy_ms": 20.21,
+                "packet_ms": 33.55
+            },
+            {
+                "sample": 3,
+                "server_nodes": 4307,
+                "copied_nodes": 4306,
+                "decoded_nodes": 4306,
+                "bytes": 73381,
+                "copy_ms": 12.042,
+                "packet_ms": 30.602
+            },
+            {
+                "sample": 4,
+                "server_nodes": 4307,
+                "copied_nodes": 4306,
+                "decoded_nodes": 4306,
+                "bytes": 73381,
+                "copy_ms": 10.339,
+                "packet_ms": 28.452
+            },
+            {
+                "sample": 5,
+                "server_nodes": 4307,
+                "copied_nodes": 4306,
+                "decoded_nodes": 4306,
+                "bytes": 73381,
+                "copy_ms": 9.861,
+                "packet_ms": 28.938
+            },
+            {
+                "sample": 6,
+                "server_nodes": 4307,
+                "copied_nodes": 4306,
+                "decoded_nodes": 4306,
+                "bytes": 73381,
+                "copy_ms": 10.405,
+                "packet_ms": 28.346
+            }
+        ],
+        "median_copy_ms": 12.042,
+        "median_packet_ms": 30.602
+    },
+    "candidate": {
+        "warmups": 3,
+        "samples": [
+            {
+                "sample": 0,
+                "server_nodes": 4307,
+                "copied_nodes": 4306,
+                "decoded_nodes": 4306,
+                "bytes": 73381,
+                "copy_ms": 14.156,
+                "packet_ms": 30.268
+            },
+            {
+                "sample": 1,
+                "server_nodes": 4307,
+                "copied_nodes": 4306,
+                "decoded_nodes": 4306,
+                "bytes": 73381,
+                "copy_ms": 14.858,
+                "packet_ms": 29.52
+            },
+            {
+                "sample": 2,
+                "server_nodes": 4307,
+                "copied_nodes": 4306,
+                "decoded_nodes": 4306,
+                "bytes": 73381,
+                "copy_ms": 10.993,
+                "packet_ms": 30.275
+            },
+            {
+                "sample": 3,
+                "server_nodes": 4307,
+                "copied_nodes": 4306,
+                "decoded_nodes": 4306,
+                "bytes": 73381,
+                "copy_ms": 10.711,
+                "packet_ms": 28.275
+            },
+            {
+                "sample": 4,
+                "server_nodes": 4307,
+                "copied_nodes": 4306,
+                "decoded_nodes": 4306,
+                "bytes": 73381,
+                "copy_ms": 9.515,
+                "packet_ms": 27.204
+            },
+            {
+                "sample": 5,
+                "server_nodes": 4307,
+                "copied_nodes": 4306,
+                "decoded_nodes": 4306,
+                "bytes": 73381,
+                "copy_ms": 9.523,
+                "packet_ms": 27.439
+            },
+            {
+                "sample": 6,
+                "server_nodes": 4307,
+                "copied_nodes": 4306,
+                "decoded_nodes": 4306,
+                "bytes": 73381,
+                "copy_ms": 9.487,
+                "packet_ms": 27.334
+            }
+        ],
+        "median_copy_ms": 10.711,
+        "median_packet_ms": 28.275
+    },
+    "candidate_sources": {
+        "common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java": "7afd4e149e7746688f745ead11651036b19b388c7e48c767ef8840fc4897f5bb",
+        "common/src/main/java/_959/server_waypoint/command/ListCommandOptions.java": "747b8cbbb4ef06885584d15fea72e875a5e489730c1fc80e38bad8caaf60c28b",
+        "tools/server-performance/command-tree/CommandTreeProbe.java": "16e5aa977b09c75eac2abdc0d5b425dbd4d0f0f4468faec8563fc9a5b9f53484",
+        "tools/server-performance/command-tree/PrivateCommandTreeProbe.java": "a9e92add165f3c19440d633b9373c19b89bef382e648de8feaf57d4e619944a8",
+        "tools/server-performance/command-tree/probe.init.gradle.kts": "9bdd6abee85b7b6398e14fcd8646716b718f34a3bb7bc48130ddc3ce5b5b9b2b",
+        "common/src/main/java/_959/server_waypoint/command/PreparableCommand.java": "90b24555e205531bda0beca3599395aedf6720b6b1af12223fb3c84e1ec8b06b"
+    },
+    "java_language_version": 25,
+    "measurement_scope": "One same-host JVM per variant; 3 warmups and 7 samples. Native 26.3 copy/index/codec; no live server.",
+    "regression_budgets": {
+        "private_list": 1536,
+        "private_subtree": 1536,
+        "complete_dispatcher": 4608
+    },
+    "unit_fixture_counts_all_navigation": {
+        "private_list": 1327,
+        "private_registered": 1469,
+        "private_expanded": 1469,
+        "complete_registered": 4305,
+        "complete_expanded": 4305
+    },
+    "verified_suites": {
+        "common": {
+            "tests": 711,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        "cross-server": {
+            "tests": 115,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        "proxy-common": {
+            "tests": 167,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        "paper/versions/26.2-paper": {
+            "tests": 58,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        }
+    }
+}

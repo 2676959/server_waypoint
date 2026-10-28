@@ -577,5 +577,16 @@
   "wp.remote.tp.cancelled": "The switch to {0} was cancelled.",
   "wp.remote.tp.unsupported": "This server can''t switch players to other servers.",
   "wp.remote.tp.invalid_request": "{0} sent a mismatched reply.",
-  "wp.remote.tp.internal_error": "The switch to {0} hit an internal error."
+  "wp.remote.tp.internal_error": "The switch to {0} hit an internal error.",
+    "wp.menu.private": "Private",
+    "wp.menu.private.tooltip": "Your private waypoints",
+    "wp.menu.private.title": "Private waypoints",
+    "wp.error.private.permission": "You no longer have permission for this private action.",
+    "wp.error.private.list_quota": "Your private list limit has been reached.",
+    "wp.error.private.waypoint_quota": "Your private waypoint limit has been reached.",
+    "wp.error.private.storage": "Could not load or save your private waypoints. Please try again.",
+    "wp.error.private.command": "Could not execute the private command.",
+    "wp.help.topic.private": "Private",
+    "wp.help.private.run": "Manage your own private waypoints",
+    "wp.help.private.note": "Uses the same commands as Shared; teleport needs separate permission"
 }

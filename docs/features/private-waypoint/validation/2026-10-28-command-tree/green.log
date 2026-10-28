@@ -1,0 +1,24 @@
+Configuration on demand is an incubating feature.
+Running Stonecutter 0.9.7
+> Task :cross-server:updateModInfo UP-TO-DATE
+> Task :common:processResources UP-TO-DATE
+> Task :common:processTestResources NO-SOURCE
+> Task :cross-server:compileJava UP-TO-DATE
+> Task :cross-server:processResources NO-SOURCE
+> Task :cross-server:classes UP-TO-DATE
+> Task :cross-server:jar UP-TO-DATE
+
+> Task :common:compileJava
+Note: /Volumes/ssd/fabric_mods_repo/server_waypoint/common/src/main/java/_959/server_waypoint/command/CoreWaypointCommand.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :common:classes
+> Task :common:compileTestJava UP-TO-DATE
+> Task :common:testClasses UP-TO-DATE
+> Task :common:test
+
+[Incubating] Problems report is available at: file:///Volumes/ssd/fabric_mods_repo/server_waypoint/build/reports/problems/problems-report.html
+
+BUILD SUCCESSFUL in 2s
+7 actionable tasks: 2 executed, 5 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.5.1/userguide/configuration_cache_enabling.html
