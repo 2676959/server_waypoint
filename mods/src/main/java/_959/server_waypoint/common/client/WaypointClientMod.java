@@ -2,6 +2,7 @@ package _959.server_waypoint.common.client;
 
 import _959.server_waypoint.core.collection.WaypointScope;
 import _959.server_waypoint.common.client.integrations.IntegratedServerUpload;
+import _959.server_waypoint.common.client.local.LocalWaypointProfiles;
 import _959.server_waypoint.ProtocolVersion;
 import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
 import _959.server_waypoint.common.client.gui.screens.WaypointEditScreen;
@@ -40,6 +41,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.world.level.storage.LevelResource;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 import org.slf4j.Logger;
@@ -83,8 +85,9 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
 
     public ClientWaypointCollections collections() { return this.collections; }
     private boolean compressChunkedMessages;
-    // TODO: add a local waypoint manager for using waypoints on an unsupported server
-//    private final WaypointFilesManagerCore localManager;
+    private final LocalWaypointProfiles localProfiles;
+
+    public LocalWaypointProfiles localProfiles() { return this.localProfiles; }
     private final Path gameRoot;
     private final Path configPath;
     private final Path widgetThemePath;
@@ -121,6 +124,10 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
         super();
         this.mc = mc;
         this.gameRoot = gameRoot;
+        // Dedicated servers exclude these fields. A standalone client also needs to retain Local
+        // visibility/expansion without waiting for integrated-server initialization.
+        WaypointList.excludeClientOnlyFields = false;
+        this.localProfiles = new LocalWaypointProfiles(gameRoot, this.collections);
         this.configPath = configDir.resolve(MOD_ID).resolve("client-config.json");
         this.widgetThemePath = configDir.resolve(MOD_ID).resolve("widget-theme.json");
         INSTANCE = this;
@@ -268,6 +275,8 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     public static void onDimensionChange(String dimensionName) {
         currentDimensionName = dimensionName;
         LOGGER.info("dimensionName: {}, state: {}", dimensionName, networkState);
+        // Local persistence has no dependency on a server handshake or Shared rendering readiness.
+        if (INSTANCE != null) INSTANCE.saveLocalProfiles();
         if (networkState != ClientNetworkState.NOT_READY) {
             OptimizedWaypointRenderer.clearScene();
             final List<WaypointList> waypointLists;
@@ -288,6 +297,11 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     }
 
     public void onLeaveServer() {
+        try {
+            this.localProfiles.leave();
+        } catch (IOException exception) {
+            this.displayLocalStorageError(exception);
+        }
         this.collections.disconnect();
         isXaerosMinimapReady = false;
         MapModIntegrations.clearPendingSync();
@@ -301,6 +315,29 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
             this.saveAllWaypointFiles();
         }
         this.resetNetworkState();
+    }
+
+    public void onShutdown() {
+        this.onLeaveServer();
+    }
+
+    private void saveLocalProfiles() {
+        try {
+            this.localProfiles.save();
+        } catch (IOException exception) {
+            this.displayLocalStorageError(exception);
+        }
+    }
+
+    private void displayLocalStorageError(Exception exception) {
+        LOGGER.error("Cannot load or save Local waypoint profiles", exception);
+        if (this.mc != null && this.mc.player != null) {
+            var message = net.minecraft.network.chat.Component.translatable("waypoint.local.storage_failed");
+            //? if >=26
+            this.mc.player.sendSystemMessage(message);
+            //? if <26
+            /*this.mc.player.displayClientMessage(message, false);*/
+        }
     }
 
     public boolean loadCachedWaypointFiles(int serverId) {
@@ -329,6 +366,18 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
         ServerData serverEntry = this.mc.getCurrentServer();
         this.collections.beginConnection(this.mc.getUser().getProfileId(),
                 serverEntry == null ? "integrated" : serverEntry.ip);
+        try {
+            var integratedServer = this.mc.getSingleplayerServer();
+            if (integratedServer != null) {
+                this.localProfiles.joinSingleplayer(this.mc.getUser().getProfileId(), integratedServer.getWorldPath(LevelResource.ROOT));
+            } else if (serverEntry != null) {
+                this.localProfiles.joinMultiplayer(this.mc.getUser().getProfileId(), serverEntry.ip);
+            }
+        } catch (IOException | IllegalArgumentException exception) {
+            // Retain an unsaved outgoing store for retry, but beginConnection has invalidated its
+            // selections so it cannot receive new-world edits after a failed transition.
+            this.displayLocalStorageError(exception);
+        }
         // Switching servers through a proxy (e.g. Velocity) does not trigger the disconnect that normally runs
         // onLeaveServer(), so flush any pending edits from the previous server to its own file before we
         // rebind to the new server. Otherwise edits are only saved at the final real disconnect.
@@ -372,7 +421,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
         this.remoteCatalogs.clear();
         this.compressChunkedMessages = buffer.compressChunkedMessages();
         if (buffer.version() != ProtocolVersion.PROTOCOL_VERSION) {
-            this.collections.disconnect();
+            this.collections.serverUnavailable();
             this.chunkedMessages.clearAll();
             networkState = ClientNetworkState.INCOMPATIBLE_PROTOCOL;
             return;
@@ -383,6 +432,13 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
             LOGGER.warn("Cannot bind private client collection", exception);
             networkState = ClientNetworkState.NOT_READY;
             return;
+        }
+        if (this.collections.ready(ClientWaypointSource.LOCAL)) {
+            try {
+                this.localProfiles.onBackendIdentity(buffer.serverId());
+            } catch (IOException exception) {
+                this.displayLocalStorageError(exception);
+            }
         }
         if (WaypointServerMod.runsWithClient()) {
             // Shared keeps the integrated model. Private always comes through the local player's

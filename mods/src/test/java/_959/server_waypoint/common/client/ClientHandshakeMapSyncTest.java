@@ -61,6 +61,7 @@ class ClientHandshakeMapSyncTest {
         setStatic(WaypointClientMod.class, "currentDimensionName", DIMENSION);
         setStatic(WaypointClientMod.class, "isXaerosMinimapReady", false);
         setStatic(WaypointServerMod.class, "runsWithClient", false);
+        setStatic(WaypointList.class, "excludeClientOnlyFields", true);
         setStatic(ClientConfig.class, "isXaerosMinimapLoaded", false);
         setStatic(ClientConfig.class, "isVoxelMapLoaded", false);
         setStatic(LocalWaypointUpload.class, "handler", null);
@@ -103,6 +104,51 @@ class ClientHandshakeMapSyncTest {
         for (var entry : previousValues.entrySet()) {
             entry.getKey().set(null, entry.getValue());
         }
+    }
+
+    @Test
+    void localVisibilityAndExpansionSurviveClientRestart() throws Exception {
+        var account = java.util.UUID.randomUUID();
+        client.localProfiles().joinMultiplayer(account, "unsupported:25565");
+        var list = WaypointList.build("local", 1);
+        list.setShow(false);
+        list.setExpand(false);
+        client.collections().files(ClientWaypointSource.LOCAL).putWaypointList(DIMENSION, list);
+        client.onShutdown();
+        client.localProfiles().joinMultiplayer(account, "unsupported:25565");
+        var restored = client.collections().files(ClientWaypointSource.LOCAL).getWaypointFileManager(DIMENSION).getWaypointListByName("local");
+        assertFalse(restored.isShow());
+        assertFalse(restored.isExpand());
+    }
+
+    @Test
+    void incompatibleHandshakeAndDimensionChangesKeepLocalDurableAndOutOfServerCaches() throws Exception {
+        client.collections().beginConnection(java.util.UUID.randomUUID(), "unsupported:25565");
+        client.localProfiles().joinMultiplayer(java.util.UUID.randomUUID(), "unsupported:25565");
+        var local = client.collections().files(ClientWaypointSource.LOCAL);
+        local.putWaypointList(DIMENSION, WaypointList.build("local", 1));
+        var buffer = new _959.server_waypoint.core.network.buffer.ServerHandshakeBuffer(-1, 42, false);
+        client.onServerHandshake(buffer);
+        assertEquals(WaypointClientMod.ClientNetworkState.INCOMPATIBLE_PROTOCOL, WaypointClientMod.getNetworkState());
+        org.junit.jupiter.api.Assertions.assertTrue(client.collections().ready(ClientWaypointSource.LOCAL));
+        assertSame(local, client.collections().files(ClientWaypointSource.LOCAL));
+        WaypointClientMod.onDimensionChange("minecraft:the_nether");
+        org.junit.jupiter.api.Assertions.assertTrue(java.nio.file.Files.exists(local.getWaypointFileManager(DIMENSION).getDimensionFile()));
+        assertEquals(List.of("cached"), client.getWaypointListsByDimensionName(DIMENSION).stream().map(WaypointList::name).toList());
+        assertEquals(0, xaero.rewrites);
+        assertEquals(0, voxelMap.rewrites);
+        client.onLeaveServer();
+        assertFalse(client.collections().ready(ClientWaypointSource.LOCAL));
+    }
+
+    @Test
+    void shutdownFlushesLocalWithoutHandshake() throws Exception {
+        client.localProfiles().joinMultiplayer(java.util.UUID.randomUUID(), "unsupported:25565");
+        var local = client.collections().files(ClientWaypointSource.LOCAL);
+        local.putWaypointList(DIMENSION, WaypointList.build("local", 1));
+        client.onShutdown();
+        org.junit.jupiter.api.Assertions.assertTrue(java.nio.file.Files.exists(local.getWaypointFileManager(DIMENSION).getDimensionFile()));
+        assertFalse(client.collections().ready(ClientWaypointSource.LOCAL));
     }
 
     @Test

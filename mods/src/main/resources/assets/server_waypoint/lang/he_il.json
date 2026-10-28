@@ -1,4 +1,5 @@
 {
+  "waypoint.local.storage_failed": "טעינה או שמירה של נקודות מקומיות נכשלה. בדקו את היומן.",
   "waypoint.icon.invalid": "מזהה סמל נקודת ציון לא חוקי: %1$s",
   "waypoint.icon.label": "סמל",
   "waypoint.icon.clear": "הסר סמל",

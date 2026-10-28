@@ -86,7 +86,23 @@ public final class ClientWaypointCollections {
         states.put(ClientWaypointSource.LOCAL, State.READY);
     }
 
+    public void unbindLocal() {
+        if (stores.remove(ClientWaypointSource.LOCAL) != null) {
+            generation++;
+            pendingEdits.clear();
+        }
+        profile = null;
+        states.put(ClientWaypointSource.LOCAL, State.UNAVAILABLE);
+    }
+
+    /** Protocol rejection must not disable the independent Local profile. */
+    public void serverUnavailable() {
+        invalidateServer();
+        backend = null;
+    }
+
     public void disconnect() {
+        unbindLocal();
         invalidateServer();
         account = null;
         address = null;

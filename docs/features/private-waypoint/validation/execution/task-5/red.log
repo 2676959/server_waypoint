@@ -1,0 +1,177 @@
+Configuration on demand is an incubating feature.
+Running Stonecutter 0.9.7
+
+> Configure project :mods:26.1.2-fabric
+Fabric Loom: 1.15.5
+
+> Task :cross-server:updateModInfo UP-TO-DATE
+> Task :common:processResources UP-TO-DATE
+> Task :mods:26.1.2-fabric:stonecutterPrepare UP-TO-DATE
+> Task :mods:26.1.2-fabric:stonecutterGenerate UP-TO-DATE
+> Task :cross-server:compileJava UP-TO-DATE
+> Task :mods:26.1.2-fabric:processResources UP-TO-DATE
+> Task :cross-server:processResources NO-SOURCE
+> Task :cross-server:classes UP-TO-DATE
+> Task :cross-server:jar UP-TO-DATE
+> Task :mods:26.1.2-fabric:processTestResources UP-TO-DATE
+> Task :common:compileJava UP-TO-DATE
+> Task :common:classes UP-TO-DATE
+> Task :common:jar UP-TO-DATE
+> Task :mods:26.1.2-fabric:compileJava UP-TO-DATE
+> Task :mods:26.1.2-fabric:classes UP-TO-DATE
+
+> Task :mods:26.1.2-fabric:compileTestJava FAILED
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalWaypointProfilesTest.java:266: error: cannot find symbol
+    private void add(LocalWaypointProfiles profiles, ClientWaypointCollections collections, String name) throws IOException {
+                     ^
+  symbol:   class LocalWaypointProfiles
+  location: class LocalWaypointProfilesTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/util/XaeroMinimapHelperTest.java:456: warning: [deprecation] Waypoint(int,int,int,String,String,int) in Waypoint has been deprecated
+            super(0, 0, 0, "", "", 0);
+            ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/util/XaeroMinimapHelperTest.java:476: warning: [deprecation] getColor() in Waypoint has been deprecated
+        public int getColor() {
+                   ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientManualDownloadTest.java:73: warning: [removal] staticFieldBase(Field) in Unsafe has been deprecated and marked for removal
+        integrationsBase = unsafe.staticFieldBase(integrations);
+                                 ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientManualDownloadTest.java:74: warning: [removal] staticFieldOffset(Field) in Unsafe has been deprecated and marked for removal
+        integrationsOffset = unsafe.staticFieldOffset(integrations);
+                                   ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientManualDownloadTest.java:77: warning: [removal] putObject(Object,long,Object) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(integrationsBase, integrationsOffset, List.of(xaero, voxelMap));
+              ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientManualDownloadTest.java:97: warning: [removal] putObject(Object,long,Object) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(integrationsBase, integrationsOffset, previousIntegrations);
+              ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:76: warning: [removal] staticFieldBase(Field) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(integrationsField), unsafe.staticFieldOffset(integrationsField),
+                               ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:76: warning: [removal] staticFieldOffset(Field) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(integrationsField), unsafe.staticFieldOffset(integrationsField),
+                                                                          ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:76: warning: [removal] putObject(Object,long,Object) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(integrationsField), unsafe.staticFieldOffset(integrationsField),
+              ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:80: warning: [removal] staticFieldBase(Field) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(coordinatorField), unsafe.staticFieldOffset(coordinatorField),
+                               ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:80: warning: [removal] staticFieldOffset(Field) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(coordinatorField), unsafe.staticFieldOffset(coordinatorField),
+                                                                         ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:80: warning: [removal] putObject(Object,long,Object) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(coordinatorField), unsafe.staticFieldOffset(coordinatorField),
+              ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:99: warning: [removal] staticFieldBase(Field) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(coordinatorField), unsafe.staticFieldOffset(coordinatorField),
+                               ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:99: warning: [removal] staticFieldOffset(Field) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(coordinatorField), unsafe.staticFieldOffset(coordinatorField),
+                                                                         ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:99: warning: [removal] putObject(Object,long,Object) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(coordinatorField), unsafe.staticFieldOffset(coordinatorField),
+              ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:101: warning: [removal] staticFieldBase(Field) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(integrationsField), unsafe.staticFieldOffset(integrationsField),
+                               ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:101: warning: [removal] staticFieldOffset(Field) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(integrationsField), unsafe.staticFieldOffset(integrationsField),
+                                                                          ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:101: warning: [removal] putObject(Object,long,Object) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(integrationsField), unsafe.staticFieldOffset(integrationsField),
+              ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointCollectionsTest.java:161: error: cannot find symbol
+        collections.serverUnavailable();
+                   ^
+  symbol:   method serverUnavailable()
+  location: variable collections of type ClientWaypointCollections
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalWaypointProfilesTest.java:27: error: cannot find symbol
+        var profiles = new LocalWaypointProfiles(root, collections);
+                           ^
+  symbol:   class LocalWaypointProfiles
+  location: class LocalWaypointProfilesTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalWaypointProfilesTest.java:38: error: cannot find symbol
+        var reloaded = new LocalWaypointProfiles(root, collections);
+                           ^
+  symbol:   class LocalWaypointProfiles
+  location: class LocalWaypointProfilesTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalWaypointProfilesTest.java:50: error: cannot find symbol
+        var profiles = new LocalWaypointProfiles(root, collections());
+                           ^
+  symbol:   class LocalWaypointProfiles
+  location: class LocalWaypointProfilesTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalWaypointProfilesTest.java:70: error: cannot find symbol
+        var profiles = new LocalWaypointProfiles(root, collections());
+                           ^
+  symbol:   class LocalWaypointProfiles
+  location: class LocalWaypointProfilesTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalWaypointProfilesTest.java:84: error: cannot find symbol
+        var profiles = new LocalWaypointProfiles(root, collections);
+                           ^
+  symbol:   class LocalWaypointProfiles
+  location: class LocalWaypointProfilesTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalWaypointProfilesTest.java:107: error: cannot find symbol
+        var profiles = new LocalWaypointProfiles(root, collections);
+                           ^
+  symbol:   class LocalWaypointProfiles
+  location: class LocalWaypointProfilesTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalWaypointProfilesTest.java:133: error: cannot find symbol
+        var profiles = new LocalWaypointProfiles(root, collections);
+                           ^
+  symbol:   class LocalWaypointProfiles
+  location: class LocalWaypointProfilesTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalWaypointProfilesTest.java:160: error: cannot find symbol
+        var profiles = new LocalWaypointProfiles(root, collections);
+                           ^
+  symbol:   class LocalWaypointProfiles
+  location: class LocalWaypointProfilesTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalWaypointProfilesTest.java:184: error: cannot find symbol
+        var profiles = new LocalWaypointProfiles(root, collections);
+                           ^
+  symbol:   class LocalWaypointProfiles
+  location: class LocalWaypointProfilesTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalWaypointProfilesTest.java:203: error: cannot find symbol
+        var profiles = new LocalWaypointProfiles(root, collections);
+                           ^
+  symbol:   class LocalWaypointProfiles
+  location: class LocalWaypointProfilesTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalWaypointProfilesTest.java:222: error: cannot find symbol
+        var profiles = new LocalWaypointProfiles(root, collections);
+                           ^
+  symbol:   class LocalWaypointProfiles
+  location: class LocalWaypointProfilesTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalWaypointProfilesTest.java:236: error: cannot find symbol
+        var profiles = new LocalWaypointProfiles(root, collections);
+                           ^
+  symbol:   class LocalWaypointProfiles
+  location: class LocalWaypointProfilesTest
+14 errors
+18 warnings
+
+[Incubating] Problems report is available at: file:///Volumes/ssd/fabric_mods_repo/server_waypoint/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':mods:26.1.2-fabric:compileTestJava' (registered by plugin class 'org.gradle.api.plugins.JavaBasePlugin').
+> Compilation failed; see the compiler output below.
+  /Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalWaypointProfilesTest.java:266: error: cannot find symbol
+      private void add(LocalWaypointProfiles profiles, ClientWaypointCollections collections, String name) throws IOException {
+                       ^
+    symbol:   class LocalWaypointProfiles
+    location: class LocalWaypointProfilesTest
+  14 errors
+  18 warnings
+
+* Try:
+> Check your code and dependencies to fix the compilation error(s)
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.5.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 2s
+12 actionable tasks: 1 executed, 11 up-to-date

@@ -151,6 +151,24 @@ class ClientWaypointCollectionsTest {
         }
     }
 
+    @Test
+    void unsupportedServerStateKeepsLocalButRealDisconnectUnbindsIt() throws Exception {
+        var collections = new ClientWaypointCollections(new WaypointFilesManagerCore(directory.resolve("shared")));
+        collections.beginConnection(UUID.randomUUID(), "unsupported:25565");
+        var local = new WaypointFilesManagerCore(directory.resolve("local"));
+        collections.bindLocal(UUID.randomUUID(), local);
+        var selection = collections.selection(ClientWaypointSource.LOCAL, "minecraft:overworld", "Homes", null);
+        collections.serverUnavailable();
+        assertTrue(collections.ready(ClientWaypointSource.LOCAL));
+        assertSame(local, collections.files(ClientWaypointSource.LOCAL));
+        assertFalse(collections.ready(ClientWaypointSource.SHARED));
+        assertFalse(collections.ready(ClientWaypointSource.PRIVATE));
+        assertFalse(collections.valid(selection));
+        collections.disconnect();
+        assertFalse(collections.ready(ClientWaypointSource.LOCAL));
+        assertThrows(NullPointerException.class, () -> collections.files(ClientWaypointSource.LOCAL));
+    }
+
     private static WaypointData snapshot(WaypointScope scope, String name, int revision) {
         return WaypointData.world(scope, List.of(new DimensionWaypointData("minecraft:overworld", List.of(WaypointList.build(name, revision)))));
     }

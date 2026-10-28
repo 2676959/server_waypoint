@@ -1,4 +1,5 @@
 {
+  "waypoint.local.storage_failed": "本地路径点存储失败，请检查日志。",
   "waypoint.icon.invalid": "无效的路径点图标 ID：%1$s",
   "waypoint.icon.label": "图标",
   "waypoint.icon.clear": "移除图标",

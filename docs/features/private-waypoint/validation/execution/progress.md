@@ -213,3 +213,41 @@ The user authorized implementation and a separate local commit for each verified
 - Reviewed Task 4 implementation, fixtures, six common/client locales, feature documentation, and
   retained validation logs as one coherent commit scope. Protocol 3 is an intentional breaking change.
 - Earlier uncommitted/no-commit notes describe their original verification checkpoints. No push.
+
+## Task 5: independent Local profiles and persistence (2026-10-28)
+
+- Started from clean `feature/private-waypoint` at `dc6e94d8`; verified the earlier Task 1–4
+  completion records and current client collection contracts before implementation.
+- Added `LocalWaypointProfiles`: independent account/address/save roots, normalized address
+  digest, UUID-backed directories, GSON index, per-profile command settings, create/rename/select/
+  delete operations, and the specified fallback/backend/manual selection algorithm.
+- Profile/disk work is synchronous and owner-serialized. Save, target read, and index persistence
+  succeed before a switch is published. Save/index failures retain outgoing state. Corrupt indexes,
+  missing directories, invalid bindings and malformed files fail closed. No migration or merge.
+- Connected client join/proxy rejoin, compatible identity discovery, dimension, leave, and shutdown.
+  Incompatible handshakes retain Local; actual disconnect unbinds it. Retained unsaved stores cannot
+  be reactivated on another connection. Standalone client initialization preserves Local visibility
+  and expansion settings through the existing file serializer.
+- RED/GREEN evidence includes absent contracts and regressions for detached-store reactivation,
+  list visibility persistence, and inactive deletion suppressing automatic backend selection.
+  Added profile/corruption/persistence/concurrency tests and client lifecycle/cache-isolation checks.
+- Final verification: common **718**, full active Fabric **1,000**, older Fabric focused **41**,
+  exact active Task 5 focused **24**; zero failures/errors/skips. Forge 1.20.1 and NeoForge 26.3
+  compilation pass. Active targets remain Fabric 26.1.2 and Paper 26.2 without switching.
+- All six client locales include a storage-error message. Translation JSON/key/placeholder audits,
+  changed-document links, Java whitespace and `git diff --check` pass. Human language review is pending.
+- Final review was inline, per the plan's no-delegation instruction. No unresolved findings. Rulings:
+  stay in the existing clean feature checkout; serialize profile/disk work synchronously; fail closed
+  on missing indexes beside data; leave source-aware manager/query/render integration to Tasks 6–7.
+- Task 5 complete. No commit or push. Tasks 6–8 remain pending. No live Minecraft/proxy transfer,
+  graphical controls, rendering, physical input or teleport behavior is claimed.
+- See [Local profile validation](../2026-10-28-local-profiles.md) and [retained logs](task-5/).
+
+## Task 5 local commit authorization (2026-10-28)
+
+- The user requested a local Task 5 commit. Rechecked the intended implementation, tests, six client
+  locales, feature status/checklists, and validation logs as one coherent scope.
+- Re-ran `rtk proxy ./gradlew :common:test :mods:26.1.2-fabric:test --console=plain --max-workers=2`
+  successfully; common 718 and active Fabric 1,000 tests remain green.
+- Earlier no-commit notes describe their original checkpoints. No push or publication is authorized.
+- See [pre-commit suite log](task-5/precommit-suites.log).

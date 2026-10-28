@@ -17,7 +17,7 @@ JUnit 5, Gradle Kotlin DSL, and Stonecutter across Fabric, Forge, NeoForge, and 
 
 **Spec:** [Private and local waypoint design](../specs/2026-10-16-private-waypoint-design.md).
 
-Status: implementation in progress; Tasks 1–2 verified on 2026-10-23 and Tasks 3–4 on 2026-10-28. Prepared on 2026-10-16 against branch
+Status: implementation in progress; Tasks 1–2 verified on 2026-10-23 and Tasks 3–5 on 2026-10-28. Prepared on 2026-10-16 against branch
 `feature/private-waypoint`. Exact proposed class names below are implementation contracts,
 not claims that those classes already exist.
 
@@ -234,20 +234,20 @@ Add `local/LocalWaypointProfilesTest.java` and extend client collection lifecycl
 **Interfaces:** produces the active profile store and profile management operations, independent
 of network readiness. Profile bindings and command settings persist using GSON.
 
-- [ ] Test first join creates Default, reconnect restores the same files, and host/port/account and
+- [x] Test first join creates Default, reconnect restores the same files, and host/port/account and
   singleplayer saves are isolated. Assert profile display names cannot alter storage paths.
-- [ ] Test known and new backend identities using the spec's selection algorithm; manual selection
+- [x] Test known and new backend identities using the spec's selection algorithm; manual selection
   must win over a late handshake and survive reconnect through its saved binding.
-- [ ] Test unsupported/protocol-incompatible servers can create and persist Local waypoints.
+- [x] Test unsupported/protocol-incompatible servers can create and persist Local waypoints.
   A proxy transfer saves before rebinding without requiring a disconnect event.
-- [ ] Test create/rename/delete, deletion of the last profile, outgoing-save failure, malformed
+- [x] Test create/rename/delete, deletion of the last profile, outgoing-save failure, malformed
   indexes/files, and disconnect during pending work. Local state must never overwrite server caches.
-- [ ] Run tests to establish failures; implement UUID-backed profile directories, address digest,
+- [x] Run tests to establish failures; implement UUID-backed profile directories, address digest,
   fallback/backend bindings, synchronous selection state, and serialized disk/lifecycle operations.
   Do not move or merge files on late identity discovery.
-- [ ] Run `*LocalWaypointProfilesTest` and `*ClientWaypointCollectionsTest` on the active Fabric
+- [x] Run `*LocalWaypointProfilesTest` and `*ClientWaypointCollectionsTest` on the active Fabric
   target using the verification command. Expected: all persistence and transition assertions pass.
-- [ ] Review join/leave/dimension paths for the old handshake-only renderer/manager assumptions.
+- [x] Review join/leave/dimension paths for the old handshake-only renderer/manager assumptions.
 
 ## Task 6: Client operation routing and teleport templates
 

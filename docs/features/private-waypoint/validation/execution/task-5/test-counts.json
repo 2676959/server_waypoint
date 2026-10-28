@@ -1,0 +1,20 @@
+{
+  "common": {
+    "tests": 718,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "fabric-26.1.2": {
+    "tests": 1000,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "fabric-1.20.1-focused": {
+    "tests": 41,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  }
+}

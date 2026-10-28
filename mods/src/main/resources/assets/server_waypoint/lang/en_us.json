@@ -1,4 +1,5 @@
 {
+  "waypoint.local.storage_failed": "Local waypoint storage failed. Check the log.",
   "waypoint.icon.invalid": "Invalid waypoint icon ID: %1$s",
   "waypoint.icon.label": "Icon",
   "waypoint.icon.clear": "Remove icon",

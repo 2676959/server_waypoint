@@ -1,4 +1,5 @@
 {
+  "waypoint.local.storage_failed": "Error al guardar o cargar puntos locales. Revisa el registro.",
   "waypoint.icon.invalid": "ID de icono de punto de ruta no válido: %1$s",
   "waypoint.icon.label": "Icono",
   "waypoint.icon.clear": "Quitar icono",
