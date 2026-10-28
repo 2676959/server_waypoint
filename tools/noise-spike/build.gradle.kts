@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
 import java.security.MessageDigest
 
 plugins {
@@ -77,7 +79,19 @@ tasks.test {
     systemProperty("spike.vectorFile", layout.buildDirectory.file(
         "upstream/java-noise-$candidateCommit/src/test/resources/com/eatthepath/noise/cacophony-test-vectors.json"
     ).get().asFile.absolutePath)
+    // Use -PfullTestLogs=true to include every test event and standard output.
+    val fullTestLogs = providers.gradleProperty("fullTestLogs").map(String::toBoolean).getOrElse(false)
+    val loggedTestEvents = if (fullTestLogs) TestLogEvent.values().toSet() else setOf(TestLogEvent.FAILED)
     testLogging {
-        events("passed", "failed", "skipped")
+        events = loggedTestEvents
+        if (fullTestLogs) {
+            exceptionFormat = TestExceptionFormat.FULL
+        }
+        info {
+            events = loggedTestEvents
+        }
+        debug {
+            events = loggedTestEvents
+        }
     }
 }

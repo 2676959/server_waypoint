@@ -5,6 +5,8 @@ import net.darkhax.curseforgegradle.TaskPublishCurseForge
 import org.gradle.api.plugins.BasePluginExtension
 import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceParameters
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.gradle.jvm.tasks.Jar
 
 plugins {
@@ -52,6 +54,24 @@ val curseForgeUploadLock = gradle.sharedServices.registerIfAbsent(
 }
 
 allprojects {
+    tasks.withType<Test>().configureEach {
+        // Use -PfullTestLogs=true to include every test event and standard output.
+        val fullTestLogs = providers.gradleProperty("fullTestLogs").map(String::toBoolean).getOrElse(false)
+        val loggedTestEvents = if (fullTestLogs) TestLogEvent.values().toSet() else setOf(TestLogEvent.FAILED)
+        testLogging {
+            events = loggedTestEvents
+            if (fullTestLogs) {
+                exceptionFormat = TestExceptionFormat.FULL
+            }
+            info {
+                events = loggedTestEvents
+            }
+            debug {
+                events = loggedTestEvents
+            }
+        }
+    }
+
     repositories {
         mavenCentral()
     }
