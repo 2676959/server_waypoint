@@ -31,7 +31,7 @@ public final class MapModIntegrations {
         AUTOMATIC_SYNC.onAutomaticSync(event, waypointClientMod, clientConfig, WaypointServerMod.runsWithClient());
     }
 
-    /** The mod cache can be current while VoxelMap's separate marker file is stale. */
+    /** The mod cache can be current while a map mod's separate marker storage is stale. */
     public static void onUnchangedClientWaypointSync(WaypointClientMod waypointClientMod) {
         ClientConfig clientConfig = WaypointClientMod.getClientConfig();
         if (clientConfig != null) {

@@ -19,7 +19,7 @@ public final class XaerosMinimapIntegration implements MapModIntegration {
 
     @Override
     public boolean isEnabled(ClientConfig clientConfig) {
-        return clientConfig.isAutoSyncToXaerosMinimap() && this.isReady();
+        return clientConfig.isAutoSyncToXaerosMinimap();
     }
 
     @Override

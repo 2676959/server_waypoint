@@ -285,6 +285,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     }
 
     public void onLeaveServer() {
+        isXaerosMinimapReady = false;
         MapModIntegrations.clearPendingSync();
         this.remoteCatalogs.clear();
         this.chunkedMessages.clearAll();
@@ -316,6 +317,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     }
 
     public void onJoinServer() {
+        isXaerosMinimapReady = false;
         MapModIntegrations.clearPendingSync();
         LOGGER.info("join server");
         // Switching servers through a proxy (e.g. Velocity) does not trigger the disconnect that normally runs

@@ -19,11 +19,57 @@ class MapModSyncCoordinatorTest {
     private final MapModSyncCoordinator coordinator = new MapModSyncCoordinator(List.of(xaero, voxelMap));
 
     @Test
-    void unchangedHandshakeRestoresManagedMarkersWithoutRewritingXaero() {
+    void unchangedHandshakeRestoresManagedMarkersInBothMaps() {
         voxelMap.markers.add("sw:deleted");
         coordinator.onUnchangedSync(null, null, false);
 
         assertEquals(List.of("personal", "sw:Home"), voxelMap.markers);
+        assertEquals(List.of("personal", "sw:Home"), xaero.markers);
+    }
+
+    @Test
+    void xaeroWaitsForReadinessAndReconcilesOnlyOnce() {
+        xaero.ready = false;
+        coordinator.onUnchangedSync(null, null, false);
+        coordinator.tick(null, null);
+        assertEquals(List.of("personal"), xaero.markers);
+
+        xaero.model = List.of("sw:Latest");
+        xaero.ready = true;
+        coordinator.tick(null, null);
+        assertEquals(List.of("personal", "sw:Latest"), xaero.markers);
+
+        xaero.markers.add("sw:local-edit");
+        coordinator.tick(null, null);
+        assertEquals(List.of("personal", "sw:Latest", "sw:local-edit"), xaero.markers);
+    }
+
+    @Test
+    void pendingMapsBecomeReadyIndependently() {
+        xaero.ready = false;
+        voxelMap.ready = false;
+        coordinator.onUnchangedSync(null, null, false);
+        xaero.ready = true;
+        coordinator.tick(null, null);
+        assertEquals(List.of("personal", "sw:Home"), xaero.markers);
+        assertEquals(List.of("personal"), voxelMap.markers);
+
+        xaero.markers.add("sw:local-edit");
+        voxelMap.ready = true;
+        coordinator.tick(null, null);
+        assertEquals(List.of("personal", "sw:Home", "sw:local-edit"), xaero.markers);
+        assertEquals(List.of("personal", "sw:Home"), voxelMap.markers);
+    }
+
+    @Test
+    void disablingXaeroAutoSyncCancelsItsDeferredWork() {
+        xaero.ready = false;
+        coordinator.onUnchangedSync(null, null, false);
+        xaero.enabled = false;
+        coordinator.tick(null, null);
+        xaero.enabled = true;
+        xaero.ready = true;
+        coordinator.tick(null, null);
         assertEquals(List.of("personal"), xaero.markers);
     }
 
@@ -137,6 +183,7 @@ class MapModSyncCoordinatorTest {
     @Test
     void idleTicksDoNotReadMapReadiness() {
         voxelMap.rejectReadinessChecks = true;
+        xaero.rejectReadinessChecks = true;
         coordinator.tick(null, null);
         assertEquals(List.of("personal"), voxelMap.markers);
     }

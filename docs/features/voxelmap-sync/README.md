@@ -10,3 +10,6 @@ Status: implemented 2026-10-07; the Gradle builds, tests and live checks are sti
 - [Handshake reconciliation design](specs/2026-10-27-voxelmap-reconciliation-design.md)
 - [Handshake reconciliation plan](plans/2026-10-27-voxelmap-reconciliation.md)
 - [Handshake reconciliation validation](validation/2026-10-27-voxelmap-reconciliation.md)
+- [Xaero handshake reconciliation design](specs/2026-10-27-xaero-reconciliation-design.md)
+- [Xaero handshake reconciliation plan](plans/2026-10-27-xaero-reconciliation.md)
+- [Xaero handshake reconciliation validation](validation/2026-10-27-xaero-reconciliation.md)

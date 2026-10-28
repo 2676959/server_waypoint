@@ -4,12 +4,13 @@ import _959.server_waypoint.common.client.ClientConfig;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.core.network.upload.UploadTarget;
 
+import java.util.EnumSet;
 import java.util.List;
 
 /** Client-thread coordination of automatic sync; pending work never retains old event payloads. */
 final class MapModSyncCoordinator {
     private final List<MapModIntegration> integrations;
-    private boolean pendingVoxelMapSync;
+    private final EnumSet<UploadTarget> pendingSync = EnumSet.noneOf(UploadTarget.class);
 
     MapModSyncCoordinator(List<MapModIntegration> integrations) {
         this.integrations = List.copyOf(integrations);
@@ -30,49 +31,47 @@ final class MapModSyncCoordinator {
             return;
         }
         for (MapModIntegration integration : integrations) {
-            if (integration.uploadTarget() == UploadTarget.VOXELMAP) {
-                synchronize(integration, ClientWaypointSyncEvent.allSynced(), client, config);
-            }
+            synchronize(integration, ClientWaypointSyncEvent.allSynced(), client, config);
         }
     }
 
     private void synchronize(MapModIntegration integration, ClientWaypointSyncEvent event,
                              WaypointClientMod client, ClientConfig config) {
+        UploadTarget target = integration.uploadTarget();
         if (!integration.isInstalled() || !integration.isEnabled(config)) {
+            pendingSync.remove(target);
             return;
         }
-        if (integration.uploadTarget() == UploadTarget.VOXELMAP) {
-            if (!integration.isReady()) {
-                pendingVoxelMapSync = true;
-                return;
-            }
-            if (pendingVoxelMapSync) {
-                pendingVoxelMapSync = false;
-                integration.syncAll(client);
-                return;
-            }
+        if (!integration.isReady()) {
+            pendingSync.add(target);
+            return;
+        }
+        if (pendingSync.remove(target)) {
+            integration.syncAll(client);
+            return;
         }
         integration.onClientWaypointSync(event, client);
     }
 
     void tick(WaypointClientMod client, ClientConfig config) {
-        if (!pendingVoxelMapSync) {
+        if (pendingSync.isEmpty()) {
             return;
         }
         for (MapModIntegration integration : integrations) {
-            if (integration.uploadTarget() != UploadTarget.VOXELMAP) {
+            UploadTarget target = integration.uploadTarget();
+            if (!pendingSync.contains(target)) {
                 continue;
             }
             if (!integration.isInstalled() || !integration.isEnabled(config)) {
-                clearPending();
+                pendingSync.remove(target);
             } else if (integration.isReady()) {
-                clearPending();
+                pendingSync.remove(target);
                 integration.syncAll(client);
             }
         }
     }
 
     void clearPending() {
-        pendingVoxelMapSync = false;
+        pendingSync.clear();
     }
 }

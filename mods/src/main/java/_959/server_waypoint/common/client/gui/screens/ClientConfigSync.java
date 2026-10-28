@@ -50,8 +50,8 @@ final class ClientConfigSync {
     }
 
     /**
-     * The first reason a map mod can't sync, or null when it can. The world check comes first
-     * because {@code isXaerosMinimapReady} stays true after the player leaves a world.
+     * The first reason a map mod can't sync, or null when it can. Check for an active world
+     * before considering connection-scoped readiness or waypoint synchronization.
      */
     static @Nullable SyncBlocker resolveSyncBlocker(boolean inWorld, ManagerViewState waypointState, boolean mapModReady) {
         if (!inWorld) {

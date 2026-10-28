@@ -12,12 +12,14 @@ import _959.server_waypoint.core.network.codec.ChunkedMessageManager;
 import _959.server_waypoint.core.network.data.DimensionWaypointData;
 import _959.server_waypoint.core.network.data.WaypointData;
 import _959.server_waypoint.core.waypoint.WaypointList;
+import _959.server_waypoint.mixin.xaeros_minimap.MinimapWorldStateUpdaterMixin;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import sun.misc.Unsafe;
 
 import java.lang.reflect.Field;
@@ -28,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
@@ -39,6 +42,8 @@ class ClientHandshakeMapSyncTest {
     private Unsafe unsafe;
     private Field coordinatorField;
     private Object previousCoordinator;
+    private Field integrationsField;
+    private Object previousIntegrations;
     private final MarkerStorage voxelMap = new MarkerStorage(UploadTarget.VOXELMAP);
     private final MarkerStorage xaero = new MarkerStorage(UploadTarget.XAERO);
 
@@ -53,7 +58,7 @@ class ClientHandshakeMapSyncTest {
         setStatic(WaypointClientMod.class, "INSTANCE", null);
         setStatic(WaypointClientMod.class, "networkState", WaypointClientMod.ClientNetworkState.HANDSHAKE_FINISHED);
         setStatic(WaypointClientMod.class, "currentDimensionName", DIMENSION);
-        setStatic(WaypointClientMod.class, "isXaerosMinimapReady", true);
+        setStatic(WaypointClientMod.class, "isXaerosMinimapReady", false);
         setStatic(WaypointServerMod.class, "runsWithClient", false);
         setStatic(ClientConfig.class, "isXaerosMinimapLoaded", false);
         setStatic(ClientConfig.class, "isVoxelMapLoaded", false);
@@ -64,6 +69,11 @@ class ClientHandshakeMapSyncTest {
         coordinatorField = MapModIntegrations.class.getDeclaredField("AUTOMATIC_SYNC");
         coordinatorField.setAccessible(true);
         previousCoordinator = coordinatorField.get(null);
+        integrationsField = MapModIntegrations.class.getDeclaredField("INTEGRATIONS");
+        integrationsField.setAccessible(true);
+        previousIntegrations = integrationsField.get(null);
+        unsafe.putObject(unsafe.staticFieldBase(integrationsField), unsafe.staticFieldOffset(integrationsField),
+                List.of(xaero, voxelMap));
         var coordinatorConstructor = coordinatorField.getType().getDeclaredConstructor(List.class);
         coordinatorConstructor.setAccessible(true);
         unsafe.putObject(unsafe.staticFieldBase(coordinatorField), unsafe.staticFieldOffset(coordinatorField),
@@ -87,6 +97,8 @@ class ClientHandshakeMapSyncTest {
     void restoreState() throws IllegalAccessException {
         unsafe.putObject(unsafe.staticFieldBase(coordinatorField), unsafe.staticFieldOffset(coordinatorField),
                 previousCoordinator);
+        unsafe.putObject(unsafe.staticFieldBase(integrationsField), unsafe.staticFieldOffset(integrationsField),
+                previousIntegrations);
         for (var entry : previousValues.entrySet()) {
             entry.getKey().set(null, entry.getValue());
         }
@@ -96,6 +108,76 @@ class ClientHandshakeMapSyncTest {
     void unchangedHandshakeCompletesWithoutAccessingXaeroStorage() throws ReflectiveOperationException {
         setStatic(ClientConfig.class, "isXaerosMinimapLoaded", true);
         assertUnchangedHandshakeCompletes();
+    }
+
+    // Xaero tests run on every target, so they tick only the map-sync step: the rest of the
+    // client tick sends payloads, which Forge 1.20.1 can't do without its mod loader.
+    @Test
+    void xaeroReadyBeforeUnchangedHandshakeRestoresMarkers() throws ReflectiveOperationException {
+        setStatic(ClientConfig.class, "isXaerosMinimapLoaded", true);
+        markXaeroReady();
+        receiveUpdates(List.of());
+        MapModIntegrations.tickPendingSync(client);
+
+        assertEquals(List.of("personal", "sw:cached"), xaero.markers);
+        assertEquals(1, xaero.rewrites);
+    }
+
+    @Test
+    void xaeroReadyAfterUnchangedHandshakeRestoresMarkersOnlyOnce() throws ReflectiveOperationException {
+        setStatic(ClientConfig.class, "isXaerosMinimapLoaded", true);
+        receiveUpdates(List.of());
+        MapModIntegrations.tickPendingSync(client);
+        assertEquals(List.of("personal", "sw:stale"), xaero.markers);
+        markXaeroReady();
+        MapModIntegrations.tickPendingSync(client);
+        assertEquals(List.of("personal", "sw:cached"), xaero.markers);
+
+        markXaeroReady();
+        MapModIntegrations.tickPendingSync(client);
+        assertEquals(1, xaero.rewrites);
+    }
+
+    @Test
+    void changedHandshakeAlsoWaitsForXaeroReadiness() throws ReflectiveOperationException {
+        setStatic(ClientConfig.class, "isXaerosMinimapLoaded", true);
+        receiveUpdates(List.of(new DimensionWaypointData(DIMENSION, List.of(WaypointList.build("latest", 9)))));
+        MapModIntegrations.tickPendingSync(client);
+        assertEquals(0, xaero.rewrites);
+        markXaeroReady();
+        MapModIntegrations.tickPendingSync(client);
+        assertEquals(List.of("personal", "sw:cached", "sw:latest"), xaero.markers);
+        assertEquals(1, xaero.rewrites);
+    }
+
+    @Test
+    void leavingServerClearsXaeroReadinessAndItsPendingWork() throws ReflectiveOperationException {
+        setStatic(ClientConfig.class, "isXaerosMinimapLoaded", true);
+        receiveUpdates(List.of());
+        markXaeroReady();
+        client.onLeaveServer();
+        assertFalse(WaypointClientMod.isXaerosMinimapReady);
+        setStatic(WaypointClientMod.class, "networkState", WaypointClientMod.ClientNetworkState.SYNC_FINISHED);
+        markXaeroReady();
+        MapModIntegrations.tickPendingSync(client);
+        assertEquals(0, xaero.rewrites);
+    }
+
+    @Test
+    void integratedUnchangedHandshakeDoesNotQueueXaero() throws ReflectiveOperationException {
+        setStatic(ClientConfig.class, "isXaerosMinimapLoaded", true);
+        setStatic(WaypointServerMod.class, "runsWithClient", true);
+        receiveUpdates(List.of());
+        markXaeroReady();
+        MapModIntegrations.tickPendingSync(client);
+        assertEquals(0, xaero.rewrites);
+    }
+
+    private void markXaeroReady() throws ReflectiveOperationException {
+        var callback = MinimapWorldStateUpdaterMixin.class.getDeclaredMethod(
+                "injectOnServerLevelId", int.class, CallbackInfo.class);
+        callback.setAccessible(true);
+        callback.invoke(new MinimapWorldStateUpdaterMixin(), 1, new CallbackInfo("onServerLevelId", false));
     }
 
     //? if voxelmap {
@@ -206,6 +288,7 @@ class ClientHandshakeMapSyncTest {
         private final UploadTarget target;
         private final List<String> markers = new ArrayList<>(List.of("personal", "sw:stale"));
         private boolean ready;
+        private int rewrites;
 
         private MarkerStorage(UploadTarget target) { this.target = target; }
         @Override public UploadTarget uploadTarget() { return target; }
@@ -215,13 +298,16 @@ class ClientHandshakeMapSyncTest {
         }
         @Override public boolean isEnabled(ClientConfig config) {
             return target == UploadTarget.VOXELMAP ? config.isAutoSyncToVoxelMap()
-                    : config.isAutoSyncToXaerosMinimap() && ready;
+                    : config.isAutoSyncToXaerosMinimap();
         }
-        @Override public boolean isReady() { return ready; }
+        @Override public boolean isReady() {
+            return target == UploadTarget.VOXELMAP ? ready : WaypointClientMod.isXaerosMinimapReady;
+        }
         @Override public void onClientWaypointSync(ClientWaypointSyncEvent event, WaypointClientMod client) {
             syncAll(client);
         }
         @Override public void syncAll(WaypointClientMod client) {
+            rewrites++;
             markers.removeIf(marker -> marker.startsWith("sw:"));
             for (String dimension : client.getDimensionNames()) {
                 for (WaypointList list : client.getWaypointListsByDimensionName(dimension)) {

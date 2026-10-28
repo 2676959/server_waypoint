@@ -11,6 +11,7 @@ public interface MapModIntegration {
 
     WaypointData collectUpload(UploadRequestBuffer request);
 
+    /** Automatic-sync preference, independent of whether the map's world is ready. */
     boolean isEnabled(ClientConfig clientConfig);
 
     void onClientWaypointSync(ClientWaypointSyncEvent event, WaypointClientMod waypointClientMod);
