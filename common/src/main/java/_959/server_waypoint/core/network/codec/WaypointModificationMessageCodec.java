@@ -6,12 +6,14 @@ import _959.server_waypoint.core.network.message.WaypointModificationMessage;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
 import io.netty.buffer.ByteBuf;
+import _959.server_waypoint.core.collection.WaypointScope;
 
 public final class WaypointModificationMessageCodec {
     private WaypointModificationMessageCodec() {
     }
 
     public static void encode(ByteBuf buf, WaypointModificationMessage modification, EncodingContext context) {
+        WaypointScopeCodec.encode(buf, modification.scope());
         WaypointModificationType type = modification.type();
         buf.writeByte(type.ordinal());
         UtfStringCodec.encode(buf, modification.dimensionName(), context);
@@ -38,6 +40,7 @@ public final class WaypointModificationMessageCodec {
     }
 
     public static WaypointModificationMessage decode(ByteBuf buf, DecodingContext context) {
+        WaypointScope scope = WaypointScopeCodec.decode(buf);
         int typeId = buf.readUnsignedByte();
         WaypointModificationType[] types = WaypointModificationType.values();
         if (typeId >= types.length) {
@@ -68,6 +71,7 @@ public final class WaypointModificationMessageCodec {
         }
         int syncId = buf.readInt();
         return new WaypointModificationMessage(
+                scope,
                 dimensionName,
                 listName,
                 listDisplayName,

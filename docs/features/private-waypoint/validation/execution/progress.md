@@ -19,7 +19,7 @@ The user authorized implementation and a separate local commit for each verified
 1. Complete: collection identity and scoped navigation (`20cd599`).
 2. Complete: owner storage, quotas, lifecycle (`f80b062`, plus the shutdown review fix).
 3. Complete: private commands, permissions, feedback, and scoped restore (verified 2026-10-28).
-4. Pending: owner-only protocol and client collections.
+4. Complete: owner-only protocol and client collections (verified 2026-10-28).
 5. Pending: local profiles.
 6. Pending: client operations and teleport templates.
 7. Pending: manager and composed rendering.
@@ -148,3 +148,68 @@ The user authorized implementation and a separate local commit for each verified
 - Re-ran `:common:test :cross-server:test :proxy-common:test :mods:26.1.2-fabric:compileJava
   :paper:26.2-paper:test --console=plain --max-workers=2` successfully before staging.
 - No push is authorized. Earlier references to uncommitted work describe their verification checkpoints.
+
+## Task 4 execution (2026-10-28)
+
+- Started from clean `feature/private-waypoint` at `c48a4397`; Tasks 1-3 confirmed in history and this ledger.
+- Scope: protocol 3, owner-only server synchronization, separate client server caches and generations.
+- Pre-flight: Task 3 owner gates persist before deferred feedback; Task 4 must retain those gates and keep all map integration producers Shared-only. Task 5 consumes the selection and generation contracts; Local persistence remains Task 5.
+- Execution scope: only the requested Task 4, on the existing feature branch and ledger. No new worktree, delegation, commit, or push.
+
+## Task 4 evidence (2026-10-28)
+
+- Protocol 3 carries explicit Shared/Private scope on snapshots, updates/tombstones, list renames,
+  edit requests/results, and revision requests. Registered collection-state message ID 8 separates
+  authorization from readiness. Invalid scope bytes and Private upload constructors/wire data fail
+  before mutation. The cross-server protocol and catalog model are unchanged.
+- Private packet ownership comes from the authenticated sender UUID. Both packet and command
+  delivery use one read gate; private broadcasts are rejected. Private edit permission is checked
+  before borrowing, and success/deltas are delivered only after the owner persistence gate succeeds.
+  Failed saves return `PERSISTENCE_FAILED`; Shared edit behavior remains covered by existing tests.
+- Queued Private frames recheck read permission at transmission time. Paper evaluates this guard
+  on the player's owning region after scheduling. Observed denial sends unreadable state; no denied
+  Private delta is transmitted. Protocol-incompatible peers remain outside custom synchronization.
+- Added source-specific stores, readiness, trackers, pending edit identities, and selection contracts.
+  Equal names/revisions and equal request IDs cannot cross collections. Authorization alone does
+  not mark Private ready; denial clears its model/pending edits without changing Shared or Local.
+- Private disk caches are keyed by account UUID, address digest, and backend ID. Current-format
+  loading has no migration reader; a failed cache read requests authoritative server data instead.
+  Loaded data remains unavailable until the current connection authorizes and synchronizes it.
+- Connection/account/backend/profile rebinding invalidates captured selections and pending results.
+  Loader handlers capture the generation before their own client-thread queue; outgoing batches and
+  deferred upload outcomes also reject obsolete generations. Integrated Private access uses the
+  authenticated local player's network path and detached client cache, never a server owner-manager map.
+- RED/GREEN evidence covers absent scope/client contracts, authenticated owner routing, queued
+  revocation, cache rebinding, and the review-found collision of equal Shared/Private edit request IDs.
+  Full-suite translation audits exposed missing persistence-result strings and overlong chat copy;
+  both were fixed. Strict cache loading exposed an unnamespaced test dimension, corrected to the
+  actual namespaced format. The expanded Forge compilation exposed an ambiguous callback overload;
+  using a void block lambda resolved it.
+- Updated all six common and all six client locales for persistence failures. The incompatible-client
+  text reports protocol 3 because no feature release number has been assigned. Placeholder coverage
+  and chat-width audits pass; human translation review remains pending.
+- Full verification: common 718, active Fabric client 979, Paper 58, cross-server 115, proxy-common 167;
+  zero failures/errors/skips. Older Fabric focused tests: 26, zero failures/errors/skips.
+- Representative compilation: Fabric 1.20.1 and 26.1.2; Forge 1.20.1 and 26.1.2; NeoForge 1.20.2,
+  1.20.4 and 26.3; Paper 1.21 and 26.2. Active Stonecutter targets remain unchanged.
+- Final review: inline self-review, per this plan's no-delegation instruction. Checked all current
+  waypoint producers, scoped codecs, persistence/delivery ordering, source-specific recovery, cache
+  roots, integrated dispatch, queued work, map-sync calls, and cross-server boundaries. No remaining
+  actionable findings. The historical performance exporter remains unchanged because it deliberately
+  compiles against a separately supplied published artifact; it is not a producer in this build.
+- The exact focused protocol/handler and active-client plan checks also passed. `git diff --check`,
+  changed-document link checks, locale JSON parsing, and new-Java whitespace checks passed.
+- Task 4 complete. No commit or push. Tasks 5–8 remain pending. No live joins, multiplayer isolation,
+  rendering, physical input, vanilla-client behavior, or teleport arrival is claimed.
+- See [synchronization validation](../2026-10-28-private-synchronization.md) and
+  [retained logs and counts](task-4/).
+
+## Task 4 local commit authorization (2026-10-28)
+
+- The user requested a local commit of Task 4. Preserved the intervening documentation-only commit
+  `73769368` and followed its Conventional Commits guidance.
+- Re-ran `rtk proxy ./gradlew :common:test :mods:26.1.2-fabric:test :paper:26.2-paper:test
+  :cross-server:test :proxy-common:test --console=plain --max-workers=2` successfully.
+- Reviewed Task 4 implementation, fixtures, six common/client locales, feature documentation, and
+  retained validation logs as one coherent commit scope. Protocol 3 is an intentional breaking change.
+- Earlier uncommitted/no-commit notes describe their original verification checkpoints. No push.

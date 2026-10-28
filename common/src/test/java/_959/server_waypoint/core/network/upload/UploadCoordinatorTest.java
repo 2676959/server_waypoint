@@ -1,5 +1,6 @@
 package _959.server_waypoint.core.network.upload;
 
+import _959.server_waypoint.core.collection.WaypointScope;
 import _959.server_waypoint.core.collection.WaypointCollectionKey;
 import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.core.WaypointFileManager;
@@ -59,7 +60,7 @@ class UploadCoordinatorTest {
         org.slf4j.impl.StaticLoggerBinder.clear();
         var request = coordinator.begin("player", UploadTarget.XAERO, UploadScope.WORLD,
                 UploadConflictPolicy.LOCAL, false, List.of("minecraft:overworld"), null, null, new PlayerActionLog.Actor(null, "TestSender")).request();
-        coordinator.onUpload("player", WaypointData.upload(request.requestId(), UploadStatus.SUCCESS,
+        coordinator.onUpload("player", WaypointData.upload(WaypointScope.SHARED, request.requestId(), UploadStatus.SUCCESS,
                 List.of(new DimensionWaypointData("minecraft:overworld",
                         List.of(new WaypointList("list", 1, List.of(waypoint("home", 0), waypoint("mine", 1))))))));
         var events = org.slf4j.impl.StaticLoggerBinder.events().stream()
@@ -253,7 +254,7 @@ class UploadCoordinatorTest {
         UploadCoordinator.BeginResult request = begin(coordinator, "first");
         Thread uploadThread = new Thread(() -> coordinator.onUpload(
                 "first",
-                WaypointData.upload(request.request().requestId(), UploadStatus.XAERO_NOT_READY, List.of())
+                WaypointData.upload(WaypointScope.SHARED, request.request().requestId(), UploadStatus.XAERO_NOT_READY, List.of())
         ));
 
         uploadThread.start();
@@ -631,7 +632,7 @@ class UploadCoordinatorTest {
                 false, dimensions, null, null
         , new PlayerActionLog.Actor(null, "TestSender")).request();
         coordinator.onUpload("player", WaypointData.upload(
-                request.requestId(), UploadStatus.SUCCESS,
+                WaypointScope.SHARED, request.requestId(), UploadStatus.SUCCESS,
                 dimensions.stream().map(dimension -> new DimensionWaypointData(
                         dimension, List.of(new WaypointList("list", WaypointList.SERVER_N, List.of(waypoint("target", 25))))
                 )).toList()
@@ -703,7 +704,7 @@ class UploadCoordinatorTest {
                 List.of("minecraft:overworld", "minecraft:the_nether"), null, null
         , new PlayerActionLog.Actor(null, "TestSender")).request();
         coordinator.onUpload("player", WaypointData.upload(
-                request.requestId(), UploadStatus.SUCCESS,
+                WaypointScope.SHARED, request.requestId(), UploadStatus.SUCCESS,
                 request.dimensionNames().stream().map(dimension -> new DimensionWaypointData(
                         dimension, List.of(new WaypointList("list", WaypointList.SERVER_N, List.of(waypoint("target", 25))))
                 )).toList()
@@ -754,7 +755,7 @@ class UploadCoordinatorTest {
             List<SimpleWaypoint> waypoints
     ) {
         return WaypointData.upload(
-                request.requestId(),
+                WaypointScope.SHARED, request.requestId(),
                 UploadStatus.SUCCESS,
                 List.of(new DimensionWaypointData(
                         dimensionName,

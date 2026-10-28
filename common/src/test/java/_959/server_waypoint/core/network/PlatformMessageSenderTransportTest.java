@@ -1,5 +1,6 @@
 package _959.server_waypoint.core.network;
 
+import _959.server_waypoint.core.collection.WaypointScope;
 import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.core.network.buffer.MessageChunkBuffer;
 import _959.server_waypoint.core.network.codec.ChunkedMessageManager;
@@ -31,6 +32,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * accounting boundary.
  */
 class PlatformMessageSenderTransportTest {
+    @Test
+    void privateReadRevocationCancelsQueuedFramesBeforeTransmission() {
+        RecordingSender sender = new RecordingSender();
+        AtomicBoolean readable = new AtomicBoolean(true);
+        var delivery = sender.sendPlayerChunkedMessageTracked("owner",
+                WaypointData.world(WaypointScope.PRIVATE, List.of()), readable::get);
+        assertTrue(delivery.admissionResult().queued());
+        readable.set(false);
+        sender.tickChunkedMessages();
+        assertTrue(sender.packets.isEmpty());
+        assertFalse(delivery.completion().toCompletableFuture().join().delivered());
+    }
+
     @Test
     void managerWideTickGrantsAggregateOutboundAcrossPeers() {
         RecordingSender sender = new RecordingSender();
@@ -76,7 +90,7 @@ class PlatformMessageSenderTransportTest {
         RecordingSender sender = new RecordingSender();
         List<ChunkedMessage> applied = new ArrayList<>();
         MessageChunkBuffer frame = ChunkedMessageManager.createTransfer(
-                new ClientUpdateRequestMessage(List.of()),
+                new ClientUpdateRequestMessage(WaypointScope.SHARED, List.of()),
                 false
         ).get(0);
 
@@ -87,7 +101,7 @@ class PlatformMessageSenderTransportTest {
 
         // Application failures propagate raw instead of as transport failures.
         MessageChunkBuffer valid = ChunkedMessageManager.createTransfer(
-                new ClientUpdateRequestMessage(List.of()),
+                new ClientUpdateRequestMessage(WaypointScope.SHARED, List.of()),
                 false
         ).get(0);
         AtomicBoolean handlerRan = new AtomicBoolean(false);
@@ -144,7 +158,7 @@ class PlatformMessageSenderTransportTest {
                 List.of(),
                 description
         );
-        return WaypointData.world(List.of(new DimensionWaypointData(
+        return WaypointData.world(WaypointScope.SHARED, List.of(new DimensionWaypointData(
                 "",
                 List.of(new WaypointList("", "", 1, List.of(waypoint)))
         )));

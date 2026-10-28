@@ -1,0 +1,38 @@
+{
+    "common": {
+        "tests": 718,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+    },
+    "client-26.1.2-fabric": {
+        "tests": 979,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+    },
+    "client-1.20.1-fabric-focused": {
+        "tests": 26,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+    },
+    "paper-26.2": {
+        "tests": 58,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+    },
+    "cross-server": {
+        "tests": 115,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+    },
+    "proxy-common": {
+        "tests": 167,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+    }
+}

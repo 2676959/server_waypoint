@@ -1,8 +1,8 @@
 # Private and local waypoints
 
 Status: implementation in progress. Collection-aware navigation and owner storage (plan Tasks 1–2)
-were verified on 2026-10-23; private commands, permissions, and feedback (Task 3) on 2026-10-28.
-Synchronization, Local, manager integration, and live acceptance remain pending.
+were verified on 2026-10-23; private commands (Task 3) and owner-only synchronization with separate
+client caches (Task 4) on 2026-10-28. Local, manager integration, and live acceptance remain pending.
 
 This feature adds two independent waypoint collections alongside existing shared server waypoints:
 
@@ -21,6 +21,7 @@ there is no automatic mirroring between collections.
 - [Implementation plan](plans/2026-10-16-private-waypoint.md)
 - [Validation checklist](validation/2026-10-16-private-waypoint-checklist.md)
 - [Private command validation](validation/2026-10-28-private-commands.md)
+- [Owner-only synchronization validation](validation/2026-10-28-private-synchronization.md)
 - [Command performance validation](validation/2026-10-28-command-performance.md)
 - [Execution evidence and progress](validation/execution/progress.md)
 
@@ -30,7 +31,7 @@ there is no automatic mirroring between collections.
 2. Owner-only synchronization plus independent local storage, profiles, and teleport commands.
 3. Manager views, source labels, creation/copy routing, rendering, and live validation.
 
-The implementation plan records the task dependencies. None of these stages is marked complete,
+The implementation plan records the task dependencies. The remaining work is in stages 2–3,
 and the validation checklist is a record of required checks, not evidence that they passed.
 
 ## Related guidance

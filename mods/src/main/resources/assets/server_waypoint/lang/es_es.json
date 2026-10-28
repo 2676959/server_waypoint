@@ -87,6 +87,7 @@
   "waypoint.edit.error.malformed_request": "El servidor ha rechazado esta solicitud de edición.",
   "waypoint.edit.error.duplicate_keyword": "Un waypoint no puede contener palabras clave duplicadas.",
   "waypoint.edit.error.encoding_failed": "La actualización es demasiado grande para sincronizarla.",
+  "waypoint.edit.error.persistence_failed": "El servidor no pudo guardar los cambios. Vuelve a abrir y comprueba el punto antes de reintentarlo.",
   "waypoint.edit.error.upload_busy": "El servidor está ocupado con una subida de waypoints. Inténtalo de nuevo en un momento.",
   "waypoint.edit.error.response_timeout": "El servidor no ha confirmado la edición a tiempo. Comprueba el waypoint antes de volver a intentarlo.",
   "server_waypoint.no_serverside_support": "No hay soporte para servidor",

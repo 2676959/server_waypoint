@@ -1,5 +1,6 @@
 package _959.server_waypoint.common.client.integrations;
 
+import _959.server_waypoint.core.collection.WaypointScope;
 import _959.server_waypoint.core.network.ChunkedMessageSendResult;
 import _959.server_waypoint.core.network.data.WaypointData;
 import _959.server_waypoint.core.network.upload.UploadStatus;
@@ -17,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class IntegratedServerUploadTest {
     private final Queue<Runnable> clientTasks = new ArrayDeque<>();
     private final Queue<Runnable> serverTasks = new ArrayDeque<>();
-    private final WaypointData snapshot = WaypointData.upload(UUID.randomUUID(), UploadStatus.SUCCESS, List.of());
+    private final WaypointData snapshot = WaypointData.upload(WaypointScope.SHARED, UUID.randomUUID(), UploadStatus.SUCCESS, List.of());
 
     @Test
     void collectsOnClientThenAppliesAndCompletesOnServer() {

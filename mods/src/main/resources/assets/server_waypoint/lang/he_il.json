@@ -87,6 +87,7 @@
   "waypoint.edit.error.malformed_request": "השרת דחה את בקשת העריכה הזו.",
   "waypoint.edit.error.duplicate_keyword": "נקודת ציון אינה יכולה לכלול מילות מפתח כפולות.",
   "waypoint.edit.error.encoding_failed": "העדכון גדול מדי לסנכרון.",
+  "waypoint.edit.error.persistence_failed": "השרת לא הצליח לשמור את העריכה. יש לפתוח מחדש ולבדוק את נקודת הציון לפני ניסיון נוסף.",
   "waypoint.edit.error.upload_busy": "השרת עסוק בהעלאת נקודות ציון. נסה שוב בעוד רגע.",
   "waypoint.edit.error.response_timeout": "השרת לא אישר את העריכה בזמן. בדוק את נקודת הציון לפני שתנסה שוב.",
   "server_waypoint.no_serverside_support": "אין תמיכה בצד השרת",

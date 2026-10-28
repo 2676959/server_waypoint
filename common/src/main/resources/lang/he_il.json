@@ -1,6 +1,6 @@
 {
   "waypoint.updates.sent": "עדכוני נקודות הציון נשלחו",
-  "waypoint.incompatible.client": "גרסת המוד \"Server Waypoint\" אינה תואמת. נא להתקין את גרסה: {0}",
+  "waypoint.incompatible.client": "פרוטוקול Server Waypoint אינו תואם. יש להתקין לקוח שתומך בפרוטוקול {0}.",
   "waypoint.remove.list.success": "רשימת נקודות הציון \"{0}\" נמחקה",
   "waypoint.remove.list.nonempty": "אי אפשר למחוק רשימת נקודות ציון שאינה ריקה: \"{0}\"",
 
@@ -409,6 +409,7 @@
   "wp.error.edit.invalid_value": "הערך הזה אינו תקין.",
   "wp.error.edit.identical": "שום דבר לא השתנה.",
   "wp.error.edit.malformed_request": "בקשת העריכה פגומה.",
+  "wp.error.edit.persistence_failed": "השמירה נכשלה. יש לבדוק לפני ניסיון נוסף.",
   "wp.error.edit.upload_busy": "העריכה מושהית בזמן העלאה. נסו שוב בקרוב.",
   "wp.error.restore.invalid": "קישור השחזור פג תוקף.",
   "wp.error.restore.list_missing": "הרשימה שלה כבר לא קיימת. קישור השחזור ממשיך לעבוד.",

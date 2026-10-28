@@ -1,5 +1,6 @@
 package _959.server_waypoint.command;
 
+import _959.server_waypoint.core.collection.WaypointScope;
 import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.command.permission.PermissionKeys;
 import _959.server_waypoint.command.permission.PermissionManager;
@@ -763,7 +764,7 @@ class CoreWaypointCommandListTest {
                 return super.dispatchUpload(source, player, request, receiver);
             }
             this.collectedTarget = request.target();
-            receiver.accept(WaypointData.upload(request.requestId(), UploadStatus.SUCCESS, List.of(
+            receiver.accept(WaypointData.upload(WaypointScope.SHARED, request.requestId(), UploadStatus.SUCCESS, List.of(
                     new DimensionWaypointData("overworld", List.of(
                             new WaypointList("imported", WaypointList.SERVER_N, waypoints("local", 1))
                     ))

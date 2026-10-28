@@ -1,0 +1,238 @@
+Configuration on demand is an incubating feature.
+Running Stonecutter 0.9.7
+
+> Configure project :mods:26.1.2-fabric
+Fabric Loom: 1.15.5
+
+> Task :cross-server:updateModInfo UP-TO-DATE
+> Task :common:processResources UP-TO-DATE
+> Task :cross-server:compileJava UP-TO-DATE
+> Task :common:compileJava UP-TO-DATE
+> Task :common:classes UP-TO-DATE
+> Task :mods:26.1.2-fabric:stonecutterPrepare
+> Task :cross-server:processResources NO-SOURCE
+> Task :cross-server:classes UP-TO-DATE
+> Task :cross-server:jar UP-TO-DATE
+> Task :common:jar
+> Task :mods:26.1.2-fabric:stonecutterGenerate
+> Task :mods:26.1.2-fabric:compileJava
+> Task :mods:26.1.2-fabric:processResources UP-TO-DATE
+> Task :mods:26.1.2-fabric:classes
+
+> Task :mods:26.1.2-fabric:compileTestJava FAILED
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/util/XaeroMinimapHelperTest.java:456: warning: [deprecation] Waypoint(int,int,int,String,String,int) in Waypoint has been deprecated
+            super(0, 0, 0, "", "", 0);
+            ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/util/XaeroMinimapHelperTest.java:476: warning: [deprecation] getColor() in Waypoint has been deprecated
+        public int getColor() {
+                   ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientManualDownloadTest.java:73: warning: [removal] staticFieldBase(Field) in Unsafe has been deprecated and marked for removal
+        integrationsBase = unsafe.staticFieldBase(integrations);
+                                 ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientManualDownloadTest.java:74: warning: [removal] staticFieldOffset(Field) in Unsafe has been deprecated and marked for removal
+        integrationsOffset = unsafe.staticFieldOffset(integrations);
+                                   ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientManualDownloadTest.java:77: warning: [removal] putObject(Object,long,Object) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(integrationsBase, integrationsOffset, List.of(xaero, voxelMap));
+              ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientManualDownloadTest.java:97: warning: [removal] putObject(Object,long,Object) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(integrationsBase, integrationsOffset, previousIntegrations);
+              ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:76: warning: [removal] staticFieldBase(Field) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(integrationsField), unsafe.staticFieldOffset(integrationsField),
+                               ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:76: warning: [removal] staticFieldOffset(Field) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(integrationsField), unsafe.staticFieldOffset(integrationsField),
+                                                                          ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:76: warning: [removal] putObject(Object,long,Object) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(integrationsField), unsafe.staticFieldOffset(integrationsField),
+              ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:80: warning: [removal] staticFieldBase(Field) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(coordinatorField), unsafe.staticFieldOffset(coordinatorField),
+                               ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:80: warning: [removal] staticFieldOffset(Field) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(coordinatorField), unsafe.staticFieldOffset(coordinatorField),
+                                                                         ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:80: warning: [removal] putObject(Object,long,Object) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(coordinatorField), unsafe.staticFieldOffset(coordinatorField),
+              ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:99: warning: [removal] staticFieldBase(Field) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(coordinatorField), unsafe.staticFieldOffset(coordinatorField),
+                               ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:99: warning: [removal] staticFieldOffset(Field) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(coordinatorField), unsafe.staticFieldOffset(coordinatorField),
+                                                                         ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:99: warning: [removal] putObject(Object,long,Object) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(coordinatorField), unsafe.staticFieldOffset(coordinatorField),
+              ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:101: warning: [removal] staticFieldBase(Field) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(integrationsField), unsafe.staticFieldOffset(integrationsField),
+                               ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:101: warning: [removal] staticFieldOffset(Field) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(integrationsField), unsafe.staticFieldOffset(integrationsField),
+                                                                          ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:101: warning: [removal] putObject(Object,long,Object) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(integrationsField), unsafe.staticFieldOffset(integrationsField),
+              ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointCollectionsTest.java:20: error: cannot find symbol
+        var collections = new ClientWaypointCollections(new WaypointFilesManagerCore(directory.resolve("shared")));
+                              ^
+  symbol:   class ClientWaypointCollections
+  location: class ClientWaypointCollectionsTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointCollectionsTest.java:25: error: cannot find symbol
+        assertFalse(collections.ready(ClientWaypointSource.PRIVATE));
+                                      ^
+  symbol:   variable ClientWaypointSource
+  location: class ClientWaypointCollectionsTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointCollectionsTest.java:27: error: cannot find symbol
+        assertTrue(collections.ready(ClientWaypointSource.PRIVATE));
+                                     ^
+  symbol:   variable ClientWaypointSource
+  location: class ClientWaypointCollectionsTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointCollectionsTest.java:28: error: cannot find symbol
+        assertNotSame(collections.files(ClientWaypointSource.SHARED), collections.files(ClientWaypointSource.PRIVATE));
+                                        ^
+  symbol:   variable ClientWaypointSource
+  location: class ClientWaypointCollectionsTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointCollectionsTest.java:28: error: cannot find symbol
+        assertNotSame(collections.files(ClientWaypointSource.SHARED), collections.files(ClientWaypointSource.PRIVATE));
+                                                                                        ^
+  symbol:   variable ClientWaypointSource
+  location: class ClientWaypointCollectionsTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointCollectionsTest.java:29: error: cannot find symbol
+        collections.tracker(ClientWaypointSource.PRIVATE).markOutOfSync("overworld", "Homes");
+                            ^
+  symbol:   variable ClientWaypointSource
+  location: class ClientWaypointCollectionsTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointCollectionsTest.java:31: error: cannot find symbol
+        assertTrue(collections.tracker(ClientWaypointSource.PRIVATE).isOutOfSync("overworld", "Homes"));
+                                       ^
+  symbol:   variable ClientWaypointSource
+  location: class ClientWaypointCollectionsTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointCollectionsTest.java:34: error: cannot find symbol
+        assertNotNull(collections.files(ClientWaypointSource.SHARED).getWaypointFileManager("overworld").getWaypointListByName("Homes"));
+                                        ^
+  symbol:   variable ClientWaypointSource
+  location: class ClientWaypointCollectionsTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointCollectionsTest.java:35: error: cannot find symbol
+        assertNull(collections.files(ClientWaypointSource.PRIVATE).getWaypointFileManager("overworld").getWaypointListByName("Homes"));
+                                     ^
+  symbol:   variable ClientWaypointSource
+  location: class ClientWaypointCollectionsTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointCollectionsTest.java:40: error: cannot find symbol
+        var collections = new ClientWaypointCollections(new WaypointFilesManagerCore(directory.resolve("shared")));
+                              ^
+  symbol:   class ClientWaypointCollections
+  location: class ClientWaypointCollectionsTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointCollectionsTest.java:49: error: cannot find symbol
+        var selection = collections.selection(ClientWaypointSource.PRIVATE, "overworld", "Homes", null);
+                                              ^
+  symbol:   variable ClientWaypointSource
+  location: class ClientWaypointCollectionsTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointCollectionsTest.java:51: error: cannot find symbol
+        assertFalse(collections.ready(ClientWaypointSource.PRIVATE));
+                                      ^
+  symbol:   variable ClientWaypointSource
+  location: class ClientWaypointCollectionsTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointCollectionsTest.java:53: error: cannot find symbol
+        assertTrue(collections.files(ClientWaypointSource.PRIVATE).getFileManagerMap().isEmpty());
+                                     ^
+  symbol:   variable ClientWaypointSource
+  location: class ClientWaypointCollectionsTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointCollectionsTest.java:55: error: cannot find symbol
+        assertTrue(collections.ready(ClientWaypointSource.SHARED));
+                                     ^
+  symbol:   variable ClientWaypointSource
+  location: class ClientWaypointCollectionsTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointCollectionsTest.java:56: error: cannot find symbol
+        assertTrue(collections.ready(ClientWaypointSource.LOCAL));
+                                     ^
+  symbol:   variable ClientWaypointSource
+  location: class ClientWaypointCollectionsTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointCollectionsTest.java:57: error: cannot find symbol
+        assertSame(local, collections.files(ClientWaypointSource.LOCAL));
+                                            ^
+  symbol:   variable ClientWaypointSource
+  location: class ClientWaypointCollectionsTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointCollectionsTest.java:58: error: cannot find symbol
+        assertThrows(IllegalArgumentException.class, () -> new ClientWaypointSelection(ClientWaypointSource.LOCAL,
+                                                               ^
+  symbol:   class ClientWaypointSelection
+  location: class ClientWaypointCollectionsTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointCollectionsTest.java:58: error: cannot find symbol
+        assertThrows(IllegalArgumentException.class, () -> new ClientWaypointSelection(ClientWaypointSource.LOCAL,
+                                                                                       ^
+  symbol:   variable ClientWaypointSource
+  location: class ClientWaypointCollectionsTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointCollectionsTest.java:64: error: cannot find symbol
+        var collections = new ClientWaypointCollections(new WaypointFilesManagerCore(directory.resolve("shared")));
+                              ^
+  symbol:   class ClientWaypointCollections
+  location: class ClientWaypointCollectionsTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointCollectionsTest.java:71: error: cannot find symbol
+        Path aliceFiles = collections.files(ClientWaypointSource.PRIVATE).getWaypointFilesDir();
+                                            ^
+  symbol:   variable ClientWaypointSource
+  location: class ClientWaypointCollectionsTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointCollectionsTest.java:72: error: cannot find symbol
+        var captured = collections.selection(ClientWaypointSource.PRIVATE, "overworld", "Alice", null);
+                                             ^
+  symbol:   variable ClientWaypointSource
+  location: class ClientWaypointCollectionsTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointCollectionsTest.java:75: error: cannot find symbol
+        assertNotEquals(aliceFiles, collections.files(ClientWaypointSource.PRIVATE).getWaypointFilesDir());
+                                                      ^
+  symbol:   variable ClientWaypointSource
+  location: class ClientWaypointCollectionsTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointCollectionsTest.java:78: error: cannot find symbol
+        assertTrue(collections.files(ClientWaypointSource.PRIVATE).getFileManagerMap().isEmpty());
+                                     ^
+  symbol:   variable ClientWaypointSource
+  location: class ClientWaypointCollectionsTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointCollectionsTest.java:79: error: cannot find symbol
+        Path bobFiles = collections.files(ClientWaypointSource.PRIVATE).getWaypointFilesDir();
+                                          ^
+  symbol:   variable ClientWaypointSource
+  location: class ClientWaypointCollectionsTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointCollectionsTest.java:81: error: cannot find symbol
+        assertNotEquals(bobFiles, collections.files(ClientWaypointSource.PRIVATE).getWaypointFilesDir());
+                                                    ^
+  symbol:   variable ClientWaypointSource
+  location: class ClientWaypointCollectionsTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointCollectionsTest.java:84: error: cannot find symbol
+        assertEquals(aliceFiles, collections.files(ClientWaypointSource.PRIVATE).getWaypointFilesDir());
+                                                   ^
+  symbol:   variable ClientWaypointSource
+  location: class ClientWaypointCollectionsTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointCollectionsTest.java:85: error: cannot find symbol
+        assertFalse(collections.ready(ClientWaypointSource.PRIVATE));
+                                      ^
+  symbol:   variable ClientWaypointSource
+  location: class ClientWaypointCollectionsTest
+27 errors
+18 warnings
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':mods:26.1.2-fabric:compileTestJava' (registered by plugin class 'org.gradle.api.plugins.JavaBasePlugin').
+> Compilation failed; see the compiler output below.
+  /Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/util/XaeroMinimapHelperTest.java:456: warning: [deprecation] Waypoint(int,int,int,String,String,int) in Waypoint has been deprecated
+              super(0, 0, 0, "", "", 0);
+              ^
+  27 errors
+  18 warnings
+
+* Try:
+> Run with
+[Incubating] Problems report is available at: file:///Volumes/ssd/fabric_mods_repo/server_waypoint/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+--scan to get full insights from a Build Scan (powered by Develocity).
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.5.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 4s
+11 actionable tasks: 5 executed, 6 up-to-date

@@ -193,13 +193,13 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
                 context.enqueueWork(() -> this.c2sPacketHandler.onMessageChunk((ServerPlayer) context.player(), payload.messageChunk()));
         net.neoforged.neoforge.network.handling.IPayloadHandler<MessageChunkPayload> clientChunkHandler = (payload, context) -> {
             if (isClientDist()) {
-                context.enqueueWork(() -> ServerWaypointNeoForgeClient.handleMessageChunk(payload));
+                ServerWaypointNeoForgeClient.handleMessageChunk(payload);
             }
         };
         //? if >=1.21.7 {
-        registrar.playBidirectional(MessageChunkPayload.ID, MessageChunkPayload.PACKET_CODEC, serverChunkHandler, clientChunkHandler);
+        registrar.executesOn(net.neoforged.neoforge.network.registration.HandlerThread.NETWORK).playBidirectional(MessageChunkPayload.ID, MessageChunkPayload.PACKET_CODEC, serverChunkHandler, clientChunkHandler);
         //?} else {
-        /^registrar.playBidirectional(MessageChunkPayload.ID, MessageChunkPayload.PACKET_CODEC, (payload, context) -> {
+        /^registrar.executesOn(net.neoforged.neoforge.network.registration.HandlerThread.NETWORK).playBidirectional(MessageChunkPayload.ID, MessageChunkPayload.PACKET_CODEC, (payload, context) -> {
             if (context.flow() == net.minecraft.network.protocol.PacketFlow.SERVERBOUND) {
                 serverChunkHandler.handle(payload, context);
             } else {
@@ -234,7 +234,7 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
             }));
             handler.client((payload, context) -> {
                 if (isClientDist()) {
-                    context.workHandler().execute(() -> ServerWaypointNeoForgeClient.handleMessageChunk(payload));
+                    ServerWaypointNeoForgeClient.handleMessageChunk(payload);
                 }
             });
         });

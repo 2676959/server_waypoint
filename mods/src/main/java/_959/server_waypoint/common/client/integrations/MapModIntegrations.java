@@ -1,5 +1,6 @@
 package _959.server_waypoint.common.client.integrations;
 
+import _959.server_waypoint.core.collection.WaypointScope;
 import _959.server_waypoint.common.client.ClientConfig;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.server.WaypointServerMod;
@@ -72,7 +73,7 @@ public final class MapModIntegrations {
     public static WaypointData collectUpload(UploadRequestBuffer request) {
         return find(request.target())
                 .map(integration -> integration.collectUpload(request))
-                .orElseGet(() -> WaypointData.upload(request.requestId(), switch (request.target()) {
+                .orElseGet(() -> WaypointData.upload(WaypointScope.SHARED, request.requestId(), switch (request.target()) {
                     case XAERO -> UploadStatus.XAERO_NOT_INSTALLED;
                     case VOXELMAP -> UploadStatus.VOXELMAP_NOT_INSTALLED;
                 }, List.of()));

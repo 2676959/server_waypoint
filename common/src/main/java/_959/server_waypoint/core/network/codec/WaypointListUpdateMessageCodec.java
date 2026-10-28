@@ -4,19 +4,23 @@ import _959.server_waypoint.core.network.DecodingContext;
 import _959.server_waypoint.core.network.EncodingContext;
 import _959.server_waypoint.core.network.message.WaypointListUpdateMessage;
 import io.netty.buffer.ByteBuf;
+import _959.server_waypoint.core.collection.WaypointScope;
 
 public final class WaypointListUpdateMessageCodec {
     private WaypointListUpdateMessageCodec() {
     }
 
     public static void encode(ByteBuf buf, WaypointListUpdateMessage update, EncodingContext context) {
+        WaypointScopeCodec.encode(buf, update.scope());
         UtfStringCodec.encode(buf, update.dimensionName(), context);
         UtfStringCodec.encode(buf, update.previousListIdentifier(), context);
         WaypointListCodec.encode(buf, update.waypointList(), context);
     }
 
     public static WaypointListUpdateMessage decode(ByteBuf buf, DecodingContext context) {
+        WaypointScope scope = WaypointScopeCodec.decode(buf);
         return new WaypointListUpdateMessage(
+                scope,
                 UtfStringCodec.decode(buf, context),
                 UtfStringCodec.decode(buf, context),
                 WaypointListCodec.decode(buf, context)

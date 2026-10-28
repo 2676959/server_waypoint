@@ -326,6 +326,15 @@ public class PaperMessageSender implements PlatformMessageSender<CommandSourceSt
         );
     }
 
+    @Override
+    public CompletionStage<ChunkedMessageSendResult> sendPlayerPacketBatch(
+            Player player, List<MessageChunkBuffer> packets, java.util.function.BooleanSupplier readable
+    ) {
+        Object session = this.chunkedMessageSessions.get(player.getUniqueId());
+        return this.ownerThreadDispatcher.dispatch(player, () -> readable.getAsBoolean()
+                ? this.sendOwnedPacketBatch(player, packets, session) : ChunkedMessageSendResult.UNSUPPORTED);
+    }
+
     private ChunkedMessageSendResult sendOwnedPacketBatch(
             Player player,
             List<MessageChunkBuffer> packets,

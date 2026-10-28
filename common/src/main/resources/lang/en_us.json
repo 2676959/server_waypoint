@@ -1,6 +1,6 @@
 {
   "waypoint.updates.sent": "Waypoint updates have been sent",
-  "waypoint.incompatible.client": "Incompatible Server Waypoint mod version, please install version: {0}",
+  "waypoint.incompatible.client": "Incompatible Server Waypoint protocol. Install a client supporting protocol {0}.",
 
   "waypoint.remove.list.success": "Waypoint list \"{0}\" has been removed",
   "waypoint.remove.list.nonempty": "Cannot remove non-empty waypoint list: \"{0}\"",
@@ -419,6 +419,7 @@
   "wp.error.edit.invalid_value": "That value isn''t valid.",
   "wp.error.edit.identical": "Nothing changed.",
   "wp.error.edit.malformed_request": "That edit request was malformed.",
+  "wp.error.edit.persistence_failed": "Could not save the edit. Check before retrying.",
   "wp.error.edit.upload_busy": "Editing is paused while an upload runs. Try again soon.",
   "wp.error.restore.invalid": "That restore link has expired.",
   "wp.error.restore.list_missing": "Its list no longer exists. The restore link keeps working.",

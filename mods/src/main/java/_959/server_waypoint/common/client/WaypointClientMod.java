@@ -1,5 +1,6 @@
 package _959.server_waypoint.common.client;
 
+import _959.server_waypoint.core.collection.WaypointScope;
 import _959.server_waypoint.common.client.integrations.IntegratedServerUpload;
 import _959.server_waypoint.ProtocolVersion;
 import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
@@ -77,8 +78,10 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     private final ClientHandshakeC2SPayload clientHandshake = new ClientHandshakeC2SPayload(new ClientHandshakeBuffer());
     private final ChunkedMessageManager<String> chunkedMessages = new ChunkedMessageManager<>();
     private final ChunkedMessageManager<String> uploadChunkedMessages = new ChunkedMessageManager<>();
-    private final ClientSynchronizationTracker synchronizationTracker =
-            new ClientSynchronizationTracker();
+    private final ClientWaypointCollections collections = new ClientWaypointCollections(this);
+    private final ClientSynchronizationTracker synchronizationTracker = collections.tracker(ClientWaypointSource.SHARED);
+
+    public ClientWaypointCollections collections() { return this.collections; }
     private boolean compressChunkedMessages;
     // TODO: add a local waypoint manager for using waypoints on an unsupported server
 //    private final WaypointFilesManagerCore localManager;
@@ -225,7 +228,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
             }
             dimensionSyncIds.add(new DimensionSyncIdentifier(dimensionName, listSyncIds));
         }
-        return new ClientUpdateRequestMessage(dimensionSyncIds);
+        return new ClientUpdateRequestMessage(WaypointScope.SHARED, dimensionSyncIds);
     }
 
     /**
@@ -285,6 +288,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     }
 
     public void onLeaveServer() {
+        this.collections.disconnect();
         isXaerosMinimapReady = false;
         MapModIntegrations.clearPendingSync();
         this.remoteCatalogs.clear();
@@ -313,13 +317,18 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
      * can only be called when connected to a server
      * */
     public boolean requestUpdates() {
-        return this.sendChunkedMessageToServer(this.getClientUpdateRequestMessage());
+        boolean shared = this.sendChunkedMessageToServer(this.getClientUpdateRequestMessage());
+        boolean privateRequested = this.sendChunkedMessageToServer(this.collections.updateRequest(ClientWaypointSource.PRIVATE));
+        return shared && privateRequested;
     }
 
     public void onJoinServer() {
         isXaerosMinimapReady = false;
         MapModIntegrations.clearPendingSync();
         LOGGER.info("join server");
+        ServerData serverEntry = this.mc.getCurrentServer();
+        this.collections.beginConnection(this.mc.getUser().getProfileId(),
+                serverEntry == null ? "integrated" : serverEntry.ip);
         // Switching servers through a proxy (e.g. Velocity) does not trigger the disconnect that normally runs
         // onLeaveServer(), so flush any pending edits from the previous server to its own file before we
         // rebind to the new server. Otherwise edits are only saved at the final real disconnect.
@@ -355,27 +364,49 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     }
     @Override
     public void onServerHandshake(ServerHandshakeBuffer buffer) {
+        this.onServerHandshake(buffer, this.collections.generation());
+    }
+
+    public void onServerHandshake(ServerHandshakeBuffer buffer, long receivedGeneration) {
+        if (receivedGeneration != this.collections.generation()) return;
         this.remoteCatalogs.clear();
         this.compressChunkedMessages = buffer.compressChunkedMessages();
+        if (buffer.version() != ProtocolVersion.PROTOCOL_VERSION) {
+            this.collections.disconnect();
+            this.chunkedMessages.clearAll();
+            networkState = ClientNetworkState.INCOMPATIBLE_PROTOCOL;
+            return;
+        }
+        try {
+            this.collections.bindServer(this.gameRoot, buffer.serverId());
+        } catch (RuntimeException exception) {
+            LOGGER.warn("Cannot bind private client collection", exception);
+            networkState = ClientNetworkState.NOT_READY;
+            return;
+        }
         if (WaypointServerMod.runsWithClient()) {
-            // Keep the shared server model; an integrated world has no remote cache directory.
+            // Shared keeps the integrated model. Private always comes through the local player's
+            // authenticated connection; never borrow or expose the server's owner-manager registry.
+            this.collections.markSnapshotApplied(ClientWaypointSource.SHARED);
             networkState = ClientNetworkState.SYNC_FINISHED;
+            this.sendChunkedMessageToServer(this.collections.updateRequest(ClientWaypointSource.PRIVATE));
             return;
         }
         networkState = ClientNetworkState.HANDSHAKE_FINISHED;
-        int serverId = buffer.serverId();
-        int serverVersion = buffer.version();
-        if (serverVersion != ProtocolVersion.PROTOCOL_VERSION) {
-            this.loadCachedWaypointFiles(serverId);
-            networkState = ClientNetworkState.INCOMPATIBLE_PROTOCOL;
-        } else if (this.loadCachedWaypointFiles(serverId)) {
-            // send update requests to server -> onUpdatesBundle
-            this.requestUpdates();
-        }
+        this.saveAllWaypointFiles();
+        this.chunkedMessages.clearAll();
+        this.uploadChunkedMessages.clearAll();
+        OptimizedWaypointRenderer.clearScene();
+        if (this.loadCachedWaypointFiles(buffer.serverId())) this.requestUpdates();
     }
 
     @Override
     public void onMessageChunk(MessageChunkBuffer buffer) {
+        this.onMessageChunk(buffer, this.collections.generation());
+    }
+
+    public void onMessageChunk(MessageChunkBuffer buffer, long receivedGeneration) {
+        if (receivedGeneration != this.collections.generation()) return;
         if ((networkState != ClientNetworkState.HANDSHAKE_FINISHED
                 && networkState != ClientNetworkState.SYNC_FINISHED)
                 || !isAllowedClientboundMessageType(buffer.messageTypeId())) {
@@ -405,6 +436,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     }
 
     public boolean sendChunkedMessageToServer(ChunkedMessage message) {
+        long generation = this.collections.generation();
         try {
             if (message instanceof WaypointData waypointData
                     && waypointData.type() == WaypointData.Type.UPLOAD) {
@@ -414,6 +446,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
                         message,
                         this.compressChunkedMessages,
                         packets -> {
+                            if (generation != this.collections.generation()) return CompletableFuture.completedFuture(ChunkedMessageSendResult.UNSUPPORTED);
                             for (MessageChunkBuffer packet : packets) {
                                 sendPayloadToServer(new UploadChunkC2SPayload(
                                         new UploadChunkBuffer(requestId, packet)
@@ -432,6 +465,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
                     message,
                     this.compressChunkedMessages,
                     packets -> {
+                        if (generation != this.collections.generation()) return CompletableFuture.completedFuture(ChunkedMessageSendResult.UNSUPPORTED);
                         for (MessageChunkBuffer packet : packets) {
                             sendPayloadToServer(new MessageChunkC2SPayload(packet));
                         }
@@ -455,7 +489,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
                     != _959.server_waypoint.core.network.upload.UploadStatus.FAILED) {
                 WaypointData.Upload upload = waypointData.uploadData();
                 this.sendChunkedMessageToServer(WaypointData.upload(
-                        upload.requestId(),
+                        WaypointScope.SHARED, upload.requestId(),
                         _959.server_waypoint.core.network.upload.UploadStatus.FAILED,
                         List.of()
                 ));
@@ -471,7 +505,9 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
         if (!delivery.queued()) {
             return;
         }
+        long generation = this.collections.generation();
         delivery.completion().whenComplete((result, exception) -> {
+            if (generation != this.collections.generation()) return;
             if (exception == null && result != null && result.delivered()) {
                 return;
             }
@@ -485,11 +521,11 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
                     && waypointData.type() == WaypointData.Type.UPLOAD
                     && waypointData.uploadData().status()
                     != _959.server_waypoint.core.network.upload.UploadStatus.FAILED) {
-                this.mc.execute(() -> this.sendChunkedMessageToServer(WaypointData.upload(
-                        waypointData.uploadData().requestId(),
-                        _959.server_waypoint.core.network.upload.UploadStatus.FAILED,
-                        List.of()
-                )));
+                this.mc.execute(() -> {
+                    if (generation == this.collections.generation()) this.sendChunkedMessageToServer(WaypointData.upload(
+                            WaypointScope.SHARED, waypointData.uploadData().requestId(),
+                            _959.server_waypoint.core.network.upload.UploadStatus.FAILED, List.of()));
+                });
             }
         });
     }
@@ -536,6 +572,11 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     }
 
     private void applyChunkedMessage(ChunkedMessage message) {
+        if (message instanceof _959.server_waypoint.core.network.WaypointScopedMessage scoped
+                && (scoped.scope() == WaypointScope.PRIVATE || scoped instanceof WaypointCollectionStateMessage)) {
+            this.applyCollectionMessage(scoped);
+            return;
+        }
         if (message instanceof RemoteCatalogMessage remote) {
             this.remoteCatalogs.apply(remote);
         } else if (message instanceof WaypointData waypointData) {
@@ -554,12 +595,22 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
         }
     }
 
+    private void applyCollectionMessage(_959.server_waypoint.core.network.WaypointScopedMessage message) {
+        try {
+            this.collections.apply(message, this.collections.generation());
+        } catch (IOException | RuntimeException exception) {
+            this.collections.tracker(ClientWaypointSource.fromScope(message.scope())).markUncertain();
+            LOGGER.warn("Cannot apply client collection message", exception);
+        }
+    }
+
     private static boolean isAllowedClientboundMessageType(int messageTypeId) {
         return messageTypeId == ChunkedMessageRegistry.WAYPOINT_DATA.id()
                 || messageTypeId == ChunkedMessageRegistry.WAYPOINT_EDIT_RESULT.id()
                 || messageTypeId == ChunkedMessageRegistry.WAYPOINT_MODIFICATION.id()
                 || messageTypeId == ChunkedMessageRegistry.WAYPOINT_LIST_UPDATE.id()
-                || messageTypeId == ChunkedMessageRegistry.REMOTE_CATALOG.id();
+                || messageTypeId == ChunkedMessageRegistry.REMOTE_CATALOG.id()
+                || messageTypeId == ChunkedMessageRegistry.WAYPOINT_COLLECTION_STATE.id();
     }
 
     private void applyWaypointData(WaypointData waypointData) {
@@ -574,7 +625,9 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     }
 
     private void handleChunkedReceiveFailure(int messageTypeId) {
+        // A failed fragment does not expose its decoded scope. Both server trackers need recovery.
         this.synchronizationTracker.markTransportFailure(messageTypeId);
+        this.collections.tracker(ClientWaypointSource.PRIVATE).markTransportFailure(messageTypeId);
     }
 
     private void displayNetworkError() {
@@ -629,6 +682,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
             }
         }
         networkState = ClientNetworkState.SYNC_FINISHED;
+        this.collections.markSnapshotApplied(ClientWaypointSource.SHARED);
         this.synchronizationTracker.clearAll();
         OptimizedWaypointRenderer.loadScene(getCurrentWaypointLists());
         WaypointManagerScreen.updateAllWidgets();
@@ -736,6 +790,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
         OptimizedWaypointRenderer.loadScene(currentWaypointLists);
         this.saveAllWaypointFiles();
         networkState = ClientNetworkState.SYNC_FINISHED;
+        this.collections.markSnapshotApplied(ClientWaypointSource.SHARED);
         this.synchronizationTracker.clearAll();
         WaypointManagerScreen.updateAllWidgets();
         MapModIntegrations.onClientWaypointDownload(ClientWaypointSyncEvent.worldReplaced(), this);
@@ -787,6 +842,10 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     }
 
     public void onWaypointModification(WaypointModificationMessage buffer) {
+        if (buffer.scope() == WaypointScope.PRIVATE) {
+            this.applyCollectionMessage(buffer);
+            return;
+        }
         if (WaypointServerMod.runsWithClient()) return;
         if (networkState != ClientNetworkState.SYNC_FINISHED) return;
         String dimensionName = buffer.dimensionName();
@@ -933,6 +992,10 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     }
 
     public void onWaypointListUpdate(WaypointListUpdateMessage buffer) {
+        if (buffer.scope() == WaypointScope.PRIVATE) {
+            this.applyCollectionMessage(buffer);
+            return;
+        }
         if (WaypointServerMod.runsWithClient()) {
             return;
         }
@@ -989,6 +1052,10 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     }
 
     public void onWaypointEditResult(WaypointEditResultMessage buffer) {
+        if (buffer.scope() == WaypointScope.PRIVATE) {
+            this.applyCollectionMessage(buffer);
+            return;
+        }
         WaypointEditScreen.handleResult(buffer);
     }
 

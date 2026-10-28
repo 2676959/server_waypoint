@@ -195,7 +195,7 @@ public abstract class WaypointServerCore extends WaypointFilesManagerCore {
             if (dimensions.isEmpty()) {
                 return null;
             }
-            return WaypointData.world(dimensions);
+            return WaypointData.world(WaypointScope.SHARED, dimensions);
         });
     }
 

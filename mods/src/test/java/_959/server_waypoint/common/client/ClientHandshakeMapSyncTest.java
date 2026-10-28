@@ -1,5 +1,6 @@
 package _959.server_waypoint.common.client;
 
+import _959.server_waypoint.core.collection.WaypointScope;
 import _959.server_waypoint.common.client.gui.TestFont;
 import _959.server_waypoint.common.client.integrations.ClientWaypointSyncEvent;
 import _959.server_waypoint.common.client.integrations.MapModIntegration;
@@ -102,6 +103,38 @@ class ClientHandshakeMapSyncTest {
         for (var entry : previousValues.entrySet()) {
             entry.getKey().set(null, entry.getValue());
         }
+    }
+
+    @Test
+    void privateWireTrafficNeverChangesSharedOrMapIntegrationState() throws Exception {
+        client.collections().beginConnection(java.util.UUID.randomUUID(), "example:25565");
+        client.collections().bindServer(directory, 42);
+        long generation = client.collections().generation();
+        setStatic(WaypointServerMod.class, "runsWithClient", true);
+        receiveScoped(new _959.server_waypoint.core.network.message.WaypointCollectionStateMessage(
+                WaypointScope.PRIVATE, true), generation);
+        receiveScoped(WaypointData.world(WaypointScope.PRIVATE, List.of(new DimensionWaypointData(DIMENSION,
+                List.of(WaypointList.build("private", 7))))), generation);
+        assertEquals(List.of("cached"), client.getWaypointListsByDimensionName(DIMENSION).stream().map(WaypointList::name).toList());
+        org.junit.jupiter.api.Assertions.assertTrue(client.collections().ready(ClientWaypointSource.PRIVATE));
+        assertEquals(0, xaero.rewrites);
+        assertEquals(0, voxelMap.rewrites);
+        receiveScoped(new _959.server_waypoint.core.network.message.WaypointCollectionStateMessage(
+                WaypointScope.PRIVATE, false), generation);
+        org.junit.jupiter.api.Assertions.assertTrue(client.collections().files(ClientWaypointSource.PRIVATE).getFileManagerMap().isEmpty());
+        assertEquals(1, client.getWaypointListsByDimensionName(DIMENSION).size());
+        client.collections().beginConnection(java.util.UUID.randomUUID(), "other:25565");
+        client.collections().bindServer(directory, 43);
+        Path currentCache = client.collections().files(ClientWaypointSource.PRIVATE).getWaypointFilesDir();
+        client.onServerHandshake(new _959.server_waypoint.core.network.buffer.ServerHandshakeBuffer(42, true), generation);
+        assertEquals(currentCache, client.collections().files(ClientWaypointSource.PRIVATE).getWaypointFilesDir());
+        receiveScoped(WaypointData.world(WaypointScope.PRIVATE, List.of(new DimensionWaypointData(DIMENSION,
+                List.of(WaypointList.build("late", 8))))), generation);
+        org.junit.jupiter.api.Assertions.assertTrue(client.collections().files(ClientWaypointSource.PRIVATE).getFileManagerMap().isEmpty());
+    }
+
+    private void receiveScoped(_959.server_waypoint.core.network.ChunkedMessage message, long generation) {
+        for (var frame : ChunkedMessageManager.createTransfer(message, false)) client.onMessageChunk(frame, generation);
     }
 
     @Test
@@ -270,7 +303,7 @@ class ClientHandshakeMapSyncTest {
     }
 
     private void receiveUpdates(List<DimensionWaypointData> updates) {
-        for (var frame : ChunkedMessageManager.createTransfer(WaypointData.updates(updates), false)) {
+        for (var frame : ChunkedMessageManager.createTransfer(WaypointData.updates(WaypointScope.SHARED, updates), false)) {
             client.onMessageChunk(frame);
         }
     }

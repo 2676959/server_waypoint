@@ -87,6 +87,7 @@
   "waypoint.edit.error.malformed_request": "伺服器拒絕了此編輯請求。",
   "waypoint.edit.error.duplicate_keyword": "一個路徑點不能包含重複的關鍵字。",
   "waypoint.edit.error.encoding_failed": "更新內容過大，無法同步。",
+  "waypoint.edit.error.persistence_failed": "伺服器無法儲存編輯。請重新開啟並檢查路徑點後再重試。",
   "waypoint.edit.error.upload_busy": "伺服器正在處理路徑點上傳，請稍後再試。",
   "waypoint.edit.error.response_timeout": "伺服器未能及時確認編輯，請檢查路徑點後再重試。",
   "server_waypoint.no_serverside_support": "無伺服器端支援",

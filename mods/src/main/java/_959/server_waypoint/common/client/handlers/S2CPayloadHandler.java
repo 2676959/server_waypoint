@@ -20,6 +20,19 @@ import net.minecraft.client.player.LocalPlayer;
  * handle mod custom payloads for fabric and neoforge
  * */
 public class S2CPayloadHandler {
+    public static void dispatch(java.util.function.Consumer<WaypointClientMod> action) {
+        Minecraft minecraft = Minecraft.getInstance();
+        var connection = minecraft.getConnection();
+        var account = minecraft.getUser().getProfileId();
+        WaypointClientMod client = WaypointClientMod.getInstance();
+        long generation = client.collections().generation();
+        minecraft.execute(() -> {
+            if (connection != null && minecraft.getConnection() == connection
+                    && account.equals(minecraft.getUser().getProfileId())
+                    && generation == client.collections().generation()) action.accept(client);
+        });
+    }
+
     public interface CustomPayloadHandler<M extends SinglePacketMessage, P extends ModPayload> {
         void messageHandler(M message);
         M payloadToMessage(P payload);
@@ -46,7 +59,7 @@ public class S2CPayloadHandler {
 
         @Override
         public void messageHandler(ServerHandshakeBuffer buffer) {
-            WaypointClientMod.getInstance().onServerHandshake(buffer);
+            dispatch(client -> client.onServerHandshake(buffer));
         }
     }
 
@@ -58,7 +71,7 @@ public class S2CPayloadHandler {
 
         @Override
         public void messageHandler(MessageChunkBuffer buffer) {
-            WaypointClientMod.getInstance().onMessageChunk(buffer);
+            dispatch(client -> client.onMessageChunk(buffer));
         }
     }
 
@@ -70,15 +83,7 @@ public class S2CPayloadHandler {
 
         @Override
         public void messageHandler(UploadRequestBuffer buffer) {
-            Minecraft client = Minecraft.getInstance();
-            var connection = client.getConnection();
-            client.execute(() -> {
-                if (connection != null && client.getConnection() == connection) {
-                    WaypointClientMod.getInstance().sendChunkedMessageToServer(
-                            MapModIntegrations.collectUpload(buffer)
-                    );
-                }
-            });
+            dispatch(client -> client.sendChunkedMessageToServer(MapModIntegrations.collectUpload(buffer)));
         }
     }
 

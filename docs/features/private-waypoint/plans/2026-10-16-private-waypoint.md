@@ -17,7 +17,7 @@ JUnit 5, Gradle Kotlin DSL, and Stonecutter across Fabric, Forge, NeoForge, and 
 
 **Spec:** [Private and local waypoint design](../specs/2026-10-16-private-waypoint-design.md).
 
-Status: implementation in progress; Tasks 1–2 verified on 2026-10-23 and Task 3 on 2026-10-28. Prepared on 2026-10-16 against branch
+Status: implementation in progress; Tasks 1–2 verified on 2026-10-23 and Tasks 3–4 on 2026-10-28. Prepared on 2026-10-16 against branch
 `feature/private-waypoint`. Exact proposed class names below are implementation contracts,
 not claims that those classes already exist.
 
@@ -200,27 +200,27 @@ update client message dispatch and synchronization tracking. Add
 separate Shared/Private client stores, readiness, revisions, and selection generations.
 Protocol version becomes 3; all constructors/producers supply a scope.
 
-- [ ] Test snapshot, update/tombstone, list-rename, edit-request and result round-trips with scope;
+- [x] Test snapshot, update/tombstone, list-rename, edit-request and result round-trips with scope;
   invalid scope and Private upload payloads fail before mutation.
-- [ ] Test Alice's snapshot/edit delivery contains only Alice's private data; Bob and Shared
+- [x] Test Alice's snapshot/edit delivery contains only Alice's private data; Bob and Shared
   recipients receive no private message. Reject unauthorized and incompatible requests.
-- [ ] Test equal list revisions/names across Shared and Private independently. A recovery snapshot
+- [x] Test equal list revisions/names across Shared and Private independently. A recovery snapshot
   or tombstone for one source must not replace another source.
-- [ ] Test private read permission is checked before every snapshot/incremental send. Observed
+- [x] Test private read permission is checked before every snapshot/incremental send. Observed
   denial/revocation sends unreadable collection state and clears private presentation without
   changing Local/Shared; it never sends a private delta while access is denied.
-- [ ] Test late responses and transfers cannot apply to a different connection/account generation.
+- [x] Test late responses and transfers cannot apply to a different connection/account generation.
   Integrated-server client access must select only the local player's private store.
-- [ ] Run the new tests to establish failures; implement scope codecs, connection-derived owner
+- [x] Run the new tests to establish failures; implement scope codecs, connection-derived owner
   lookup, owner-directed sends, account/server-isolated private caches and per-source tracking.
   Preserve bounded chunked transport and existing edit revision checks.
-- [ ] Update protocol/channel equality tests. Keep incompatible clients outside private custom
+- [x] Update protocol/channel equality tests. Keep incompatible clients outside private custom
   synchronization while vanilla command access remains functional.
-- [ ] Run `rtk proxy ./gradlew :common:test --tests '*ProtocolVersionTest' --tests '*CodecTest' --tests '*C2SPacketHandlerTest'`.
+- [x] Run `rtk proxy ./gradlew :common:test --tests '*ProtocolVersionTest' --tests '*CodecTest' --tests '*C2SPacketHandlerTest'`.
   Expected: new and existing codec/handler tests pass. Run the client tests using the versioned
   command in the verification section, filtering for `*ClientWaypointCollectionsTest` and
   `*ClientSynchronizationTrackerTest`.
-- [ ] Review every waypoint producer/consumer and broadcast call for an explicit source and correct
+- [x] Review every waypoint producer/consumer and broadcast call for an explicit source and correct
   recipient. Existing cross-server catalog models must remain private-data-free.
 
 ## Task 5: Independent local profiles and persistence

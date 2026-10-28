@@ -25,6 +25,8 @@ import _959.server_waypoint.core.edit.PatchField;
 import _959.server_waypoint.core.edit.WaypointListPatch;
 import _959.server_waypoint.core.edit.WaypointPatch;
 import _959.server_waypoint.core.network.ChunkedMessage;
+import _959.server_waypoint.core.network.WaypointScopedMessage;
+import _959.server_waypoint.core.network.WaypointCollectionDelivery;
 import _959.server_waypoint.core.network.ChunkedMessageSendResult;
 import _959.server_waypoint.core.network.PlatformMessageSender;
 import _959.server_waypoint.core.network.MessageEncodingException;
@@ -1418,9 +1420,13 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
      * Sends a change to every client, and a chat line about it to every other player (spec 13). Each
      * line is built for its reader.
      */
-    private void broadcast(S source, ChunkedMessage update, Function<DimensionStyle, Component> line) {
-        // Task 4 introduces owner-only scoped payloads. Shared payloads must never carry Private data.
-        if (isPrivate()) return;
+    private void broadcast(S source, WaypointScopedMessage update, Function<DimensionStyle, Component> line) {
+        if (isPrivate()) {
+            P owner = Objects.requireNonNull(privateInvocation.get()).player;
+            afterPersistence(() -> new WaypointCollectionDelivery<>(sender, permissionManager)
+                    .sendPrivate(owner, update));
+            return;
+        }
         Iterable<? extends P> recipients = this.sender.getBroadcastPlayers(source);
         this.sender.broadcastChunkedMessage(recipients, update);
         P actor = getPlayer(source);
@@ -1569,9 +1575,9 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                     null,
                     patch,
                     result -> {
-                        if (!isPrivate() && result.status() == EditResultStatus.SUCCESS) {
+                        if (result.status() == EditResultStatus.SUCCESS) {
                             ChunkedMessageManager.validateEncodable(new WaypointListUpdateMessage(
-                                    dimensionName,
+                                    commandMode.get(), dimensionName,
                                     Objects.requireNonNull(result.beforeSnapshot()).name(),
                                     Objects.requireNonNull(result.afterSnapshot())
                             ));
@@ -1593,7 +1599,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                                 after.displayName()
                         );
                         WaypointListUpdateMessage update = new WaypointListUpdateMessage(
-                                dimensionName,
+                                commandMode.get(), dimensionName,
                                 before.name(),
                                 after
                         );
@@ -1626,9 +1632,9 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                     null,
                     patch,
                     result -> {
-                        if (!isPrivate() && result.status() == EditResultStatus.SUCCESS) {
+                        if (result.status() == EditResultStatus.SUCCESS) {
                             ChunkedMessageManager.validateEncodable(new WaypointModificationMessage(
-                                    dimensionName,
+                                    commandMode.get(), dimensionName,
                                     Objects.requireNonNull(result.listSnapshot()).name(),
                                     Objects.requireNonNull(result.listSnapshot()).displayName(),
                                     Objects.requireNonNull(result.beforeSnapshot()).name(),
@@ -1653,7 +1659,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                                 new NavigationTarget(collectionKey(), dimensionName, list, after)
                         );
                         WaypointModificationMessage update = new WaypointModificationMessage(
-                                dimensionName,
+                                commandMode.get(), dimensionName,
                                 list.name(),
                                 list.displayName(),
                                 before.name(),
@@ -1736,7 +1742,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                                     saveChanges(source, fileManager, "restore", "dimension", entry.dimensionName(), "list", list.name(), "waypoint", waypoint.name());
                                     Component actor = actorName(source);
                                     this.broadcast(source, new WaypointModificationMessage(
-                                            entry.dimensionName(),
+                                            commandMode.get(), entry.dimensionName(),
                                             list.name(),
                                             list.displayName(),
                                             waypoint.name(),
@@ -1781,7 +1787,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                     case ADDED -> {
                         WaypointList created = result.waypointList();
                         Component actor = actorName(source);
-                        this.broadcast(source, new WaypointModificationMessage(dimensionName, listName, listName, null, null, ADD_LIST, SERVER_N),
+                        this.broadcast(source, new WaypointModificationMessage(commandMode.get(), dimensionName, listName, listName, null, null, ADD_LIST, SERVER_N),
                                 dims -> Broadcasts.createdList(dims, actor, dimensionName, created));
                         sendMessage(source, Results.createdList(dimensions(source), dimensionName, created));
                         saveChanges(source, result.fileManager(), "list_add", "dimension", dimensionName, "list", listName);
@@ -1817,7 +1823,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                     SimpleWaypoint added = result.waypointSnapshot();
                     Component actor = actorName(source);
                     this.broadcast(source, new WaypointModificationMessage(
-                            dimensionName,
+                            commandMode.get(), dimensionName,
                             list.name(),
                             list.displayName(),
                             added.name(),
@@ -1888,7 +1894,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
 //                (fileManager, waypointList) -> {
 //                    fileManager.removeWaypointListByName(listName);
 //                    String dimensionName = fileManager.getDimensionName();
-//                    this.sender.broadcastWaypointModification(source, new WaypointModificationMessage(dimensionName, listName, null, null, REMOVE_LIST, WaypointList.REMOVE_LIST));
+//                    this.sender.broadcastWaypointModification(source, new WaypointModificationMessage(commandMode.get(), dimensionName, listName, null, null, REMOVE_LIST, WaypointList.REMOVE_LIST));
 //                    sendMessage(source, translatable("waypoint.remove.list.success", text(listName)));
 //                    saveChanges(source, fileManager);
 //                });
@@ -1903,7 +1909,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                     WaypointFileManager fileManager = Objects.requireNonNull(result.fileManager());
                     WaypointList waypointList = Objects.requireNonNull(result.waypointList());
                     Component actor = actorName(source);
-                    this.broadcast(source, new WaypointModificationMessage(dimensionName, listName, waypointList.displayName(), null, null, REMOVE_LIST, waypointList.getSyncNum() + 1),
+                    this.broadcast(source, new WaypointModificationMessage(commandMode.get(), dimensionName, listName, waypointList.displayName(), null, null, REMOVE_LIST, waypointList.getSyncNum() + 1),
                             dims -> Broadcasts.removedList(dims, actor, dimensionName, waypointList));
                     sendMessage(source, Results.removedList(dimensions(source), dimensionName, waypointList));
                     saveChanges(source, fileManager, "list_remove", "dimension", dimensionName, "list", listName);
@@ -1929,7 +1935,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                     SimpleWaypoint waypoint = Objects.requireNonNull(result.waypointSnapshot());
                     saveChanges(source, fileManager, "remove", "dimension", dimensionName, "list", listName, "waypoint", name);
                     WaypointModificationMessage buffer = new WaypointModificationMessage(
-                            dimensionName,
+                            commandMode.get(), dimensionName,
                             listName,
                             Objects.requireNonNull(result.waypointList()).displayName(),
                             name,
@@ -2246,7 +2252,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                 sendError(source, Errors.of("wp.error.download.empty", dimensions(source).name(dimensionName)));
                 return;
             }
-            WaypointData waypointData = WaypointData.dimension(fileManager.toDimensionWaypointData());
+            WaypointData waypointData = WaypointData.dimension(commandMode.get(), fileManager.toDimensionWaypointData());
             this.sendDownload(source, waypointData, waypointCount(waypointData));
         });
     }
@@ -2254,7 +2260,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     private void executeDownload(S source, D dimensionArgument, String listName) {
         runWithSelectorTarget(source, dimensionArgument, listName,
                 (fileManager, waypointList) -> this.sendDownload(source,
-                        WaypointData.waypointList(fileManager.getDimensionName(), waypointList), waypointList.size()),
+                        WaypointData.waypointList(commandMode.get(), fileManager.getDimensionName(), waypointList), waypointList.size()),
                 (fileManager, waypointList) -> sendError(source, Errors.of("wp.error.download.empty",
                         WaypointRefs.label(waypointList.displayName(), waypointList.name()))));
     }
@@ -2262,7 +2268,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     private void executeDownload(S source, D dimensionArgument, String listName, String name) {
         runWithSelectorTarget(source, dimensionArgument, listName, name, (fileManager, waypointList, waypoint) ->
                 this.sendDownload(source, WaypointData.waypoint(
-                        fileManager.getDimensionName(), waypointList, waypoint
+                        commandMode.get(), fileManager.getDimensionName(), waypointList, waypoint
                 ), 1));
     }
 

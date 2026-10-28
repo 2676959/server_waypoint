@@ -1,6 +1,7 @@
 package _959.server_waypoint.core.network.data;
 
-import _959.server_waypoint.core.network.ChunkedMessage;
+import _959.server_waypoint.core.collection.WaypointScope;
+import _959.server_waypoint.core.network.WaypointScopedMessage;
 import _959.server_waypoint.core.network.ChunkedMessageRegistry;
 import _959.server_waypoint.core.network.ChunkedMessageType;
 import _959.server_waypoint.core.network.upload.UploadStatus;
@@ -16,14 +17,17 @@ import java.util.UUID;
  * Logical waypoint data carried by the unified, chunked waypoint-data channel.
  */
 public record WaypointData(
+        WaypointScope scope,
         Type type,
         List<DimensionWaypointData> dimensions,
         Upload upload
-) implements ChunkedMessage {
+) implements WaypointScopedMessage {
     public WaypointData {
+        Objects.requireNonNull(scope, "scope");
         Objects.requireNonNull(type, "type");
         dimensions = List.copyOf(dimensions);
         if (type == Type.UPLOAD) {
+            if (scope != WaypointScope.SHARED) throw new IllegalArgumentException("Private uploads are forbidden");
             Objects.requireNonNull(upload, "upload");
             if (upload.status() != UploadStatus.SUCCESS && !dimensions.isEmpty()) {
                 throw new IllegalArgumentException("Failed upload data cannot contain dimensions");
@@ -44,43 +48,44 @@ public record WaypointData(
         }
     }
 
-    public static WaypointData updates(Collection<DimensionWaypointData> dimensions) {
-        return new WaypointData(Type.UPDATES, List.copyOf(dimensions), null);
+    public static WaypointData updates(WaypointScope scope, Collection<DimensionWaypointData> dimensions) {
+        return new WaypointData(scope, Type.UPDATES, List.copyOf(dimensions), null);
     }
 
-    public static WaypointData dimension(DimensionWaypointData dimension) {
-        return new WaypointData(Type.DIMENSION, List.of(dimension), null);
+    public static WaypointData dimension(WaypointScope scope, DimensionWaypointData dimension) {
+        return new WaypointData(scope, Type.DIMENSION, List.of(dimension), null);
     }
 
-    public static WaypointData waypointList(String dimensionName, WaypointList waypointList) {
-        return dimension(Type.WAYPOINT_LIST, new DimensionWaypointData(dimensionName, List.of(waypointList)));
+    public static WaypointData waypointList(WaypointScope scope, String dimensionName, WaypointList waypointList) {
+        return dimension(scope, Type.WAYPOINT_LIST, new DimensionWaypointData(dimensionName, List.of(waypointList)));
     }
 
-    public static WaypointData world(Collection<DimensionWaypointData> dimensions) {
-        return new WaypointData(Type.WORLD, List.copyOf(dimensions), null);
+    public static WaypointData world(WaypointScope scope, Collection<DimensionWaypointData> dimensions) {
+        return new WaypointData(scope, Type.WORLD, List.copyOf(dimensions), null);
     }
 
     /** A manual single-waypoint snapshot, independent of incremental revision checks. */
-    public static WaypointData waypoint(String dimensionName, WaypointList list, SimpleWaypoint waypoint) {
-        return dimension(Type.WAYPOINT, new DimensionWaypointData(dimensionName, List.of(
+    public static WaypointData waypoint(WaypointScope scope, String dimensionName, WaypointList list, SimpleWaypoint waypoint) {
+        return dimension(scope, Type.WAYPOINT, new DimensionWaypointData(dimensionName, List.of(
                 new WaypointList(list.name(), list.displayName(), list.getSyncNum(), List.of(waypoint))
         )));
     }
 
     public static WaypointData upload(
+            WaypointScope scope,
             UUID requestId,
             UploadStatus status,
             Collection<DimensionWaypointData> dimensions
     ) {
         return new WaypointData(
-                Type.UPLOAD,
+                scope, Type.UPLOAD,
                 List.copyOf(dimensions),
                 new Upload(requestId, status)
         );
     }
 
-    private static WaypointData dimension(Type type, DimensionWaypointData dimension) {
-        return new WaypointData(type, List.of(dimension), null);
+    private static WaypointData dimension(WaypointScope scope, Type type, DimensionWaypointData dimension) {
+        return new WaypointData(scope, type, List.of(dimension), null);
     }
 
     public DimensionWaypointData singleDimension() {

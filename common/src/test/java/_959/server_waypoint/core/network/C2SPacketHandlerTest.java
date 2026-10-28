@@ -1,5 +1,6 @@
 package _959.server_waypoint.core.network;
 
+import _959.server_waypoint.core.collection.WaypointScope;
 import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.command.permission.PermissionKeys;
 import _959.server_waypoint.command.permission.PermissionManager;
@@ -56,6 +57,76 @@ class C2SPacketHandlerTest {
     private Path tempDir;
 
     @Test
+    void privateSnapshotsAndEditsResolveOnlyTheAuthenticatedOwner() throws Exception {
+        TestSender sender = new TestSender();
+        WaypointServerCore server = new WaypointServerCore(this.tempDir) { };
+        for (String owner : List.of("Alice", "Bob")) {
+            server.withCollection(_959.server_waypoint.core.collection.WaypointCollectionKey.privateFor(
+                    sender.playerActor(owner).playerId()), files -> {
+                files.putWaypointList("minecraft:overworld", new WaypointList("list", 1, List.of(
+                        new SimpleWaypoint("waypoint", owner, "A", new WaypointPos(0, 64, 0), 0, 0, true, List.of(), ""))));
+                return null;
+            });
+        }
+        server.putWaypointList("minecraft:overworld", WaypointList.build("shared", 1));
+        TestPermissionManager permissions = new TestPermissionManager(true);
+        var handler = new C2SPacketHandler<>(sender, server, permissions, navigationService(), uploadCoordinator(server));
+        handler.onClientUpdateRequest("Alice", new ClientUpdateRequestMessage(WaypointScope.PRIVATE, List.of()));
+        WaypointData snapshot = (WaypointData) sender.packets.get(sender.packets.size() - 1);
+        assertEquals(WaypointScope.PRIVATE, snapshot.scope());
+        assertEquals("Alice", snapshot.dimensions().get(0).waypointLists().get(0).getWaypointByName("waypoint").displayName());
+        assertEquals(List.of("Alice", "Alice"), sender.directRecipients);
+        var privateRequest = new WaypointEditRequestMessage(WaypointScope.PRIVATE, 99, "minecraft:overworld",
+                "list", "waypoint", 1, new WaypointPatch(PatchField.unchanged(), PatchField.unchanged(),
+                PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(), PatchField.set(90),
+                PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged()));
+        handler.onWaypointEditRequest("Alice", privateRequest);
+        assertEquals(EditResultStatus.SUCCESS, sender.lastResult().status());
+        assertEquals(WaypointScope.PRIVATE, sender.lastResult().scope());
+        assertTrue(sender.directRecipients.stream().allMatch("Alice"::equals));
+        server.withCollection(_959.server_waypoint.core.collection.WaypointCollectionKey.privateFor(
+                sender.playerActor("Bob").playerId()), files -> {
+            assertEquals(0, files.getWaypointFileManager("minecraft:overworld").getWaypointListByName("list")
+                    .getWaypointByName("waypoint").yaw()); return null;
+        });
+        assertNull(server.getWaypointFileManager("minecraft:overworld").getWaypointListByName("list"));
+        permissions.allowed = false;
+        sender.packets.clear();
+        handler.onClientUpdateRequest("Alice", new ClientUpdateRequestMessage(WaypointScope.PRIVATE, List.of()));
+        assertEquals(List.of(new _959.server_waypoint.core.network.message.WaypointCollectionStateMessage(
+                WaypointScope.PRIVATE, false)), sender.packets);
+        handler.onWaypointEditRequest("Alice", privateRequest);
+        assertEquals(EditResultStatus.PERMISSION_DENIED, sender.lastResult().status());
+        sender.capable = false;
+        int before = sender.packets.size();
+        handler.onClientUpdateRequest("Alice", new ClientUpdateRequestMessage(WaypointScope.PRIVATE, List.of()));
+        handler.onWaypointEditRequest("Alice", privateRequest);
+        assertEquals(before, sender.packets.size());
+    }
+
+    @Test
+    void failedPrivatePersistenceSendsNoSuccessfulResultOrDelta() throws Exception {
+        TestSender sender = new TestSender();
+        WaypointServerCore server = new WaypointServerCore(this.tempDir) { };
+        Path file = server.withCollection(_959.server_waypoint.core.collection.WaypointCollectionKey.privateFor(
+                sender.playerActor("Alice").playerId()), files -> {
+            var manager = files.putWaypointList("minecraft:overworld", new WaypointList("list", 1, List.of(
+                    new SimpleWaypoint("waypoint", "W", new WaypointPos(0, 64, 0), 0, 0, true))));
+            return manager.getDimensionFile();
+        });
+        java.nio.file.Files.delete(file);
+        java.nio.file.Files.createDirectory(file);
+        var handler = new C2SPacketHandler<>(sender, server, new TestPermissionManager(true), navigationService(), uploadCoordinator(server));
+        var patch = new WaypointPatch(PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
+                PatchField.unchanged(), PatchField.unchanged(), PatchField.set(90), PatchField.unchanged(),
+                PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged());
+        handler.onWaypointEditRequest("Alice", new WaypointEditRequestMessage(WaypointScope.PRIVATE, 1,
+                "minecraft:overworld", "list", "waypoint", 1, patch));
+        assertEquals(EditResultStatus.PERSISTENCE_FAILED, sender.lastResult().status());
+        assertEquals(1, sender.packets.size());
+    }
+
+    @Test
     void guiEditLogsActorAndPersistenceOutcome() {
         for (boolean failSave : List.of(false, true)) {
             TestSender sender = new TestSender();
@@ -74,7 +145,7 @@ class C2SPacketHandlerTest {
                     PatchField.unchanged(), PatchField.unchanged(), PatchField.set(90), PatchField.unchanged(),
                     PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged());
             org.slf4j.impl.StaticLoggerBinder.clear();
-            handler.onWaypointEditRequest("player", new WaypointEditRequestMessage(17L, "minecraft:overworld",
+            handler.onWaypointEditRequest("player", new WaypointEditRequestMessage(WaypointScope.SHARED, 17L, "minecraft:overworld",
                     "list", "waypoint", 1, patch));
             var events = org.slf4j.impl.StaticLoggerBinder.events().stream()
                     .filter(e -> e.startsWith("server_waypoint.actions ")).toList();
@@ -138,7 +209,7 @@ class C2SPacketHandlerTest {
             var patch = new WaypointPatch(PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
                     PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
                     PatchField.unchanged(), PatchField.unchanged(), PatchField.set(NamespacedId.parse(icon)));
-            var request = new WaypointEditRequestMessage(17L, "minecraft:overworld", "list", "waypoint", 1, patch);
+            var request = new WaypointEditRequestMessage(WaypointScope.SHARED, 17L, "minecraft:overworld", "list", "waypoint", 1, patch);
             for (MessageChunkBuffer frame : frames(request)) {
                 handler.onMessageChunk("player", frame);
             }
@@ -212,7 +283,7 @@ class C2SPacketHandlerTest {
     void oneBroadcastFailureDoesNotStopLaterRecipients() {
         FailingBroadcastSender sender = new FailingBroadcastSender();
         WaypointModificationMessage modification = new WaypointModificationMessage(
-                "minecraft:overworld",
+                WaypointScope.SHARED, "minecraft:overworld",
                 "list",
                 "list",
                 "waypoint",
@@ -240,7 +311,7 @@ class C2SPacketHandlerTest {
         sender.capable = false;
         C2SPacketHandler<String, String, String> handler = handler(sender);
 
-        for (MessageChunkBuffer frame : frames(new ClientUpdateRequestMessage(List.of()))) {
+        for (MessageChunkBuffer frame : frames(new ClientUpdateRequestMessage(WaypointScope.SHARED, List.of()))) {
             handler.onMessageChunk("player", frame);
         }
 
@@ -257,7 +328,7 @@ class C2SPacketHandlerTest {
 
         handler.onClientHandshake("player", new ClientHandshakeBuffer(9));
         assertFalse(sender.capable);
-        for (MessageChunkBuffer frame : frames(new ClientUpdateRequestMessage(List.of()))) {
+        for (MessageChunkBuffer frame : frames(new ClientUpdateRequestMessage(WaypointScope.SHARED, List.of()))) {
             handler.onMessageChunk("player", frame);
         }
         assertEquals(0, sender.receivedChunks);
@@ -283,7 +354,7 @@ class C2SPacketHandlerTest {
 
         ChunkedMessageSendResult result = sender.sendPlayerChunkedMessage(
                 "player",
-                new ClientUpdateRequestMessage(List.of())
+                new ClientUpdateRequestMessage(WaypointScope.SHARED, List.of())
         );
 
         assertEquals(ChunkedMessageSendResult.UNSUPPORTED, result);
@@ -315,7 +386,7 @@ class C2SPacketHandlerTest {
     void updateRequestRejectsDuplicateDimensionsBeforeServerQueries() {
         TestSender sender = new TestSender();
         C2SPacketHandler<String, String, String> handler = handler(sender);
-        ClientUpdateRequestMessage request = new ClientUpdateRequestMessage(List.of(
+        ClientUpdateRequestMessage request = new ClientUpdateRequestMessage(WaypointScope.SHARED, List.of(
                 new DimensionSyncIdentifier("minecraft:overworld", List.of()),
                 new DimensionSyncIdentifier("minecraft:overworld", List.of())
         ));
@@ -332,7 +403,7 @@ class C2SPacketHandlerTest {
     void malformedGeneralTransferDoesNotEmitAutomaticSnapshot() {
         TestSender sender = new TestSender();
         C2SPacketHandler<String, String, String> handler = handler(sender);
-        MessageChunkBuffer original = frames(new ClientUpdateRequestMessage(List.of())).get(0);
+        MessageChunkBuffer original = frames(new ClientUpdateRequestMessage(WaypointScope.SHARED, List.of())).get(0);
         MessageChunkBuffer badChecksum = MessageChunkBuffer.chunk(
                 original.transferId(),
                 original.messageTypeId(),
@@ -544,7 +615,7 @@ class C2SPacketHandlerTest {
             UploadRequestBuffer request
     ) {
         WaypointData data = WaypointData.upload(
-                request.requestId(),
+                WaypointScope.SHARED, request.requestId(),
                 UploadStatus.XAERO_NOT_READY,
                 List.of()
         );
@@ -555,7 +626,7 @@ class C2SPacketHandlerTest {
 
     private static WaypointEditRequestMessage request() {
         return new WaypointEditRequestMessage(
-                17L,
+                WaypointScope.SHARED, 17L,
                 "minecraft:overworld",
                 "list",
                 "waypoint",
@@ -597,7 +668,7 @@ class C2SPacketHandlerTest {
     }
 
     private static final class TestPermissionManager extends PermissionManager<String, String, String> {
-        private final boolean allowed;
+        private boolean allowed;
 
         private TestPermissionManager(boolean allowed) {
             super(new TestPermissionKeys());
@@ -680,6 +751,7 @@ class C2SPacketHandlerTest {
 
     private static class TestSender implements PlatformMessageSender<String, String> {
         private final List<NetworkMessage> packets = new ArrayList<>();
+        private final List<String> directRecipients = new ArrayList<>();
         private boolean capable = true;
         private int receivedChunks;
 
@@ -746,9 +818,17 @@ class C2SPacketHandlerTest {
                 );
             }
             this.packets.add(message);
+            this.directRecipients.add(player);
             return ChunkedMessageDelivery.queued(CompletableFuture.completedFuture(
                     ChunkedMessageSendResult.DELIVERED
             ));
+        }
+
+        @Override
+        public ChunkedMessageDelivery sendPlayerChunkedMessageTracked(String player, ChunkedMessage message,
+                java.util.function.BooleanSupplier readable) {
+            return readable.getAsBoolean() ? this.sendPlayerChunkedMessageTracked(player, message)
+                    : ChunkedMessageDelivery.rejected(ChunkedMessageSendResult.UNSUPPORTED);
         }
 
         @Override

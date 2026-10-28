@@ -1,6 +1,7 @@
 //? if voxelmap {
 package _959.server_waypoint.common.client.integrations;
 
+import _959.server_waypoint.core.collection.WaypointScope;
 import _959.server_waypoint.common.client.ClientConfig;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.core.WaypointFilesManagerCore;
@@ -93,17 +94,17 @@ public final class VoxelMapWaypointHelper {
 
     public static WaypointData collectUpload(UploadRequestBuffer request) {
         if (!ClientConfig.isVoxelMapLoaded) {
-            return WaypointData.upload(request.requestId(), UploadStatus.VOXELMAP_NOT_INSTALLED, List.of());
+            return WaypointData.upload(WaypointScope.SHARED, request.requestId(), UploadStatus.VOXELMAP_NOT_INSTALLED, List.of());
         }
         VoxelMap voxelMap = VoxelConstants.getVoxelMapInstance();
         if (voxelMap == null) {
-            return WaypointData.upload(request.requestId(), UploadStatus.VOXELMAP_NOT_READY, List.of());
+            return WaypointData.upload(WaypointScope.SHARED, request.requestId(), UploadStatus.VOXELMAP_NOT_READY, List.of());
         }
 
         try {
             WaypointManager manager = voxelMap.getWaypointManager();
             if (manager == null) {
-                return WaypointData.upload(request.requestId(), UploadStatus.VOXELMAP_NOT_READY, List.of());
+                return WaypointData.upload(WaypointScope.SHARED, request.requestId(), UploadStatus.VOXELMAP_NOT_READY, List.of());
             }
             // Older VoxelMap versions keep coordinate highlights outside getWaypoints().
             Predicate<Waypoint> coordinateHighlight = waypoint -> false;
@@ -122,7 +123,7 @@ public final class VoxelMapWaypointHelper {
             return upload;
         } catch (Exception exception) {
             LOGGER.warn("Failed to export VoxelMap waypoints for upload", exception);
-            return WaypointData.upload(request.requestId(), UploadStatus.FAILED, List.of());
+            return WaypointData.upload(WaypointScope.SHARED, request.requestId(), UploadStatus.FAILED, List.of());
         }
     }
 
@@ -138,7 +139,7 @@ public final class VoxelMapWaypointHelper {
             // A saved but unvisited custom dimension may not have a loaded type yet.
             // Do not treat unavailable source data as an empty destructive upload.
             if (coordinateScale == null || !Double.isFinite(coordinateScale) || coordinateScale <= 0) {
-                return WaypointData.upload(request.requestId(), UploadStatus.VOXELMAP_NOT_READY, List.of());
+                return WaypointData.upload(WaypointScope.SHARED, request.requestId(), UploadStatus.VOXELMAP_NOT_READY, List.of());
             }
             String storageName = toVoxelMapStorageName(dimensionName);
             List<Waypoint> dimensionWaypoints = waypoints.stream()
@@ -150,7 +151,7 @@ public final class VoxelMapWaypointHelper {
                     request, dimensionName, dimensionWaypoints, coordinateHighlight, coordinateScale
             ));
         }
-        return WaypointData.upload(request.requestId(), UploadStatus.SUCCESS, uploadedDimensions);
+        return WaypointData.upload(WaypointScope.SHARED, request.requestId(), UploadStatus.SUCCESS, uploadedDimensions);
     }
 
     static DimensionWaypointData collectUploadDimension(

@@ -1,5 +1,6 @@
 package _959.server_waypoint.common.client.integrations;
 
+import _959.server_waypoint.core.collection.WaypointScope;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.ClientConfig;
 import _959.server_waypoint.core.WaypointFileManager;
@@ -58,28 +59,28 @@ public final class XaerosMinimapWaypointHelper {
 
     public static WaypointData collectUpload(UploadRequestBuffer request) {
         if (!ClientConfig.isXaerosMinimapLoaded) {
-            return WaypointData.upload(request.requestId(), UploadStatus.XAERO_NOT_INSTALLED, List.of());
+            return WaypointData.upload(WaypointScope.SHARED, request.requestId(), UploadStatus.XAERO_NOT_INSTALLED, List.of());
         }
         if (!WaypointClientMod.isXaerosMinimapReady) {
-            return WaypointData.upload(request.requestId(), UploadStatus.XAERO_NOT_READY, List.of());
+            return WaypointData.upload(WaypointScope.SHARED, request.requestId(), UploadStatus.XAERO_NOT_READY, List.of());
         }
 
         try {
             MinimapSession session = getMinimapSession();
             if (session == null) {
-                return WaypointData.upload(request.requestId(), UploadStatus.XAERO_NOT_READY, List.of());
+                return WaypointData.upload(WaypointScope.SHARED, request.requestId(), UploadStatus.XAERO_NOT_READY, List.of());
             }
             List<DimensionWaypointData> uploadedDimensions = new ArrayList<>();
             for (String dimensionName : request.dimensionNames()) {
                 ResourceKey<Level> dimensionKey = getDimensionKey(dimensionName);
                 if (dimensionKey == null) {
                     LOGGER.warn("Cannot export Xaero's waypoints: unknown requested dimension {}", dimensionName);
-                    return WaypointData.upload(request.requestId(), UploadStatus.XAERO_NOT_READY, List.of());
+                    return WaypointData.upload(WaypointScope.SHARED, request.requestId(), UploadStatus.XAERO_NOT_READY, List.of());
                 }
                 MinimapWorld minimapWorld = getMinimapWorld(session, dimensionKey);
                 if (minimapWorld == null) {
                     LOGGER.warn("Cannot export Xaero's waypoints: world for requested dimension {} is not loaded", dimensionName);
-                    return WaypointData.upload(request.requestId(), UploadStatus.XAERO_NOT_READY, List.of());
+                    return WaypointData.upload(WaypointScope.SHARED, request.requestId(), UploadStatus.XAERO_NOT_READY, List.of());
                 }
                 List<WaypointList> uploadedLists = new ArrayList<>();
                 for (WaypointSet waypointSet : minimapWorld.getIterableWaypointSets()) {
@@ -94,10 +95,10 @@ public final class XaerosMinimapWaypointHelper {
                 }
                 uploadedDimensions.add(new DimensionWaypointData(dimensionName, uploadedLists));
             }
-            return WaypointData.upload(request.requestId(), UploadStatus.SUCCESS, uploadedDimensions);
+            return WaypointData.upload(WaypointScope.SHARED, request.requestId(), UploadStatus.SUCCESS, uploadedDimensions);
         } catch (Exception exception) {
             LOGGER.warn("Failed to export Xaero's waypoints for upload", exception);
-            return WaypointData.upload(request.requestId(), UploadStatus.FAILED, List.of());
+            return WaypointData.upload(WaypointScope.SHARED, request.requestId(), UploadStatus.FAILED, List.of());
         }
     }
 

@@ -1,5 +1,6 @@
 package _959.server_waypoint.common.client.gui.screens;
 
+import _959.server_waypoint.core.collection.WaypointScope;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.widgets.TranslucentButton;
 import _959.server_waypoint.common.client.util.ColorHelper;
@@ -166,7 +167,7 @@ public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
         long requestId = NEXT_REQUEST_ID.incrementAndGet();
         this.responseDeadline.begin(requestId, System.nanoTime());
         boolean sent = WaypointClientMod.getInstance().sendChunkedMessageToServer(new WaypointEditRequestMessage(
-                requestId,
+                WaypointScope.SHARED, requestId,
                 this.dimensionName,
                 this.listName,
                 this.savedWaypoint().name(),

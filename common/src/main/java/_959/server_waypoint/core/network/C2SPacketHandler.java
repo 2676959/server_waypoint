@@ -1,10 +1,12 @@
 package _959.server_waypoint.core.network;
 
+import _959.server_waypoint.core.collection.WaypointScope;
 import _959.server_waypoint.core.collection.WaypointCollectionKey;
 import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.ModInfo;
 import _959.server_waypoint.ProtocolVersion;
 import _959.server_waypoint.core.WaypointFileManager;
+import _959.server_waypoint.core.WaypointFilesManagerCore;
 import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.command.permission.PermissionManager;
 import _959.server_waypoint.core.edit.EditResultStatus;
@@ -91,7 +93,7 @@ public class C2SPacketHandler<S, K, P> {
             ));
         } else {
             this.sender.sendPlayerMessage(player, translatable("waypoint.incompatible.client",
-                    text(ProtocolVersion.COMPATIBLE_VERSION).color(NamedTextColor.GREEN).decorate(TextDecoration.UNDERLINED).clickEvent(ClickEvent.openUrl(ModInfo.DOWNLOAD_URL))));
+                    text(ProtocolVersion.PROTOCOL_VERSION_STRING).color(NamedTextColor.GREEN).decorate(TextDecoration.UNDERLINED).clickEvent(ClickEvent.openUrl(ModInfo.DOWNLOAD_URL))));
             this.sender.sendPlayerPacket(player, new ServerHandshakeBuffer(
                     CONFIG.getServerId(),
                     CONFIG.Features().compressChunkedMessages()
@@ -110,9 +112,40 @@ public class C2SPacketHandler<S, K, P> {
     }
 
     public void onClientUpdateRequest(P player, ClientUpdateRequestMessage buffer) {
+        if (!this.sender.canSendChunkedMessage(player)) return;
+        if (buffer.scope() == WaypointScope.PRIVATE && !this.delivery().canReadPrivate(player)) return;
+        try {
+            WaypointData snapshot = this.waypointServer.withCollection(this.collection(player, buffer.scope()),
+                    files -> this.updates(files, buffer));
+            if (buffer.scope() == WaypointScope.PRIVATE) {
+                if (!this.delivery().canReadPrivate(player)) return;
+                this.sender.sendPlayerChunkedMessage(player, new WaypointCollectionStateMessage(buffer.scope(), true));
+                this.delivery().sendPrivate(player, snapshot);
+            } else {
+                this.sender.sendPlayerChunkedMessage(player, snapshot);
+            }
+            if (!snapshot.dimensions().isEmpty()) {
+                this.sender.sendPlayerMessage(player, translatable("waypoint.updates.sent"));
+            }
+        } catch (IOException exception) {
+            LOGGER.warn("Cannot read waypoint collection", exception);
+            this.sender.sendPlayerChunkedMessage(player, new WaypointCollectionStateMessage(buffer.scope(), false));
+        }
+    }
+
+    private WaypointCollectionDelivery<S, K, P> delivery() {
+        return new WaypointCollectionDelivery<>(this.sender, this.permissionManager);
+    }
+
+    private WaypointCollectionKey collection(P player, WaypointScope scope) {
+        return scope == WaypointScope.SHARED ? WaypointCollectionKey.shared()
+                : WaypointCollectionKey.privateFor(Objects.requireNonNull(this.sender.playerActor(player).playerId()));
+    }
+
+    private WaypointData updates(WaypointFilesManagerCore files, ClientUpdateRequestMessage buffer) {
         List<DimensionWaypointData> updates = new ArrayList<>();
         Map<String, WaypointFileManager> serverManagers =
-                new HashMap<>(this.waypointServer.getFileManagerMap());
+                new HashMap<>(files.getFileManagerMap());
         List<String> allDimensionsOnServer = new ArrayList<>(serverManagers.keySet());
         // iterating all dimensions from client and compare with server
         for (DimensionSyncIdentifier dimensionSyncId : buffer.dimensionSyncIds()) {
@@ -160,13 +193,11 @@ public class C2SPacketHandler<S, K, P> {
             }
         }
 
-        this.sender.sendPlayerChunkedMessage(player, WaypointData.updates(updates));
-        if (!updates.isEmpty()) {
-            this.sender.sendPlayerMessage(player, translatable("waypoint.updates.sent"));
-        }
+        return WaypointData.updates(buffer.scope(), updates);
     }
 
     public void onWaypointEditRequest(P player, WaypointEditRequestMessage request) {
+        if (!this.sender.canSendChunkedMessage(player)) return;
         if (!this.uploadCoordinator.tryBeginEditRequest()) {
             this.sendEditResult(player, request, EditResultStatus.UPLOAD_BUSY, null, 0);
             return;
@@ -179,10 +210,14 @@ public class C2SPacketHandler<S, K, P> {
     }
 
     private void onAdmittedWaypointEditRequest(P player, WaypointEditRequestMessage request) {
+        if (request.scope() == WaypointScope.PRIVATE && !this.delivery().canReadPrivate(player)) {
+            this.sendEditResult(player, request, EditResultStatus.PERMISSION_DENIED, null, 0);
+            return;
+        }
         if (!this.permissionManager.checkPlayerPermission(
                 player,
-                this.permissionManager.keys.edit(),
-                CONFIG.CommandPermission().edit()
+                request.scope() == WaypointScope.PRIVATE ? this.permissionManager.keys.privateEdit() : this.permissionManager.keys.edit(),
+                request.scope() == WaypointScope.PRIVATE ? CONFIG.CommandPermission().privateEdit() : CONFIG.CommandPermission().edit()
         )) {
             this.sendEditResult(player, request, EditResultStatus.PERMISSION_DENIED, null, 0);
             return;
@@ -193,67 +228,53 @@ public class C2SPacketHandler<S, K, P> {
             return;
         }
         try {
-            this.waypointServer.updateWaypoint(
-                    EditTarget.waypoint(
-                            request.dimensionName(),
-                            request.listIdentifier(),
-                            request.waypointIdentifier()
-                    ),
-                    request.expectedListRevision(),
-                    request.patch(),
-                    result -> {
-                        if (result.status() != EditResultStatus.SUCCESS) {
-                            return;
-                        }
-                        ChunkedMessageManager.validateEncodable(
-                                this.toModificationMessage(request, result)
-                        );
-                        ChunkedMessageManager.validateEncodable(
-                                this.toEditResultMessage(request, result)
-                        );
-                    },
-                    result -> {
-                        if (result.status() == EditResultStatus.SUCCESS) {
-                            WaypointFileManager fileManager = Objects.requireNonNull(result.fileManager());
-                            String outcome = "success";
-                            try {
-                                this.waypointServer.saveWaypointFile(fileManager);
-                            } catch (IOException exception) {
-                                outcome = "save_failed";
-                                LOGGER.error("Failed to persist waypoint edit", exception);
+            WaypointCollectionKey key = this.collection(player, request.scope());
+            var resultHolder = new AtomicReference<_959.server_waypoint.core.edit.WaypointEditResult>();
+            this.waypointServer.withCollection(key, files -> {
+                files.updateWaypoint(
+                        EditTarget.waypoint(request.dimensionName(), request.listIdentifier(), request.waypointIdentifier()),
+                        request.expectedListRevision(), request.patch(),
+                        result -> {
+                            if (result.status() == EditResultStatus.SUCCESS) {
+                                ChunkedMessageManager.validateEncodable(this.toModificationMessage(request, result));
+                                ChunkedMessageManager.validateEncodable(this.toEditResultMessage(request, result));
                             }
-                            PlayerActionLog.log(this.sender.playerActor(player), "edit", outcome,
-                                    "via", "gui", "dimension", request.dimensionName(),
-                                    "list", request.listIdentifier(), "waypoint", request.waypointIdentifier(),
-                                    "new_waypoint", Objects.requireNonNull(result.afterSnapshot()).name());
-                            WaypointList list = Objects.requireNonNull(result.listSnapshot());
-                            this.navigationService.refreshTarget(
-                                    new NavigationTarget(
-                                            WaypointCollectionKey.shared(),
-                                            request.dimensionName(),
-                                            list,
-                                            Objects.requireNonNull(result.beforeSnapshot())
-                                    ),
-                                    new NavigationTarget(
-                                            WaypointCollectionKey.shared(),
-                                            request.dimensionName(),
-                                            list,
-                                            Objects.requireNonNull(result.afterSnapshot())
-                                    )
-                            );
-                            WaypointModificationMessage modification =
-                                    this.toModificationMessage(request, result);
-                            this.sender.broadcastChunkedMessageFromPlayer(player, modification);
-                        }
-                        this.sendEditResult(
-                                player,
-                                request,
-                                result.status(),
-                                result.afterSnapshot(),
-                                result.syncNum()
-                        );
+                        }, result -> {
+                            resultHolder.set(result);
+                            if (result.status() == EditResultStatus.SUCCESS && request.scope() == WaypointScope.SHARED) {
+                                String outcome = "success";
+                                try { this.waypointServer.saveWaypointFile(Objects.requireNonNull(result.fileManager())); }
+                                catch (IOException exception) {
+                                    outcome = "save_failed";
+                                    LOGGER.error("Failed to persist waypoint edit", exception);
+                                }
+                                PlayerActionLog.log(this.sender.playerActor(player), "edit", outcome,
+                                        "via", "gui", "dimension", request.dimensionName(),
+                                        "list", request.listIdentifier(), "waypoint", request.waypointIdentifier(),
+                                        "new_waypoint", Objects.requireNonNull(result.afterSnapshot()).name());
+                            }
+                        });
+                return null;
+            }, () -> {
+                var result = Objects.requireNonNull(resultHolder.get());
+                if (result.status() == EditResultStatus.SUCCESS) {
+                    WaypointList list = Objects.requireNonNull(result.listSnapshot());
+                    this.navigationService.refreshTarget(
+                            new NavigationTarget(key, request.dimensionName(), list, Objects.requireNonNull(result.beforeSnapshot())),
+                            new NavigationTarget(key, request.dimensionName(), list, Objects.requireNonNull(result.afterSnapshot())));
+                    if (request.scope() == WaypointScope.PRIVATE) {
+                        PlayerActionLog.log(this.sender.playerActor(player), "edit", "success", "via", "gui",
+                                "scope", "private", "dimension", request.dimensionName(), "list", request.listIdentifier());
+                        this.delivery().sendPrivate(player, this.toModificationMessage(request, result));
+                    } else {
+                        this.sender.broadcastChunkedMessageFromPlayer(player, this.toModificationMessage(request, result));
                     }
-            );
+                }
+                this.sendEditResult(player, request, result.status(), result.afterSnapshot(), result.syncNum());
+            });
+        } catch (IOException exception) {
+            LOGGER.warn("Cannot persist private waypoint edit", exception);
+            this.sendEditResult(player, request, EditResultStatus.PERSISTENCE_FAILED, null, 0);
         } catch (MessageEncodingException exception) {
             LOGGER.warn(
                     "Rejected waypoint edit because its result could not be encoded within the {}-byte logical-message budget",
@@ -277,7 +298,7 @@ public class C2SPacketHandler<S, K, P> {
     ) {
         WaypointList list = Objects.requireNonNull(result.listSnapshot());
         return new WaypointModificationMessage(
-                request.dimensionName(),
+                request.scope(), request.dimensionName(),
                 list.name(),
                 list.displayName(),
                 request.waypointIdentifier(),
@@ -292,7 +313,7 @@ public class C2SPacketHandler<S, K, P> {
             _959.server_waypoint.core.edit.WaypointEditResult result
     ) {
         return new WaypointEditResultMessage(
-                request.requestId(),
+                request.scope(), request.requestId(),
                 result.status(),
                 request.dimensionName(),
                 request.listIdentifier(),
@@ -310,7 +331,7 @@ public class C2SPacketHandler<S, K, P> {
             int revision
     ) {
         WaypointEditResultMessage message = new WaypointEditResultMessage(
-                request.requestId(),
+                request.scope(), request.requestId(),
                 status,
                 request.dimensionName(),
                 request.listIdentifier(),
@@ -318,8 +339,11 @@ public class C2SPacketHandler<S, K, P> {
                 waypoint,
                 revision
         );
-        this.sender.sendPlayerChunkedMessageTracked(player, message)
-                .completion()
+        ChunkedMessageDelivery delivery = request.scope() == WaypointScope.PRIVATE
+                && (status != EditResultStatus.PERMISSION_DENIED || waypoint != null || revision != 0)
+                ? this.delivery().sendPrivate(player, message)
+                : this.sender.sendPlayerChunkedMessageTracked(player, message);
+        delivery.completion()
                 .whenComplete((result, exception) -> {
                     if (exception == null && result != null && result.delivered()) {
                         return;

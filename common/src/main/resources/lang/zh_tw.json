@@ -1,6 +1,6 @@
 {
   "waypoint.updates.sent": "已將路徑點傳送至用戶端",
-  "waypoint.incompatible.client": "Server Waypoint模組版本不相容，請安裝：{0}版本",
+  "waypoint.incompatible.client": "Server Waypoint 協定不相容。請安裝支援協定 {0} 的用戶端。",
   "waypoint.remove.list.success": "路徑點清單「{0}」已被移除",
   "waypoint.remove.list.nonempty": "無法移除非空列表「{0}」",
 
@@ -409,6 +409,7 @@
   "wp.error.edit.invalid_value": "這個值無效。",
   "wp.error.edit.identical": "沒有任何變更。",
   "wp.error.edit.malformed_request": "這個編輯請求格式錯誤。",
+  "wp.error.edit.persistence_failed": "伺服器無法儲存編輯。請重新開啟並檢查路徑點後再重試。",
   "wp.error.edit.upload_busy": "上傳進行中，編輯已暫停。請稍後再試。",
   "wp.error.restore.invalid": "這個還原連結已過期。",
   "wp.error.restore.list_missing": "它所在的列表已不存在。還原連結仍然有效。",

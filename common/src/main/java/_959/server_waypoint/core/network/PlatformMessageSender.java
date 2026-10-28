@@ -104,6 +104,32 @@ public interface PlatformMessageSender<S, P> {
         }
     }
 
+    /** Authorization is rechecked when queued frames are actually sent, including platform scheduling. */
+    default ChunkedMessageDelivery sendPlayerChunkedMessageTracked(
+            P player, ChunkedMessage message, java.util.function.BooleanSupplier readable
+    ) {
+        if (!this.canSendChunkedMessage(player) || !readable.getAsBoolean()) {
+            return ChunkedMessageDelivery.rejected(ChunkedMessageSendResult.UNSUPPORTED);
+        }
+        try {
+            return this.chunkedMessageManager().sendTracked(player, this.prepareChunkedMessage(message),
+                    packets -> this.sendPlayerPacketBatch(player, packets, readable));
+        } catch (MessageEncodingException exception) {
+            WaypointServerCore.LOGGER.warn("Cannot encode guarded collection message", exception);
+            this.sendPlayerMessage(player, Component.translatable("waypoint.network.encoding_failed"));
+            return ChunkedMessageDelivery.rejected(ChunkedMessageSendResult.ENCODING_FAILED);
+        }
+    }
+
+    default CompletionStage<ChunkedMessageSendResult> sendPlayerPacketBatch(
+            P player, List<MessageChunkBuffer> packets, java.util.function.BooleanSupplier readable
+    ) {
+        if (!this.canSendChunkedMessage(player) || !readable.getAsBoolean()) {
+            return CompletableFuture.completedFuture(ChunkedMessageSendResult.UNSUPPORTED);
+        }
+        return this.sendPlayerPacketBatch(player, packets);
+    }
+
     default ChunkedMessageSendResult sendPlayerPreparedChunkedMessage(
             P player,
             PreparedMessage message
@@ -195,6 +221,10 @@ public interface PlatformMessageSender<S, P> {
             Iterable<? extends P> recipients,
             ChunkedMessage message
     ) {
+        if (message instanceof WaypointScopedMessage scoped
+                && scoped.scope() == _959.server_waypoint.core.collection.WaypointScope.PRIVATE) {
+            throw new IllegalArgumentException("Private waypoint messages cannot be broadcast");
+        }
         PreparedMessage prepared;
         try {
             prepared = this.prepareChunkedMessage(message);

@@ -1,5 +1,6 @@
 package _959.server_waypoint.core.network.upload;
 
+import _959.server_waypoint.core.collection.WaypointScope;
 import _959.server_waypoint.core.collection.WaypointCollectionKey;
 import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.core.WaypointFileManager;
@@ -315,7 +316,7 @@ public final class UploadCoordinator<P> {
             // Dimensions commit independently. Publish the validated committed results even
             // if a later dimension failed, without consuming one transfer slot per dimension.
             if (!summary.dimensionUpdates.isEmpty()) {
-                this.waypointDataBroadcaster.accept(WaypointData.updates(summary.dimensionUpdates));
+                this.waypointDataBroadcaster.accept(WaypointData.updates(WaypointScope.SHARED, summary.dimensionUpdates));
             }
             for (NavigationReplacement replacement : summary.navigationReplacements) {
                 this.navigationService.refreshTarget(replacement.previous(), replacement.updated());
@@ -462,7 +463,7 @@ public final class UploadCoordinator<P> {
                                             dimensionName,
                                             List.copyOf(dimensionSummary.listUpdates.values())
                                     ));
-                                    ChunkedMessageManager.validateEncodable(WaypointData.updates(updates));
+                                    ChunkedMessageManager.validateEncodable(WaypointData.updates(WaypointScope.SHARED, updates));
                                 }
                                 return dimensionSummary;
                             }

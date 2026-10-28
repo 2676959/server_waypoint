@@ -52,6 +52,8 @@ class CoreWaypointCommandPrivateTest {
     private CommandDispatcher<TestSource> dispatcher;
     private NavigationService<Object> navigation;
     private int teleports;
+    private final List<_959.server_waypoint.core.network.WaypointScopedMessage> privateUpdates = new ArrayList<>();
+    private final List<Object> privateRecipients = new ArrayList<>();
 
     @BeforeEach void setUp() {
         previous = WaypointServerCore.CONFIG;
@@ -74,6 +76,18 @@ class CoreWaypointCommandPrivateTest {
             }
             @Override public PlayerActionLog.Actor commandSenderActor(TestSource s) {
                 return new PlayerActionLog.Actor(bob, "commander");
+            }
+            @Override public _959.server_waypoint.core.network.ChunkedMessageDelivery sendPlayerChunkedMessageTracked(
+                    Object player, _959.server_waypoint.core.network.ChunkedMessage message) {
+                privateRecipients.add(player);
+                privateUpdates.add((_959.server_waypoint.core.network.WaypointScopedMessage) message);
+                return _959.server_waypoint.core.network.ChunkedMessageDelivery.queued(
+                        java.util.concurrent.CompletableFuture.completedFuture(_959.server_waypoint.core.network.ChunkedMessageSendResult.DELIVERED));
+            }
+            @Override public _959.server_waypoint.core.network.ChunkedMessageDelivery sendPlayerChunkedMessageTracked(
+                    Object player, _959.server_waypoint.core.network.ChunkedMessage message, java.util.function.BooleanSupplier readable) {
+                return readable.getAsBoolean() ? sendPlayerChunkedMessageTracked(player, message)
+                        : _959.server_waypoint.core.network.ChunkedMessageDelivery.rejected(_959.server_waypoint.core.network.ChunkedMessageSendResult.UNSUPPORTED);
             }
             @Override public void broadcastChunkedMessage(Iterable<?> players,
                     _959.server_waypoint.core.network.ChunkedMessage message) { fail("Private update broadcast"); }
@@ -118,6 +132,21 @@ class CoreWaypointCommandPrivateTest {
     }
 
     @AfterEach void tearDown() { WaypointServerCore.CONFIG = previous; }
+
+    @Test
+    void privateCommandSendsOnlyOwnerDataAndRechecksReadPermissionForEverySend() throws Exception {
+        add();
+        assertFalse(privateUpdates.isEmpty());
+        assertTrue(privateRecipients.stream().allMatch(alice::equals));
+        assertTrue(privateUpdates.stream().allMatch(update -> update.scope() == _959.server_waypoint.core.collection.WaypointScope.PRIVATE));
+        privateUpdates.clear();
+        grants.put("server_waypoint.command.private.list", false);
+        run("private edit waypoint overworld Homes Base set yaw 10");
+        assertFalse(privateUpdates.isEmpty());
+        assertTrue(privateUpdates.stream().allMatch(update -> update instanceof _959.server_waypoint.core.network.message.WaypointCollectionStateMessage state
+                && !state.readable()));
+        assertEquals(10, waypoint(alice, "Base").yaw());
+    }
 
     private void run(String command) throws Exception { dispatcher.execute(command.isEmpty() ? "wp" : "wp " + command, source); }
     private SimpleWaypoint waypoint(UUID owner, String name) throws Exception {

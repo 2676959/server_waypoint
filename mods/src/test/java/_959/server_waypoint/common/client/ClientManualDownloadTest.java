@@ -1,5 +1,6 @@
 package _959.server_waypoint.common.client;
 
+import _959.server_waypoint.core.collection.WaypointScope;
 import _959.server_waypoint.common.client.gui.TestFont;
 import _959.server_waypoint.common.client.integrations.ClientWaypointSyncEvent;
 import _959.server_waypoint.common.client.integrations.MapModIntegration;
@@ -101,14 +102,14 @@ class ClientManualDownloadTest {
 
     @Test
     void listDownloadRefreshesBothMapsWithAutoSyncDisabledAndUnchangedRevision() {
-        receive(WaypointData.waypointList(DIMENSION, WaypointList.build("cached", 7)));
+        receive(WaypointData.waypointList(WaypointScope.SHARED, DIMENSION, WaypointList.build("cached", 7)));
 
         assertRefreshed(ClientWaypointSyncEvent.Type.LIST_REPLACED);
     }
 
     @Test
     void dimensionDownloadRefreshesBothMapsWithAutoSyncDisabledAndUnchangedRevision() {
-        receive(WaypointData.dimension(new DimensionWaypointData(DIMENSION,
+        receive(WaypointData.dimension(WaypointScope.SHARED, new DimensionWaypointData(DIMENSION,
                 List.of(WaypointList.build("cached", 7)))));
 
         assertRefreshed(ClientWaypointSyncEvent.Type.DIMENSION_REPLACED);
@@ -117,7 +118,7 @@ class ClientManualDownloadTest {
     @Test
     void worldDownloadRefreshesBothMapsWithAutoSyncDisabledAndUnchangedRevision() throws Exception {
         prepareWorld();
-        receive(WaypointData.world(List.of(new DimensionWaypointData(DIMENSION,
+        receive(WaypointData.world(WaypointScope.SHARED, List.of(new DimensionWaypointData(DIMENSION,
                 List.of(WaypointList.build("cached", 7))))));
 
         assertRefreshed(ClientWaypointSyncEvent.Type.WORLD_REPLACED);
@@ -127,7 +128,7 @@ class ClientManualDownloadTest {
     void integratedListDownloadRefreshesBothMapsWithoutReplacingSharedStorage() throws Exception {
         setStatic(WaypointServerMod.class, "runsWithClient", true);
         WaypointList shared = client.getWaypointFileManager(DIMENSION).getWaypointListByName("cached");
-        receive(WaypointData.waypointList(DIMENSION, WaypointList.build("cached", 7)));
+        receive(WaypointData.waypointList(WaypointScope.SHARED, DIMENSION, WaypointList.build("cached", 7)));
 
         assertRefreshed(ClientWaypointSyncEvent.Type.LIST_REPLACED);
         assertSame(shared, client.getWaypointFileManager(DIMENSION).getWaypointListByName("cached"));
@@ -139,7 +140,7 @@ class ClientManualDownloadTest {
         client.putWaypointList(DIMENSION, new WaypointList("cached", 7,
                 List.of(damaged, waypoint("personal", 25))));
         WaypointList snapshot = new WaypointList("cached", 7, List.of(waypoint("spawn", 10)));
-        receive(WaypointData.waypoint(DIMENSION, snapshot, snapshot.simpleWaypoints().get(0)));
+        receive(WaypointData.waypoint(WaypointScope.SHARED, DIMENSION, snapshot, snapshot.simpleWaypoints().get(0)));
 
         assertRefreshed(ClientWaypointSyncEvent.Type.WAYPOINT_ADDED);
         WaypointList repaired = client.getWaypointFileManager(DIMENSION).getWaypointListByName("cached");
@@ -154,7 +155,7 @@ class ClientManualDownloadTest {
     @Test
     void downloadingIntoAMissingListLeavesItsRevisionUnknown() {
         WaypointList snapshot = new WaypointList("missing", 12, List.of(waypoint("spawn", 10)));
-        receive(WaypointData.waypoint(DIMENSION, snapshot, snapshot.simpleWaypoints().get(0)));
+        receive(WaypointData.waypoint(WaypointScope.SHARED, DIMENSION, snapshot, snapshot.simpleWaypoints().get(0)));
 
         assertRefreshed(ClientWaypointSyncEvent.Type.WAYPOINT_ADDED);
         WaypointList repaired = client.getWaypointFileManager(DIMENSION).getWaypointListByName("missing");
@@ -169,7 +170,7 @@ class ClientManualDownloadTest {
         ClientSynchronizationTracker tracker = (ClientSynchronizationTracker) trackerField.get(client);
         tracker.markOutOfSync(DIMENSION, "cached");
         WaypointList snapshot = new WaypointList("cached", 12, List.of(waypoint("spawn", 10)));
-        receive(WaypointData.waypoint(DIMENSION, snapshot, snapshot.simpleWaypoints().get(0)));
+        receive(WaypointData.waypoint(WaypointScope.SHARED, DIMENSION, snapshot, snapshot.simpleWaypoints().get(0)));
 
         assertRefreshed(ClientWaypointSyncEvent.Type.WAYPOINT_ADDED);
         assertEquals(10, client.getWaypointFileManager(DIMENSION).getWaypointListByName("cached")
@@ -182,7 +183,7 @@ class ClientManualDownloadTest {
     void integratedWorldDownloadRefreshesBothMapsWithoutReplacingSharedStorage() throws Exception {
         setStatic(WaypointServerMod.class, "runsWithClient", true);
         WaypointList shared = client.getWaypointFileManager(DIMENSION).getWaypointListByName("cached");
-        receive(WaypointData.world(List.of(new DimensionWaypointData(DIMENSION, List.of(shared)))));
+        receive(WaypointData.world(WaypointScope.SHARED, List.of(new DimensionWaypointData(DIMENSION, List.of(shared)))));
 
         assertRefreshed(ClientWaypointSyncEvent.Type.WORLD_REPLACED);
         assertSame(shared, client.getWaypointFileManager(DIMENSION).getWaypointListByName("cached"));
@@ -207,7 +208,7 @@ class ClientManualDownloadTest {
     void manualDownloadSkipsAbsentAndUnreadyMaps() {
         xaero.installed = false;
         voxelMap.ready = false;
-        receive(WaypointData.waypointList(DIMENSION, WaypointList.build("cached", 7)));
+        receive(WaypointData.waypointList(WaypointScope.SHARED, DIMENSION, WaypointList.build("cached", 7)));
 
         assertNull(xaero.lastEvent);
         assertNull(voxelMap.lastEvent);
@@ -219,7 +220,7 @@ class ClientManualDownloadTest {
 
     @Test
     void automaticUpdatesStillRespectDisabledAutoSync() {
-        receive(WaypointData.updates(List.of(new DimensionWaypointData(DIMENSION,
+        receive(WaypointData.updates(WaypointScope.SHARED, List.of(new DimensionWaypointData(DIMENSION,
                 List.of(WaypointList.build("cached", 8))))));
 
         assertNull(xaero.lastEvent);
