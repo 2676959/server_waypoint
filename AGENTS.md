@@ -5,6 +5,7 @@
 - Libraries: Use GSON for JSON processing.
 - Translations: Entries in `common/src/main/resources/lang` rendered by `AdventureTranslator` use Java `MessageFormat`. Use zero-based placeholders such as `{0}` and `{1}`, never printf placeholders such as `%s` or `%1$s`. Keep placeholder indices consistent across translations and escape literal apostrophes as `''` in `MessageFormat` patterns.
 - Do not commit the changes you made directly, except if you are asked to do this.
+- When writing commit messages, follow the Conventional Commits 1.0.0 summary in [`docs/tips/commit-messages.md`](docs/tips/commit-messages.md).
 - When implementing new features or making changes on existing features, do not write any code for handling backward compatibility unless you are asked to do this.
 
 # Project Structure
