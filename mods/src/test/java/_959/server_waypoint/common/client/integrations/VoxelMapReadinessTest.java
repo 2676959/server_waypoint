@@ -19,6 +19,11 @@ class VoxelMapReadinessTest {
     @BeforeAll
     static void requireClientWorldRuntime() throws ReflectiveOperationException {
         try {
+            //? if neoforge && <1.21.9 {
+            /*// Older NeoForge returns null here instead of throwing for an absent loader.
+            Assumptions.assumeTrue(net.neoforged.fml.loading.LoadingModList.get() != null,
+                    "Minecraft bootstrap requires a running NeoForge loader in this test runtime");
+            *///?}
             SharedConstants.tryDetectVersion();
             Bootstrap.bootStrap();
             allocate(ClientLevel.class);
