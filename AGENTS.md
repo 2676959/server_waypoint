@@ -25,6 +25,7 @@ Projects "paper" and "mods" are independent projects to each other.
 
 # Project Documentation
 
+- Maintain two changelogs: `CHANGELOG.md` is the complete documentation and release history; `CHANGELOG_PUBLISH.md` contains only the current release's simplified, player-facing notes for Modrinth, CurseForge and GitHub releases. Update both when preparing a release. Focus publishing notes on new features, improvements, bug fixes and essential upgrade information, with minimal technical detail.
 - Read [`docs/tips/gui/local-guide.md`](docs/tips/gui/local-guide.md) before changing GUI render entry points, manual widget rendering, hover behavior, or the related Stonecutter render-method swaps.
 - When creating a new API or changing an existing API under `mods/src/main/java/_959/server_waypoint/common/client/gui`, update its documentation in [`docs/tips/gui/local-guide.md`](docs/tips/gui/local-guide.md) in the same change.
 - Read [`docs/tips/adventure-text.md`](docs/tips/adventure-text.md) before composing Adventure feedback with interactive or styled components.

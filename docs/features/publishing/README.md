@@ -5,9 +5,16 @@ Server Waypoint publishes Fabric, Forge and NeoForge artifacts to Modrinth and C
 - [4.0.0 release checklist](plans/2026-10-15-4.0.0-release.md)
 - [4.0.0 platform metadata](specs/4.0.0-metadata.md)
 - [4.0.0 preparation results](validation/2026-10-15-4.0.0.md)
-- [Changelog](../../../CHANGELOG.md) — default version notes for both upload services and the GitHub draft workflow.
+- [Complete changelog](../../../CHANGELOG.md) — detailed documentation and release history.
+- [Publishing changelog](../../../CHANGELOG_PUBLISH.md) — simplified notes for the current release, used by both upload services and the GitHub draft workflow.
 - [Project description](../../project-description.md) — shared platform description with current screenshots.
 - [Artifact packaging](../jar-packaging/) — release JAR content rules.
+
+## Changelogs
+
+Update both changelogs when preparing a release. Keep the full history, technical details, behavior changes and upgrade instructions in `CHANGELOG.md`. Replace `CHANGELOG_PUBLISH.md` with notes for the current release only, written for players: focus on new features, improvements and bug fixes, and include essential update instructions in plain language. Avoid implementation details and benchmark figures in publishing notes.
+
+Use `CHANGELOG_PUBLISH.md` for manual Modrinth and CurseForge uploads, with Markdown selected on CurseForge. Automated uploads and GitHub release drafts use this file by default. The complete changelog remains available as repository documentation.
 
 ## Upload tasks
 
@@ -32,8 +39,8 @@ Supply secrets through the shell or CI secret store; keep them out of commands, 
 | --- | --- |
 | Modrinth release type | `release`; override with `-PmodrinthVersionType=beta` or `alpha` |
 | CurseForge release type | `release`; override with `-PcurseforgeReleaseType=beta` or `alpha` |
-| Modrinth changelog | `-PmodrinthChangelog`, then `MODRINTH_CHANGELOG`, then root `CHANGELOG.md` |
-| CurseForge changelog | `-PcurseforgeChangelog`, then `MODRINTH_CHANGELOG`, then root `CHANGELOG.md` |
+| Modrinth changelog | `-PmodrinthChangelog`, then `MODRINTH_CHANGELOG`, then root `CHANGELOG_PUBLISH.md` |
+| CurseForge changelog | `-PcurseforgeChangelog`, then `MODRINTH_CHANGELOG`, then root `CHANGELOG_PUBLISH.md` |
 
 The changelog properties accept the actual Markdown text, not a file path. `MODRINTH_CHANGELOG` currently affects **both** services. Clear it for the standard release notes. File uploads do not update the project summary, description, gallery, links or categories; update these separately in the project dashboards.
 

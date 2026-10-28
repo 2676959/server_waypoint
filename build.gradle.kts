@@ -29,7 +29,7 @@ val developmentOnlyProjectPaths = setOf(
     ":mods:1.21.3-fabric",
     ":mods:1.21.3-neoforge",
 )
-val releaseChangelog = providers.fileContents(layout.projectDirectory.file("CHANGELOG.md")).asText
+val releaseChangelog = providers.fileContents(layout.projectDirectory.file("CHANGELOG_PUBLISH.md")).asText
 val modrinthProjectPaths = listOf(project(":mods"), project(":paper"))
     .flatMap { it.subprojects }
     .map { it.path }
