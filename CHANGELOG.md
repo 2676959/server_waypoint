@@ -1,5 +1,32 @@
 # Changelog
 
+## Server Waypoint 4.0.1
+
+A patch release: less server lag when players join or change dimension, cheaper navigation-item checks, and map-mod waypoints that reappear after you reconnect.
+
+### Before you update
+
+- 4.0.1 uses the same network protocol as 4.0.0, so 4.0.0 and 4.0.1 clients, servers and Velocity proxies work together. Update the client mod for the map-mod fixes and servers for the rest.
+
+### Performance
+
+- `/wp list` and `/wp remote` add about 86% fewer nodes to the command list that Minecraft rebuilds and sends when a player joins, changes dimension or has their permissions changed. Building that list stalled some servers for several seconds ([#35](https://github.com/2676959/server_waypoint/issues/35)). The options and their suggestions are unchanged, but an invalid `sort`, `order` or `view` value is now reported when the command runs rather than while you type.
+- On Paper and Folia, navigation-item checks read item data directly instead of building Bukkit item metadata, and queued inventory checks for the same player merge into one.
+- On Fabric, Forge and NeoForge, inventory clicks skip navigation-item cleanup unless a navigation item is involved, and the checks no longer copy item data.
+- `/wp list` searches and command suggestions use less memory with large waypoint sets.
+- Xaero's Minimap no longer rewrites every server waypoint on each respawn and dimension change.
+
+### Navigation
+
+- Item protection now checks only the navigation compass or map itself. Bundles, shulker boxes and other containers are no longer searched for them, and anything already inside stays. Putting a navigation item into a bundle or an open shulker box is still blocked.
+- On Paper and Folia, items that hoppers and other blocks move between containers are no longer checked for navigation items.
+- On Fabric, Forge and NeoForge, allays and dropped items are no longer scanned every tick. Giving a navigation item to an allay is still blocked, and dropped navigation items are still removed.
+
+### Fixes
+
+- VoxelMap and Xaero's Minimap restore server waypoints when you rejoin a server whose waypoints haven't changed. In 4.0.0 they could stay missing until a waypoint changed or you used **Sync now**. Automatic syncs also wait until the map mod has loaded the current world.
+- On Paper and Folia, a navigation item can no longer be put into an empty bundle.
+
 ## Server Waypoint 4.0.0
 
 A major release: navigation that works without the client mod, waypoint icons, uploads from map mods, VoxelMap support, cross-server waypoints through Velocity, and redesigned commands and screens.
