@@ -56,7 +56,15 @@ class WaypointFormTranslationTest {
             "waypoint.form.status.adding",
             "waypoint.form.status.saving",
             "waypoint.form.status.add_timeout",
-            "waypoint.form.status.send_failed"
+            "waypoint.form.status.send_failed",
+            "waypoint.form.status.obsolete",
+            "waypoint.form.status.rejected",
+            "waypoint.form.status.denied",
+            "waypoint.form.status.disconnected",
+            "waypoint.form.status.persistence_failed",
+            "waypoint.form.status.invalid_template",
+            "waypoint.form.status.dimension_required",
+            "waypoint.form.status.command_too_long"
     );
     // The keys the screens use that other screens define too.
     private static final List<String> SHARED_KEYS = List.of(

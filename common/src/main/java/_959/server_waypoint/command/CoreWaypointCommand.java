@@ -205,6 +205,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     public static final String KEYWORDS_ARG = "keywords";
     public static final String DESCRIPTION_ARG = "description";
     public static final String ICON_ARG = "icon";
+    private static final String ADD_DISPLAY_NAME_ARG = "add display name";
     public static final String SEARCH_QUERY_ARG = "search query";
     public static final String PAGE_NUMBER_ARG = "page number";
     public static final String PAGE_LIMIT_ARG = "page limit";
@@ -505,17 +506,22 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         LiteralArgumentBuilder<Object> iconNode = literal("icon");
         iconNode.then(RequiredArgumentBuilder.<Object, I>argument(ICON_ARG, iconArgumentProvider.get())
                 .suggests((SuggestionProvider<Object>) ICON_SUGGESTION)
-                .executes(command));
+                .executes(command).then(displayNameTail(command)));
         visibilityNode.then(iconNode);
         keywordsNode.then(literal("icon").then(RequiredArgumentBuilder.<Object, I>argument(
                 ICON_ARG, iconArgumentProvider.get())
-                .suggests((SuggestionProvider<Object>) ICON_SUGGESTION).executes(command)));
+                .suggests((SuggestionProvider<Object>) ICON_SUGGESTION).executes(command).then(displayNameTail(command))));
         descriptionNode.then(literal("icon").then(RequiredArgumentBuilder.<Object, I>argument(
                 ICON_ARG, iconArgumentProvider.get())
-                .suggests((SuggestionProvider<Object>) ICON_SUGGESTION).executes(command)));
+                .suggests((SuggestionProvider<Object>) ICON_SUGGESTION).executes(command).then(displayNameTail(command))));
+        descriptionNode.then(displayNameTail(command));
         keywordsNode.then(descriptionNode);
         visibilityNode.then(keywordsNode);
         return visibilityNode;
+    }
+
+    private LiteralArgumentBuilder<Object> displayNameTail(Command<Object> command) {
+        return literal("display_name").then(argument(ADD_DISPLAY_NAME_ARG, string()).executes(command));
     }
 
     private ArgumentBuilder<S, ?> dimensionNode() {
@@ -1023,7 +1029,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                                                                                                     getBool(context, VISIBILITY_ARG),
                                                                                                     parseKeywords(getOptionalString(context, KEYWORDS_ARG, "")),
                                                                                                     getOptionalString(context, DESCRIPTION_ARG, ""),
-                                                                                                    hasArgument(context, ICON_ARG) ? getArgument(context, ICON_ARG) : null
+                                                                                                    hasArgument(context, ICON_ARG) ? getArgument(context, ICON_ARG) : null,
+                                                                                                    hasArgument(context, ADD_DISPLAY_NAME_ARG) ? getString(context, ADD_DISPLAY_NAME_ARG) : null
                                                                                             );
                                                                                             return Command.SINGLE_SUCCESS;
                                                                                         }
@@ -1075,7 +1082,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                                                                                                     getBool(context, VISIBILITY_ARG),
                                                                                                     parseKeywords(getOptionalString(context, KEYWORDS_ARG, "")),
                                                                                                     getOptionalString(context, DESCRIPTION_ARG, ""),
-                                                                                                    hasArgument(context, ICON_ARG) ? getArgument(context, ICON_ARG) : null
+                                                                                                    hasArgument(context, ICON_ARG) ? getArgument(context, ICON_ARG) : null,
+                                                                                                    hasArgument(context, ADD_DISPLAY_NAME_ARG) ? getString(context, ADD_DISPLAY_NAME_ARG) : null
                                                                                             );
                                                                                             return Command.SINGLE_SUCCESS;
                                                                                         }
@@ -1799,13 +1807,18 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         }
     }
 
-    private void addWaypointDirectly(S source, String dimensionName, String listName, String name, String initials, WaypointPos waypointPos, int yaw, int rgb, boolean global, List<String> keywords, String description, @Nullable NamespacedId icon) {
+    private void addWaypointDirectly(S source, String dimensionName, String listName, String name, String initials, WaypointPos waypointPos, int yaw, int rgb, boolean global, List<String> keywords, String description, @Nullable NamespacedId icon, @Nullable String displayName) {
+        if (displayName != null && !validateLength(source, ADD_DISPLAY_NAME_ARG, displayName, MAX_NAME_LENGTH)) return;
+        if (displayName != null && !isValidInput(displayName)) {
+            sendError(source, Errors.of("wp.error.formatted_text"));
+            return;
+        }
         if (!validateTextInputs(source, listName, name, keywords, description)) {
             return;
         }
         SimpleWaypoint newWaypoint = new SimpleWaypoint(
                 name,
-                name,
+                displayName == null ? name : displayName,
                 initials,
                 waypointPos,
                 rgb,
@@ -1839,7 +1852,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         });
     }
 
-    private void executeAddWaypoint(S source, D dimensionArgument, String listName, String name, String initials, B blockPosArgument, int yaw, String hexCode, boolean global, List<String> keywords, String description, @Nullable I rawIcon) {
+    private void executeAddWaypoint(S source, D dimensionArgument, String listName, String name, String initials, B blockPosArgument, int yaw, String hexCode, boolean global, List<String> keywords, String description, @Nullable I rawIcon, @Nullable String displayName) {
         NamespacedId icon = rawIcon == null ? null : validateIcon(source, rawIcon);
         if (rawIcon != null && icon == null) {
             return;
@@ -1861,7 +1874,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                 sendHexColorCodeError(source, hexCode);
                 return;
             }
-            addWaypointDirectly(source, dimensionName, listName, name, initials, waypointPos, yaw, rgb, global, keywords, description, icon);
+            addWaypointDirectly(source, dimensionName, listName, name, initials, waypointPos, yaw, rgb, global, keywords, description, icon, displayName);
         } else {
             sendDimensionError(source, dimensionName);
         }
@@ -1884,7 +1897,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
             return;
         }
         addWaypointDirectly(source, dimensionName, listName, name, WaypointInitials.getDefaultInitials(plainText(name)),
-                position, Math.round(getSourceYaw(source)), randomColor(), true, List.of(), "", null);
+                position, Math.round(getSourceYaw(source)), randomColor(), true, List.of(), "", null, null);
     }
 
     private void executeRemoveList(S source, D dimensionArgument, String listName) {

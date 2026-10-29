@@ -133,6 +133,35 @@ class CoreWaypointCommandPrivateTest {
 
     @AfterEach void tearDown() { WaypointServerCore.CONFIG = previous; }
 
+    @Test void copyAdditionRejectsQuotaInvalidDisplayAndRevokedPermissionsWithoutCreatingAList() throws Exception {
+        add();
+        WaypointServerCore.CONFIG = new Gson().fromJson("{\"privateWaypoints\":{\"maxWaypointsPerPlayer\":1}}", Config.class);
+        run("private add overworld Other position Copy C red 0 false \"\" \"\" display_name Pretty");
+        assertNull(waypoint(alice,"Copy"));
+        server.withCollection(WaypointCollectionKey.privateFor(alice), files -> {
+            assertNull(files.getWaypointFileManager("overworld").getWaypointListByName("Other")); return null;
+        });
+        WaypointServerCore.CONFIG = new Config();
+        run("private add overworld Other position Copy C red 0 false \"\" \"\" display_name \"{invalid json}\"");
+        server.withCollection(WaypointCollectionKey.privateFor(alice), files -> {
+            assertNull(files.getWaypointFileManager("overworld").getWaypointListByName("Other")); return null;
+        });
+        grants.put("server_waypoint.command.private.add",false);
+        assertThrows(CommandSyntaxException.class, () -> run("private add overworld Other position Copy C red 0 false \"\" \"\" display_name Pretty"));
+        assertNotNull(waypoint(alice,"Base"));
+    }
+
+    @Test void copiedDisplayNameIsAddedAtomicallyWithAllMetadata() throws Exception {
+        dispatcher.execute("wp private add overworld Homes position Base H red 90 false \"mine, home\" \"<blue>description\" icon minecraft:diamond display_name \"<gold>Home\"", source);
+        server.withCollection(WaypointCollectionKey.privateFor(alice), files -> {
+            SimpleWaypoint copied = files.getWaypointFileManager("overworld").getWaypointListByName("Homes").getWaypointByName("Base");
+            assertEquals("<gold>Home", copied.displayName());
+            assertEquals("<blue>description", copied.description());
+            assertEquals(List.of("mine", "home"), copied.keywords());
+            return null;
+        });
+    }
+
     @Test
     void privateCommandSendsOnlyOwnerDataAndRechecksReadPermissionForEverySend() throws Exception {
         add();

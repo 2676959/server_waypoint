@@ -5,7 +5,6 @@ import _959.server_waypoint.common.client.integrations.IntegratedServerUpload;
 import _959.server_waypoint.common.client.local.LocalWaypointProfiles;
 import _959.server_waypoint.ProtocolVersion;
 import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
-import _959.server_waypoint.common.client.gui.screens.WaypointEditScreen;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeJson;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
 import _959.server_waypoint.common.client.handlers.MessageHandler;
@@ -86,6 +85,9 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     public ClientWaypointCollections collections() { return this.collections; }
     private boolean compressChunkedMessages;
     private final LocalWaypointProfiles localProfiles;
+    private final ClientWaypointAccess access;
+
+    public ClientWaypointAccess access() { return this.access; }
 
     public LocalWaypointProfiles localProfiles() { return this.localProfiles; }
     private final Path gameRoot;
@@ -128,6 +130,42 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
         // visibility/expansion without waiting for integrated-server initialization.
         WaypointList.excludeClientOnlyFields = false;
         this.localProfiles = new LocalWaypointProfiles(gameRoot, this.collections);
+        this.access = new ClientWaypointAccess(this.collections, this.localProfiles, new ClientWaypointAccess.Transport() {
+            public boolean connected() { return mc.getConnection() != null; }
+            public String currentDimension() { return currentDimensionName; }
+            public int commandLimit() {
+                //? if <1.20.5 {
+                /*return 256;
+                *///?} else {
+                return 32767;
+                //?}
+            }
+            public List<String> dimensions() {
+                var connection = mc.getConnection();
+                if (connection == null) return List.of();
+                return connection.levels().stream().map(key ->
+                        //? if >=1.21.11 {
+                        key.identifier().toString()
+                        //?} else {
+                        /*key.location().toString()
+                        *///?}
+                ).toList();
+            }
+            public boolean allowed(ClientWaypointSource source, ClientWaypointAccess.Action action) {
+                var connection = mc.getConnection();
+                if (connection == null) return false;
+                var root = connection.getCommands().getRoot().getChild("wp");
+                if (root != null && source == ClientWaypointSource.PRIVATE) root = root.getChild("private");
+                String name = switch (action) {
+                    case READ -> "list";
+                    case TELEPORT -> "tp";
+                    default -> action.name().toLowerCase(java.util.Locale.ROOT);
+                };
+                return root != null && root.getChild(name) != null;
+            }
+            public boolean command(String command) { return _959.server_waypoint.common.client.util.ClientCommandUtils.sendCommand(command); }
+            public boolean edit(WaypointEditRequestMessage message) { return sendChunkedMessageToServer(message); }
+        });
         this.configPath = configDir.resolve(MOD_ID).resolve("client-config.json");
         this.widgetThemePath = configDir.resolve(MOD_ID).resolve("widget-theme.json");
         INSTANCE = this;
@@ -623,11 +661,16 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
 
     public static void tickChunkedMessagesIfInitialized() {
         if (INSTANCE != null) {
+            INSTANCE.access.tick();
             INSTANCE.tickChunkedMessages();
         }
     }
 
     private void applyChunkedMessage(ChunkedMessage message) {
+        if (message instanceof WaypointEditResultMessage result) {
+            this.onWaypointEditResult(result);
+            return;
+        }
         if (message instanceof _959.server_waypoint.core.network.WaypointScopedMessage scoped
                 && (scoped.scope() == WaypointScope.PRIVATE || scoped instanceof WaypointCollectionStateMessage)) {
             this.applyCollectionMessage(scoped);
@@ -641,8 +684,6 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
             this.onWaypointModification(modification);
         } else if (message instanceof WaypointListUpdateMessage update) {
             this.onWaypointListUpdate(update);
-        } else if (message instanceof WaypointEditResultMessage result) {
-            this.onWaypointEditResult(result);
         } else {
             LOGGER.warn(
                     "Ignoring clientbound chunked message type {}",
@@ -1108,11 +1149,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     }
 
     public void onWaypointEditResult(WaypointEditResultMessage buffer) {
-        if (buffer.scope() == WaypointScope.PRIVATE) {
-            this.applyCollectionMessage(buffer);
-            return;
-        }
-        WaypointEditScreen.handleResult(buffer);
+        this.access.acceptResult(buffer, this.collections.generation());
     }
 
     /**

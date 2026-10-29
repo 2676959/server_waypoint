@@ -212,5 +212,13 @@
   "server_waypoint.theme.preset.classic": "經典",
   "server_waypoint.map.add_to_server": "新增至伺服器",
   "server_waypoint.map.edit_on_server": "在伺服器上編輯",
-  "server_waypoint.map.share.add_prompt": "將分享的路徑點 %s 新增至伺服器？"
+  "server_waypoint.map.share.add_prompt": "將分享的路徑點 %s 新增至伺服器？",
+    "waypoint.form.status.obsolete": "目的地已變更。請重新開啟表單以儲存草稿。",
+    "waypoint.form.status.rejected": "操作遭拒。請檢查目的地與數值。",
+    "waypoint.form.status.denied": "你已沒有執行此操作的權限。",
+    "waypoint.form.status.disconnected": "請先連線至世界，再提交此操作。",
+    "waypoint.form.status.persistence_failed": "無法儲存本機地標。變更仍保留在記憶體中。",
+    "waypoint.form.status.invalid_template": "傳送指令範本無效。請檢查預留位置與控制字元。",
+    "waypoint.form.status.dimension_required": "目的地位於其他維度。請在傳送範本中加入 {dimension}。",
+    "waypoint.form.status.command_too_long": "指令超出此 Minecraft 版本的長度限制。"
 }

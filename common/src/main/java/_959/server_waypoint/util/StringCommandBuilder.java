@@ -130,12 +130,13 @@ public class StringCommandBuilder {
         sb.append(' ').append(rgbToNameOrHexCode(waypoint.rgb(), false));
         sb.append(' ').append(waypoint.yaw());
         sb.append(' ').append(waypoint.global());
-        if (waypoint.icon() == null) {
+        if (waypoint.icon() == null && waypoint.displayNameOverride() == null) {
             appendExtraInfo(sb, waypoint);
         } else {
             sb.append(' ').append(escapeArgument(String.join(", ", waypoint.keywords())));
             sb.append(' ').append(escapeArgument(waypoint.description()));
-            sb.append(" icon ").append(waypoint.icon());
+            if (waypoint.icon() != null) sb.append(" icon ").append(waypoint.icon());
+            if (waypoint.displayNameOverride() != null) sb.append(" display_name ").append(escapeArgument(waypoint.displayNameOverride()));
         }
         return sb.toString();
     }

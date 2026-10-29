@@ -1,0 +1,26 @@
+{
+  "common": {
+    "tests": 720,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "fabric-active": {
+    "tests": 1022,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "fabric-older-focused": {
+    "tests": 102,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "fabric-active-task-focused": {
+    "tests": 105,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  }
+}

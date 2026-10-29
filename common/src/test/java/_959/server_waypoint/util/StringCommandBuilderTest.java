@@ -85,7 +85,7 @@ class StringCommandBuilderTest {
         String command = StringCommandBuilder.addCmd("minecraft:overworld", "list", waypoint);
 
         assertTrue(command.contains(" exact-id E "));
-        assertTrue(!command.contains("Presentation"));
+        assertTrue(command.contains(" display_name \"{\\\"text\\\":\\\"Presentation\\\"}\""));
     }
 
     @Test

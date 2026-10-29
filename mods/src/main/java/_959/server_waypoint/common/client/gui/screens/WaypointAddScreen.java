@@ -1,6 +1,9 @@
 package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.common.client.WaypointClientMod;
+import _959.server_waypoint.common.client.ClientWaypointAccess;
+import _959.server_waypoint.common.client.ClientWaypointSelection;
+import _959.server_waypoint.common.client.ClientWaypointSource;
 import _959.server_waypoint.common.client.gui.widgets.ComboBoxWidget;
 import _959.server_waypoint.common.client.gui.widgets.TranslucentButton;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
@@ -16,22 +19,20 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 
-import static _959.server_waypoint.common.client.util.ClientCommandUtils.sendCommand;
-import static _959.server_waypoint.common.client.util.ClientDimensionCatalog.getAvailableDimensionNames;
 import static _959.server_waypoint.common.client.util.ClientDimensionCatalog.mergeDimensionNames;
 import static _959.server_waypoint.text.FormattedTextHelper.MAX_NAME_LENGTH;
 import static _959.server_waypoint.text.FormattedTextHelper.parseKeywords;
-import static _959.server_waypoint.util.StringCommandBuilder.addCmd;
 
 /**
- * Adds a waypoint with {@code /wp add}. There is no reply to that command, so after sending it the
- * form locks and waits for the waypoint to show up in the synced data, then closes.
+ * Adds through a captured collection. Local completes after persistence; server commands keep the
+ * form pending until their waypoint appears in that collection's authoritative data.
  */
 public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
     private final ComboBoxWidget dimensionField;
     private final ComboBoxWidget listNameField;
     private final TranslucentButton addButton;
     private final PendingAdd pendingAdd = new PendingAdd();
+    private final @Nullable ClientWaypointSelection copySource;
 
     public WaypointAddScreen(Screen previousScreen, String dimensionName, String listName) {
         this(previousScreen, dimensionName, listName, null);
@@ -47,11 +48,32 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
         return new WaypointAddScreen(previousScreen, dimensionName, listName, defaults.pos(), defaults);
     }
 
+    /** Opens an independent copy while retaining its source-read requirement through submission. */
+    public static WaypointAddScreen fromCopy(Screen previousScreen, ClientWaypointAccess access, ClientWaypointAccess.CopyDraft draft) {
+        SimpleWaypoint defaults = draft.waypoint();
+        return new WaypointAddScreen(previousScreen, access, draft.destination(), defaults.pos(), defaults, draft.source());
+    }
+
     private WaypointAddScreen(Screen previousScreen, String dimensionName, String listName, WaypointPos defaultPos,
             @Nullable SimpleWaypoint defaults) {
-        super(previousScreen, Component.translatable("waypoint.add.screen.title"), dimensionName, listName, defaults);
+        this(previousScreen, WaypointClientMod.getInstance().access(),
+                WaypointClientMod.getInstance().access().capture(ClientWaypointSource.SHARED, dimensionName, listName, null), defaultPos, defaults);
+    }
+
+    /** Explicit source/destination constructor; a view change cannot redirect this form. */
+    public WaypointAddScreen(Screen previousScreen, ClientWaypointAccess access, ClientWaypointSelection destination,
+            @Nullable WaypointPos defaultPos, @Nullable SimpleWaypoint defaults) {
+        this(previousScreen, access, destination, defaultPos, defaults, null);
+    }
+
+    private WaypointAddScreen(Screen previousScreen, ClientWaypointAccess access, ClientWaypointSelection destination,
+            @Nullable WaypointPos defaultPos, @Nullable SimpleWaypoint defaults, @Nullable ClientWaypointSelection copySource) {
+        super(previousScreen, Component.translatable("waypoint.add.screen.title"), destination.dimensionName(), destination.listIdentifier(), defaults, access, destination);
+        this.copySource = copySource;
+        String dimensionName = destination.dimensionName();
+        String listName = destination.listIdentifier();
         List<String> dimensions = mergeDimensionNames(
-                WaypointClientMod.getAllAvailableDimensionNames(),
+                this.access.dimensions(this.selection),
                 List.of(dimensionName)
         );
         this.dimensionField = new ComboBoxWidget(0, 0, 155, Component.translatable("waypoint.form.dimension"), this.font,
@@ -59,7 +81,7 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
         this.dimensionField.setRenderPopupSeparately(true);
         this.dimensionField.useResourceIdMatching();
         this.listNameField = new ComboBoxWidget(0, 0, 90, Component.translatable("waypoint.form.list"), this.font,
-                WaypointClientMod.getAllWaypointListNames(dimensionName), listName, value -> this.onFormEdited());
+                this.access.lists(this.selection), listName, value -> this.onFormEdited());
         this.listNameField.setRenderPopupSeparately(true);
         this.listNameField.setMaxLength(MAX_NAME_LENGTH);
         this.addButton = TranslucentButton.fitted(Component.translatable("waypoint.add.button"), this::submitForm);
@@ -95,20 +117,18 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
     }
 
     private void refreshDimensionChoices() {
-        getAvailableDimensionNames().thenAccept(dimensions -> {
-            this.dimensionField.setValues(mergeDimensionNames(dimensions, List.of(this.dimensionName)));
-            this.onDimensionEdited();
-        });
+        this.dimensionField.setValues(mergeDimensionNames(this.access.dimensions(this.selection), List.of(this.dimensionName)));
+        this.onDimensionEdited();
     }
 
     /** The list choices belong to the chosen dimension, so they follow it; the list name already typed stays. */
     private void onDimensionEdited() {
-        this.listNameField.setValues(WaypointClientMod.getAllWaypointListNames(this.dimensionField.getResolvedValue()));
+        this.listNameField.setValues(this.access.lists(this.destination()));
         this.onFormEdited();
     }
 
     private void configureSuggestions() {
-        this.nameEditBox.setSuggestionsProvider(() -> WaypointClientMod.getAllWaypointNames(this.dimensionField.getResolvedValue(), this.listNameField.getValue()));
+        this.nameEditBox.setSuggestionsProvider(() -> this.access.names(this.destination()));
     }
 
     @Override
@@ -126,7 +146,7 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
 
     @Override
     protected boolean hasDisplayNameRow() {
-        return false;
+        return this.saved != null;
     }
 
     @Override
@@ -152,29 +172,30 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
                 this.dimensionField.getResolvedValue(),
                 this.listNameField.getValue(),
                 this.nameEditBox.getValue(),
-                "",
+                this.displayNameEditBox.getValue(),
                 this.keywordsEditBox.getValue(),
                 this.descriptionEditBox.getValue(),
                 null
         );
     }
 
+    private ClientWaypointSelection destination() {
+        return this.selection.at(this.dimensionField.getResolvedValue(), this.listNameField.getValue(), null);
+    }
+
     @Override
     protected void submit() {
-        String dimension = this.dimensionField.getResolvedValue();
-        String list = this.listNameField.getValue();
-        String name = this.nameEditBox.getValue();
-        if (!sendCommand(addCmd(dimension, list, this.toWaypoint(), false))) {
-            this.showResult(Component.translatable("waypoint.form.status.send_failed"), WaypointFormCheck.Field.NONE);
-            return;
-        }
-        this.pendingAdd.begin(dimension, list, name, System.nanoTime());
+        var result = this.copySource == null ? this.access.add(this.destination(), this.toWaypoint())
+                : this.access.addCopy(new ClientWaypointAccess.CopyDraft(this.copySource, this.destination(), this.toWaypoint()));
+        if (result.status() == ClientWaypointAccess.Status.SAVED) { this.onClose(); return; }
+        if (result.status() != ClientWaypointAccess.Status.AWAITING_SERVER) { this.showOutcome(result); return; }
+        this.pendingAdd.begin(this.dimensionField.getResolvedValue(), this.listNameField.getValue(), this.nameEditBox.getValue(), System.nanoTime());
     }
 
     private SimpleWaypoint toWaypoint() {
         return new SimpleWaypoint(
                 this.nameEditBox.getValue(),
-                this.nameEditBox.getValue(),
+                WaypointFormPatch.draftDisplayName(this.saved, this.displayNameEditBox.getValue(), this.nameEditBox.getValue()),
                 this.initialsEditBox.getValue(),
                 this.resolveCoordinateFields(),
                 this.colorPickerButton.getColor() & 0xFFFFFF,
@@ -203,7 +224,10 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
         if (!this.pendingAdd.pending()) {
             return;
         }
-        if (hasWaypoint(this.pendingAdd.dimension(), this.pendingAdd.list(), this.pendingAdd.name())) {
+        if (!this.access.valid(this.selection)) {
+            this.pendingAdd.clear();
+            this.showOutcome(ClientWaypointAccess.Outcome.of(ClientWaypointAccess.Status.OBSOLETE));
+        } else if (hasWaypoint(this.pendingAdd.dimension(), this.pendingAdd.list(), this.pendingAdd.name())) {
             this.pendingAdd.clear();
             this.onClose();
         } else if (this.pendingAdd.expire(System.nanoTime())) {

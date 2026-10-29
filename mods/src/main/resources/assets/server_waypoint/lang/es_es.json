@@ -212,5 +212,13 @@
   "server_waypoint.theme.preset.classic": "Clásico",
   "server_waypoint.map.add_to_server": "Añadir al servidor",
   "server_waypoint.map.edit_on_server": "Editar en el servidor",
-  "server_waypoint.map.share.add_prompt": "¿Añadir el punto compartido %s al servidor?"
+  "server_waypoint.map.share.add_prompt": "¿Añadir el punto compartido %s al servidor?",
+    "waypoint.form.status.obsolete": "El destino cambió. Vuelve a abrir el formulario para guardar el borrador.",
+    "waypoint.form.status.rejected": "La operación fue rechazada. Comprueba el destino y los valores.",
+    "waypoint.form.status.denied": "Ya no tienes permiso para esta operación.",
+    "waypoint.form.status.disconnected": "Conéctate a un mundo antes de enviar esta operación.",
+    "waypoint.form.status.persistence_failed": "No se pudieron guardar los puntos Locales. Los cambios siguen en memoria.",
+    "waypoint.form.status.invalid_template": "La plantilla de teletransporte no es válida. Comprueba los marcadores y caracteres de control.",
+    "waypoint.form.status.dimension_required": "El destino está en otra dimensión. Añade {dimension} a la plantilla de teletransporte.",
+    "waypoint.form.status.command_too_long": "El comando supera el límite de longitud de esta versión de Minecraft."
 }

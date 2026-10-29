@@ -248,5 +248,13 @@
   "server_waypoint.theme.preset.classic": "经典",
   "server_waypoint.map.add_to_server": "添加到服务器",
   "server_waypoint.map.edit_on_server": "在服务器上编辑",
-  "server_waypoint.map.share.add_prompt": "将分享的路径点 %s 添加到服务器？"
+  "server_waypoint.map.share.add_prompt": "将分享的路径点 %s 添加到服务器？",
+    "waypoint.form.status.obsolete": "目标已更改。请重新打开表单以保存草稿。",
+    "waypoint.form.status.rejected": "操作被拒绝。请检查目标和值。",
+    "waypoint.form.status.denied": "你已没有执行此操作的权限。",
+    "waypoint.form.status.disconnected": "请先连接世界，再提交此操作。",
+    "waypoint.form.status.persistence_failed": "无法保存本地点位。更改仍保留在内存中。",
+    "waypoint.form.status.invalid_template": "传送命令模板无效。请检查占位符和控制字符。",
+    "waypoint.form.status.dimension_required": "目标位于其他维度。请在传送模板中添加 {dimension}。",
+    "waypoint.form.status.command_too_long": "命令超出了此 Minecraft 版本的长度限制。"
 }

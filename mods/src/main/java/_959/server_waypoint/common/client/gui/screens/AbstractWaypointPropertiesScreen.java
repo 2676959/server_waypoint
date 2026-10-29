@@ -2,6 +2,8 @@
 package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.common.client.WaypointClientMod;
+import _959.server_waypoint.common.client.ClientWaypointAccess;
+import _959.server_waypoint.common.client.ClientWaypointSelection;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Direction;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Orientation;
 import _959.server_waypoint.common.client.gui.layout.VisualPositioning;
@@ -28,9 +30,7 @@ import _959.server_waypoint.common.client.gui.widgets.WaypointIconPicker;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.common.util.CoordinateInputParser;
 import _959.server_waypoint.common.util.CoordinateSuggestions;
-import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
-import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import com.mojang.blaze3d.platform.InputConstants;
 import java.util.ArrayList;
@@ -110,7 +110,9 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     private static final int MIN_STATUS_WIDTH = 100;
     private static final String AXIS_LETTERS = "XYZRUF";
     private static final Component ELLIPSIS = Component.literal("…");
-    private static final WaypointFormCheck.Lookup CLIENT_DATA = new ClientData();
+    protected final ClientWaypointAccess access;
+    protected final ClientWaypointSelection selection;
+    private final WaypointFormCheck.Lookup data;
 
     protected final Screen previousScreen;
     protected final String dimensionName;
@@ -224,9 +226,13 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     protected void onTick() {
     }
 
-    public AbstractWaypointPropertiesScreen(Screen previousScreen, Component title, String dimensionName, String listName, @Nullable SimpleWaypoint waypoint) {
+    public AbstractWaypointPropertiesScreen(Screen previousScreen, Component title, String dimensionName, String listName,
+            @Nullable SimpleWaypoint waypoint, ClientWaypointAccess access, ClientWaypointSelection selection) {
         super(title);
         this.previousScreen = previousScreen;
+        this.access = Objects.requireNonNull(access);
+        this.selection = Objects.requireNonNull(selection);
+        this.data = WaypointFormCheck.lookup(access, selection);
         this.dimensionName = dimensionName;
         this.listName = listName;
         this.saved = waypoint == null ? null : WaypointFormPatch.Saved.of(waypoint);
@@ -726,9 +732,9 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         boolean modal = this.swatchWidget.visible;
         Component pending = this.pendingMessage();
         boolean locked = modal || pending != null;
-        WaypointFormCheck.Problem problem = WaypointFormCheck.firstProblem(this.checkInput(), CLIENT_DATA);
+        WaypointFormCheck.Problem problem = WaypointFormCheck.firstProblem(this.checkInput(), this.data);
         boolean changed = this.hasChanges();
-        boolean canSubmit = !locked && !(problem != null && problem.blocks()) && changed;
+        boolean canSubmit = this.access.valid(this.selection) && !locked && !(problem != null && problem.blocks()) && changed;
 
         for (AbstractWidget control : this.fieldControls) {
             setControlActive(control, !locked);
@@ -747,6 +753,8 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
             this.showStatus(pending, TEXT_MUTED);
         } else if (this.resultMessage != null) {
             this.showStatus(this.resultMessage, DANGER);
+        } else if (!this.access.valid(this.selection)) {
+            this.showStatus(Component.translatable("waypoint.form.status.obsolete"), DANGER);
         } else if (problem != null) {
             this.showStatus(this.messageFor(problem), problem.kind() == WaypointFormCheck.Kind.ERROR ? DANGER : TEXT_MUTED);
         } else {
@@ -767,8 +775,8 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     }
 
     /** Whether the client's waypoint data has a waypoint with exactly this name in that list. */
-    protected static boolean hasWaypoint(String dimension, String list, String name) {
-        return CLIENT_DATA.hasWaypoint(dimension, list, name);
+    protected final boolean hasWaypoint(String dimension, String list, String name) {
+        return this.data.hasWaypoint(dimension, list, name);
     }
 
     /** Shows a message from the server or a failed send in the footer, marking a field when it names one. */
@@ -1279,28 +1287,10 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     private record PlayerCoordinates(WaypointPos pos, float pitch, float yaw) {
     }
 
-    /** The client's waypoint data for the checks: the synced files, or the integrated server's in singleplayer. */
-    private static final class ClientData implements WaypointFormCheck.Lookup {
-        @Override
-        public boolean listExists(String dimension, String list) {
-            return list(dimension, list) != null;
-        }
-
-        @Override
-        public boolean hasWaypoint(String dimension, String list, String name) {
-            WaypointList found = list(dimension, list);
-            return found != null && found.getWaypointByName(name) != null;
-        }
-
-        @Override
-        public String listDisplayName(String dimension, String list) {
-            WaypointList found = list(dimension, list);
-            return found == null ? list : found.displayName();
-        }
-
-        private static @Nullable WaypointList list(String dimension, String list) {
-            WaypointFileManager manager = WaypointClientMod.getInstance().getWaypointFileManager(dimension);
-            return manager == null ? null : manager.getWaypointListByName(list);
-        }
+    protected final void showOutcome(ClientWaypointAccess.Outcome outcome) {
+        String key = outcome.problem() != null ? "waypoint.form.status." + outcome.problem().name().toLowerCase(java.util.Locale.ROOT)
+                : outcome.editStatus() != null ? "waypoint.edit.error." + outcome.editStatus().name().toLowerCase(java.util.Locale.ROOT)
+                : "waypoint.form.status." + outcome.status().name().toLowerCase(java.util.Locale.ROOT);
+        this.showResult(Component.translatable(key), WaypointFormCheck.fieldFor(outcome.editStatus()));
     }
 }

@@ -20,8 +20,8 @@ The user authorized implementation and a separate local commit for each verified
 2. Complete: owner storage, quotas, lifecycle (`f80b062`, plus the shutdown review fix).
 3. Complete: private commands, permissions, feedback, and scoped restore (verified 2026-10-28).
 4. Complete: owner-only protocol and client collections (verified 2026-10-28).
-5. Pending: local profiles.
-6. Pending: client operations and teleport templates.
+5. Complete: local profiles (verified 2026-10-28).
+6. Complete: client operations and teleport templates (verified 2026-10-28).
 7. Pending: manager and composed rendering.
 8. Pending: platform/live validation and player documentation.
 
@@ -251,3 +251,54 @@ The user authorized implementation and a separate local commit for each verified
   successfully; common 718 and active Fabric 1,000 tests remain green.
 - Earlier no-commit notes describe their original checkpoints. No push or publication is authorized.
 - See [pre-commit suite log](task-5/precommit-suites.log).
+
+## Task 6 execution (2026-10-28)
+
+- Started clean on `feature/private-waypoint` at `730096ea`; Tasks 1–5 are present. Only Task 6 is authorized. No commit, push, new worktree, or delegation.
+- Pre-flight: Task 5's serialized mutation/persistence boundary and Task 4's generation/scoped-result boundary are the Task 6 routing contracts. Task 7 supplies view/destination/profile controls.
+- Ruling: keep execution artifacts in this feature's existing validation/execution directory, and review inline — repository rules and the plan prohibit root artifacts and delegation without user choice.
+- Ruling: add an optional display_name tail to the existing atomic add command — add currently discards copied display overrides; a second edit would violate copy atomicity on permission/quota failure. Cost: a small shared/private grammar extension, covered by command tests.
+
+- Client access captures source/generation/profile for add, waypoint edits, list rename/display edits,
+  waypoint/empty-list removal, copy drafts/submission, and teleport. Local uses strict profile
+  persistence without network or Shared-map events. Server edits complete only on matching scoped
+  results; command operations wait for authoritative collection changes and never mutate caches.
+- Forms use captured-source validation/suggestions, retain stale drafts, and refuse replacement
+  stores. Copy Add preserves display-name overrides and full metadata; source read and destination
+  add permissions are rechecked at submission. Runtime dispatch tests exercise Shared/Private replies.
+- Teleport uses named literal tokens, locale-independent integer values, live target/profile/connection
+  validation and per-version command limits. Rejections include localized explanations; sending is
+  only COMMAND_SUBMITTED. World dimension choices use vanilla login data and the captured store.
+- RED: absent access/parser/lookup/draft contracts failed compilation; subsequent assertion failures
+  covered dimension catalog omission and accidentally applying display-name limits to identifiers.
+  Initial command-test fixtures used a native dimension/position shape instead of this suite's
+  `overworld`/`position` arguments; corrected those fixture errors before validating the grammar.
+- Ruling: keep existing identifier rules separate from display-text limits — copied identifiers can
+  exceed 256 characters, while explicit display overrides retain their existing validation. Cost:
+  server additions can still be rejected by that client's packet-length limit, reported explicitly.
+- Ruling: server add/remove/list commands retain their existing synchronization-confirmation contract;
+  waypoint property edits use correlated result futures. No new creation protocol or optimistic
+  writes. Cost: command rejection remains normal server chat feedback plus the existing Add timeout.
+- Final review: self-review, as required by this plan's no-delegation rule. Reviewed equal identifiers,
+  scope/owner routing, generation changes, permissions, quota atomicity, pending cleanup, detached
+  metadata, persistence errors, templates, translations, marker balance and unchanged active targets.
+  Restored edit error-field highlighting; no unresolved review findings remain.
+- Full verification: `rtk proxy ./gradlew :common:test :mods:26.1.2-fabric:test --console=plain
+  --max-workers=2` passed: Common 720, Fabric 1022; zero failures/errors/skips.
+- Compatibility: focused client/template/form tests on Fabric 1.20.1 passed 102 tests; Forge 1.20.1,
+  NeoForge 26.3 and Paper 26.2 compilation passed. No active-project switch was used.
+- Exact focused Task 6 command, counts, retained logs and review limits are in the
+  [validation report](../2026-10-28-client-operations.md). No commit or push. Tasks 7–8 remain pending;
+  no live UI, physical input, proxy-session or teleport-arrival evidence is claimed.
+- Task 6: complete (uncommitted changes from `730096ea`; exact focused command
+  `rtk proxy ./gradlew :mods:26.1.2-fabric:test --tests '*ClientWaypointAccessTest'
+  --tests '*LocalTeleportCommandTest' --tests '*WaypointForm*Test' --console=plain --max-workers=2`
+  passed 105 tests, zero failures/errors/skips). Final whitespace, feature links, duplicate locale
+  keys, and active Stonecutter target checks passed.
+
+## Task 6 local commit authorization (2026-10-28)
+
+- The user requested a local commit of the completed Task 6 implementation, tests, translations,
+  GUI guidance, plan status and retained validation evidence. No push is authorized.
+- Reviewed the current scope and successful verification records; no implementation changes were
+  made after final verification. Earlier uncommitted references describe the verification checkpoint.

@@ -212,5 +212,13 @@
   "server_waypoint.theme.preset.classic": "קלאסי",
   "server_waypoint.map.add_to_server": "הוסף לשרת",
   "server_waypoint.map.edit_on_server": "ערוך בשרת",
-  "server_waypoint.map.share.add_prompt": "להוסיף את נקודת הציון המשותפת %s לשרת?"
+  "server_waypoint.map.share.add_prompt": "להוסיף את נקודת הציון המשותפת %s לשרת?",
+    "waypoint.form.status.obsolete": "היעד השתנה. יש לפתוח מחדש את הטופס כדי לשמור את הטיוטה.",
+    "waypoint.form.status.rejected": "הפעולה נדחתה. יש לבדוק את היעד והערכים.",
+    "waypoint.form.status.denied": "אין לך עוד הרשאה לפעולה הזאת.",
+    "waypoint.form.status.disconnected": "יש להתחבר לעולם לפני שליחת הפעולה.",
+    "waypoint.form.status.persistence_failed": "לא ניתן לשמור נקודות ציון מקומיות. השינויים נשארו בזיכרון.",
+    "waypoint.form.status.invalid_template": "תבנית פקודת השיגור אינה תקינה. יש לבדוק את המשתנים ותווי הבקרה.",
+    "waypoint.form.status.dimension_required": "היעד נמצא בממד אחר. יש להוסיף את {dimension} לתבנית השיגור.",
+    "waypoint.form.status.command_too_long": "הפקודה חורגת ממגבלת האורך של גרסת Minecraft הזאת."
 }

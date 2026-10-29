@@ -17,7 +17,7 @@ JUnit 5, Gradle Kotlin DSL, and Stonecutter across Fabric, Forge, NeoForge, and 
 
 **Spec:** [Private and local waypoint design](../specs/2026-10-16-private-waypoint-design.md).
 
-Status: implementation in progress; Tasks 1–2 verified on 2026-10-23 and Tasks 3–5 on 2026-10-28. Prepared on 2026-10-16 against branch
+Status: implementation in progress; Tasks 1–2 verified on 2026-10-23 and Tasks 3–6 on 2026-10-28. Prepared on 2026-10-16 against branch
 `feature/private-waypoint`. Exact proposed class names below are implementation contracts,
 not claims that those classes already exist.
 
@@ -262,24 +262,24 @@ form patch/validation tests.
 existing server results. The collection and generation are captured, never inferred from the
 current view when a delayed action runs.
 
-- [ ] Test add/edit/remove routes to only the selected collection. Local must send neither waypoint
+- [x] Test add/edit/remove routes to only the selected collection. Local must send neither waypoint
   commands nor custom payloads; server edits must wait for matching authoritative results.
-- [ ] Test a draft survives profile/connection invalidation but cannot submit into the replacement
+- [x] Test a draft survives profile/connection invalidation but cannot submit into the replacement
   store. Opening and cancelling a copy draft creates nothing.
-- [ ] Test copied name, display name, initials, coordinates, color, yaw, global visibility, keywords,
+- [x] Test copied name, display name, initials, coordinates, color, yaw, global visibility, keywords,
   description, and icon are detached. Name conflicts, quota denial, invalid destination metadata,
   or permission changes leave source and destination unchanged.
-- [ ] Test template expansion with negative coordinates and yaw under a non-English locale.
+- [x] Test template expansion with negative coordinates and yaw under a non-English locale.
   For the default template and Nether target `(-12, 64, 30), yaw 90`, assert the exact result:
   `execute in minecraft:the_nether run tp @s -12 64 30 90 ~`.
-- [ ] Reject blank, unknown/unbalanced tokens, control characters, excessive commands, obsolete
+- [x] Reject blank, unknown/unbalanced tokens, control characters, excessive commands, obsolete
   selections, and cross-dimension targets without `{dimension}`. A submitted command is not a
   successful-teleport result.
-- [ ] Run tests to establish failures; implement routing and the named token parser. Reuse
+- [x] Run tests to establish failures; implement routing and the named token parser. Reuse
   detached waypoint copies and existing patch/form validation; validate commands at submission.
-- [ ] Run `*ClientWaypointAccessTest`, `*LocalTeleportCommandTest`, `*WaypointForm*Test` on the
+- [x] Run `*ClientWaypointAccessTest`, `*LocalTeleportCommandTest`, `*WaypointForm*Test` on the
   active Fabric target. Expected: routing/validation assertions and existing form tests pass.
-- [ ] Document changed form/access APIs in the GUI guide and review the diff.
+- [x] Document changed form/access APIs in the GUI guide and review the diff.
 
 ## Task 7: Four manager views, profiles, copying, and composed rendering
 

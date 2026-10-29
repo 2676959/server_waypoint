@@ -71,6 +71,37 @@ class WaypointFormStateTest {
     }
 
     @Test
+    void localCopyFormKeepsItsDraftAfterProfileRebindingAndCannotSubmit() throws Exception {
+        Field instance = Minecraft.class.getDeclaredField("instance"); instance.setAccessible(true);
+        Object previous = instance.get(null);
+        Minecraft client = allocate(Minecraft.class);
+        Field font = Minecraft.class.getDeclaredField("font"); font.setAccessible(true); font.set(client,new TestFont());
+        GameRenderer renderer = allocate(GameRenderer.class);
+        Field camera = GameRenderer.class.getDeclaredField("mainCamera"); camera.setAccessible(true); camera.set(renderer,allocate(Camera.class));
+        Field gameRenderer = Minecraft.class.getDeclaredField("gameRenderer"); gameRenderer.setAccessible(true); gameRenderer.set(client,renderer);
+        instance.set(null,client);
+        try {
+            var collections = new _959.server_waypoint.common.client.ClientWaypointCollections(new _959.server_waypoint.core.WaypointFilesManagerCore());
+            var first = new _959.server_waypoint.core.WaypointFilesManagerCore(java.nio.file.Path.of("build/first-profile"));
+            collections.bindLocal(java.util.UUID.randomUUID(),first);
+            var selection = collections.selection(_959.server_waypoint.common.client.ClientWaypointSource.LOCAL,"minecraft:overworld","Homes",null);
+            var access = WaypointFormTestAccess.access(collections);
+            var defaults = new SimpleWaypoint("Base","Shown","B",new WaypointPos(-12,64,30),0x123456,90,false,List.of("home"),"description");
+            var form = new WaypointAddScreen(null,access,selection,defaults.pos(),defaults);
+            assertEquals("Shown",form.displayNameEditBox.getValue());
+            org.junit.jupiter.api.Assertions.assertTrue(form.hasDisplayNameRow());
+            var replacement = new _959.server_waypoint.core.WaypointFilesManagerCore(java.nio.file.Path.of("build/replacement-profile"));
+            collections.bindLocal(java.util.UUID.randomUUID(),replacement);
+            form.submit();
+            assertEquals("Base",form.nameEditBox.getValue());
+            assertEquals("Shown",form.displayNameEditBox.getValue());
+            assertEquals("description",form.descriptionEditBox.getValue());
+            org.junit.jupiter.api.Assertions.assertTrue(first.getFileManagerMap().isEmpty());
+            org.junit.jupiter.api.Assertions.assertTrue(replacement.getFileManagerMap().isEmpty());
+        } finally { instance.set(null,previous); }
+    }
+
+    @Test
     void aPendingFormPreventsTypingEvenWhenVanillaIgnoresActive() {
         LegacyFocusedField field = new LegacyFocusedField();
         field.setValue("Home");
@@ -130,7 +161,7 @@ class WaypointFormStateTest {
     /** Runs the real shared form constructor without client data, key mappings or rendering. */
     private static final class TestForm extends AbstractWaypointPropertiesScreen {
         private TestForm(SimpleWaypoint waypoint) {
-            super(null, Component.literal("Edit"), "minecraft:overworld", "Base", waypoint);
+            super(null, Component.literal("Edit"), "minecraft:overworld", "Base", waypoint, WaypointFormTestAccess.ACCESS, WaypointFormTestAccess.selection());
         }
 
         @Override

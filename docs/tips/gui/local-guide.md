@@ -41,10 +41,46 @@ mods/src/main/resources/assets/server_waypoint/textures/gui
 
 Use translatable `Component` values for player-facing text. Add GUI textures to `textures/gui` and expose shared identifiers through `WaypointTextures` rather than scattering resource identifiers across widgets.
 
-`WaypointAddScreen.fromWaypoint(parent, dimensionName, listName, defaults)` opens the ordinary add
-form populated from a detached `SimpleWaypoint` draft, including its name, initials, position,
-color, yaw and icon. Map-share confirmation uses this API; opening or cancelling the form never
-adds a waypoint. The existing constructors remain suitable for empty forms and map-location adds.
+`WaypointAddScreen.fromWaypoint(parent, dimensionName, listName, defaults)` opens the ordinary Shared
+add form from a detached map-share draft. It preserves all supported metadata, including an empty
+or nonempty display-name override, keywords, description, visibility, and icon. Opening or cancelling
+creates nothing. The ordinary constructors still create Shared forms for existing manager/map entry
+points.
+
+For collection-aware forms, pass the operation boundary and a captured identity explicitly:
+
+- `WaypointAddScreen(parent, access, destination, defaultPos, defaults)` accepts an optional detached
+  draft. Dimension/list changes use `destination.at(...)`, preserving source, generation and profile.
+- `WaypointEditScreen(parent, access, selection, listDisplayName, waypoint)` captures the list revision
+  when opened. `AbstractWaypointPropertiesScreen` takes `access` and `selection` after the waypoint;
+  it binds `WaypointFormCheck.lookup(access, selection)` for validation and suggestions. A stale
+  destination disables submission and retains every entered field. Reopening/retargeting is explicit.
+- `ClientWaypointAccess` routes add, waypoint property edits, list rename/display edits, waypoint/empty
+  list removal, copy drafts, and teleport to the captured collection. Local operations complete after
+  `LocalWaypointProfiles.mutate` saves; persistence failures retain live changes and report an error.
+  Dimension choices combine the connection's vanilla level catalog and the captured store without
+  sending waypoint command suggestions. Server waypoint edits return a future completed only by a matching scope/request/generation/target
+  result. Add/remove/list commands return `AWAITING_SERVER`, never optimistic success; consumers watch
+  the captured collection's authoritative updates. Add forms retain their existing bounded wait.
+- `copyDraft(source, destination)` returns detached metadata with both identities; `waypoint()` returns
+  a new copy each time. Use `WaypointAddScreen.fromCopy(parent, access, draft)` so submission calls
+  `addCopy` and rechecks source read access as well as destination readiness, names, metadata, and
+  advertised add permission. Source changes do not mutate the draft. Server
+  permissions and Private quotas remain authoritative. The optional `display_name` tail on `/wp add`
+  carries copied display overrides in the same atomic server addition, after metadata and any icon.
+- Local teleport expands only `{dimension}`, `{x}`, `{y}`, `{z}`, and `{yaw}` through
+  `LocalTeleportCommand.expand`. Submission rechecks selection/profile, live target, connection,
+  dimension rule, and the version's command packet limit. Rejected outcomes distinguish invalid
+  templates, a required dimension token, and excessive length, with localized messages.
+  `COMMAND_SUBMITTED` confirms sending only.
+
+`WaypointEditScreen` polls its access future on ticks and abandons it on timeout/close; client ticking
+also releases obsolete requests. Private and Shared replies use the same routing boundary.
+`WaypointFormPatch.draftDisplayName` preserves an intentionally empty override in a copied draft,
+while clearing a previously named override falls back to the new identifier. Add forms with copied
+metadata show the existing Display name row and reuse the same controls, checks, popup and layout.
+Task 7 supplies collection/destination/profile selectors and Copy buttons; these APIs do not change
+which view the existing manager opens.
 
 ## How the packages work together
 

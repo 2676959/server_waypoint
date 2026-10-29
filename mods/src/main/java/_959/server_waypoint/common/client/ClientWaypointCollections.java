@@ -135,6 +135,10 @@ public final class ClientWaypointCollections {
         pendingEdits.put(new EditRequestKey(selection.source(), requestId), selection);
     }
 
+    public void forgetEdit(long requestId, ClientWaypointSelection selection) {
+        pendingEdits.remove(new EditRequestKey(selection.source(), requestId), selection);
+    }
+
     public boolean acceptResult(WaypointEditResultMessage result, long receivedGeneration) {
         if (receivedGeneration != generation) return false;
         EditRequestKey key = new EditRequestKey(ClientWaypointSource.fromScope(result.scope()), result.requestId());

@@ -248,5 +248,13 @@
   "server_waypoint.theme.preset.classic": "Classic",
   "server_waypoint.map.add_to_server": "Add to server",
   "server_waypoint.map.edit_on_server": "Edit on server",
-  "server_waypoint.map.share.add_prompt": "Add the shared waypoint %s to the server?"
+  "server_waypoint.map.share.add_prompt": "Add the shared waypoint %s to the server?",
+    "waypoint.form.status.obsolete": "This destination changed. Reopen the form to save your draft.",
+    "waypoint.form.status.rejected": "The operation was rejected. Check the destination and values.",
+    "waypoint.form.status.denied": "You no longer have permission for this operation.",
+    "waypoint.form.status.disconnected": "Connect to a world before submitting this operation.",
+    "waypoint.form.status.persistence_failed": "Could not save Local waypoints. Your changes remain in memory.",
+    "waypoint.form.status.invalid_template": "The teleport command template is invalid. Check its tokens and control characters.",
+    "waypoint.form.status.dimension_required": "This target is in another dimension. Add {dimension} to the teleport template.",
+    "waypoint.form.status.command_too_long": "The command exceeds this Minecraft version’s length limit."
 }

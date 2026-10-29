@@ -205,7 +205,7 @@ class WaypointFormIconPreviewTest {
     /** Runs the real shared form constructor without client data, key mappings or rendering. */
     private static final class TestForm extends AbstractWaypointPropertiesScreen {
         private TestForm() {
-            super(null, Component.literal("Edit"), "minecraft:overworld", "Base", null);
+            super(null, Component.literal("Edit"), "minecraft:overworld", "Base", null, WaypointFormTestAccess.ACCESS, WaypointFormTestAccess.selection());
         }
 
         @Override

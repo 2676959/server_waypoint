@@ -1,0 +1,200 @@
+Configuration on demand is an incubating feature.
+Running Stonecutter 0.9.7
+
+> Configure project :mods:26.1.2-fabric
+Fabric Loom: 1.15.5
+
+> Task :cross-server:updateModInfo UP-TO-DATE
+> Task :common:processResources UP-TO-DATE
+> Task :mods:26.1.2-fabric:stonecutterPrepare UP-TO-DATE
+> Task :mods:26.1.2-fabric:stonecutterGenerate UP-TO-DATE
+> Task :cross-server:compileJava UP-TO-DATE
+> Task :mods:26.1.2-fabric:processResources UP-TO-DATE
+> Task :cross-server:processResources NO-SOURCE
+> Task :cross-server:classes UP-TO-DATE
+> Task :cross-server:jar UP-TO-DATE
+> Task :mods:26.1.2-fabric:processTestResources UP-TO-DATE
+> Task :common:compileJava UP-TO-DATE
+> Task :common:classes UP-TO-DATE
+> Task :common:jar UP-TO-DATE
+> Task :mods:26.1.2-fabric:compileJava UP-TO-DATE
+> Task :mods:26.1.2-fabric:classes UP-TO-DATE
+
+> Task :mods:26.1.2-fabric:compileTestJava
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointAccessTest.java:19: error: cannot find symbol
+    private ClientWaypointAccess access;
+            ^
+  symbol:   class ClientWaypointAccess
+  location: class ClientWaypointAccessTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointAccessTest.java:129: error: package ClientWaypointAccess does not exist
+    private static class Wire implements ClientWaypointAccess.Transport {
+                                                             ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointAccessTest.java:135: error: package ClientWaypointAccess does not exist
+        public boolean allowed(ClientWaypointSource source,ClientWaypointAccess.Action action){return allowed;}
+                                                                               ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/util/XaeroMinimapHelperTest.java:456: warning: [deprecation] Waypoint(int,int,int,String,String,int) in Waypoint has been deprecated
+            super(0, 0, 0, "", "", 0);
+            ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/util/XaeroMinimapHelperTest.java:476: warning: [deprecation] getColor() in Waypoint has been deprecated
+        public int getColor() {
+                   ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientManualDownloadTest.java:73: warning: [removal] staticFieldBase(Field) in Unsafe has been deprecated and marked for removal
+        integrationsBase = unsafe.staticFieldBase(integrations);
+                                 ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientManualDownloadTest.java:74: warning: [removal] staticFieldOffset(Field) in Unsafe has been deprecated and marked for removal
+        integrationsOffset = unsafe.staticFieldOffset(integrations);
+                                   ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientManualDownloadTest.java:77: warning: [removal] putObject(Object,long,Object) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(integrationsBase, integrationsOffset, List.of(xaero, voxelMap));
+              ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientManualDownloadTest.java:97: warning: [removal] putObject(Object,long,Object) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(integrationsBase, integrationsOffset, previousIntegrations);
+              ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:77: warning: [removal] staticFieldBase(Field) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(integrationsField), unsafe.staticFieldOffset(integrationsField),
+                               ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:77: warning: [removal] staticFieldOffset(Field) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(integrationsField), unsafe.staticFieldOffset(integrationsField),
+                                                                          ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:77: warning: [removal] putObject(Object,long,Object) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(integrationsField), unsafe.staticFieldOffset(integrationsField),
+              ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:81: warning: [removal] staticFieldBase(Field) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(coordinatorField), unsafe.staticFieldOffset(coordinatorField),
+                               ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:81: warning: [removal] staticFieldOffset(Field) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(coordinatorField), unsafe.staticFieldOffset(coordinatorField),
+                                                                         ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:81: warning: [removal] putObject(Object,long,Object) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(coordinatorField), unsafe.staticFieldOffset(coordinatorField),
+              ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:100: warning: [removal] staticFieldBase(Field) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(coordinatorField), unsafe.staticFieldOffset(coordinatorField),
+                               ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:100: warning: [removal] staticFieldOffset(Field) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(coordinatorField), unsafe.staticFieldOffset(coordinatorField),
+                                                                         ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:100: warning: [removal] putObject(Object,long,Object) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(coordinatorField), unsafe.staticFieldOffset(coordinatorField),
+              ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:102: warning: [removal] staticFieldBase(Field) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(integrationsField), unsafe.staticFieldOffset(integrationsField),
+                               ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:102: warning: [removal] staticFieldOffset(Field) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(integrationsField), unsafe.staticFieldOffset(integrationsField),
+                                                                          ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientHandshakeMapSyncTest.java:102: warning: [removal] putObject(Object,long,Object) in Unsafe has been deprecated and marked for removal
+        unsafe.putObject(unsafe.staticFieldBase(integrationsField), unsafe.staticFieldOffset(integrationsField),
+              ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:16: error: cannot find symbol
+                    LocalTeleportCommand.expand(LocalWaypointProfiles.DEFAULT_TELEPORT_COMMAND, "minecraft:the_nether", target));
+                    ^
+  symbol:   variable LocalTeleportCommand
+  location: class LocalTeleportCommandTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:17: error: cannot find symbol
+            assertEquals("tp @s -12 64 30", LocalTeleportCommand.expand(" /tp @s {x} {y} {z} ", "minecraft:overworld", target));
+                                            ^
+  symbol:   variable LocalTeleportCommand
+  location: class LocalTeleportCommandTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:23: error: cannot find symbol
+            assertThrows(IllegalArgumentException.class, () -> LocalTeleportCommand.expand(template, "minecraft:overworld", target), template);
+                                                               ^
+  symbol:   variable LocalTeleportCommand
+  location: class LocalTeleportCommandTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:25: error: cannot find symbol
+        assertThrows(IllegalArgumentException.class, () -> LocalTeleportCommand.expand("tp {dimension}", "minecraft:overworld run kill @s", target));
+                                                           ^
+  symbol:   variable LocalTeleportCommand
+  location: class LocalTeleportCommandTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointAccessTest.java:30: error: cannot find symbol
+        access = new ClientWaypointAccess(collections, profiles, wire);
+                     ^
+  symbol:   class ClientWaypointAccess
+  location: class ClientWaypointAccessTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointAccessTest.java:49: error: package ClientWaypointAccess does not exist
+        assertEquals(ClientWaypointAccess.Status.SAVED, access.add(selection(ClientWaypointSource.LOCAL,null), waypoint()).status());
+                                         ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointAccessTest.java:51: error: package ClientWaypointAccess does not exist
+        assertEquals(ClientWaypointAccess.Status.SAVED, access.edit(selection(ClientWaypointSource.LOCAL,"Base"), revision, rename("Changed")).join().status());
+                                         ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointAccessTest.java:54: error: package ClientWaypointAccess does not exist
+        assertEquals(ClientWaypointAccess.Status.SAVED, access.remove(selection(ClientWaypointSource.LOCAL,"Changed")).status());
+                                         ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointAccessTest.java:68: error: incompatible types: String cannot be converted to EditResultStatus
+            var wrong = new WaypointEditResultMessage(sent.scope(), sent.requestId(), DIM, "Other", "Base", null, EditResultStatus.SUCCESS,1);
+                                                                                      ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointAccessTest.java:70: error: incompatible types: String cannot be converted to EditResultStatus
+            var result = new WaypointEditResultMessage(sent.scope(), sent.requestId(), DIM,"Homes","Base",null,EditResultStatus.PERMISSION_DENIED,1);
+                                                                                       ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointAccessTest.java:76: error: package ClientWaypointAccess does not exist
+        assertEquals(ClientWaypointAccess.Status.AWAITING_SERVER,access.add(selection(ClientWaypointSource.PRIVATE,null),waypoint()).status());
+                                         ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointAccessTest.java:80: error: package ClientWaypointAccess does not exist
+        assertEquals(ClientWaypointAccess.Status.AWAITING_SERVER,access.remove(selection(ClientWaypointSource.PRIVATE,"Base")).status());
+                                         ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointAccessTest.java:95: error: package ClientWaypointAccess does not exist
+        assertEquals(ClientWaypointAccess.Status.OBSOLETE,access.add(draft.destination(),draft.waypoint()).status());
+                                         ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointAccessTest.java:100: error: package ClientWaypointAccess does not exist
+        assertEquals(ClientWaypointAccess.Status.SAVED,access.add(local,waypoint()).status());
+                                         ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointAccessTest.java:101: error: package ClientWaypointAccess does not exist
+        assertEquals(ClientWaypointAccess.Status.REJECTED,access.add(local,waypoint()).status());
+                                         ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointAccessTest.java:103: error: package ClientWaypointAccess does not exist
+        assertEquals(ClientWaypointAccess.Status.REJECTED,access.add(local,invalid).status());
+                                         ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointAccessTest.java:105: error: package ClientWaypointAccess does not exist
+        assertEquals(ClientWaypointAccess.Status.DENIED,access.add(selection(ClientWaypointSource.PRIVATE,null),waypoint()).status());
+                                         ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointAccessTest.java:113: error: package ClientWaypointAccess does not exist
+        assertEquals(ClientWaypointAccess.Status.OBSOLETE,pending.join().status());
+                                         ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointAccessTest.java:114: error: incompatible types: String cannot be converted to EditResultStatus
+        assertFalse(access.acceptResult(new WaypointEditResultMessage(sent.scope(),sent.requestId(),DIM,"Homes","Base",null,EditResultStatus.SUCCESS,2),generation));
+                                                                                                    ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointAccessTest.java:120: error: package ClientWaypointAccess does not exist
+        assertEquals(ClientWaypointAccess.Status.REJECTED,access.teleport(target).status());
+                                         ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointAccessTest.java:122: error: package ClientWaypointAccess does not exist
+        wire.limit=10; assertEquals(ClientWaypointAccess.Status.REJECTED,access.teleport(target).status());
+                                                        ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointAccessTest.java:124: error: package ClientWaypointAccess does not exist
+        assertEquals(ClientWaypointAccess.Status.DISCONNECTED,access.teleport(target).status());
+                                         ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointAccessTest.java:126: error: package ClientWaypointAccess does not exist
+        assertEquals(ClientWaypointAccess.Status.COMMAND_SUBMITTED,access.teleport(target).status());
+                                         ^
+Note: Some messages have been simplified; recompile with -Xdiags:verbose to get full output
+26 errors
+18 warnings
+
+> Task :mods:26.1.2-fabric:compileTestJava FAILED
+
+[Incubating] Problems report is available at: file:///Volumes/ssd/fabric_mods_repo/server_waypoint/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':mods:26.1.2-fabric:compileTestJava' (registered by plugin class 'org.gradle.api.plugins.JavaBasePlugin').
+> Compilation failed; see the compiler output below.
+  /Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/ClientWaypointAccessTest.java:19: error: cannot find symbol
+      private ClientWaypointAccess access;
+              ^
+    symbol:   class ClientWaypointAccess
+    location: class ClientWaypointAccessTest
+  26 errors
+  18 warnings
+
+* Try:
+> Check your code and dependencies to fix the compilation error(s)
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.5.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 3s
+12 actionable tasks: 1 executed, 11 up-to-date
