@@ -26,6 +26,9 @@ public final class ClientWaypointCollections {
     private final EnumMap<ClientWaypointSource, ClientSynchronizationTracker> trackers = new EnumMap<>(ClientWaypointSource.class);
     private final EnumMap<ClientWaypointSource, State> states = new EnumMap<>(ClientWaypointSource.class);
     private final Map<EditRequestKey, ClientWaypointSelection> pendingEdits = new HashMap<>();
+    private final List<java.util.function.Consumer<ClientWaypointSource>> listeners = new ArrayList<>();
+    public void onChange(java.util.function.Consumer<ClientWaypointSource> listener) { listeners.add(listener); }
+    public void changed(ClientWaypointSource source) { for (var listener : List.copyOf(listeners)) listener.accept(source); }
     private volatile long generation;
     private UUID account;
     private String address;
@@ -84,6 +87,7 @@ public final class ClientWaypointCollections {
         this.profile = Objects.requireNonNull(profile);
         stores.put(ClientWaypointSource.LOCAL, Objects.requireNonNull(local));
         states.put(ClientWaypointSource.LOCAL, State.READY);
+        changed(ClientWaypointSource.LOCAL);
     }
 
     public void unbindLocal() {
@@ -93,6 +97,7 @@ public final class ClientWaypointCollections {
         }
         profile = null;
         states.put(ClientWaypointSource.LOCAL, State.UNAVAILABLE);
+        changed(ClientWaypointSource.LOCAL);
     }
 
     /** Protocol rejection must not disable the independent Local profile. */
@@ -117,6 +122,7 @@ public final class ClientWaypointCollections {
         for (ClientWaypointSource source : List.of(ClientWaypointSource.SHARED, ClientWaypointSource.PRIVATE)) {
             trackers.get(source).clearAll();
             states.put(source, State.UNAVAILABLE);
+            changed(source);
         }
     }
 
@@ -174,6 +180,7 @@ public final class ClientWaypointCollections {
                 pendingEdits.entrySet().removeIf(entry -> entry.getValue().source() == source);
                 states.put(source, State.DENIED);
             } else if (!ready(source)) states.put(source, State.LOADING);
+            changed(source);
             return true;
         }
         if (source == ClientWaypointSource.PRIVATE && (!privateReadable || account == null || backend == null)) return false;
@@ -240,6 +247,7 @@ public final class ClientWaypointCollections {
             return acceptResult(result, receivedGeneration);
         } else return false;
         files.saveAllWaypointFiles();
+        changed(source);
         return true;
     }
 

@@ -1,0 +1,132 @@
+Configuration on demand is an incubating feature.
+Running Stonecutter 0.9.7
+
+> Configure project :mods:26.1.2-fabric
+Fabric Loom: 1.15.5
+
+> Configure project :mods:1.20.1-fabric
+Fabric Loom: 1.15.5
+
+> Configure project :mods:1.20.1-forge
+Minecraft Maven is up-to-date, took 0:02.008
+
+> Task :cross-server:updateModInfo UP-TO-DATE
+> Task :common:processResources UP-TO-DATE
+> Task :cross-server:compileJava UP-TO-DATE
+> Task :cross-server:processResources NO-SOURCE
+> Task :cross-server:classes UP-TO-DATE
+> Task :cross-server:jar UP-TO-DATE
+> Task :mods:26.1.2-fabric:stonecutterPrepare
+> Task :common:compileJava UP-TO-DATE
+> Task :common:classes UP-TO-DATE
+> Task :common:jar UP-TO-DATE
+> Task :mods:26.3-neoforge:stonecutterPrepare
+> Task :mods:1.20.1-forge:stonecutterPrepare
+> Task :mods:1.20.1-fabric:stonecutterPrepare
+> Task :mods:26.1.2-fabric:stonecutterGenerate
+> Task :mods:26.3-neoforge:stonecutterGenerate
+> Task :mods:1.20.1-fabric:stonecutterGenerate
+> Task :mods:1.20.1-forge:stonecutterGenerate
+> Task :mods:1.20.1-forge:unpackMixinMappings UP-TO-DATE
+> Task :mods:26.3-neoforge:createMinecraftArtifacts UP-TO-DATE
+> Task :mods:26.1.2-fabric:compileJava
+> Task :mods:26.1.2-fabric:processResources UP-TO-DATE
+> Task :mods:26.1.2-fabric:classes
+> Task :mods:26.1.2-fabric:compileTestJava UP-TO-DATE
+> Task :mods:26.1.2-fabric:processTestResources UP-TO-DATE
+> Task :mods:26.1.2-fabric:testClasses UP-TO-DATE
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::staticFieldBase has been called by _959.server_waypoint.common.client.ClientHandshakeMapSyncTest (file:/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/26.1.2-fabric/build/classes/java/test/)
+WARNING: Please consider reporting this to the maintainers of class _959.server_waypoint.common.client.ClientHandshakeMapSyncTest
+WARNING: sun.misc.Unsafe::staticFieldBase will be removed in a future release
+> Task :mods:1.20.1-fabric:compileJava
+> Task :mods:1.20.1-fabric:processResources UP-TO-DATE
+> Task :mods:1.20.1-fabric:classes
+> Task :mods:1.20.1-fabric:stonecutterPrepareTest
+> Task :mods:1.20.1-fabric:stonecutterGenerateTest
+
+> Task :mods:1.20.1-forge:compileJava
+Note: SpongePowered MIXIN Annotation Processor Version=0.8.5
+Note: Supported obfuscation types: ObfuscationServiceMCP supports [notch] ObfuscationServiceFG3 supports [searge]
+Note: Loading searge mappings from /Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/1.20.1-forge/build/mixin/official-to-srg.tsrg
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/1.20.1-forge/build/generated/stonecutter/main/java/_959/server_waypoint/mixin/xaeros_minimap/XaerosMinimapGuiWaypointsMixin.java:33: warning: Cannot find target method "init()V" for @Inject.method="init()V" in xaero.common.gui.GuiWaypoints
+    @Inject(method = "init()V", at = @At("RETURN"), remap = true)
+    ^
+Note: Writing refmap to /Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/1.20.1-forge/build/sourceSets/main/server_waypoint-common.refmap.json
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/1.20.1-forge/build/generated/stonecutter/main/java/_959/server_waypoint/mixin/xaeros_minimap/XaerosMinimapGuiWaypointsListMixin.java:19: warning: Cannot find target for @Shadow field in xaero.common.gui.GuiWaypoints$List
+    @Shadow
+    ^
+Note: Writing refmap to /Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/1.20.1-forge/build/sourceSets/main/server_waypoint-common.refmap.json
+Note: Writing searge composite mappings to /Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/1.20.1-forge/build/tmp/compileJava/server_waypoint-common-mixins.tsrg
+Note: Writing refmap to /Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/1.20.1-forge/build/sourceSets/main/server_waypoint-common.refmap.json
+Note: Writing refmap to /Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/1.20.1-forge/build/sourceSets/main/server_waypoint-common.refmap.json
+Note: Writing searge composite mappings to /Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/1.20.1-forge/build/tmp/compileJava/server_waypoint-common-mixins.tsrg
+
+> Task :mods:1.20.1-fabric:compileTestJava
+
+> Task :mods:26.3-neoforge:compileJava
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/26.3-neoforge/build/generated/stonecutter/main/java/_959/server_waypoint/common/util/XaerosWaypointHelper.java:47: warning: [deprecation] getColor() in Waypoint has been deprecated
+                colorIndexToRgb(waypoint.getColor()),
+                                        ^
+
+> Task :mods:1.20.1-fabric:processTestResources UP-TO-DATE
+> Task :mods:1.20.1-fabric:testClasses
+
+> Task :mods:1.20.1-forge:compileJava
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/1.20.1-forge/build/generated/stonecutter/main/java/_959/server_waypoint/common/util/ResourceLocationHelper.java:21: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+        return new ResourceLocation(namespace, path);
+               ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/1.20.1-forge/build/generated/stonecutter/main/java/_959/server_waypoint/common/util/ResourceLocationHelper.java:41: warning: [removal] ResourceLocation(String,String) in ResourceLocation has been deprecated and marked for removal
+        return new ResourceLocation("minecraft", path);
+               ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/1.20.1-forge/build/generated/stonecutter/main/java/_959/server_waypoint/common/client/gui/render/WaypointIconRenderer.java:72: warning: [deprecation] ITEM in BuiltInRegistries has been deprecated
+        var item = BuiltInRegistries.ITEM.getOptional(itemId).orElse(Items.AIR);
+                                    ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/1.20.1-forge/build/generated/stonecutter/main/java/_959/server_waypoint/common/util/XaerosWaypointHelper.java:47: warning: [deprecation] getColor() in Waypoint has been deprecated
+                colorIndexToRgb(waypoint.getColor()),
+                                        ^
+
+> Task :mods:26.3-neoforge:compileJava
+1 warning
+
+> Task :mods:1.20.1-forge:compileJava
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/1.20.1-forge/build/generated/stonecutter/main/java/_959/server_waypoint/common/server/WaypointServerMod.java:49: warning: [deprecation] ITEM in BuiltInRegistries has been deprecated
+        return BuiltInRegistries.ITEM.getOptional(ResourceLocationHelper.mcId(icon.namespace(), icon.path()))
+                                ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/1.20.1-forge/build/generated/stonecutter/main/java/_959/server_waypoint/common/server/command/WaypointCommand.java:85: warning: [deprecation] ITEM in BuiltInRegistries has been deprecated
+        var itemIds = BuiltInRegistries.ITEM.keySet().stream()
+                                       ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/1.20.1-forge/build/generated/stonecutter/main/java/_959/server_waypoint/common/server/command/WaypointCommand.java:86: warning: [deprecation] ITEM in BuiltInRegistries has been deprecated
+                .filter(id -> BuiltInRegistries.ITEM.getOptional(id).orElse(Items.AIR) != Items.AIR);
+                                               ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/1.20.1-forge/build/generated/stonecutter/main/java/_959/server_waypoint/common/client/gui/widgets/ServerListWidget.java:80: warning: [deprecation] ITEM in BuiltInRegistries has been deprecated
+        var item = id == null ? Items.COMPASS : BuiltInRegistries.ITEM.getOptional(id).orElse(Items.COMPASS);
+                                                                 ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/1.20.1-forge/build/generated/stonecutter/main/java/_959/server_waypoint/common/client/gui/widgets/WaypointIconPicker.java:34: warning: [deprecation] ITEM in BuiltInRegistries has been deprecated
+        BuiltInRegistries.ITEM.keySet().forEach(key -> {
+                         ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/1.20.1-forge/build/generated/stonecutter/main/java/_959/server_waypoint/common/client/gui/widgets/WaypointIconPicker.java:35: warning: [deprecation] ITEM in BuiltInRegistries has been deprecated
+            if (BuiltInRegistries.ITEM.getOptional(key).orElse(Items.AIR) != Items.AIR) {
+                                 ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/1.20.1-forge/build/generated/stonecutter/main/java/_959/server_waypoint/forge/ServerWaypointForgeClient.java:135: warning: [removal] get() in ModLoadingContext has been deprecated and marked for removal
+        ModLoadingContext.get().registerExtensionPoint(
+                         ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/1.20.1-forge/build/generated/stonecutter/main/java/_959/server_waypoint/forge/ServerWaypointForge.java:113: warning: [removal] get() in FMLJavaModLoadingContext has been deprecated and marked for removal
+        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+                                                        ^
+14 warnings
+
+> Task :mods:1.20.1-fabric:test
+> Task :mods:26.1.2-fabric:test
+
+[Incubating] Problems report is available at: file:///Volumes/ssd/fabric_mods_repo/server_waypoint/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.5.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 18s
+30 actionable tasks: 17 executed, 13 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.5.1/userguide/configuration_cache_enabling.html

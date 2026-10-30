@@ -4,14 +4,18 @@ package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.gui.api.ButtonClickCallback;
 import _959.server_waypoint.common.client.gui.layout.Expandable;
+import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.texture;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeManager.getColor;
 
+import java.util.Objects;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import org.jetbrains.annotations.Nullable;
 
 public class IconButton extends ShiftableButtonWidget implements Expandable {
     private static final int ICON_PADDING = 2;
@@ -24,6 +28,7 @@ public class IconButton extends ShiftableButtonWidget implements Expandable {
     private boolean drawsBackground = true;
     private int iconPadding = ICON_PADDING;
     private IconRegion iconRegion;
+    private @Nullable WidgetThemeVariable iconColor;
 
     public IconButton(int x, int y, int width, int height, Component message,
     //$ resource_location_type_swap
@@ -73,6 +78,17 @@ public class IconButton extends ShiftableButtonWidget implements Expandable {
         return this;
     }
 
+    /** Tints the icon with a theme role while the button is active; a disabled icon keeps the disabled tint. */
+    public IconButton withIconColor(WidgetThemeVariable color) {
+        this.iconColor = Objects.requireNonNull(color);
+        return this;
+    }
+
+    /** The color multiplied into the icon's white pixels, for the button's current state. */
+    int iconTint() {
+        return this.active && this.iconColor != null ? getColor(this.iconColor) : WidgetThemeState.iconTint(this.active);
+    }
+
     /** The fill painted behind the icon, for the button's current state. */
     protected int surfaceColor() {
         return this.drawsBackground
@@ -110,7 +126,7 @@ public class IconButton extends ShiftableButtonWidget implements Expandable {
                 iconWidth = Math.max(1, (int) Math.round(region.width() * scale));
                 iconHeight = Math.max(1, (int) Math.round(region.height() * scale));
             }
-            // White source pixels take the current theme's normal or disabled icon color.
+            // White source pixels take the icon color, or the theme's disabled icon color.
             texture(
                     context,
                     icon,
@@ -124,7 +140,7 @@ public class IconButton extends ShiftableButtonWidget implements Expandable {
                     region == null ? iconHeight : region.height(),
                     region == null ? iconWidth : region.textureWidth(),
                     region == null ? iconHeight : region.textureHeight(),
-                    WidgetThemeState.iconTint(this.active)
+                    this.iconTint()
             );
         }
         this.scheduleTooltip(mouseX, mouseY);

@@ -93,6 +93,8 @@ public final class ClientWaypointAccess {
         return failure == null ? add(draft.destination(), draft.waypoint()) : failure;
     }
 
+    public boolean allowed(ClientWaypointSelection selection, Action action) { return unavailable(selection, action) == null; }
+
     private @Nullable Outcome unavailable(ClientWaypointSelection selection, Action action) {
         if (!valid(selection)) return Outcome.of(Status.OBSOLETE);
         if (selection.source() == ClientWaypointSource.LOCAL) return null;

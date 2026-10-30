@@ -45,6 +45,19 @@ class ClientWaypointAccessTest {
         return new WaypointPatch(PatchField.set(name), PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
                 PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged());
     }
+    @Test void capturedCombinedRowStillRoutesToPrivateAfterTheViewChanges() {
+        for (var source : ClientWaypointSource.values()) collections.files(source).addWaypoint(DIM, "Homes", waypoint(), ignored -> {});
+        var query = new ClientWaypointQuery(collections);
+        var options = new WaypointQueryEngine.Query("", WaypointSorting.SortMode.NAME, null, DIM, false);
+        var captured = query.query(ClientWaypointQuery.View.COMBINED, DIM, options).rows().stream()
+                .filter(row -> row.selection().source() == ClientWaypointSource.PRIVATE).findFirst().orElseThrow().selection();
+        query.query(ClientWaypointQuery.View.LOCAL, DIM, options);
+        assertEquals(ClientWaypointAccess.Status.AWAITING_SERVER, access.remove(captured).status());
+        assertEquals(List.of("wp private remove minecraft:overworld Homes Base"), wire.commands);
+        assertNotNull(get(ClientWaypointSource.LOCAL, "Base"));
+        assertNotNull(get(ClientWaypointSource.SHARED, "Base"));
+    }
+
     @Test void localMutationsPersistOnlyTheirCollectionWithoutNetwork() throws Exception {
         for (var source : List.of(ClientWaypointSource.SHARED, ClientWaypointSource.PRIVATE))
             collections.files(source).addWaypoint(DIM, "Homes", waypoint(), ignored -> {});

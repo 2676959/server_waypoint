@@ -28,6 +28,8 @@ import static _959.server_waypoint.text.FormattedTextHelper.parseKeywords;
  * form pending until their waypoint appears in that collection's authoritative data.
  */
 public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
+    private final ComboBoxWidget destinationField;
+    private final java.util.Map<String, ClientWaypointSelection> destinations = new java.util.LinkedHashMap<>();
     private final ComboBoxWidget dimensionField;
     private final ComboBoxWidget listNameField;
     private final TranslucentButton addButton;
@@ -70,6 +72,18 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
             @Nullable WaypointPos defaultPos, @Nullable SimpleWaypoint defaults, @Nullable ClientWaypointSelection copySource) {
         super(previousScreen, Component.translatable("waypoint.add.screen.title"), destination.dimensionName(), destination.listIdentifier(), defaults, access, destination);
         this.copySource = copySource;
+        for (var source : ClientWaypointSource.values()) {
+            ClientWaypointSelection captured;
+            try { captured = access.capture(source, destination.dimensionName(), destination.listIdentifier(), null); }
+            catch (IllegalArgumentException exception) { continue; } // Local has no profile after a load failure.
+            if (access.allowed(captured, ClientWaypointAccess.Action.ADD) || source == destination.source()) {
+                destinations.put(sourceName(source), captured);
+            }
+        }
+        this.destinationField = new ComboBoxWidget(0, 0, 155, Component.translatable("waypoint.form.destination"), font,
+                destinations.entrySet().stream().filter(entry -> access.allowed(entry.getValue(), ClientWaypointAccess.Action.ADD))
+                        .map(java.util.Map.Entry::getKey).toList(), sourceName(destination.source()), this::onDestinationEdited);
+        this.destinationField.setRenderPopupSeparately(true);
         String dimensionName = destination.dimensionName();
         String listName = destination.listIdentifier();
         List<String> dimensions = mergeDimensionNames(
@@ -134,6 +148,7 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
     @Override
     protected List<LeadingRow> leadingRows() {
         return List.of(
+                new LeadingRow(FormField.DESTINATION, this.destinationField, this.destinationField::setWidth),
                 new LeadingRow(FormField.DIMENSION, this.dimensionField, this.dimensionField::setWidth),
                 new LeadingRow(FormField.LIST, this.listNameField, this.listNameField::setWidth)
         );
@@ -141,7 +156,49 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
 
     @Override
     protected @Nullable Component subtitle() {
-        return null;
+        var client = WaypointClientMod.getInstance();
+        var profile = client.localProfiles().active();
+        Component result = Component.translatable("waypoint.form.destination.tooltip");
+        if (profile != null) result = result.copy().append(" · ").append(Component.translatable("waypoint.profile.current", profile.name()));
+        for (var source : ClientWaypointSource.values()) {
+            var state = client.collections().state(source);
+            var captured = destinations.get(sourceName(source));
+            if (captured != null && access.allowed(captured, ClientWaypointAccess.Action.ADD)) continue;
+            String reason = state == _959.server_waypoint.common.client.ClientWaypointCollections.State.READY ? "denied"
+                    : state.name().toLowerCase(java.util.Locale.ROOT);
+            result = result.copy().append(" · ").append(sourceName(source)).append(": ")
+                    .append(Component.translatable("waypoint.collection.state." + reason));
+        }
+        return result;
+    }
+
+    private static String sourceName(ClientWaypointSource source) {
+        return Component.translatable("waypoint.collection." + source.name().toLowerCase(java.util.Locale.ROOT)).getString();
+    }
+
+    private void onDestinationEdited(String label) {
+        var destination = destinations.get(label);
+        if (destination != null) selectDestination(destination.source());
+        onFormEdited();
+    }
+
+    /** Explicit source choice uses only the destinations captured when this form opened. */
+    boolean selectDestination(ClientWaypointSource source) {
+        var destination = destinations.get(sourceName(source));
+        if (destination == null || destination.generation() != selection.generation()
+                || !access.allowed(destination, ClientWaypointAccess.Action.ADD)) return false;
+        retargetDestination(destination);
+        destinationField.setValue(sourceName(source));
+        dimensionField.setValues(access.dimensions(selection));
+        onDimensionEdited();
+        return true;
+    }
+
+    @Override
+    protected boolean destinationAvailable() {
+        var destination = destinations.get(destinationField.getValue());
+        return destination != null && destination.source() == selection.source()
+                && access.allowed(selection, ClientWaypointAccess.Action.ADD);
     }
 
     @Override

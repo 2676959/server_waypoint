@@ -94,6 +94,7 @@ class ClientManualDownloadTest {
 
     @AfterEach
     void restoreState() throws IllegalAccessException {
+        _959.server_waypoint.common.client.render.OptimizedWaypointRenderer.clearScene();
         unsafe.putObject(integrationsBase, integrationsOffset, previousIntegrations);
         for (var entry : previousValues.entrySet()) {
             entry.getKey().set(null, entry.getValue());
@@ -187,6 +188,108 @@ class ClientManualDownloadTest {
 
         assertRefreshed(ClientWaypointSyncEvent.Type.WORLD_REPLACED);
         assertSame(shared, client.getWaypointFileManager(DIMENSION).getWaypointListByName("cached"));
+    }
+
+    @Test
+    void sharedDownloadKeepsHiddenMarkerHiddenAndListRemovalReleasesOnlyShared() throws Exception {
+        prepareWorld();
+        setStatic(WaypointClientMod.class, "currentDimensionName", DIMENSION);
+        setStatic(WaypointClientMod.class, "networkState", WaypointClientMod.ClientNetworkState.SYNC_FINISHED);
+        client.collections().markSnapshotApplied(ClientWaypointSource.SHARED);
+        client.collections().bindLocal(java.util.UUID.randomUUID(), new _959.server_waypoint.core.WaypointFilesManagerCore(directory.resolve("local")));
+        client.putWaypointList(DIMENSION, new WaypointList("cached", 7, List.of(waypoint("spawn", 10))));
+        client.collections().files(ClientWaypointSource.LOCAL).putWaypointList(DIMENSION,
+                new WaypointList("cached", 7, List.of(waypoint("spawn", 10))));
+        client.refreshCurrentCollections();
+        var shared = client.getWaypointFileManager(DIMENSION).getWaypointListByName("cached").getWaypointByName("spawn");
+        var local = client.collections().files(ClientWaypointSource.LOCAL).getWaypointFileManager(DIMENSION).getWaypointListByName("cached").getWaypointByName("spawn");
+        org.junit.jupiter.api.Assertions.assertTrue(shared.isRendered());
+        org.junit.jupiter.api.Assertions.assertTrue(local.isRendered());
+        client.setMarkerVisible(client.collections().selection(ClientWaypointSource.SHARED, DIMENSION, "cached", "spawn"), false);
+        receive(WaypointData.waypoint(WaypointScope.SHARED, DIMENSION,
+                new WaypointList("cached", 7, List.of(waypoint("spawn", 10))), waypoint("spawn", 10)));
+        org.junit.jupiter.api.Assertions.assertFalse(shared.isRendered(), "Download must not enable a hidden marker");
+        client.setMarkerVisible(client.collections().selection(ClientWaypointSource.SHARED, DIMENSION, "cached", "spawn"), true);
+        client.onWaypointModification(new _959.server_waypoint.core.network.message.WaypointModificationMessage(WaypointScope.SHARED,
+                DIMENSION, "cached", "cached", null, null, _959.server_waypoint.core.waypoint.WaypointModificationType.REMOVE_LIST, 8));
+        org.junit.jupiter.api.Assertions.assertFalse(shared.isRendered());
+        org.junit.jupiter.api.Assertions.assertTrue(local.isRendered());
+    }
+
+    @Test
+    void sharedWorldResyncAndPrivateTombstoneKeepLocalAndNeverSendPrivateToMaps() throws Exception {
+        prepareWorld();
+        setStatic(WaypointClientMod.class, "currentDimensionName", DIMENSION);
+        client.collections().beginConnection(java.util.UUID.randomUUID(), "test");
+        client.collections().bindServer(directory, 1);
+        client.collections().bindLocal(java.util.UUID.randomUUID(), new _959.server_waypoint.core.WaypointFilesManagerCore(directory.resolve("local")));
+        client.collections().files(ClientWaypointSource.LOCAL).putWaypointList(DIMENSION,
+                new WaypointList("cached", 7, List.of(waypoint("spawn", 10))));
+        client.refreshCollectionScene(ClientWaypointSource.LOCAL);
+        client.collections().apply(new _959.server_waypoint.core.network.message.WaypointCollectionStateMessage(WaypointScope.PRIVATE, true), client.collections().generation());
+        receive(WaypointData.world(WaypointScope.PRIVATE, List.of(new DimensionWaypointData(DIMENSION,
+                List.of(new WaypointList("cached", 7, List.of(waypoint("spawn", 10))))))));
+        assertNull(xaero.lastEvent);
+        assertNull(voxelMap.lastEvent);
+        var privateMarker = client.collections().files(ClientWaypointSource.PRIVATE).getWaypointFileManager(DIMENSION).getWaypointListByName("cached").getWaypointByName("spawn");
+        var local = client.collections().files(ClientWaypointSource.LOCAL).getWaypointFileManager(DIMENSION).getWaypointListByName("cached").getWaypointByName("spawn");
+        int privateId = privateMarker.renderId, localId = local.renderId;
+        org.junit.jupiter.api.Assertions.assertTrue(privateId >= 0 && localId >= 0 && privateId != localId);
+        receive(WaypointData.world(WaypointScope.SHARED, List.of(new DimensionWaypointData(DIMENSION,
+                List.of(new WaypointList("cached", 7, List.of(waypoint("spawn", 10))))))));
+        assertEquals(privateId, privateMarker.renderId);
+        assertEquals(localId, local.renderId);
+        var shared = client.getWaypointFileManager(DIMENSION).getWaypointListByName("cached").getWaypointByName("spawn");
+        client.onWaypointModification(new _959.server_waypoint.core.network.message.WaypointModificationMessage(WaypointScope.PRIVATE,
+                DIMENSION, "cached", "cached", null, null, _959.server_waypoint.core.waypoint.WaypointModificationType.REMOVE_LIST, 8));
+        org.junit.jupiter.api.Assertions.assertFalse(privateMarker.isRendered());
+        org.junit.jupiter.api.Assertions.assertTrue(shared.isRendered());
+        assertEquals(localId, local.renderId);
+        assertEquals(ClientWaypointSyncEvent.Type.WORLD_REPLACED, xaero.lastEvent.type());
+    }
+
+    @Test
+    void rendererCapacityDropsOnlyRenderHandlesAndKeepsAllCollectionData() throws Exception {
+        prepareWorld();
+        setStatic(WaypointClientMod.class, "currentDimensionName", DIMENSION);
+        var renderer = _959.server_waypoint.common.client.render.OptimizedWaypointRenderer.class;
+        _959.server_waypoint.common.client.render.OptimizedWaypointRenderer.init();
+        _959.server_waypoint.common.client.render.OptimizedWaypointRenderer.clearScene();
+        drainRenderer(renderer);
+        client.collections().beginConnection(java.util.UUID.randomUUID(), "test");
+        client.collections().bindServer(directory, 1);
+        client.collections().bindLocal(java.util.UUID.randomUUID(), new _959.server_waypoint.core.WaypointFilesManagerCore(directory.resolve("local")));
+        var shared = java.util.stream.IntStream.range(0, 9999).mapToObj(index -> waypoint("Marker " + index, index)).toList();
+        client.putWaypointList(DIMENSION, new WaypointList("Many", 7, shared));
+        for (var source : java.util.List.of(ClientWaypointSource.PRIVATE, ClientWaypointSource.LOCAL)) {
+            client.collections().files(source).putWaypointList(DIMENSION, new WaypointList("Many", 7, List.of(waypoint("Base", 0))));
+        }
+        for (var source : ClientWaypointSource.values()) client.collections().markSnapshotApplied(source);
+        client.refreshCurrentCollections();
+        drainRenderer(renderer);
+        Field count = renderer.getDeclaredField("count");
+        count.setAccessible(true);
+        assertEquals(10000, count.getInt(null));
+        assertEquals(9999, client.getWaypointFileManager(DIMENSION).getWaypointListByName("Many").size());
+        assertEquals(1, client.collections().files(ClientWaypointSource.PRIVATE).getWaypointFileManager(DIMENSION).getWaypointListByName("Many").size());
+        var local = client.collections().files(ClientWaypointSource.LOCAL).getWaypointFileManager(DIMENSION).getWaypointListByName("Many");
+        assertEquals(1, local.size());
+        org.junit.jupiter.api.Assertions.assertFalse(local.getWaypointByName("Base").isRendered());
+        org.junit.jupiter.api.Assertions.assertTrue(local.isShow());
+        for (var source : ClientWaypointSource.values()) client.collections().files(source).saveAllWaypointFiles();
+        org.junit.jupiter.api.Assertions.assertTrue(java.nio.file.Files.exists(client.collections().files(ClientWaypointSource.LOCAL)
+                .getWaypointFileManager(DIMENSION).getDimensionFile()));
+    }
+
+    private static void drainRenderer(Class<?> renderer) throws Exception {
+        Field queue = renderer.getDeclaredField("queue");
+        queue.setAccessible(true);
+        var pending = (java.util.Queue<?>) queue.get(null);
+        Class<?> command = java.util.Arrays.stream(renderer.getDeclaredClasses()).filter(type -> type.getSimpleName().equals("WaypointRendererCommand")).findFirst().orElseThrow();
+        var process = renderer.getDeclaredMethod("processCommand", command);
+        process.setAccessible(true);
+        Object value;
+        while ((value = pending.poll()) != null) process.invoke(null, value);
     }
 
     private void prepareWorld() throws Exception {

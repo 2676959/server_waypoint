@@ -302,3 +302,56 @@ The user authorized implementation and a separate local commit for each verified
   GUI guidance, plan status and retained validation evidence. No push is authorized.
 - Reviewed the current scope and successful verification records; no implementation changes were
   made after final verification. Earlier uncommitted references describe the verification checkpoint.
+
+## Task 7 execution (2026-10-29)
+
+- Started clean on `feature/private-waypoint` at `48793922`; Tasks 1–6 are present. Only Task 7 is authorized. No commit or push.
+- Pre-flight: Task 4 collection identity/readiness and Task 6 captured operations feed the query and scene composition; Task 5 provides UUID-backed profiles.
+- Ruling: work in the existing feature checkout, retain execution artifacts in this feature directory and review inline — the user requested the next task here and the plan explicitly prohibits delegation without the user's choice. No subagents or additional worktrees. Removed the newly generated ignored root scratch directory after moving its Task 7 records here.
+- Ruling: keep Task 8 live acceptance separate; automated checks cannot prove visible rendering, physical input, translated layout fluency or teleport arrival.
+- RED: missing query/view/scene APIs failed compilation; translation tests failed on absent collection/profile keys. Added the scoped implementations and all six client locales.
+- RED→GREEN: a real Shared waypoint download re-enabled a hidden marker; removed the remaining direct Shared render writes in favor of the source-owned scene. Shared world resync, Private tombstone, Local preservation and no Private map events now pass through real dispatch/renderer tests.
+- RED→GREEN: unchanged scene refresh emitted unnecessary marker updates; retain presentation snapshots so unchanged marker instances keep their handles and avoid text/icon rebuilds.
+- Compatibility inspection caught Stonecutter swap calls whose invocation arguments shared the swapped method-name line; separated method names from arguments as required by the GUI guide.
+- Real add-form tests retain entered fields across explicit destination choices, reject revoked add permissions, permit an explicit Local choice after Private read revocation in the same generation, and reject retargeting after a profile change. Their missing selection API failed before implementation; the registry-backed fixture needed a test camera before running.
+- Final review: inline self-review, following the plan's explicit no-delegation requirement. Reviewed equal-name stores, `WaypointList` name equality versus identity maps, source/generation/profile routing, copy cancellation and source permission checks, source-only render refreshes, integrated Shared hooks, constrained controls, popup suppression, source-status rendering, stale confirmations, locales and generated version branches. No unresolved findings.
+- Task 7: complete (uncommitted changes from `48793922`; final verification command in [Task 7 report](../2026-10-29-collection-manager.md) passed: Fabric 26.1.2 full suite 1,039; Fabric 1.20.1 focused suite 175; zero failures/errors/skips. Forge 1.20.1 and NeoForge 26.3 compile. Common task up-to-date with 720 passing results).
+- Ruling: retain changes on this feature branch without the branch-finishing integration menu — the user and plan explicitly require no commit/push and only Task 7 completion, so integration is outside this request. No worktree was created or removed.
+- Task 8 remains pending. No live UI, physical input, translation-fluency or teleport-arrival evidence is claimed. See the report and retained logs for exact commands and boundaries.
+
+## Local profile GUI redesign (2026-10-29)
+
+- User requested minimalist-ui aesthetics, profile selection without remembering separators/IDs, and clearer layout guidance. Reused native theme/widgets with name-based matching, explicit Use profile, responsive selector/settings columns, independent rename/command areas, and dedicated creation/deletion dialogs.
+- Kept helpers screen-owned. UUID identity is independent of labels; duplicate names and prefix collisions remain unambiguous. Saving one property retains the other field's draft. Stale screens/dialogs cannot target replacement profiles.
+- RED: missing profile-choice/layout contracts failed compilation before implementation. Focused matching/geometry and actual profile-screen callback tests subsequently passed.
+- Final verification: Fabric 26.1.2 full suite 1,048 tests; Fabric 1.20.1 focused 16 tests; no failures/errors/skips. Forge 1.20.1 and NeoForge 26.3 compile. Existing Gradle/dependency/Unsafe warnings remain.
+- Updated six client locales and GUI APIs; inline review, whitespace, locale duplicate, feature link and Stonecutter scope/target checks passed. No commit, delegation or new worktree.
+- See [redesign validation](../2026-10-29-local-profile-layout.md). In-game visual/physical-input and translation-fluency checks remain unexecuted. Task 8 remains pending.
+
+## Config-style profile rows (2026-10-30)
+
+- User requested imitation of ClientConfigScreen using hybrid rows. Replaced split columns with one centered settings panel, native title/button scales and section headers; labelled control/action rows handle picker/name actions and full-width rows retain command space. Guidance moved into native row tooltips.
+- Preserved name-based matching, explicit switching, isolated creation/deletion and stale-selection/draft handling. Updated geometry contracts and added actual widget/action alignment and registration checks.
+- Verified Fabric 26.1.2 full suite 1,049 and Fabric 1.20.1 focused 17 tests, zero failures/errors/skips; Forge 1.20.1 and NeoForge 26.3 compile. Reviewed inline, no commit; original uncommitted Task 7 changes retained.
+- See [validation](../2026-10-30-profile-hybrid-rows.md). In-game visual/physical input acceptance remains pending.
+
+## Local profile list (2026-10-30)
+
+- The user asked to complete and improve `LocalWaypointProfilesScreen`, approved the
+  [list design](../../specs/2026-10-30-local-profile-list-design.md) and chose inline execution of its
+  [plan](../../plans/2026-10-30-local-profile-list.md). No commit, push, delegation or worktree.
+- RED→GREEN per task: the template scanner, profile place and reason, the three widget hooks, the
+  placeholder palette, the screen rewrite and command editing each failed first (logs in
+  [profile-list](profile-list/)).
+- Rulings are in the plan's ledger and the final report; the largest widens
+  `SettingsListWidget.Row.action` to composites so a row can carry the rename and delete icons.
+- Final review (one fresh reviewer): one Important finding, fixed RED→GREEN: the Rename dialog
+  opened by mouse lost the name's selection. Six Minor findings are deferred and listed in the
+  validation record.
+- Verified after the fix: Fabric 26.1.2 full suite 1,080 tests; Fabric 1.20.1 focused 130 tests;
+  zero failures, errors or skips. Forge 1.20.1, NeoForge 1.21.7 and NeoForge 26.3 compile.
+- The user then asked for the six Minor findings to be fixed. Each fix failed first, and the
+  coverage tests were checked by breaking the code they guard. Verified: Fabric 26.1.2 full suite
+  1,086 tests; Fabric 1.20.1 focused 136 tests; zero failures, errors or skips. The loaders compile.
+- See [validation](../2026-10-30-local-profile-list.md). No live in-game check ran (the user's
+  decision); Task 8 remains pending.

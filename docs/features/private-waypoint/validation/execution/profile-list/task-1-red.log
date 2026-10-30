@@ -1,0 +1,307 @@
+Configuration on demand is an incubating feature.
+Running Stonecutter 0.9.7
+
+> Configure project :mods:26.1.2-fabric
+Fabric Loom: 1.15.5
+
+> Task :cross-server:updateModInfo UP-TO-DATE
+> Task :common:processResources UP-TO-DATE
+> Task :cross-server:compileJava UP-TO-DATE
+> Task :mods:26.1.2-fabric:stonecutterPrepare UP-TO-DATE
+> Task :cross-server:processResources NO-SOURCE
+> Task :cross-server:classes UP-TO-DATE
+> Task :cross-server:jar UP-TO-DATE
+> Task :mods:26.1.2-fabric:stonecutterGenerate UP-TO-DATE
+> Task :mods:26.1.2-fabric:processResources UP-TO-DATE
+> Task :common:compileJava UP-TO-DATE
+> Task :common:classes UP-TO-DATE
+> Task :mods:26.1.2-fabric:processTestResources UP-TO-DATE
+> Task :common:jar UP-TO-DATE
+> Task :mods:26.1.2-fabric:compileJava UP-TO-DATE
+> Task :mods:26.1.2-fabric:classes UP-TO-DATE
+
+> Task :mods:26.1.2-fabric:compileTestJava FAILED
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:3: error: cannot find symbol
+import _959.server_waypoint.common.client.local.LocalTeleportCommand.Placeholder;
+                                                                    ^
+  symbol:   class Placeholder
+  location: class LocalTeleportCommand
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:4: error: cannot find symbol
+import _959.server_waypoint.common.client.local.LocalTeleportCommand.Problem;
+                                                                    ^
+  symbol:   class Problem
+  location: class LocalTeleportCommand
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:5: error: cannot find symbol
+import _959.server_waypoint.common.client.local.LocalTeleportCommand.ProblemKind;
+                                                                    ^
+  symbol:   class ProblemKind
+  location: class LocalTeleportCommand
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:6: error: cannot find symbol
+import _959.server_waypoint.common.client.local.LocalTeleportCommand.Token;
+                                                                    ^
+  symbol:   class Token
+  location: class LocalTeleportCommand
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:35: error: cannot find symbol
+        assertEquals(List.of(new Token(0, 4, null, false), new Token(4, 7, Placeholder.X, false),
+                                 ^
+  symbol:   class Token
+  location: class LocalTeleportCommandTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:35: error: cannot find symbol
+        assertEquals(List.of(new Token(0, 4, null, false), new Token(4, 7, Placeholder.X, false),
+                                                               ^
+  symbol:   class Token
+  location: class LocalTeleportCommandTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:35: error: cannot find symbol
+        assertEquals(List.of(new Token(0, 4, null, false), new Token(4, 7, Placeholder.X, false),
+                                                                           ^
+  symbol:   variable Placeholder
+  location: class LocalTeleportCommandTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:36: error: cannot find symbol
+                new Token(7, 10, Placeholder.Y, false), new Token(10, 12, null, false),
+                    ^
+  symbol:   class Token
+  location: class LocalTeleportCommandTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:36: error: cannot find symbol
+                new Token(7, 10, Placeholder.Y, false), new Token(10, 12, null, false),
+                                 ^
+  symbol:   variable Placeholder
+  location: class LocalTeleportCommandTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:36: error: cannot find symbol
+                new Token(7, 10, Placeholder.Y, false), new Token(10, 12, null, false),
+                                                            ^
+  symbol:   class Token
+  location: class LocalTeleportCommandTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:37: error: cannot find symbol
+                new Token(12, 17, Placeholder.YAW, false)), LocalTeleportCommand.tokens("/tp {x}{y} ~{yaw}"));
+                    ^
+  symbol:   class Token
+  location: class LocalTeleportCommandTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:37: error: cannot find symbol
+                new Token(12, 17, Placeholder.YAW, false)), LocalTeleportCommand.tokens("/tp {x}{y} ~{yaw}"));
+                                  ^
+  symbol:   variable Placeholder
+  location: class LocalTeleportCommandTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:37: error: cannot find symbol
+                new Token(12, 17, Placeholder.YAW, false)), LocalTeleportCommand.tokens("/tp {x}{y} ~{yaw}"));
+                                                                                ^
+  symbol:   method tokens(String)
+  location: class LocalTeleportCommand
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:35: error: incompatible types: no instance(s) of type variable(s) E exist so that List<E> conforms to short
+        assertEquals(List.of(new Token(0, 4, null, false), new Token(4, 7, Placeholder.X, false),
+                            ^
+  where E is a type-variable:
+    E extends Object declared in method <E>of(E,E,E,E,E)
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:38: error: cannot find symbol
+        assertEquals(List.of(new Token(0, 3, null, false), new Token(3, 10, null, true),
+                                 ^
+  symbol:   class Token
+  location: class LocalTeleportCommandTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:38: error: cannot find symbol
+        assertEquals(List.of(new Token(0, 3, null, false), new Token(3, 10, null, true),
+                                                               ^
+  symbol:   class Token
+  location: class LocalTeleportCommandTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:39: error: cannot find symbol
+                new Token(10, 11, null, false), new Token(11, 12, null, true)), LocalTeleportCommand.tokens("tp {pitch} }"));
+                    ^
+  symbol:   class Token
+  location: class LocalTeleportCommandTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:39: error: cannot find symbol
+                new Token(10, 11, null, false), new Token(11, 12, null, true)), LocalTeleportCommand.tokens("tp {pitch} }"));
+                                                    ^
+  symbol:   class Token
+  location: class LocalTeleportCommandTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:39: error: cannot find symbol
+                new Token(10, 11, null, false), new Token(11, 12, null, true)), LocalTeleportCommand.tokens("tp {pitch} }"));
+                                                                                                    ^
+  symbol:   method tokens(String)
+  location: class LocalTeleportCommand
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:38: error: incompatible types: no instance(s) of type variable(s) E exist so that List<E> conforms to short
+        assertEquals(List.of(new Token(0, 3, null, false), new Token(3, 10, null, true),
+                            ^
+  where E is a type-variable:
+    E extends Object declared in method <E>of(E,E,E,E)
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:40: error: cannot find symbol
+        assertEquals(List.of(new Token(0, 3, null, false), new Token(3, 7, null, true)), LocalTeleportCommand.tokens("tp {x y"));
+                                 ^
+  symbol:   class Token
+  location: class LocalTeleportCommandTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:40: error: cannot find symbol
+        assertEquals(List.of(new Token(0, 3, null, false), new Token(3, 7, null, true)), LocalTeleportCommand.tokens("tp {x y"));
+                                                               ^
+  symbol:   class Token
+  location: class LocalTeleportCommandTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:40: error: cannot find symbol
+        assertEquals(List.of(new Token(0, 3, null, false), new Token(3, 7, null, true)), LocalTeleportCommand.tokens("tp {x y"));
+                                                                                                             ^
+  symbol:   method tokens(String)
+  location: class LocalTeleportCommand
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:40: error: incompatible types: no instance(s) of type variable(s) E exist so that List<E> conforms to short
+        assertEquals(List.of(new Token(0, 3, null, false), new Token(3, 7, null, true)), LocalTeleportCommand.tokens("tp {x y"));
+                            ^
+  where E is a type-variable:
+    E extends Object declared in method <E>of(E,E)
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:41: error: cannot find symbol
+        assertEquals(List.of(), LocalTeleportCommand.tokens(""));
+                                                    ^
+  symbol:   method tokens(String)
+  location: class LocalTeleportCommand
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:45: error: cannot find symbol
+        assertEquals(Optional.empty(), LocalTeleportCommand.problem(LocalWaypointProfiles.DEFAULT_TELEPORT_COMMAND));
+                                                           ^
+  symbol:   method problem(String)
+  location: class LocalTeleportCommand
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:46: error: cannot find symbol
+        assertEquals(Optional.of(new Problem(ProblemKind.CONTROL, "")), LocalTeleportCommand.problem("tp {pitch}\n"));
+                                     ^
+  symbol:   class Problem
+  location: class LocalTeleportCommandTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:46: error: cannot find symbol
+        assertEquals(Optional.of(new Problem(ProblemKind.CONTROL, "")), LocalTeleportCommand.problem("tp {pitch}\n"));
+                                             ^
+  symbol:   variable ProblemKind
+  location: class LocalTeleportCommandTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:46: error: cannot find symbol
+        assertEquals(Optional.of(new Problem(ProblemKind.CONTROL, "")), LocalTeleportCommand.problem("tp {pitch}\n"));
+                                                                                            ^
+  symbol:   method problem(String)
+  location: class LocalTeleportCommand
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:46: error: incompatible types: no instance(s) of type variable(s) T exist so that Optional<T> conforms to short
+        assertEquals(Optional.of(new Problem(ProblemKind.CONTROL, "")), LocalTeleportCommand.problem("tp {pitch}\n"));
+                                ^
+  where T is a type-variable:
+    T extends Object declared in method <T>of(T)
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:47: error: cannot find symbol
+        assertEquals(Optional.of(new Problem(ProblemKind.EMPTY, "")), LocalTeleportCommand.problem(" / "));
+                                     ^
+  symbol:   class Problem
+  location: class LocalTeleportCommandTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:47: error: cannot find symbol
+        assertEquals(Optional.of(new Problem(ProblemKind.EMPTY, "")), LocalTeleportCommand.problem(" / "));
+                                             ^
+  symbol:   variable ProblemKind
+  location: class LocalTeleportCommandTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:47: error: cannot find symbol
+        assertEquals(Optional.of(new Problem(ProblemKind.EMPTY, "")), LocalTeleportCommand.problem(" / "));
+                                                                                          ^
+  symbol:   method problem(String)
+  location: class LocalTeleportCommand
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:47: error: incompatible types: no instance(s) of type variable(s) T exist so that Optional<T> conforms to short
+        assertEquals(Optional.of(new Problem(ProblemKind.EMPTY, "")), LocalTeleportCommand.problem(" / "));
+                                ^
+  where T is a type-variable:
+    T extends Object declared in method <T>of(T)
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:48: error: cannot find symbol
+        assertEquals(Optional.of(new Problem(ProblemKind.EXTRA_SLASH, "")), LocalTeleportCommand.problem("//tp @s"));
+                                     ^
+  symbol:   class Problem
+  location: class LocalTeleportCommandTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:48: error: cannot find symbol
+        assertEquals(Optional.of(new Problem(ProblemKind.EXTRA_SLASH, "")), LocalTeleportCommand.problem("//tp @s"));
+                                             ^
+  symbol:   variable ProblemKind
+  location: class LocalTeleportCommandTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:48: error: cannot find symbol
+        assertEquals(Optional.of(new Problem(ProblemKind.EXTRA_SLASH, "")), LocalTeleportCommand.problem("//tp @s"));
+                                                                                                ^
+  symbol:   method problem(String)
+  location: class LocalTeleportCommand
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:48: error: incompatible types: no instance(s) of type variable(s) T exist so that Optional<T> conforms to short
+        assertEquals(Optional.of(new Problem(ProblemKind.EXTRA_SLASH, "")), LocalTeleportCommand.problem("//tp @s"));
+                                ^
+  where T is a type-variable:
+    T extends Object declared in method <T>of(T)
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:49: error: cannot find symbol
+        assertEquals(Optional.of(new Problem(ProblemKind.UNKNOWN, "{pitch}")), LocalTeleportCommand.problem("tp {pitch} }"));
+                                     ^
+  symbol:   class Problem
+  location: class LocalTeleportCommandTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:49: error: cannot find symbol
+        assertEquals(Optional.of(new Problem(ProblemKind.UNKNOWN, "{pitch}")), LocalTeleportCommand.problem("tp {pitch} }"));
+                                             ^
+  symbol:   variable ProblemKind
+  location: class LocalTeleportCommandTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:49: error: cannot find symbol
+        assertEquals(Optional.of(new Problem(ProblemKind.UNKNOWN, "{pitch}")), LocalTeleportCommand.problem("tp {pitch} }"));
+                                                                                                   ^
+  symbol:   method problem(String)
+  location: class LocalTeleportCommand
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:49: error: incompatible types: no instance(s) of type variable(s) T exist so that Optional<T> conforms to short
+        assertEquals(Optional.of(new Problem(ProblemKind.UNKNOWN, "{pitch}")), LocalTeleportCommand.problem("tp {pitch} }"));
+                                ^
+  where T is a type-variable:
+    T extends Object declared in method <T>of(T)
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:50: error: cannot find symbol
+        assertEquals(Optional.of(new Problem(ProblemKind.STRAY_CLOSE, "}")), LocalTeleportCommand.problem("tp } {pitch}"));
+                                     ^
+  symbol:   class Problem
+  location: class LocalTeleportCommandTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:50: error: cannot find symbol
+        assertEquals(Optional.of(new Problem(ProblemKind.STRAY_CLOSE, "}")), LocalTeleportCommand.problem("tp } {pitch}"));
+                                             ^
+  symbol:   variable ProblemKind
+  location: class LocalTeleportCommandTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:50: error: cannot find symbol
+        assertEquals(Optional.of(new Problem(ProblemKind.STRAY_CLOSE, "}")), LocalTeleportCommand.problem("tp } {pitch}"));
+                                                                                                 ^
+  symbol:   method problem(String)
+  location: class LocalTeleportCommand
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:50: error: incompatible types: no instance(s) of type variable(s) T exist so that Optional<T> conforms to short
+        assertEquals(Optional.of(new Problem(ProblemKind.STRAY_CLOSE, "}")), LocalTeleportCommand.problem("tp } {pitch}"));
+                                ^
+  where T is a type-variable:
+    T extends Object declared in method <T>of(T)
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:51: error: cannot find symbol
+        assertEquals(Optional.of(new Problem(ProblemKind.UNCLOSED, "{x y")), LocalTeleportCommand.problem("tp {x y"));
+                                     ^
+  symbol:   class Problem
+  location: class LocalTeleportCommandTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:51: error: cannot find symbol
+        assertEquals(Optional.of(new Problem(ProblemKind.UNCLOSED, "{x y")), LocalTeleportCommand.problem("tp {x y"));
+                                             ^
+  symbol:   variable ProblemKind
+  location: class LocalTeleportCommandTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:51: error: cannot find symbol
+        assertEquals(Optional.of(new Problem(ProblemKind.UNCLOSED, "{x y")), LocalTeleportCommand.problem("tp {x y"));
+                                                                                                 ^
+  symbol:   method problem(String)
+  location: class LocalTeleportCommand
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:51: error: incompatible types: no instance(s) of type variable(s) T exist so that Optional<T> conforms to short
+        assertEquals(Optional.of(new Problem(ProblemKind.UNCLOSED, "{x y")), LocalTeleportCommand.problem("tp {x y"));
+                                ^
+  where T is a type-variable:
+    T extends Object declared in method <T>of(T)
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:60: error: cannot find symbol
+            assertEquals(expands, LocalTeleportCommand.problem(template).isEmpty(), template);
+                                                      ^
+  symbol:   method problem(String)
+  location: class LocalTeleportCommand
+Note: Some messages have been simplified; recompile with -Xdiags:verbose to get full output
+51 errors
+
+[Incubating] Problems report is available at: file:///Volumes/ssd/fabric_mods_repo/server_waypoint/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':mods:26.1.2-fabric:compileTestJava' (registered by plugin class 'org.gradle.api.plugins.JavaBasePlugin').
+> Compilation failed; see the compiler output below.
+  /Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/local/LocalTeleportCommandTest.java:3: error: cannot find symbol
+  import _959.server_waypoint.common.client.local.LocalTeleportCommand.Placeholder;
+                                                                      ^
+    symbol:   class Placeholder
+    location: class LocalTeleportCommand
+  51 errors
+
+* Try:
+> Check your code and dependencies to fix the compilation error(s)
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.5.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 2s
+12 actionable tasks: 1 executed, 11 up-to-date

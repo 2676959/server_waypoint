@@ -6,6 +6,11 @@ import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.ge
 
 import _959.server_waypoint.common.client.ClientConfig;
 import _959.server_waypoint.common.client.WaypointClientMod;
+import _959.server_waypoint.common.client.ClientWaypointQuery;
+import _959.server_waypoint.common.client.ClientWaypointCollections;
+import _959.server_waypoint.common.client.ClientWaypointSource;
+import _959.server_waypoint.common.client.ClientWaypointSelection;
+import _959.server_waypoint.common.client.ClientWaypointAccess;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
 import _959.server_waypoint.common.client.gui.layout.OpposedExpansionLayout;
 import _959.server_waypoint.crossserver.RemoteServerId;
@@ -20,8 +25,6 @@ import _959.server_waypoint.common.client.gui.widgets.*;
 import _959.server_waypoint.common.client.util.ClientDimensionCatalog;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.common.server.WaypointServerMod;
-import _959.server_waypoint.core.WaypointFilesManagerCore;
-import _959.server_waypoint.core.waypoint.WaypointQueryEngine;
 import _959.server_waypoint.core.waypoint.WaypointSorting;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.gui.components.EditBox;
@@ -49,7 +52,6 @@ import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.ne
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.previousLayer;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.texture;
-import static _959.server_waypoint.common.client.util.ClientDimensionCatalog.mergeWithCachedDimensions;
 
 public class WaypointManagerScreen extends MovementAllowedScreen {
     private static final float MIDDLE_PART_WIDTH_RATIO = 0.38F;
@@ -90,6 +92,11 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     private final IconToggleButton groupModeToggle;
     private final IconToggleButton sortOrderToggle;
     private final IconDropdownMenu sortingModeDropdown;
+    private final IconDropdownMenu collectionDropdown;
+    private final IconButton profileButton;
+    private final IconButton copyButton;
+    private ClientWaypointQuery.View collectionView;
+    private long collectionGeneration = -1;
     private final IconToggleButton allDimensionsToggle;
     private final Screen parentScreen;
     private final IconToggleButton serverScopeToggle;
@@ -115,10 +122,26 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         super(Component.translatable("server_waypoint.manager.title"));
         this.parentScreen = parentScreen;
         this.waypointClientMod = waypointClientMod;
+        this.collectionView = WaypointClientMod.getClientConfig().getWaypointManagerView();
+        this.collectionDropdown = new IconDropdownMenu(Component.translatable(collectionView.translationKey()));
+        for (var view : ClientWaypointQuery.View.values()) {
+            collectionDropdown.addIconItem(Component.translatable(view.translationKey()), switch (view) {
+                case SHARED -> WidgetTextures.LAN_SERVERS_ICON;
+                case PRIVATE -> WidgetTextures.HOME_ICON;
+                case LOCAL -> WidgetTextures.CUBE_ICON;
+                case COMBINED -> WidgetTextures.STACKS_ICON;
+            }, () -> setCollectionView(view));
+        }
+        collectionDropdown.setSelectedIndex(collectionView.ordinal());
+        this.profileButton = new IconButton(0, 0, 16, 16, Component.translatable("waypoint.profile.manage"),
+                WidgetTextures.HOME_ICON, () -> MinecraftClientHelper.setScreen(new LocalWaypointProfilesScreen(this, waypointClientMod)));
+        this.copyButton = new IconButton(0, 0, 16, 16, Component.translatable("waypoint.copy"), WidgetTextures.STACKS_ICON, this::openCopyScreen);
+        profileButton.setTooltip(profileButton.getMessage());
+        copyButton.setTooltip(copyButton.getMessage());
         this.remotePanel = new RemoteWaypointPanel(waypointClientMod, this.font);
         this.statusMessage = new ScalableText(0, 0, Component.empty(), WidgetThemeVariable.TEXT_PRIMARY, this.font);
         this.serverScopeToggle = new IconToggleButton(
-                Component.translatable("waypoint.remote.gui.local"),
+                Component.translatable("waypoint.collection.current"),
                 Component.translatable("waypoint.remote.gui.remote"),
                 WidgetTextures.HOME_ICON,
                 WidgetTextures.LAN_SERVERS_ICON,
@@ -155,7 +178,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 MIN_MIDDLE_PART_WIDTH - WAYPOINT_LIST_HORIZONTAL_PADDING,
                 200,
                 this,
-                new WaypointQueryEngine(getWaypointQuerySource()),
+                new ClientWaypointQuery(waypointClientMod.collections()),
                 this.font,
                 waypointDetailsWidget::setSelection
         );
@@ -187,6 +210,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                     refreshRemoteOptions();
                 }
         );
+        searchField.setSuggestionsProvider(() -> showingRemote ? List.of() : waypointListWidget.getSearchSuggestions());
         groupModeToggle = new IconToggleButton(
                 Component.translatable("waypoint.group.flat"),
                 Component.translatable("waypoint.group.lists"),
@@ -224,6 +248,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 WidgetTextures.SORT_COLOR_ICON,
                 () -> toggleSortMode(WaypointSorting.SortMode.COLOR)
         );
+        waypointListWidget.setCollectionView(collectionView);
         restorePersistentState();
         syncControlStates();
 
@@ -376,7 +401,10 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     }
 
     private List<String> getDisplayedDimensionNames() {
-        return mergeWithCachedDimensions(this.availableDimensionNames);
+        var names = new ArrayList<>(new ClientWaypointQuery(waypointClientMod.collections()).dimensions(collectionView));
+        names.addAll(this.availableDimensionNames);
+        if (getCurrentDimensionName() != null) names.add(getCurrentDimensionName());
+        return _959.server_waypoint.common.client.util.ClientDimensionCatalog.mergeDimensionNames(names, List.of());
     }
 
     private void requestAvailableDimensionNames() {
@@ -429,10 +457,14 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         waypointDetailsWidget.active = true;
         waypointDetailsWidget.setDimensions(
                 this.layoutGeometry.detailsContentWidth(),
-                this.layoutGeometry.contentHeight()
+                Math.max(1, this.layoutGeometry.contentHeight() - 20)
         );
         waypointDetailsWidget.setX(this.layoutGeometry.detailsContentX());
-        waypointDetailsWidget.setY(this.layoutGeometry.contentY());
+        waypointDetailsWidget.setY(this.layoutGeometry.contentY() + 20);
+        addWaypointButton.setPosition(layoutGeometry.detailsContentX(), layoutGeometry.contentY());
+        copyButton.setPosition(layoutGeometry.detailsContentX() + 20, layoutGeometry.contentY());
+        profileButton.setPosition(layoutGeometry.detailsContentX() + 40, layoutGeometry.contentY());
+        collectionDropdown.setPopupXOffset(layoutGeometry.dropdownXOffset(collectionDropdown.getPopupItemCount()));
 
         layoutSidebar();
         updatePanelVisibility();
@@ -475,7 +507,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         controls.add(sortOrderToggle);
         controls.add(sortingModeDropdown);
         if (!showingRemote) {
-            controls.add(addWaypointButton);
+            controls.add(collectionDropdown);
         }
         return controls;
     }
@@ -523,7 +555,8 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     @Override
     protected void init() {
         super.init();
-        this.builtState = resolveViewState(WaypointServerMod.runsWithClient(), getNetworkState());
+        this.builtState = resolveManagerState();
+        this.collectionGeneration = waypointClientMod.collections().generation();
         if (this.builtState != ManagerViewState.READY) {
             // rebuildWidgets() doesn't call removed(), so a ready screen that rebuilds as loading
             // must stop receiving refreshes here.
@@ -538,12 +571,6 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
             // A new catalog session belongs to another connection; request its dimensions again.
             this.requestedAvailableDimensions = false;
             this.availableDimensionNames = List.of();
-        }
-        String currentDimension = getCurrentDimensionName();
-        if (WaypointServerMod.runsWithClient()) {
-            WaypointServerMod.getInstance().getOrCreateWaypointFileManager(currentDimension);
-        } else {
-            WaypointClientMod.getInstance().getOrCreateWaypointFileManager(currentDimension);
         }
         this.hasRemoteServers = !this.remotePanel.servers().isEmpty();
         updateWidgetDimension();
@@ -571,6 +598,9 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         this.addRenderableWidget(sortOrderToggle);
         this.addRenderableWidget(sortingModeDropdown);
         this.addRenderableWidget(addWaypointButton);
+        this.addRenderableWidget(copyButton);
+        this.addRenderableWidget(profileButton);
+        this.addRenderableWidget(collectionDropdown);
         this.middleLayout.visitWidgets(this::addRenderableWidget);
         this.addRenderableWidget(serverListWidget);
         this.addRenderableWidget(this.waypointDetailsWidget);
@@ -623,7 +653,12 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
             // Step 18: a catalog session change in the remote view closed the manager.
             return;
         }
-        ManagerViewState state = resolveViewState(WaypointServerMod.runsWithClient(), getNetworkState());
+        ManagerViewState state = resolveManagerState();
+        if (collectionGeneration != waypointClientMod.collections().generation()) {
+            collectionGeneration = waypointClientMod.collections().generation();
+            updateAllWidgets();
+        }
+        refreshCollectionControls();
         boolean staleLocalSession = state == ManagerViewState.READY
                 && !this.showingRemote
                 && !this.remotePanel.isSessionCurrent();
@@ -734,18 +769,96 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     }
 
     private void openAddWaypointScreen() {
-        MinecraftClientHelper.setScreen(new WaypointAddScreen(this, getSelectedDimension(), ""));
+        var selection = defaultDestination();
+        if (selection == null || !waypointClientMod.access().allowed(selection, ClientWaypointAccess.Action.ADD)) return;
+        closeOpenDropdownMenus();
+        MinecraftClientHelper.setScreen(new WaypointAddScreen(this, waypointClientMod.access(), selection, null, null));
+    }
+
+    private @Nullable ClientWaypointSelection defaultDestination() {
+        if (collectionView.destination() == ClientWaypointSource.LOCAL && !waypointClientMod.collections().ready(ClientWaypointSource.LOCAL)) return null;
+        String dimension = getSelectedDimension();
+        if (dimension == null) dimension = Objects.requireNonNullElse(getCurrentDimensionName(), "minecraft:overworld");
+        return waypointClientMod.access().capture(collectionView.destination(), dimension, "", null);
+    }
+
+    private void openCopyScreen() {
+        var selected = waypointListWidget.selectedWaypoint();
+        if (selected == null || !waypointClientMod.access().valid(selected.identity())) return;
+        var initial = defaultDestination();
+        if (initial == null) return;
+        var destination = initial.at(selected.dimensionName(), selected.listName(), null);
+        closeOpenDropdownMenus();
+        try {
+            var draft = waypointClientMod.access().copyDraft(selected.identity(), destination);
+            MinecraftClientHelper.setScreen(WaypointAddScreen.fromCopy(this, waypointClientMod.access(), draft));
+        } catch (IllegalStateException exception) {
+            showOperationOutcome(ClientWaypointAccess.Outcome.of(ClientWaypointAccess.Status.OBSOLETE));
+        }
+    }
+
+    public void showOperationOutcome(ClientWaypointAccess.Outcome result) {
+        if (result.status() == ClientWaypointAccess.Status.SAVED) updateAllWidgets();
+        if (minecraft.player == null) return;
+        var message = Component.translatable("waypoint.form.status." + result.status().name().toLowerCase(java.util.Locale.ROOT));
+        if (result.problem() != null) message = Component.translatable("waypoint.form.status." + result.problem().name().toLowerCase(java.util.Locale.ROOT));
+        //? if >=26
+        minecraft.player.sendSystemMessage(message);
+        //? if <26
+        /*minecraft.player.displayClientMessage(message, false);*/
+    }
+
+    private void setCollectionView(ClientWaypointQuery.View view) {
+        closeOpenDropdownMenus();
+        collectionView = view;
+        collectionDropdown.setMessage(Component.translatable(view.translationKey()));
+        collectionDropdown.setSelectedIndex(view.ordinal());
+        waypointListWidget.setCollectionView(view);
+        WaypointClientMod.getClientConfig().setWaypointManagerView(view);
+        waypointClientMod.saveConfig();
+        updateAllWidgets();
+        refreshCollectionControls();
+    }
+
+    private ManagerViewState resolveManagerState() {
+        // Keep the controls available while one source is loading or denied so the player can switch.
+        return resolveViewState(ClientWaypointQuery.View.COMBINED, waypointClientMod.collections(), WaypointServerMod.runsWithClient(), getNetworkState());
+    }
+
+    private void refreshCollectionControls() {
+        if (waypointListWidget == null || builtState != ManagerViewState.READY) return;
+        var access = waypointClientMod.access();
+        var destination = defaultDestination();
+        addWaypointButton.active = addWaypointButton.visible && destination != null && access.allowed(destination, ClientWaypointAccess.Action.ADD);
+        var selected = waypointListWidget.selectedWaypoint();
+        copyButton.active = copyButton.visible && selected != null && access.allowed(selected.identity(), ClientWaypointAccess.Action.READ);
+        profileButton.active = profileButton.visible && waypointClientMod.collections().ready(ClientWaypointSource.LOCAL);
+        Component status = Component.empty();
+        for (var source : collectionView.sources()) {
+            if (waypointClientMod.collections().ready(source)) continue;
+            if (!status.getString().isEmpty()) status = status.copy().append(" · ");
+            status = status.copy().append(Component.translatable("waypoint.collection." + source.name().toLowerCase(java.util.Locale.ROOT)))
+                    .append(": ").append(Component.translatable("waypoint.collection.state."
+                            + waypointClientMod.collections().state(source).name().toLowerCase(java.util.Locale.ROOT)));
+        }
+        var profile = waypointClientMod.localProfiles().active();
+        if (profile != null) {
+            if (!status.getString().isEmpty()) status = status.copy().append(" · ");
+            status = status.copy().append(Component.translatable("waypoint.profile.current", profile.name()));
+        }
+        statusMessage.setText(status);
+        statusMessage.setMaxWidth(Math.max(1, width - SCREEN_MARGIN * 2));
+        statusMessage.setPosition(SCREEN_MARGIN, Math.max(0, layoutGeometry.panelY() - statusMessage.getHeight() - 2));
+        for (int i = 0; i < 3; i++) {
+            var source = ClientWaypointSource.values()[i];
+            var state = waypointClientMod.collections().state(source);
+            collectionDropdown.iconItems.get(i).setTooltip(Component.translatable(ClientWaypointQuery.View.values()[i].translationKey())
+                    .append(" · ").append(Component.translatable("waypoint.collection.state." + state.name().toLowerCase(java.util.Locale.ROOT))));
+        }
     }
 
     private static void syncSelectedDimension(String dimensionName) {
         waypointListWidget.setSelectedDimension(dimensionName);
-    }
-
-    private WaypointFilesManagerCore getWaypointQuerySource() {
-        if (WaypointServerMod.runsWithClient() && WaypointServerMod.getInstance() != null) {
-            return WaypointServerMod.getInstance();
-        }
-        return this.waypointClientMod;
     }
 
     @Override
@@ -762,7 +875,8 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         // would be hovered beneath the popup's choice and request its tooltip first, so while the popup is
         // under the pointer those controls see none. The dropdown keeps the pointer for its choices, and the
         // control drawn after it requests later than the choice does.
-        boolean popupUnderPointer = sortingModeDropdown.isMouseOverPopup(mouseX, mouseY);
+        boolean popupUnderPointer = sortingModeDropdown.isMouseOverPopup(mouseX, mouseY)
+                || collectionDropdown.isMouseOverPopup(mouseX, mouseY);
         int beneathPopupMouseX = resolveMouseBeneathPopup(mouseX, popupUnderPointer);
         int beneathPopupMouseY = resolveMouseBeneathPopup(mouseY, popupUnderPointer);
         this.renderPanel(
@@ -831,16 +945,48 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         //$ render_method_swap
         extractRenderState
                 (context, beneathPopupMouseX, beneathPopupMouseY, delta);
+        copyButton.
+        //$ render_method_swap
+        extractRenderState
+                (context, beneathPopupMouseX, beneathPopupMouseY, delta);
+        profileButton.
+        //$ render_method_swap
+        extractRenderState
+                (context, beneathPopupMouseX, beneathPopupMouseY, delta);
         sortingModeDropdown.
         //$ render_method_swap
         extractRenderState
-                (context, mouseX, mouseY, delta);
+                (context, sortingModeDropdown.isExpanded() ? mouseX : beneathPopupMouseX,
+                        sortingModeDropdown.isExpanded() ? mouseY : beneathPopupMouseY, delta);
         allDimensionsToggle.
         //$ render_method_swap
         extractRenderState
-                (context, mouseX, mouseY, delta);
+                (context, beneathPopupMouseX, beneathPopupMouseY, delta);
+        collectionDropdown.
+        //$ render_method_swap
+        extractRenderState
+                (context, collectionDropdown.isExpanded() ? mouseX : beneathPopupMouseX,
+                        collectionDropdown.isExpanded() ? mouseY : beneathPopupMouseY, delta);
+        if (!showingRemote) statusMessage.
+        //$ render_method_swap
+        extractRenderState
+                (context, beneathPopupMouseX, beneathPopupMouseY, delta);
         nextLayer(context);
-        searchField.renderSuggestions(context, mouseX, mouseY);
+        searchField.renderSuggestions(context, beneathPopupMouseX, beneathPopupMouseY);
+        if (!showingRemote && !popupUnderPointer) {
+            String hovered = searchField.getHoveredSuggestion(mouseX, mouseY);
+            if (hovered != null) {
+                var sources = new ClientWaypointQuery(waypointClientMod.collections()).suggestions(collectionView,
+                        waypointListWidget.isShowingAllDimensions() ? null : getSelectedDimension()).stream()
+                        .filter(suggestion -> suggestion.text().equals(hovered)).map(ClientWaypointQuery.Suggestion::source).distinct().toList();
+                Component label = Component.empty();
+                for (var source : sources) {
+                    if (!label.getString().isEmpty()) label = label.copy().append(" · ");
+                    label = label.copy().append(Component.translatable("waypoint.collection." + source.name().toLowerCase(java.util.Locale.ROOT)));
+                }
+                TooltipLayer.scheduleAtPointer(label, mouseX, mouseY);
+            }
+        }
         previousLayer(context);
     }
 
@@ -899,6 +1045,8 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         dimensionListWidget.active = dimensionListWidget.visible;
         allDimensionsToggle.active = allDimensionsToggle.visible;
         addWaypointButton.active = addWaypointButton.visible && !showingRemote;
+        copyButton.visible = profileButton.visible = !showingRemote;
+        refreshCollectionControls();
         remotePanel.layout(layoutGeometry.middleX(), layoutGeometry.contentY() + searchField.getVisualHeight() + SEARCH_GAP,
                 layoutGeometry.middlePartWidth(), Math.max(1, layoutGeometry.waypointListHeight(searchField.getVisualHeight())),
                 layoutGeometry.detailsContentX(), layoutGeometry.contentY(),
@@ -1013,20 +1161,23 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     }
 
     private boolean mouseClickedOpenDropdown(double mouseX, double mouseY, int button) {
-        return sortingModeDropdown.isExpanded()
-                && sortingModeDropdown.mouseClicked(mouseX, mouseY, button);
+        if (collectionDropdown.isExpanded() && collectionDropdown.mouseClicked(mouseX, mouseY, button)) return true;
+        return sortingModeDropdown.isExpanded() && sortingModeDropdown.mouseClicked(mouseX, mouseY, button);
     }
 
     private void closeDropdownsOutside(double mouseX, double mouseY) {
         sortingModeDropdown.closeMenuIfOutside(mouseX, mouseY);
+        collectionDropdown.closeMenuIfOutside(mouseX, mouseY);
     }
 
     private boolean closeOpenDropdownMenus() {
-        return sortingModeDropdown.closeMenuIfOpen();
+        boolean closed = sortingModeDropdown.closeMenuIfOpen();
+        return collectionDropdown.closeMenuIfOpen() || closed;
     }
 
     private void setControlVisibility(boolean visible) {
-        addWaypointButton.visible = visible && !showingRemote;
+        collectionDropdown.visible = collectionDropdown.active = visible && !showingRemote;
+        addWaypointButton.visible = !showingRemote;
         addWaypointButton.active = visible && !showingRemote;
         boolean scopeVisible = visible && isScopeToggleAvailable();
         if (!scopeVisible && getFocused() == serverScopeToggle) {
@@ -1082,6 +1233,12 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         @Nullable String messageKey() {
             return this.messageKey;
         }
+    }
+
+    static ManagerViewState resolveViewState(ClientWaypointQuery.View view, ClientWaypointCollections collections,
+            boolean integratedServer, WaypointClientMod.ClientNetworkState networkState) {
+        if (view.sources().stream().anyMatch(collections::ready)) return ManagerViewState.READY;
+        return resolveViewState(integratedServer, networkState);
     }
 
     /**

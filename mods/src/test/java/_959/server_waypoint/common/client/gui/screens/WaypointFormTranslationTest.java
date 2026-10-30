@@ -1,5 +1,6 @@
 package _959.server_waypoint.common.client.gui.screens;
 
+import _959.server_waypoint.common.client.local.LocalTeleportCommand;
 import _959.server_waypoint.core.edit.EditResultStatus;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -23,6 +24,7 @@ class WaypointFormTranslationTest {
     // %<n>$s takes argument n.
     private static final Pattern FORMAT_SPECIFIER = Pattern.compile("%(?:(\\d+)\\$)?([s%])");
     private static final List<String> LABEL_KEYS = List.of(
+            "waypoint.form.destination",
             "waypoint.form.dimension",
             "waypoint.form.list",
             "waypoint.form.name",
@@ -36,9 +38,18 @@ class WaypointFormTranslationTest {
             "waypoint.form.description",
             "waypoint.form.optional",
             "waypoint.form.no_icon",
-            "waypoint.form.empty_display_name"
+            "waypoint.form.empty_display_name",
+            "waypoint.profile.name",
+            "waypoint.profile.rename.body",
+            "waypoint.profile.list_section",
+            "waypoint.profile.command_section",
+            "waypoint.profile.in_use.automatic",
+            "waypoint.profile.in_use.manual",
+            "waypoint.profile.list_section.plain",
+            "waypoint.profile.command_section.plain"
     );
     private static final List<String> TOOLTIP_KEYS = List.of(
+            "waypoint.form.destination.tooltip",
             "waypoint.form.dimension.tooltip",
             "waypoint.form.list.tooltip",
             "waypoint.form.name.tooltip",
@@ -97,7 +108,30 @@ class WaypointFormTranslationTest {
             "waypoint.display_name.keep.button",
             "waypoint.update.button",
             "waypoint.dimension.info",
-            "waypoint.list_name.info"
+            "waypoint.list_name.info",
+            "waypoint.profile.select",
+            "waypoint.profile.create",
+            "waypoint.profile.rename",
+            "waypoint.profile.delete_confirm",
+            "waypoint.profile.invalid",
+            "waypoint.profile.switch",
+            "waypoint.profile.search",
+            "waypoint.profile.search_hint",
+            "waypoint.profile.switch_hint",
+            "waypoint.profile.already_active",
+            "waypoint.profile.introduction",
+            "waypoint.profile.create_section",
+            "waypoint.profile.create_hint",
+            "waypoint.profile.current_section",
+            "waypoint.profile.editing",
+            "waypoint.profile.teleport_section",
+            "waypoint.profile.teleport_hint",
+            "waypoint.profile.tokens",
+            "waypoint.profile.command_hint",
+            "waypoint.profile.remove_section",
+            "waypoint.profile.remove_hint",
+            "waypoint.profile.delete_named",
+            "server_waypoint.done.button"
     );
 
     @Test
@@ -111,10 +145,30 @@ class WaypointFormTranslationTest {
     }
 
     @Test
+    void collectionAndProfileControlsAreTranslatedInEveryLocale() throws Exception {
+        var english = read("en_us");
+        var keys = english.keySet().stream().filter(key -> key.startsWith("waypoint.collection.")
+                || key.startsWith("waypoint.profile.") || key.equals("waypoint.copy")
+                || key.equals("waypoint.form.status.saved") || key.equals("waypoint.form.status.awaiting_server")
+                || key.equals("waypoint.form.status.command_submitted")).toList();
+        assertFalse(keys.isEmpty());
+        assertSameKeysAndArguments(keys);
+    }
+
+    @Test
     void everyCheckMessageIsTranslatedInEveryLocale() throws Exception {
         List<String> keys = new ArrayList<>();
         for (WaypointFormCheck.Message message : WaypointFormCheck.Message.values()) {
             keys.add(message.translationKey());
+        }
+        assertSameKeysAndArguments(keys);
+    }
+
+    @Test
+    void everyTemplateProblemIsTranslatedInEveryLocale() throws Exception {
+        List<String> keys = new ArrayList<>();
+        for (LocalTeleportCommand.ProblemKind kind : LocalTeleportCommand.ProblemKind.values()) {
+            keys.add("waypoint.profile.problem." + kind.name().toLowerCase(Locale.ROOT));
         }
         assertSameKeysAndArguments(keys);
     }
@@ -144,6 +198,15 @@ class WaypointFormTranslationTest {
         assertEquals(List.of(1), arguments(english.get("waypoint.form.visibility.tooltip").getAsString()));
         assertEquals(List.of(1, 2), arguments(english.get("waypoint.edit.screen.location").getAsString()));
         assertEquals(List.of(1), arguments(english.get("waypoint.edit.screen.title").getAsString()));
+        assertEquals(List.of(1, 2), arguments(english.get("waypoint.profile.status.renamed").getAsString()));
+        assertEquals(List.of(1, 2), arguments(english.get("waypoint.profile.status.deleted_switched").getAsString()));
+        assertEquals(List.of(1), arguments(english.get("waypoint.profile.list_section").getAsString()));
+        assertEquals(List.of(1), arguments(english.get("waypoint.profile.command_section").getAsString()));
+        assertEquals(List.of(1), arguments(english.get("waypoint.profile.use.tooltip").getAsString()));
+        assertEquals(List.of(1), arguments(english.get("waypoint.profile.name.taken").getAsString()));
+        assertEquals(List.of(1), arguments(english.get("waypoint.profile.problem.unknown").getAsString()));
+        assertEquals(List.of(1), arguments(english.get("waypoint.profile.reset_command").getAsString()));
+        assertEquals(List.of(1), arguments(english.get("waypoint.profile.discard.body").getAsString()));
     }
 
     @Test

@@ -56,13 +56,43 @@ class LocalWaypointProfilesTest {
         assertNotEquals(first, profiles.directory());
         profiles.joinMultiplayer(UUID.randomUUID(), "example.org:25565");
         assertNotEquals(first, profiles.directory());
-        profiles.joinSingleplayer(account, root.resolve("saves/one"));
+        profiles.joinSingleplayer(account, root.resolve("saves/one"), "one");
         assertEquals(root.resolve("saves/one/server_waypoint/client-local").resolve(account.toString()), profiles.directory());
         UUID one = profiles.active().id();
-        profiles.joinSingleplayer(account, root.resolve("saves/two"));
+        profiles.joinSingleplayer(account, root.resolve("saves/two"), "two");
         assertNotEquals(one, profiles.active().id());
-        profiles.joinSingleplayer(account, root.resolve("saves/one"));
+        profiles.joinSingleplayer(account, root.resolve("saves/one"), "one");
         assertEquals(one, profiles.active().id());
+    }
+
+    @Test
+    void placeIsTheAddressOrWorldNameUntilLeaving() throws Exception {
+        var profiles = new LocalWaypointProfiles(root, collections());
+        profiles.joinMultiplayer(account, " Example.ORG:25566 ");
+        assertEquals("Example.ORG:25566", profiles.place());
+        profiles.joinSingleplayer(account, root.resolve("saves/one"), "My World");
+        assertEquals("My World", profiles.place());
+        profiles.leave();
+        assertNull(profiles.place());
+        assertNull(profiles.activeReason());
+    }
+
+    @Test
+    void activeReasonSaysHowTheActiveProfileWasChosen() throws Exception {
+        var profiles = new LocalWaypointProfiles(root, collections());
+        profiles.joinMultiplayer(account, "example.org");
+        assertEquals(LocalWaypointProfiles.ActiveReason.FALLBACK, profiles.activeReason());
+        profiles.onBackendIdentity(10);
+        assertEquals(LocalWaypointProfiles.ActiveReason.BACKEND, profiles.activeReason());
+        profiles.create("Other");
+        assertEquals(LocalWaypointProfiles.ActiveReason.MANUAL, profiles.activeReason());
+        profiles.leave();
+        profiles.joinMultiplayer(account, "example.org");
+        assertEquals(LocalWaypointProfiles.ActiveReason.FALLBACK, profiles.activeReason());
+        profiles.onBackendIdentity(10);
+        assertEquals(LocalWaypointProfiles.ActiveReason.BACKEND, profiles.activeReason());
+        profiles.delete(profiles.active().id());
+        assertEquals(LocalWaypointProfiles.ActiveReason.MANUAL, profiles.activeReason());
     }
 
     @Test

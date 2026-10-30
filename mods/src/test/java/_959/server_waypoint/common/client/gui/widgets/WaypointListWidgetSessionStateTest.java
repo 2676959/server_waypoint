@@ -280,8 +280,10 @@ class WaypointListWidgetSessionStateTest {
     }
 
     private WaypointListWidget widget() {
+        var collections = new _959.server_waypoint.common.client.ClientWaypointCollections(this.filesManager);
+        collections.markSnapshotApplied(_959.server_waypoint.common.client.ClientWaypointSource.SHARED);
         return new WaypointListWidget(0, 0, 200, 60, null,
-                new WaypointQueryEngine(this.filesManager), new TestFont(), selection -> {});
+                new _959.server_waypoint.common.client.ClientWaypointQuery(collections), new TestFont(), selection -> {});
     }
 
     private void putWaypoints(String dimension, int count) {

@@ -1,0 +1,101 @@
+Configuration on demand is an incubating feature.
+Running Stonecutter 0.9.7
+
+> Configure project :mods:26.1.2-fabric
+Fabric Loom: 1.15.5
+
+> Task :cross-server:updateModInfo UP-TO-DATE
+> Task :common:processResources UP-TO-DATE
+> Task :mods:26.1.2-fabric:stonecutterPrepare UP-TO-DATE
+> Task :mods:26.1.2-fabric:stonecutterGenerate UP-TO-DATE
+> Task :mods:26.1.2-fabric:processResources UP-TO-DATE
+> Task :cross-server:compileJava UP-TO-DATE
+> Task :mods:26.1.2-fabric:processTestResources UP-TO-DATE
+> Task :cross-server:processResources NO-SOURCE
+> Task :cross-server:classes UP-TO-DATE
+> Task :cross-server:jar UP-TO-DATE
+> Task :common:compileJava UP-TO-DATE
+> Task :common:classes UP-TO-DATE
+> Task :common:jar UP-TO-DATE
+> Task :mods:26.1.2-fabric:compileJava UP-TO-DATE
+> Task :mods:26.1.2-fabric:classes UP-TO-DATE
+
+> Task :mods:26.1.2-fabric:compileTestJava FAILED
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/widgets/ConfirmationDialogTest.java:45: error: cannot find symbol
+        assertEquals(List.of(dialog.getCancelButton(), dialog.getConfirmButton()), buttons);
+                                                             ^
+  symbol:   method getConfirmButton()
+  location: variable dialog of type ConfirmationDialog
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/widgets/ConfirmationDialogTest.java:46: error: cannot find symbol
+        assertEquals(Component.literal("Go"), dialog.getConfirmButton().getMessage());
+                                                    ^
+  symbol:   method getConfirmButton()
+  location: variable dialog of type ConfirmationDialog
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/widgets/IconButtonTest.java:48: error: cannot find symbol
+        assertEquals(WidgetThemeState.iconTint(true), button(false).iconTint());
+                                                                   ^
+  symbol:   method iconTint()
+  location: class IconButton
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/widgets/IconButtonTest.java:49: error: cannot find symbol
+        IconButton danger = button(false).withIconColor(WidgetThemeVariable.DANGER);
+                                         ^
+  symbol:   method withIconColor(WidgetThemeVariable)
+  location: class IconButton
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/widgets/IconButtonTest.java:50: error: cannot find symbol
+        assertEquals(WidgetThemeManager.getColor(WidgetThemeVariable.DANGER), danger.iconTint());
+                                                                                    ^
+  symbol:   method iconTint()
+  location: variable danger of type IconButton
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/widgets/IconButtonTest.java:52: error: cannot find symbol
+        assertEquals(WidgetThemeState.iconTint(false), danger.iconTint());
+                                                             ^
+  symbol:   method iconTint()
+  location: variable danger of type IconButton
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/widgets/SuggestingTextInputTest.java:394: error: cannot find symbol
+        field.setTextFormatter((shown, offset) -> FormattedCharSequence.forward(shown, Style.EMPTY.withColor(0x123456)));
+             ^
+  symbol:   method setTextFormatter((shown,off[...]046)))
+  location: variable field of type TranslucentTextField
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/widgets/SuggestingTextInputTest.java:395: error: cannot find symbol
+        assertEquals(List.of(0x123456, 0x123456), colors(field.formatShown("ab", 0)));
+                                                              ^
+  symbol:   method formatShown(String,int)
+  location: variable field of type TranslucentTextField
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/widgets/SuggestingTextInputTest.java:397: error: cannot find symbol
+        assertEquals(List.of(-1, -1), colors(field.formatShown("ab", 0)));
+                                                  ^
+  symbol:   method formatShown(String,int)
+  location: variable field of type TranslucentTextField
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/widgets/SuggestingTextInputTest.java:400: error: cannot find symbol
+        assertEquals(List.of(-1, -1), colors(field.formatShown("ab", 0)));
+                                                  ^
+  symbol:   method formatShown(String,int)
+  location: variable field of type TranslucentTextField
+10 errors
+
+[Incubating] Problems report is available at: file:///Volumes/ssd/fabric_mods_repo/server_waypoint/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':mods:26.1.2-fabric:compileTestJava' (registered by plugin class 'org.gradle.api.plugins.JavaBasePlugin').
+> Compilation failed; see the compiler output below.
+  /Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/widgets/ConfirmationDialogTest.java:45: error: cannot find symbol
+          assertEquals(List.of(dialog.getCancelButton(), dialog.getConfirmButton()), buttons);
+                                                               ^
+    symbol:   method getConfirmButton()
+    location: variable dialog of type ConfirmationDialog
+  10 errors
+
+* Try:
+> Check your code and dependencies to fix the compilation error(s)
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.5.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 1s
+12 actionable tasks: 1 executed, 11 up-to-date

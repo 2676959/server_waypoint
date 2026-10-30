@@ -2,8 +2,11 @@ package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.gui.TestFont;
 import com.mojang.blaze3d.platform.InputConstants;
+import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.util.FormattedCharSequence;
 //? if >=1.21.9 {
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.MouseButtonInfo;
@@ -383,6 +386,28 @@ class SuggestingTextInputTest {
 
     private static TranslucentTextField eightSuggestions() {
         return fieldSuggesting("s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8");
+    }
+
+    @Test
+    void aTextFormatterStylesShownTextOnlyWhileTheInputIsEditable() {
+        TranslucentTextField field = new TranslucentTextField(10, 20, 60, Component.empty(), new TestFont());
+        field.setTextFormatter((shown, offset) -> FormattedCharSequence.forward(shown, Style.EMPTY.withColor(0x123456)));
+        assertEquals(List.of(0x123456, 0x123456), colors(field.formatShown("ab", 0)));
+        field.setEditable(false);
+        assertEquals(List.of(-1, -1), colors(field.formatShown("ab", 0)));
+        field.setEditable(true);
+        field.active = false;
+        assertEquals(List.of(-1, -1), colors(field.formatShown("ab", 0)));
+    }
+
+    /** Each character's style color, or -1 for none. */
+    private static List<Integer> colors(FormattedCharSequence text) {
+        List<Integer> colors = new ArrayList<>();
+        text.accept((index, style, codePoint) -> {
+            colors.add(style.getColor() == null ? -1 : style.getColor().getValue());
+            return true;
+        });
+        return colors;
     }
 
     /** A pixel row inside the given list row, counted from 0. */

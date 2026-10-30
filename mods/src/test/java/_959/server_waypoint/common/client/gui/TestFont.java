@@ -1,5 +1,6 @@
 package _959.server_waypoint.common.client.gui;
 
+import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.FormattedText;
@@ -8,18 +9,30 @@ import net.minecraft.util.FormattedCharSequence;
 
 /**
  * A font for unit tests, which have no glyphs to measure: every character is
- * {@link #CHARACTER_WIDTH} pixels wide, a line is 9 pixels high, and text never wraps.
+ * {@link #CHARACTER_WIDTH} pixels wide and a line is 9 pixels high. Text never wraps, except with
+ * {@link #wrapping()}.
  */
 public final class TestFont extends Font {
     public static final int CHARACTER_WIDTH = 6;
+    private final boolean wraps;
 
     public TestFont() {
+        this(false);
+    }
+
+    private TestFont(boolean wraps) {
         // No glyph source: every method that would read one is overridden below.
         //? if >= 1.21.9 {
         super((Font.Provider) null);
         //?} else {
         /*super(null, false);
         *///?}
+        this.wraps = wraps;
+    }
+
+    /** A font that breaks text into lines of as many whole characters as fit, as a label wraps in game. */
+    public static TestFont wrapping() {
+        return new TestFont(true);
     }
 
     @Override
@@ -64,6 +77,16 @@ public final class TestFont extends Font {
 
     @Override
     public List<FormattedCharSequence> split(FormattedText text, int maxWidth) {
-        return List.of(FormattedCharSequence.forward(text.getString(), Style.EMPTY));
+        String characters = text.getString();
+        if (!this.wraps || characters.isEmpty()) {
+            return List.of(FormattedCharSequence.forward(characters, Style.EMPTY));
+        }
+        int perLine = Math.max(1, maxWidth / CHARACTER_WIDTH);
+        List<FormattedCharSequence> lines = new ArrayList<>();
+        for (int start = 0; start < characters.length(); start += perLine) {
+            lines.add(FormattedCharSequence.forward(
+                    characters.substring(start, Math.min(characters.length(), start + perLine)), Style.EMPTY));
+        }
+        return lines;
     }
 }

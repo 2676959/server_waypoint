@@ -28,6 +28,14 @@ public class ClientConfig {
     @Expose private boolean waypointManagerSortReversed = false;
     @Expose private boolean waypointManagerGroupByLists = true;
     @Expose private boolean waypointManagerShowAllDimensions = false;
+    @Expose private ClientWaypointQuery.View waypointManagerView = ClientWaypointQuery.View.COMBINED;
+
+    public ClientWaypointQuery.View getWaypointManagerView() {
+        return waypointManagerView == null ? ClientWaypointQuery.View.COMBINED : waypointManagerView;
+    }
+
+    public void setWaypointManagerView(ClientWaypointQuery.View view) { this.waypointManagerView = java.util.Objects.requireNonNull(view); }
+
     public static boolean isXaerosMinimapLoaded = false;
     public static boolean isVoxelMapLoaded = false;
 

@@ -398,6 +398,15 @@ only when a suggestion's text needs more room. Composites can override `getSugge
 `getSuggestionsY()`, and `getSuggestionsWidth(int maxTextWidth)` to anchor suggestions to their outer
 bounds. The combobox uses its full control width, including the arrow area, and clips suggestion text
 inside that outline.
+
+`setTextFormatter(BiFunction<String, Integer, FormattedCharSequence>)` styles the drawn text, for
+example to color parts of a command. The function receives the shown substring and its offset in
+the value. Vanilla draws the shown text in two parts split at the caret, so style by position in the
+whole value: a styled span can start in one part and end in the other. The first call registers
+`formatShown` with vanilla once (`setFormatter` before 1.21.9, `addFormatter` from 1.21.9); later
+calls replace the function. While the input isn't editable or isn't active, `formatShown` returns
+plain text, so a disabled field keeps its disabled color. Avoid bold and other styles that change
+glyph advances: vanilla measures the selection highlight on the plain text.
 Suggestion rows share vanilla `EditBox`'s horizontal text viewport through `EditBoxAccessor`, so
 their visible prefixes line up with the scrolled input. The inline completion follows the visible
 input text and is clipped to the input area. Moving the cursor back to the start restores the
@@ -661,7 +670,85 @@ the manager is reset to `WidgetThemes.DEFAULT`.
 
 ## `widgets`: choosing and extending components
 
-### Mandatory component reuse check
+### Collection manager and composed markers
+
+`ClientConfig.getWaypointManagerView()` persists Shared, Private, Local or Combined. A new config
+starts in Combined, whose creation destination is Local; individual views default to their own
+source. The manager keeps the current-world/Remote toggle separate and hides its collection
+selector while browsing Remote. The selector uses the manager-owned `IconDropdownMenu`, including
+its offset, layering, outside-click and Escape contracts. Add, Copy and Local profile controls sit
+above the details panel, preserving the sidebar's control count at constrained heights.
+
+`ClientWaypointQuery` queries each ready selected store through `WaypointQueryEngine` and
+`WaypointListDisplayModel`, returning immutable `Result`, `ListGroup`, `Row` and `Suggestion`
+containers. Each row/group retains a captured `ClientWaypointSelection`; equal identifiers in
+separate sources remain distinct. Flat sorting spans sources and retains Shared/Private/Local order
+as the final tie-breaker, including reversed sorting. Grouped list headers, Combined rows, selected
+details and search-suggestion source tooltips identify the source. The query never creates a
+writable aggregate manager. `WaypointListWidget` takes this query and exposes `setCollectionView`
+and `selectedWaypoint`; `WaypointSelection.identity()` is the operation key, including generation
+and Local profile UUID. Never reconstruct an action from the manager's current dropdown.
+
+The ordinary add form includes a destination combobox. Its usable options and selections are
+captured when opened; unavailable sources are explained in the subtitle. Save rechecks live
+availability and add permission. `AbstractWaypointPropertiesScreen.destinationAvailable()` extends
+submission checks; `retargetDestination(...)` updates both the captured identity and validation
+lookup for an explicit source choice. The add screen's `selectDestination(source)` uses the
+opening generation and captured choices; permission revocation can still allow an explicit choice
+of another available source in that same generation. A stale generation cannot be retargeted: entered metadata
+remains on screen and submission requires reopening. Copy uses `WaypointAddScreen.fromCopy` and
+retains its source-read check through submission. Opening and cancelling create no waypoints.
+
+`LocalWaypointProfilesScreen` follows `ClientConfigScreen`: a single centered, content-sized
+`SettingsListWidget` panel, a 1.2-scale title, section headers and a status/Done footer, placed by
+`ProfileLayout.calculate(...)` so constrained screens scroll without covering the footer. The first
+section, "Profiles for <place>" (`LocalWaypointProfiles.place()`: the server address as typed or the
+singleplayer world's name), has one row per profile in storage order, so rows never move when the
+active one changes. A row's control is its **Use** button or, for the active profile, a `SUCCESS`
+text saying whether it was picked automatically or by the player (`LocalWaypointProfiles.activeReason()`),
+with the longer reason as that row's tooltip. Its action is a horizontal `WidgetStack` of rename
+and delete `IconButton`s, the delete icon tinted `DANGER` through `withIconColor`. Each profile's
+controls are created once and cached by UUID, so focus and hover survive updates; after every
+operation the screen rebuilds the entries, registers the widgets again in display order and keeps
+the scroll position. A wide **New profile** row ends the section.
+
+The second section edits the active profile's teleport command in a `WideRow` field sized with
+`getRowWidth()`. `TeleportCommandStyle` colors it through `setTextFormatter`: one fixed color per
+placeholder and the theme's `DANGER` struck through for mistakes, from `LocalTeleportCommand.tokens`
+over the whole value, so a placeholder cut by the caret or the scroll keeps its color. The legend row
+lists the placeholders in the same colors, with Save as its control and a reset icon as a conditional
+action shown while the saved command isn't the default. `LocalTeleportCommand.problem` drives Save
+and a `DANGER` footer status naming the first problem; Enter in the field saves.
+
+New, Rename, Delete and Discard are `ConfirmationDialog`s. New and Rename share one name field,
+registered explicitly because `ConfirmationDialog.visitWidgets` visits only footer buttons. The
+screen-owned `ProfileNames` strips names and refuses blank names, names over 128 characters and names
+another profile has, ignoring case; the dialog then shows the taken name under the field. Storage keeps
+accepting any non-blank name. Use, Done and Escape ask before an unsaved command edit is dropped
+(Discard), the New dialog notes that creating drops it, and deleting the active profile or resetting
+doesn't ask. Escape closes an open dialog first, then leaves a focused text field, then closes the
+screen; Tab reveals hidden rows. New and Rename focus the name field, Delete and Discard focus
+Cancel, and closing a dialog returns focus to its opener. Discard switches first, so a switch that
+fails keeps the dialog and the edit. Every operation rechecks the captured generation. A storage
+failure keeps the dialog and its text, except a delete whose files couldn't be removed after the index
+dropped the profile: the screen then follows storage and closes the dialog on the failure status. A
+template problem stays in the footer while the template is invalid, after other operations too. A
+stale screen turns its actions off while Cancel and Done keep working, Done then closing without
+asking; without a place or an active profile the headers read "Profiles" and "Teleport command".
+
+`ClientWaypointCollections.onChange(...)` announces changes to one source. Local bindings/mutations
+and Private synchronization use it; existing Shared synchronization and integrated-server hooks
+refresh the Shared scene explicitly. `ClientWaypointScene` owns separate marker-reference maps,
+source/profile-aware visibility keys and presentation snapshots. `WaypointClientMod` exposes
+`refreshCollectionScene`, `refreshCurrentCollections` and `setMarkerVisible`; use those entry points
+instead of loading or clearing the renderer's whole scene for a collection update. An unchanged
+entry retains its renderer handle and avoids text/icon rebuilding. A Shared snapshot never clears
+Local/Private handles; a profile switch removes the outgoing Local references. Renderer capacity
+can discard render handles, never stored waypoints. The renderer's `local` flag still means
+`!waypoint.global()` and is unrelated to the Local storage collection. Map integration events
+continue to contain Shared only.
+
+## Mandatory component reuse check
 
 Before adding or changing GUI rendering, layout, or interaction behavior:
 
@@ -772,6 +859,8 @@ Screen-local icon controls should use the same inset so adjacent icon actions re
 An inactive `IconButton` multiplies its icon by the theme's `TEXT_DISABLED`, the color a disabled
 button's label takes, so an unavailable action, such as resetting a setting that's already at its
 default, doesn't look pressable. Draw icons in a light gray or white so the tint shows.
+`withIconColor(WidgetThemeVariable)` tints an active button's icon with a theme role instead, such
+as `DANGER` for a delete action; an inactive one still takes the disabled tint.
 
 An `IconButton` uses the control background at rest and the hover fill while active and hovered.
 Disabled buttons keep their resting background and dim only their icon. On a panel that already
@@ -1027,8 +1116,8 @@ and a reset apply immediately; the option never bypasses loading-screen suppress
 
 Use `SettingsListWidget` for a scrollable panel of settings. It holds `SettingsListWidget.Header`
 entries (a title followed by a line); `SettingsListWidget.Row` entries: a label, a control, an
-optional muted unit (`suffix`), an optional last-column widget (`action`, such as a reset button)
-and an optional `tooltip` supplier; and `SettingsListWidget.WideRow` entries: a control with no
+optional muted unit (`suffix`), an optional last-column widget or composite (`action`, such as a
+reset button or a `WidgetStack` of icon buttons) and an optional `tooltip` supplier; and `SettingsListWidget.WideRow` entries: a control with no
 label column, described below. Entries have their own heights, so long labels wrap onto more
 lines instead of being clipped. The unit and action columns are as wide as their widest entry, so
 every control's right edge lines up. A control can be one widget, a non-interactive element such as
@@ -1047,8 +1136,8 @@ size the controls separately. `DrawContextHelper.drawScaledText` draws at a scre
 The `IntegerSlider` overload with `controlScale` scales its number field, track height and field
 hit bounds together, transforming pointer coordinates for cursor placement. Its internal field
 keeps native dimensions during drawing and input so vanilla text selection matches the visual scale.
-`Row.action(widget, BooleanSupplier)` conditionally shows an action while reserving its column,
-so controls do not shift when it disappears. Hidden actions are excluded from rendering, input,
+`Row.action(widget, BooleanSupplier)` conditionally shows an action, every widget of a composite
+one, while reserving its column, so controls do not shift when it disappears. Hidden actions are excluded from rendering, input,
 tooltips and Tab navigation. Call `refreshWidgetVisibility()` after the condition changes; scrolling
 and relayout also recheck it. `ClientConfigScreen` uses this for reset buttons, which appear only
 when their setting differs from its default and disappear immediately after a reset.
@@ -1066,7 +1155,9 @@ it like a `Row`.
 
 - **Layout:** `setEntries` copies the entries and lays them out. Call `relayout()` after a label,
   unit or control size changes. `getPreferredWidth()` is the width at which nothing wraps, including
-  the always-reserved scrollbar column; `getContentHeight()` is the total entry height. The widget's
+  the always-reserved scrollbar column; `getContentHeight()` is the total entry height.
+  `getRowWidth()` is the width entries lay out in, the list's width less the scrollbar column, so a
+  wide row's control set to it fills the row. The widget's
   bounds are the rows' area; its `Padding` adds `PANEL_PADDING` on each side for the themed panel,
   so size it with `setVisualWidth`/`setVisualHeight` and position it `PANEL_PADDING` inside the
   panel. The pure geometry lives in `SettingsListLayout`.
@@ -1107,7 +1198,8 @@ it like a `Row`.
 `ConfirmationDialog` takes an optional confirm label; the shorter constructor keeps "Confirm". Both
 buttons come from `TranslucentButton.fitted`, so they're at least 50 pixels wide and grow to fit
 their text, and longer translations don't overflow. `getCancelButton()` returns the Cancel button so a screen can focus it when the dialog
-opens. `DialogWidget` receives its buttons through its constructor, and the first one sits on the
+opens. `getConfirmButton()` returns the confirm button, so a screen can turn it off while the
+dialog's input is invalid. `DialogWidget` receives its buttons through its constructor, and the first one sits on the
 right. Register the buttons through the dialog's `visitWidgets`, keep them inactive while the dialog
 is hidden, and render the open dialog on a later layer. Escape should close an open dialog before the
 screen; `ClientConfigScreen` shows the pattern.
@@ -1963,7 +2055,8 @@ Good test targets include:
   `IntegerField` to use, so `IntegerSliderTest` and `MovementAllowedScreenPopupEscapeTest` pass a
   number-field double instead of setting private fields by name through reflection, which a rename
   would break only at run time. From 26.1, an editable `EditBox` asks the game to start text input
-  when it takes focus, so a unit test can't focus a real text field. `ColorHexCodeFieldTest` types
+  when it takes focus, so a unit test can focus a real text field only when its `Minecraft` has a
+  `TextInputManager`; `LocalWaypointProfilesScreenInteractionTest` installs an allocated one. `ColorHexCodeFieldTest` types
   into a field whose `canConsumeInput()` returns true instead, built through the package-private
   constructor that also makes ARGB fields. `MovementAllowedScreenPopupEscapeTest`
   stands in for a combo box with a `ComboBoxWidget` subclass that skips the constructor and reports
@@ -1973,6 +2066,11 @@ Good test targets include:
   checks the list's rectangle with `isMouseOverSuggestion(...)`, reads which suggestions the rows
   show by clicking one, and drives hover through the package-private `layoutSuggestions(...)`, the
   layout half of `renderSuggestions(...)`, so nothing needs a graphics context.
+- A whole screen on real storage. `LocalWaypointProfilesScreenInteractionTest` drives
+  `LocalWaypointProfilesScreen` over real Local profiles: its package-private `start()` lays the
+  screen out and registers its widgets without the base screen's key setup that `init()` needs, and a
+  click is replayed as the widget's `onClick`, vanilla's `setFocused` on the clicked widget, then
+  `applyPendingFocus()`. `TestFont.wrapping()` breaks text into lines, so labels wrap as in game.
 - Drawing decisions that don't need a real graphics context. `SettingsListWidget.renderPart` is
   package-private and static, so `SettingsListWidgetTest` calls it with a null context and a
   `WidgetStack` double whose render method records its widgets' `visible` flags and the mouse

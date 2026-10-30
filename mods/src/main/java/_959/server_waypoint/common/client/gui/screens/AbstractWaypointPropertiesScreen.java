@@ -111,8 +111,8 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     private static final String AXIS_LETTERS = "XYZRUF";
     private static final Component ELLIPSIS = Component.literal("…");
     protected final ClientWaypointAccess access;
-    protected final ClientWaypointSelection selection;
-    private final WaypointFormCheck.Lookup data;
+    protected ClientWaypointSelection selection;
+    private WaypointFormCheck.Lookup data;
 
     protected final Screen previousScreen;
     protected final String dimensionName;
@@ -318,12 +318,21 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
 
     // ------------------------------------------------------------------ building
 
+    /** Additional live availability checks before enabling submission. */
+    protected boolean destinationAvailable() { return this.access.valid(this.selection); }
+
+    protected final void retargetDestination(ClientWaypointSelection destination) {
+        this.selection = destination;
+        this.data = WaypointFormCheck.lookup(access, destination);
+    }
+
     /** One labelled row above Name whose single control fills the control column. */
     protected record LeadingRow(FormField field, AbstractWidget control, IntConsumer setWidth) {
     }
 
     /** The form's fields, each with the tooltip shown when the pointer rests on its label or controls. */
     enum FormField {
+        DESTINATION("waypoint.form.destination", "waypoint.form.destination.tooltip"),
         DIMENSION("waypoint.form.dimension", "waypoint.form.dimension.tooltip"),
         LIST("waypoint.form.list", "waypoint.form.list.tooltip"),
         NAME("waypoint.form.name", "waypoint.form.name.tooltip"),
@@ -734,7 +743,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         boolean locked = modal || pending != null;
         WaypointFormCheck.Problem problem = WaypointFormCheck.firstProblem(this.checkInput(), this.data);
         boolean changed = this.hasChanges();
-        boolean canSubmit = this.access.valid(this.selection) && !locked && !(problem != null && problem.blocks()) && changed;
+        boolean canSubmit = this.destinationAvailable() && !locked && !(problem != null && problem.blocks()) && changed;
 
         for (AbstractWidget control : this.fieldControls) {
             setControlActive(control, !locked);
@@ -755,6 +764,8 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
             this.showStatus(this.resultMessage, DANGER);
         } else if (!this.access.valid(this.selection)) {
             this.showStatus(Component.translatable("waypoint.form.status.obsolete"), DANGER);
+        } else if (!destinationAvailable()) {
+            this.showStatus(Component.translatable("waypoint.form.status.denied"), DANGER);
         } else if (problem != null) {
             this.showStatus(this.messageFor(problem), problem.kind() == WaypointFormCheck.Kind.ERROR ? DANGER : TEXT_MUTED);
         } else {

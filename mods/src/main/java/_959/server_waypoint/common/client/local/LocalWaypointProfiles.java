@@ -7,6 +7,7 @@ import _959.server_waypoint.core.WaypointFilesManagerCore;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -35,6 +36,17 @@ public final class LocalWaypointProfiles implements AutoCloseable {
     private ProfileFiles files;
     private Integer backend;
     private boolean manual;
+    private String place;
+
+    /** How the active profile came to be in use. */
+    public enum ActiveReason {
+        /** The address's or world's saved profile, chosen on join. */
+        FALLBACK,
+        /** The profile bound to the backend identity the server reported. */
+        BACKEND,
+        /** The player picked it: Use, New, or deleting the active profile. */
+        MANUAL
+    }
 
     public record Profile(UUID id, String name, String teleportCommand) {
         public Profile {
@@ -55,16 +67,26 @@ public final class LocalWaypointProfiles implements AutoCloseable {
     public synchronized Path directory() { return directory; }
     public synchronized List<Profile> profiles() { return index == null ? List.of() : index.profiles(); }
 
+    /** The server address as typed, or the singleplayer world's name; {@code null} outside a session. */
+    public synchronized @Nullable String place() { return place; }
+
+    public synchronized @Nullable ActiveReason activeReason() {
+        if (active == null) return null;
+        if (manual) return ActiveReason.MANUAL;
+        return backend != null && active.id().equals(index.bindings().get(backend)) ? ActiveReason.BACKEND : ActiveReason.FALLBACK;
+    }
+
     public synchronized void joinMultiplayer(UUID account, String address) throws IOException {
         join(gameRoot.resolve("server_waypoint/local").resolve(Objects.requireNonNull(account).toString())
-                .resolve(addressDigest(address)));
+                .resolve(addressDigest(address)), address.strip());
     }
 
-    public synchronized void joinSingleplayer(UUID account, Path worldSave) throws IOException {
-        join(worldSave.resolve("server_waypoint/client-local").resolve(Objects.requireNonNull(account).toString()));
+    public synchronized void joinSingleplayer(UUID account, Path worldSave, String worldName) throws IOException {
+        join(worldSave.resolve("server_waypoint/client-local").resolve(Objects.requireNonNull(account).toString()),
+                worldName.strip());
     }
 
-    private void join(Path target) throws IOException {
+    private void join(Path target, String label) throws IOException {
         save();
         Index loaded = readIndex(target);
         Profile selected = find(loaded, loaded.fallback());
@@ -74,6 +96,7 @@ public final class LocalWaypointProfiles implements AutoCloseable {
         index = loaded;
         backend = null;
         manual = false;
+        place = label;
         publish(selected, loadedFiles);
     }
 
@@ -190,9 +213,13 @@ public final class LocalWaypointProfiles implements AutoCloseable {
         requireActive();
         if (selection.source() != ClientWaypointSource.LOCAL || !collections.valid(selection)
                 || !active.id().equals(selection.profileId())) throw new IllegalStateException("Obsolete Local selection");
-        T result = operation.apply(files);
-        save();
-        return result;
+        try {
+            T result = operation.apply(files);
+            save();
+            return result;
+        } finally {
+            collections.changed(ClientWaypointSource.LOCAL);
+        }
     }
 
     public synchronized void save() throws IOException {
@@ -209,6 +236,7 @@ public final class LocalWaypointProfiles implements AutoCloseable {
         files = null;
         backend = null;
         manual = false;
+        place = null;
     }
 
     @Override

@@ -43,6 +43,15 @@ class IconButtonTest {
         assertEquals(0, inactive.surfaceColor());
     }
 
+    @Test
+    void anIconColorTintsTheIconOnlyWhileActive() {
+        assertEquals(WidgetThemeState.iconTint(true), button(false).iconTint());
+        IconButton danger = button(false).withIconColor(WidgetThemeVariable.DANGER);
+        assertEquals(WidgetThemeManager.getColor(WidgetThemeVariable.DANGER), danger.iconTint());
+        danger.active = false;
+        assertEquals(WidgetThemeState.iconTint(false), danger.iconTint());
+    }
+
     private static IconButton button(boolean hovered) {
         return new IconButton(0, 0, 16, 16, Component.empty(), null, () -> {
         }) {
