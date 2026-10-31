@@ -50,7 +50,7 @@
   "waypoint.group.flat": "平铺列表",
   "waypoint.details.title": "路径点详情",
   "waypoint.details.select": "选择一个路径点以查看其信息。",
-  "waypoint.details.none": "<无>",
+  "waypoint.details.collection": "集合：%1$s",
   "waypoint.details.name": "名称：%1$s",
   "waypoint.details.display_name": "显示名称：%1$s",
   "waypoint.details.initials": "缩写：%1$s",

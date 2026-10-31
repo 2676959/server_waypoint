@@ -355,3 +355,32 @@ The user authorized implementation and a separate local commit for each verified
   1,086 tests; Fabric 1.20.1 focused 136 tests; zero failures, errors or skips. The loaders compile.
 - See [validation](../2026-10-30-local-profile-list.md). No live in-game check ran (the user's
   decision); Task 8 remains pending.
+
+## Manager control placement (2026-10-31)
+
+- The user asked for better places for the manager's floating Local profile status and the Add, Copy
+  and profile icons above the details panel, and approved a short in-chat design. No spec, plan,
+  commit or delegation.
+- Add now ends the search row, Copy waypoint is a text button at the bottom of the details panel
+  while a waypoint is selected, and the status label became the Local profile button above the
+  panels' left edge. The layout and button-text tests failed first (logs in
+  [manager-control-placement](manager-control-placement/)).
+- Verified: Fabric 26.1.2 full suite 1,094 tests and Fabric 1.20.1 full suite 1,082 tests, zero
+  failures, errors or skips; all 41 mods targets compile with their tests. A live probe on the
+  26.1.2 Fabric test client checked placement, tooltips and the three buttons at 427×240 and 854×480.
+- See [validation](../2026-10-31-manager-control-placement.md).
+- The frames showed the details panel's Collection row without its value: it reused the form's label,
+  which has no argument placeholder. The user asked for the fix: a `waypoint.details.collection`
+  string in all six locales. A panel text test and a translation test failed first; verified with
+  Fabric 26.1.2 (1,096 tests) and Fabric 1.20.1 (1,084 tests) full suites, all 41 targets compiling
+  and a live frame reading "Collection: Local".
+- The user then asked for the details panel's other strings in the four locales that had none of them.
+  Spanish, Hebrew, Hong Kong and Taiwan Chinese gained its 14 other strings in each locale's existing
+  wording. A translation test over all 15 strings failed first; verified with Fabric 26.1.2 (1,105
+  tests) and Fabric 1.20.1 (1,093 tests) full suites, counts that include another session's concurrent
+  form-subtitle tests. Twelve manager control strings and one network error remain English-only there.
+- Finally the user asked for the remaining strings and the removal of the unused
+  `waypoint.details.none`. The four locales gained 12 manager control strings and the network error,
+  worded like the server's `/wp list` translations, and the key left English and Simplified Chinese;
+  all six client locales now hold the same 316 keys. The manager key, retired key and network message
+  tests failed first; verified with Fabric 26.1.2 (1,110 tests) and Fabric 1.20.1 (1,098 tests).

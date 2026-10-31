@@ -676,8 +676,19 @@ the manager is reset to `WidgetThemes.DEFAULT`.
 starts in Combined, whose creation destination is Local; individual views default to their own
 source. The manager keeps the current-world/Remote toggle separate and hides its collection
 selector while browsing Remote. The selector uses the manager-owned `IconDropdownMenu`, including
-its offset, layering, outside-click and Escape contracts. Add, Copy and Local profile controls sit
-above the details panel, preserving the sidebar's control count at constrained heights.
+its offset, layering, outside-click and Escape contracts. Each other action sits beside what it acts
+on, which also keeps the sidebar's control count at constrained heights. Add ends the search row, a
+horizontal `WidgetPack` nested in the list column: a square as tall as the search bar, with the field
+one gap short of it (`ManagerLayoutGeometry.searchFieldWidth`). Copy waypoint is a fitted text button
+at the bottom right of the details panel, shown only while a waypoint is selected; the details then end
+one gap above it (`detailsHeight`, `detailsFooterX`, `detailsFooterY`) and otherwise reach the panel
+bottom, as the remote details always do. The line above the panels (`headerY`) starts at their left
+edge with the Local profile button, a fitted text button naming the active profile that opens
+`LocalWaypointProfilesScreen`; without an active profile it names that screen. The status after it
+lists the view's unavailable sources. `profileButtonMaxWidth` leaves the status its one-line width, up
+to half the line, and `profileButtonText` cuts the button's label to the rest, the tooltip then giving
+the whole label instead of the screen's name. A status that still wraps grows up from the line. The
+remote view hides Add, Copy, the profile button and the status.
 
 `ClientWaypointQuery` queries each ready selected store through `WaypointQueryEngine` and
 `WaypointListDisplayModel`, returning immutable `Result`, `ListGroup`, `Row` and `Suggestion`
@@ -813,7 +824,9 @@ Those cases do not justify duplicating standalone message rendering elsewhere.
 
 `TranslucentButton.fitted(label, callback)` makes an 11-pixel-high text button as wide as its label
 plus 5 pixels on each side, and at least 50 pixels wide, so short labels line up and long
-translations still fit. Dialog and footer buttons use it.
+translations still fit. Dialog and footer buttons use it. `setFittedText(label)` changes a fitted
+button's label and refits its width, and `fittedLabelWidth(width)` is the widest label a fitted button
+that wide shows in full; the manager's Local profile button uses both to cut a long profile name.
 
 `ColorHexCodeField` edits an opaque RGB color by default: six digits after the `#`, the placeholder
 `RRGGBB`, and `getColor()` and `setColor(int)` use RGB (`setColor` ignores the alpha). The waypoint
@@ -853,8 +866,10 @@ active and hovered or focused.
 Use `withIconPadding(int)` to choose a smaller non-negative inset, and
 `withIconRegion(x, y, width, height, textureWidth, textureHeight)` to fit and center the visible
 source region while preserving its proportions. The reset and clear buttons both use a 3-pixel
-inset and exclude their textures' unequal transparent margins, matching the add button's visible
-inset (its 2-pixel drawing inset plus transparent texture margin).
+inset and exclude their textures' unequal transparent margins, matching the visible inset of the
+manager's 16-pixel sidebar icons (their 2-pixel drawing inset plus transparent texture margin).
+Buttons as small as a text row use a 1-pixel inset instead, as the manager's 11-pixel add button
+and the Local profile list's rename and delete buttons do, so their icons stay legible.
 Screen-local icon controls should use the same inset so adjacent icon actions remain visually consistent.
 An inactive `IconButton` multiplies its icon by the theme's `TEXT_DISABLED`, the color a disabled
 button's label takes, so an unavailable action, such as resetting a setting that's already at its
@@ -987,7 +1002,7 @@ each panel's fill once, over the whole panel; the waypoint list, the remote tree
 that fill and paint none of their own, so they match the other panels at any theme translucence. The
 list keeps its own outline, which frames it inside the list panel. A widget added to a panel follows
 the same rule. The same goes for controls: the sidebar's icon buttons (the scope, grouping and sort-order
-toggles, the sort dropdown's button and the add button) and the search field paint no fill while idle, only
+toggles and the sort dropdown's button), the add button and the search field paint no fill while idle, only
 their border, so a control isn't a second translucent layer stacked on the panel. Hovering, the disabled
 look and a selected control still fill. The sort dropdown's popup rows float over other widgets, so they keep
 their resting fill; `WaypointManagerScreen.resolveIconControlFill` makes that choice.
@@ -1013,8 +1028,8 @@ flat mode sorts within the selected server and dimension scope while retaining s
 list, and waypoint identity; grouped mode shows list roots for a selected dimension or dimension/list roots for all dimensions. Remote distance sorting is unavailable because there
 is no shared player origin across servers (entering remote mode from distance sorting selects name,
 and the distance sort choice is hidden).
-In remote mode, `ServerListWidget` appears immediately above the scope toggle and the add button
-is hidden, releasing its layout slot. The dimension rail shows dimensions from the selected remote
+In remote mode, `ServerListWidget` appears immediately above the scope toggle, and the add button
+is hidden, giving its width back to the search field. The dimension rail shows dimensions from the selected remote
 server's catalog (including exported empty dimensions); `RemoteBrowserModel.dimensionNames` leaves
 it empty for an unavailable server, whose retained snapshot the tree also hides. The all-dimensions
 toggle applies within that server. One-pixel themed separator lines separate the dimension and server rails, and the server
@@ -1058,8 +1073,8 @@ up respectively, stop at their content sizes, and scroll when constrained. Icons
 top to bottom, so their wheel scrolling follows the same direction. The helper returns zero
 sizes if even both minima plus their gap cannot fit; the screen hides the rails at that tiny size.
 The pure `WaypointManagerScreen.calculateSidebarLayout` combines this allocation with the number of
-visible controls, which stack upward from the content bottom with 4-pixel gaps, so a hidden toggle
-or add button releases its slot to the rails. Catalog changes, mode switches, resize and changes in
+visible controls, which stack upward from the content bottom with 4-pixel gaps, so a hidden control
+releases its slot to the rails. Catalog changes, mode switches, resize and changes in
 remote-server availability all recalculate it. Local mutation callbacks
 must not replace the remote dimension catalog.
 

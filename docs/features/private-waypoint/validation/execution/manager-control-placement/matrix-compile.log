@@ -1,0 +1,94 @@
+tasks: 41
+> Task :cross-server:compileJava UP-TO-DATE
+> Task :common:compileJava UP-TO-DATE
+> Task :mods:1.20.1-fabric:compileJava UP-TO-DATE
+> Task :mods:1.20.1-fabric:compileTestJava UP-TO-DATE
+> Task :mods:1.20.4-fabric:compileJava
+> Task :mods:1.20.2-fabric:compileJava
+> Task :mods:1.20.2-fabric:compileTestJava
+> Task :mods:1.20.4-fabric:compileTestJava
+> Task :mods:1.20.6-fabric:compileJava
+> Task :mods:1.21-fabric:compileJava
+> Task :mods:1.20.6-fabric:compileTestJava
+> Task :mods:1.21-fabric:compileTestJava
+> Task :mods:1.21.3-fabric:compileJava
+> Task :mods:1.21.2-fabric:compileJava
+> Task :mods:1.21.2-fabric:compileTestJava
+> Task :mods:1.21.3-fabric:compileTestJava
+> Task :mods:1.21.6-fabric:compileJava
+> Task :mods:1.21.5-fabric:compileJava
+> Task :mods:1.21.6-fabric:compileTestJava
+> Task :mods:1.21.5-fabric:compileTestJava
+> Task :mods:1.21.9-fabric:compileJava
+> Task :mods:1.21.11-fabric:compileJava
+> Task :mods:1.21.9-fabric:compileTestJava
+> Task :mods:26.1.2-fabric:compileJava UP-TO-DATE
+> Task :mods:26.1.2-fabric:compileTestJava UP-TO-DATE
+> Task :mods:1.21.11-fabric:compileTestJava
+> Task :mods:26.3-fabric:compileJava
+> Task :mods:26.2-fabric:compileJava
+> Task :mods:26.3-fabric:compileJava
+> Task :mods:26.2-fabric:compileTestJava
+> Task :mods:26.3-fabric:compileTestJava
+> Task :mods:1.20.2-neoforge:compileJava
+> Task :mods:1.20.2-neoforge:compileTestJava
+> Task :mods:1.20.4-neoforge:compileJava
+> Task :mods:1.20.6-neoforge:compileJava
+> Task :mods:1.20.4-neoforge:compileTestJava
+> Task :mods:1.20.6-neoforge:compileTestJava
+> Task :mods:1.21-neoforge:compileJava
+> Task :mods:1.21.2-neoforge:compileJava
+> Task :mods:1.21-neoforge:compileTestJava
+> Task :mods:1.21.2-neoforge:compileTestJava
+> Task :mods:1.21.3-neoforge:compileJava
+> Task :mods:1.21.5-neoforge:compileJava
+> Task :mods:1.21.3-neoforge:compileTestJava
+> Task :mods:1.21.5-neoforge:compileTestJava
+> Task :mods:1.21.7-neoforge:compileJava
+> Task :mods:1.21.6-neoforge:compileJava
+> Task :mods:1.21.7-neoforge:compileTestJava
+> Task :mods:1.21.6-neoforge:compileTestJava
+> Task :mods:1.21.9-neoforge:compileJava
+> Task :mods:1.21.9-neoforge:compileTestJava
+> Task :mods:1.21.11-neoforge:compileJava
+> Task :mods:26.1.2-neoforge:compileJava
+> Task :mods:1.21.11-neoforge:compileTestJava
+> Task :mods:26.1.2-neoforge:compileTestJava
+> Task :mods:26.2-neoforge:compileJava
+> Task :mods:26.3-neoforge:compileJava
+> Task :mods:26.2-neoforge:compileTestJava
+> Task :mods:26.3-neoforge:compileTestJava
+> Task :mods:1.20.1-forge:compileJava
+Note: Writing searge composite mappings to /Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/1.20.1-forge/build/tmp/compileJava/server_waypoint-common-mixins.tsrg
+Note: Writing searge composite mappings to /Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/1.20.1-forge/build/tmp/compileJava/server_waypoint-common-mixins.tsrg
+> Task :mods:1.20.2-forge:compileJava
+Note: Writing searge composite mappings to /Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/1.20.2-forge/build/tmp/compileJava/server_waypoint-common-mixins.tsrg
+Note: Writing searge composite mappings to /Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/1.20.2-forge/build/tmp/compileJava/server_waypoint-common-mixins.tsrg
+> Task :mods:1.20.1-forge:compileTestJava
+> Task :mods:1.20.2-forge:compileTestJava
+> Task :mods:1.20.4-forge:compileJava
+Note: Writing searge composite mappings to /Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/1.20.4-forge/build/tmp/compileJava/server_waypoint-common-mixins.tsrg
+Note: Writing searge composite mappings to /Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/1.20.4-forge/build/tmp/compileJava/server_waypoint-common-mixins.tsrg
+> Task :mods:1.20.6-forge:compileJava
+> Task :mods:1.20.6-forge:compileTestJava
+> Task :mods:1.20.4-forge:compileTestJava
+> Task :mods:1.21-forge:compileJava
+> Task :mods:1.21.3-forge:compileJava
+> Task :mods:1.21-forge:compileTestJava
+> Task :mods:1.21.3-forge:compileTestJava
+> Task :mods:1.21.5-forge:compileJava
+> Task :mods:1.21.6-forge:compileJava
+> Task :mods:1.21.5-forge:compileTestJava
+> Task :mods:1.21.6-forge:compileTestJava
+> Task :mods:1.21.9-forge:compileJava
+> Task :mods:1.21.11-forge:compileJava
+> Task :mods:1.21.9-forge:compileTestJava
+> Task :mods:1.21.11-forge:compileTestJava
+> Task :mods:26.1.2-forge:compileJava
+> Task :mods:26.2-forge:compileJava
+> Task :mods:26.1.2-forge:compileTestJava
+> Task :mods:26.2-forge:compileTestJava
+> Task :mods:26.3-forge:compileJava
+> Task :mods:26.3-forge:compileTestJava
+BUILD SUCCESSFUL in 1m 39s
+326 actionable tasks: 272 executed, 54 up-to-date

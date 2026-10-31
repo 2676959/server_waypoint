@@ -282,7 +282,7 @@ public final class WaypointDetailsWidget extends ShiftableScrollableWidget imple
                 SECTION_GAP,
                 null
         ));
-        rows.add(detail("waypoint.form.destination", Component.translatable("waypoint.collection."
+        rows.add(detail("waypoint.details.collection", Component.translatable("waypoint.collection."
                 + selection.identity().source().name().toLowerCase(java.util.Locale.ROOT))));
         rows.add(detail("waypoint.details.name", Component.literal(waypoint.name())));
         rows.add(detail("waypoint.details.display_name", parseFormattedText(waypoint.displayName())));

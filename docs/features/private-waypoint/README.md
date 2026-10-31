@@ -34,6 +34,7 @@ there is no automatic mirroring between collections.
 - [Config-style Local profile rows](validation/2026-10-30-profile-hybrid-rows.md)
 - [Local profile layout refinement](validation/2026-10-29-local-profile-layout.md)
 - [Collection manager and composed-render validation](validation/2026-10-29-collection-manager.md)
+- [Manager control placement](validation/2026-10-31-manager-control-placement.md)
 - [Execution evidence and progress](validation/execution/progress.md)
 
 ## Delivery stages

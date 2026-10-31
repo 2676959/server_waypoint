@@ -50,7 +50,7 @@
   "waypoint.group.flat": "Flat list",
   "waypoint.details.title": "Waypoint details",
   "waypoint.details.select": "Select a waypoint to view its information.",
-  "waypoint.details.none": "<None>",
+  "waypoint.details.collection": "Collection: %1$s",
   "waypoint.details.name": "Name: %1$s",
   "waypoint.details.display_name": "Display name: %1$s",
   "waypoint.details.initials": "Initials: %1$s",

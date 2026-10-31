@@ -22,9 +22,22 @@ class RemoteGuiTranslationTest {
             "waypoint.remote.empty.unauthorized",
             "waypoint.remote.empty.server_unavailable",
             "waypoint.remote.empty.server",
-            "waypoint.remote.empty.dimension"
+            "waypoint.remote.empty.dimension",
+            "waypoint.dimension.show_selected",
+            "waypoint.dimension.show_all",
+            "waypoint.search.entry",
+            "waypoint.search.hint",
+            "waypoint.sort.default",
+            "waypoint.sort.name",
+            "waypoint.sort.distance",
+            "waypoint.sort.color",
+            "waypoint.sort.ascending",
+            "waypoint.sort.descending",
+            "waypoint.group.lists",
+            "waypoint.group.flat"
     );
-    private static final List<String> RETIRED_KEYS = List.of("waypoint.remote.gui.selector", "waypoint.empty_mark");
+    private static final List<String> RETIRED_KEYS = List.of("waypoint.remote.gui.selector", "waypoint.empty_mark",
+            "waypoint.details.none");
 
     @Test void allSixLocalesCoverRemoteGuiKeysAndPlaceholders() throws Exception {
         JsonObject english = read("en_us");

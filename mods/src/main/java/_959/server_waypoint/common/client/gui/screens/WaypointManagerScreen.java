@@ -13,6 +13,7 @@ import _959.server_waypoint.common.client.ClientWaypointSelection;
 import _959.server_waypoint.common.client.ClientWaypointAccess;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
 import _959.server_waypoint.common.client.gui.layout.OpposedExpansionLayout;
+import _959.server_waypoint.common.client.gui.layout.VisualPositioning;
 import _959.server_waypoint.crossserver.RemoteServerId;
 import _959.server_waypoint.crossserver.catalog.CatalogReceiver;
 import java.util.Map;
@@ -27,6 +28,7 @@ import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.core.waypoint.WaypointSorting;
 import com.mojang.blaze3d.platform.InputConstants;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.layouts.SpacerElement;
 import net.minecraft.client.gui.screens.Screen;
@@ -69,6 +71,9 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     private static final int SECTION_GAP = 6;
     private static final int CONTROL_GAP = 4;
     private static final int SEARCH_GAP = 4;
+    private static final int DETAILS_FOOTER_GAP = 4;
+    private static final int HEADER_GAP = 2;
+    private static final int HEADER_ITEM_GAP = 6;
     private static final int DROPDOWN_ITEM_GAP = 2;
     private static final int DIMENSION_ICON_SIZE = 16;
     private static final int DIMENSION_ICON_GAP = 2;
@@ -93,8 +98,8 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     private final IconToggleButton sortOrderToggle;
     private final IconDropdownMenu sortingModeDropdown;
     private final IconDropdownMenu collectionDropdown;
-    private final IconButton profileButton;
-    private final IconButton copyButton;
+    private final TranslucentButton profileButton;
+    private final TranslucentButton copyButton;
     private ClientWaypointQuery.View collectionView;
     private long collectionGeneration = -1;
     private final IconToggleButton allDimensionsToggle;
@@ -115,6 +120,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     private ManagerViewState builtState = ManagerViewState.LOADING;
     private boolean hasInitialized = false;
     private boolean hasRemoteServers;
+    private final WidgetPack searchRow;
     private final WidgetPack middleLayout;
     private ManagerLayoutGeometry layoutGeometry = calculateLayoutGeometry(0, 0);
 
@@ -133,11 +139,10 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
             }, () -> setCollectionView(view));
         }
         collectionDropdown.setSelectedIndex(collectionView.ordinal());
-        this.profileButton = new IconButton(0, 0, 16, 16, Component.translatable("waypoint.profile.manage"),
-                WidgetTextures.HOME_ICON, () -> MinecraftClientHelper.setScreen(new LocalWaypointProfilesScreen(this, waypointClientMod)));
-        this.copyButton = new IconButton(0, 0, 16, 16, Component.translatable("waypoint.copy"), WidgetTextures.STACKS_ICON, this::openCopyScreen);
-        profileButton.setTooltip(profileButton.getMessage());
-        copyButton.setTooltip(copyButton.getMessage());
+        this.profileButton = TranslucentButton.fitted(Component.translatable("waypoint.profile.manage"),
+                () -> MinecraftClientHelper.setScreen(new LocalWaypointProfilesScreen(this, waypointClientMod)));
+        this.copyButton = TranslucentButton.fitted(Component.translatable("waypoint.copy"), this::openCopyScreen);
+        this.copyButton.visible = false;
         this.remotePanel = new RemoteWaypointPanel(waypointClientMod, this.font);
         this.statusMessage = new ScalableText(0, 0, Component.empty(), WidgetThemeVariable.TEXT_PRIMARY, this.font);
         this.serverScopeToggle = new IconToggleButton(
@@ -180,18 +185,12 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 this,
                 new ClientWaypointQuery(waypointClientMod.collections()),
                 this.font,
-                waypointDetailsWidget::setSelection
+                selection -> {
+                    waypointDetailsWidget.setSelection(selection);
+                    // Copy shows for a selected waypoint, so it appears with the selection.
+                    refreshCollectionControls();
+                }
         );
-        addWaypointButton = new IconButton(
-                0,
-                0,
-                16,
-                16,
-                Component.translatable("waypoint.add.button"),
-                WidgetTextures.ADD_ICON,
-                this::openAddWaypointScreen
-        ).withoutRestingFill();
-        addWaypointButton.setTooltip(addWaypointButton.getMessage());
         allDimensionsToggle = new IconToggleButton(
                 Component.translatable("waypoint.dimension.show_selected"),
                 Component.translatable("waypoint.dimension.show_all"),
@@ -211,6 +210,17 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 }
         );
         searchField.setSuggestionsProvider(() -> showingRemote ? List.of() : waypointListWidget.getSearchSuggestions());
+        int searchBarHeight = searchField.getVisualHeight();
+        addWaypointButton = new IconButton(
+                0,
+                0,
+                searchBarHeight,
+                searchBarHeight,
+                Component.translatable("waypoint.add.button"),
+                WidgetTextures.ADD_ICON,
+                this::openAddWaypointScreen
+        ).withoutRestingFill().withIconPadding(1);
+        addWaypointButton.setTooltip(addWaypointButton.getMessage());
         groupModeToggle = new IconToggleButton(
                 Component.translatable("waypoint.group.flat"),
                 Component.translatable("waypoint.group.lists"),
@@ -252,12 +262,15 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         restorePersistentState();
         syncControlStates();
 
+        this.searchRow = new WidgetPack(MIN_MIDDLE_PART_WIDTH, searchBarHeight, LayoutFlow.Orientation.HORIZONTAL);
+        this.searchRow.addChild(searchField, LayoutFlow.Direction.FORWARD);
+        this.searchRow.addChild(addWaypointButton, LayoutFlow.Direction.REVERSE);
         this.middleLayout = new WidgetPack(
                 MIN_MIDDLE_PART_WIDTH,
                 MAX_CONTENT_HEIGHT,
                 LayoutFlow.Orientation.VERTICAL
         );
-        this.middleLayout.addChild(searchField, LayoutFlow.Direction.FORWARD);
+        this.middleLayout.addChild(searchRow, LayoutFlow.Direction.FORWARD);
         this.middleLayout.addChild(SpacerElement.height(SEARCH_GAP), LayoutFlow.Direction.FORWARD);
         this.middleLayout.addChild(waypointListWidget, LayoutFlow.Direction.FORWARD);
     }
@@ -445,9 +458,9 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         searchField.active = middleVisible;
         waypointListWidget.visible = middleVisible;
         waypointListWidget.active = middleVisible;
-        searchField.setVisualWidth(this.layoutGeometry.middlePartWidth());
         waypointListWidget.setVisualWidth(this.layoutGeometry.middlePartWidth());
         waypointListWidget.setVisualHeight(Math.max(MIN_WAYPOINT_LIST_HEIGHT, waypointListHeight));
+        this.searchRow.setWidth(this.layoutGeometry.middlePartWidth());
         this.middleLayout.setDimensions(
                 this.layoutGeometry.middlePartWidth(),
                 this.layoutGeometry.contentHeight()
@@ -457,13 +470,15 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         waypointDetailsWidget.active = true;
         waypointDetailsWidget.setDimensions(
                 this.layoutGeometry.detailsContentWidth(),
-                Math.max(1, this.layoutGeometry.contentHeight() - 20)
+                Math.max(1, this.layoutGeometry.detailsHeight(detailsFooterHeight()))
         );
         waypointDetailsWidget.setX(this.layoutGeometry.detailsContentX());
-        waypointDetailsWidget.setY(this.layoutGeometry.contentY() + 20);
-        addWaypointButton.setPosition(layoutGeometry.detailsContentX(), layoutGeometry.contentY());
-        copyButton.setPosition(layoutGeometry.detailsContentX() + 20, layoutGeometry.contentY());
-        profileButton.setPosition(layoutGeometry.detailsContentX() + 40, layoutGeometry.contentY());
+        waypointDetailsWidget.setY(this.layoutGeometry.contentY());
+        VisualPositioning.setVisualPosition(
+                copyButton,
+                layoutGeometry.detailsFooterX(copyButton.getVisualWidth()),
+                layoutGeometry.detailsFooterY(copyButton.getVisualHeight())
+        );
         collectionDropdown.setPopupXOffset(layoutGeometry.dropdownXOffset(collectionDropdown.getPopupItemCount()));
 
         layoutSidebar();
@@ -591,19 +606,18 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
             hasInitialized = true;
         }
 
+        this.addRenderableWidget(profileButton);
         this.addRenderableWidget(dimensionListWidget);
         this.addRenderableWidget(serverScopeToggle);
         this.addRenderableWidget(allDimensionsToggle);
         this.addRenderableWidget(groupModeToggle);
         this.addRenderableWidget(sortOrderToggle);
         this.addRenderableWidget(sortingModeDropdown);
-        this.addRenderableWidget(addWaypointButton);
-        this.addRenderableWidget(copyButton);
-        this.addRenderableWidget(profileButton);
         this.addRenderableWidget(collectionDropdown);
         this.middleLayout.visitWidgets(this::addRenderableWidget);
         this.addRenderableWidget(serverListWidget);
         this.addRenderableWidget(this.waypointDetailsWidget);
+        this.addRenderableWidget(copyButton);
         remotePanel.register(this::addRenderableWidget);
         updatePanelVisibility();
         layoutSidebar();
@@ -831,7 +845,12 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         var destination = defaultDestination();
         addWaypointButton.active = addWaypointButton.visible && destination != null && access.allowed(destination, ClientWaypointAccess.Action.ADD);
         var selected = waypointListWidget.selectedWaypoint();
-        copyButton.active = copyButton.visible && selected != null && access.allowed(selected.identity(), ClientWaypointAccess.Action.READ);
+        boolean copyVisible = !showingRemote && selected != null;
+        if (copyButton.visible != copyVisible) {
+            copyButton.visible = copyVisible;
+            layoutDetails();
+        }
+        copyButton.active = copyVisible && access.allowed(selected.identity(), ClientWaypointAccess.Action.READ);
         profileButton.active = profileButton.visible && waypointClientMod.collections().ready(ClientWaypointSource.LOCAL);
         Component status = Component.empty();
         for (var source : collectionView.sources()) {
@@ -841,20 +860,49 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                     .append(": ").append(Component.translatable("waypoint.collection.state."
                             + waypointClientMod.collections().state(source).name().toLowerCase(java.util.Locale.ROOT)));
         }
-        var profile = waypointClientMod.localProfiles().active();
-        if (profile != null) {
-            if (!status.getString().isEmpty()) status = status.copy().append(" · ");
-            status = status.copy().append(Component.translatable("waypoint.profile.current", profile.name()));
-        }
-        statusMessage.setText(status);
-        statusMessage.setMaxWidth(Math.max(1, width - SCREEN_MARGIN * 2));
-        statusMessage.setPosition(SCREEN_MARGIN, Math.max(0, layoutGeometry.panelY() - statusMessage.getHeight() - 2));
+        layoutHeader(status);
         for (int i = 0; i < 3; i++) {
             var source = ClientWaypointSource.values()[i];
             var state = waypointClientMod.collections().state(source);
             collectionDropdown.iconItems.get(i).setTooltip(Component.translatable(ClientWaypointQuery.View.values()[i].translationKey())
                     .append(" · ").append(Component.translatable("waypoint.collection.state." + state.name().toLowerCase(java.util.Locale.ROOT))));
         }
+    }
+
+    /**
+     * Places the Local profile button at the left of the line above the panels and the source status
+     * after it. The button names the active profile, cut short to leave the status its width.
+     */
+    private void layoutHeader(Component status) {
+        var profile = waypointClientMod.localProfiles().active();
+        int maxButtonWidth = layoutGeometry.profileButtonMaxWidth(this.font.width(status));
+        ProfileButtonText text = profileButtonText(this.font, profile == null ? null : profile.name(),
+                TranslucentButton.fittedLabelWidth(maxButtonWidth));
+        profileButton.setFittedText(text.label());
+        profileButton.setTooltip(text.tooltip());
+        int x = layoutGeometry.leftPanelX();
+        int rowHeight = profileButton.getVisualHeight();
+        int rowY = layoutGeometry.headerY(rowHeight);
+        VisualPositioning.setVisualPosition(profileButton, x, rowY);
+        int statusX = x + profileButton.getVisualWidth() + HEADER_ITEM_GAP;
+        statusMessage.setText(status);
+        statusMessage.setMaxWidth(Math.max(1, x + layoutGeometry.completeWidth() - statusX));
+        if (statusMessage.getHeight() > rowHeight) {
+            // A status that wraps grows up from the bottom of the row.
+            statusMessage.setPosition(statusX, Math.max(0, rowY + rowHeight - statusMessage.getHeight()));
+        } else {
+            VisualPositioning.setCenteredRowPosition(statusMessage, statusX, rowY, rowHeight);
+        }
+    }
+
+    /** Fits the details above the Copy button while it shows. */
+    private void layoutDetails() {
+        waypointDetailsWidget.setHeight(Math.max(1, layoutGeometry.detailsHeight(detailsFooterHeight())));
+    }
+
+    /** The height the Copy button takes at the bottom of the details panel, 0 while it's hidden. */
+    private int detailsFooterHeight() {
+        return copyButton.visible ? copyButton.getVisualHeight() : 0;
     }
 
     private static void syncSelectedDimension(String dimensionName) {
@@ -890,6 +938,10 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         //$ render_method_swap
         extractRenderState
                 (context, beneathPopupMouseX, beneathPopupMouseY, delta);
+        addWaypointButton.
+        //$ render_method_swap
+        extractRenderState
+                (context, beneathPopupMouseX, beneathPopupMouseY, delta);
         waypointListWidget.
         //$ render_method_swap
         extractRenderState
@@ -902,6 +954,10 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 this.layoutGeometry.panelHeight()
         );
         waypointDetailsWidget.
+        //$ render_method_swap
+        extractRenderState
+                (context, beneathPopupMouseX, beneathPopupMouseY, delta);
+        copyButton.
         //$ render_method_swap
         extractRenderState
                 (context, beneathPopupMouseX, beneathPopupMouseY, delta);
@@ -933,23 +989,11 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         //$ render_method_swap
         extractRenderState
                 (context, beneathPopupMouseX, beneathPopupMouseY, delta);
-        addWaypointButton.
-        //$ render_method_swap
-        extractRenderState
-                (context, beneathPopupMouseX, beneathPopupMouseY, delta);
         groupModeToggle.
         //$ render_method_swap
         extractRenderState
                 (context, beneathPopupMouseX, beneathPopupMouseY, delta);
         sortOrderToggle.
-        //$ render_method_swap
-        extractRenderState
-                (context, beneathPopupMouseX, beneathPopupMouseY, delta);
-        copyButton.
-        //$ render_method_swap
-        extractRenderState
-                (context, beneathPopupMouseX, beneathPopupMouseY, delta);
-        profileButton.
         //$ render_method_swap
         extractRenderState
                 (context, beneathPopupMouseX, beneathPopupMouseY, delta);
@@ -967,6 +1011,10 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         extractRenderState
                 (context, collectionDropdown.isExpanded() ? mouseX : beneathPopupMouseX,
                         collectionDropdown.isExpanded() ? mouseY : beneathPopupMouseY, delta);
+        profileButton.
+        //$ render_method_swap
+        extractRenderState
+                (context, beneathPopupMouseX, beneathPopupMouseY, delta);
         if (!showingRemote) statusMessage.
         //$ render_method_swap
         extractRenderState
@@ -1044,8 +1092,9 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         waypointDetailsWidget.visible = waypointDetailsWidget.active = !showingRemote;
         dimensionListWidget.active = dimensionListWidget.visible;
         allDimensionsToggle.active = allDimensionsToggle.visible;
-        addWaypointButton.active = addWaypointButton.visible && !showingRemote;
-        copyButton.visible = profileButton.visible = !showingRemote;
+        addWaypointButton.visible = visible && !showingRemote;
+        searchField.setVisualWidth(layoutGeometry.searchFieldWidth(searchField.getVisualHeight(), addWaypointButton.visible));
+        profileButton.visible = !showingRemote;
         refreshCollectionControls();
         remotePanel.layout(layoutGeometry.middleX(), layoutGeometry.contentY() + searchField.getVisualHeight() + SEARCH_GAP,
                 layoutGeometry.middlePartWidth(), Math.max(1, layoutGeometry.waypointListHeight(searchField.getVisualHeight())),
@@ -1177,8 +1226,6 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
 
     private void setControlVisibility(boolean visible) {
         collectionDropdown.visible = collectionDropdown.active = visible && !showingRemote;
-        addWaypointButton.visible = !showingRemote;
-        addWaypointButton.active = visible && !showingRemote;
         boolean scopeVisible = visible && isScopeToggleAvailable();
         if (!scopeVisible && getFocused() == serverScopeToggle) {
             setFocused(null);
@@ -1405,6 +1452,24 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         return Math.max(minimum, Math.min(maximum, value));
     }
 
+    /** The Local profile button's label and tooltip. */
+    record ProfileButtonText(Component label, Component tooltip) {
+    }
+
+    /**
+     * The Local profile button's text: the active profile's name, or without one the screen the button
+     * opens, cut to {@code maxLabelWidth}. The tooltip names that screen, or gives the whole label when
+     * it was cut.
+     */
+    static ProfileButtonText profileButtonText(Font font, @Nullable String profileName, int maxLabelWidth) {
+        Component manage = Component.translatable("waypoint.profile.manage");
+        Component label = profileName == null
+                ? manage
+                : Component.translatable("waypoint.profile.current", profileName);
+        Component shown = AbstractWaypointPropertiesScreen.cutToWidth(font, label, maxLabelWidth);
+        return new ProfileButtonText(shown, shown == label ? manage : label);
+    }
+
     record ManagerLayoutGeometry(
             int contentHeight,
             int middleX,
@@ -1452,6 +1517,49 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
 
         int waypointListHeight(int searchBarHeight) {
             return Math.max(0, this.contentHeight - searchBarHeight - SEARCH_GAP);
+        }
+
+        /**
+         * The search field's width. While Add shows, a square as tall as the search bar at the right end
+         * of the row, the field ends one gap before it.
+         */
+        int searchFieldWidth(int searchBarHeight, boolean addButtonVisible) {
+            return addButtonVisible
+                    ? Math.max(1, this.middlePartWidth - searchBarHeight - SEARCH_GAP)
+                    : this.middlePartWidth;
+        }
+
+        /** The height of the details above a footer button, or the whole content height without one. */
+        int detailsHeight(int footerHeight) {
+            return footerHeight <= 0
+                    ? this.contentHeight
+                    : Math.max(0, this.contentHeight - footerHeight - DETAILS_FOOTER_GAP);
+        }
+
+        /** The y of a footer button at the bottom of the details panel's content. */
+        int detailsFooterY(int footerHeight) {
+            return this.contentY + this.contentHeight - footerHeight;
+        }
+
+        /** The x of a footer button flush with the details panel's right content edge. */
+        int detailsFooterX(int footerWidth) {
+            return this.detailsContentX() + this.detailsContentWidth() - footerWidth;
+        }
+
+        /** The y of a row on the line above the panels, kept on the screen. */
+        int headerY(int rowHeight) {
+            return Math.max(0, this.panelY() - rowHeight - HEADER_GAP);
+        }
+
+        /**
+         * The widest the Local profile button may be on the line above the panels. The source status
+         * after it keeps its one-line width, up to half the line.
+         */
+        int profileButtonMaxWidth(int statusTextWidth) {
+            int lineWidth = this.completeWidth();
+            return statusTextWidth <= 0
+                    ? lineWidth
+                    : lineWidth - Math.min(statusTextWidth, lineWidth / 2) - HEADER_ITEM_GAP;
         }
 
         int panelGap() {

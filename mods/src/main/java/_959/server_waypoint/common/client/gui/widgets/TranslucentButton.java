@@ -78,6 +78,17 @@ public class TranslucentButton extends ShiftableButtonWidget implements Expandab
         return Math.max(FITTED_MIN_WIDTH, textWidth + FITTED_TEXT_PADDING);
     }
 
+    /** The widest label a fitted button {@code width} pixels wide shows in full. */
+    public static int fittedLabelWidth(int width) {
+        return width - FITTED_TEXT_PADDING;
+    }
+
+    /** Changes a fitted button's label and refits its width to the label, as {@link #fitted} does. */
+    public void setFittedText(Component label) {
+        this.setText(label);
+        this.setWidth(fittedWidth(this.textWidth));
+    }
+
     public void setText(Component text) {
         this.text = text;
         this.textWidth = textRenderer.width(text);

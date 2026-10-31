@@ -96,6 +96,27 @@ class WaypointFormTranslationTest {
             "waypoint.icon.clear",
             "server_waypoint.cancel.button"
     );
+    // The details panel's title and the hint it shows without a selection.
+    private static final List<String> DETAILS_TEXT_KEYS = List.of(
+            "waypoint.details.title",
+            "waypoint.details.select"
+    );
+    // The details panel's row labels, which take the row's value as their argument.
+    private static final List<String> DETAILS_ROW_KEYS = List.of(
+            "waypoint.details.collection",
+            "waypoint.details.name",
+            "waypoint.details.display_name",
+            "waypoint.details.initials",
+            "waypoint.details.dimension",
+            "waypoint.details.list_name",
+            "waypoint.details.list_display_name",
+            "waypoint.details.position",
+            "waypoint.details.yaw",
+            "waypoint.details.visibility",
+            "waypoint.details.color",
+            "waypoint.details.keywords",
+            "waypoint.details.description"
+    );
     private static final List<String> RETIRED_KEYS = List.of(
             "waypoint.edit.screen.name.entry",
             "waypoint.edit.screen.identifier.entry",
@@ -153,6 +174,26 @@ class WaypointFormTranslationTest {
                 || key.equals("waypoint.form.status.command_submitted")).toList();
         assertFalse(keys.isEmpty());
         assertSameKeysAndArguments(keys);
+    }
+
+    @Test
+    void theDetailsPanelIsTranslatedInEveryLocale() throws Exception {
+        List<String> keys = new ArrayList<>(DETAILS_TEXT_KEYS);
+        keys.addAll(DETAILS_ROW_KEYS);
+        assertSameKeysAndArguments(keys);
+    }
+
+    @Test
+    void theNetworkFailureMessageIsTranslatedInEveryLocale() throws Exception {
+        assertSameKeysAndArguments(List.of("waypoint.network.encoding_failed"));
+    }
+
+    @Test
+    void everyDetailsRowLabelTakesTheRowsValue() throws Exception {
+        JsonObject english = read("en_us");
+        for (String key : DETAILS_ROW_KEYS) {
+            assertEquals(List.of(1), arguments(english.get(key).getAsString()), key);
+        }
     }
 
     @Test
