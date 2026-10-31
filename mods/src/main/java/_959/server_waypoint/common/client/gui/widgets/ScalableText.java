@@ -7,10 +7,13 @@ import _959.server_waypoint.common.client.gui.render.WidgetThemeColors;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.IntSupplier;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
 
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.drawText;
@@ -20,11 +23,14 @@ import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.sc
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.translate;
 
 public class ScalableText extends ShiftableWidget implements Expandable, VerticalAlignment {
+    private static final Component ELLIPSIS = Component.literal("…");
+
     private final Font textRenderer;
     private Component text;
     private float scale;
     private IntSupplier colorSupplier;
     private int maxWidth;
+    private int maxLines;
     private volatile List<FormattedCharSequence> warpLines = List.of();
 
     public ScalableText(int x, int y, Component text, int color, Font textRenderer) {
@@ -66,14 +72,64 @@ public class ScalableText extends ShiftableWidget implements Expandable, Vertica
         this.colorSupplier = Objects.requireNonNull(color, "color");
         this.maxWidth = maxWidth;
         this.textRenderer = textRenderer;
-        if (maxWidth != -1) {
-            this.warpLines = textRenderer.split(text, maxWidth);
-        }
+        this.rewrap();
     }
 
     public void setMaxWidth(int width) {
         this.maxWidth = Math.max(0, width);
-        this.warpLines = this.textRenderer.split(this.text, this.maxWidth);
+        this.rewrap();
+    }
+
+    /**
+     * Limits wrapped text to {@code maxLines} lines. Text that needs more is cut so that its last line
+     * ends with an ellipsis; zero or less lifts the limit. It only applies while a maximum width is set.
+     */
+    public void setMaxLines(int maxLines) {
+        this.maxLines = Math.max(0, maxLines);
+        this.rewrap();
+    }
+
+    private void rewrap() {
+        if (this.maxWidth != -1) {
+            this.warpLines = wrap(this.textRenderer, this.text, this.maxWidth, this.maxLines);
+        }
+    }
+
+    /** {@code text} wrapped to {@code maxWidth}; with a positive {@code maxLines}, cut to fit that many lines. */
+    static List<FormattedCharSequence> wrap(Font font, Component text, int maxWidth, int maxLines) {
+        List<FormattedCharSequence> lines = font.split(text, maxWidth);
+        if (maxLines <= 0 || lines.size() <= maxLines) {
+            return lines;
+        }
+        // The longest start of the text that fits with its ellipsis. More text never needs fewer lines, so
+        // a binary search finds it. The cut is made on the logical text, so right-to-left text loses its end.
+        String plain = text.getString();
+        int low = 0;
+        int high = plain.codePointCount(0, plain.length());
+        while (low < high) {
+            int middle = (low + high + 1) >>> 1;
+            if (font.split(startWithEllipsis(text, middle), maxWidth).size() <= maxLines) {
+                low = middle;
+            } else {
+                high = middle - 1;
+            }
+        }
+        return font.split(startWithEllipsis(text, low), maxWidth);
+    }
+
+    /** The first {@code length} code points of {@code text}, with their styles, followed by an ellipsis. */
+    private static Component startWithEllipsis(Component text, int length) {
+        MutableComponent start = Component.empty();
+        int[] left = {length};
+        text.visit((style, content) -> {
+            int count = Math.min(left[0], content.codePointCount(0, content.length()));
+            if (count > 0) {
+                start.append(Component.literal(content.substring(0, content.offsetByCodePoints(0, count))).withStyle(style));
+                left[0] -= count;
+            }
+            return Optional.empty();
+        }, Style.EMPTY);
+        return start.append(ELLIPSIS);
     }
 
     @Override
@@ -117,9 +173,7 @@ public class ScalableText extends ShiftableWidget implements Expandable, Vertica
 
     public void setText(Component text) {
         this.text = text;
-        if (this.maxWidth != -1) {
-            this.warpLines = this.textRenderer.split(this.text, this.maxWidth);
-        }
+        this.rewrap();
     }
 
     public void setText(String text) {

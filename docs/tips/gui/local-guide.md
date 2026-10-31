@@ -471,9 +471,11 @@ When a dropdown appears early in a manually rendered layout, call
 `setRenderPopupSeparately(true)` and then `renderPopup(...)` once after the other controls.
 The default still renders the popup with its control. This prevents later controls from covering
 popup choices, including on newer render strata APIs. `AbstractWaypointPropertiesScreen` draws the
-popup of every dropdown it holds, the icon picker's and Add's dimension and list comboboxes, after the rows,
-the suggestions and the field tooltip, and calls `layoutPopup(height, 8)` on each first, so a popup
-shows at most eight rows and opens on the side with room. The dimension combobox is populated from the same complete
+popup of every dropdown it holds, the icon picker's, Add's Collection dropdown and its dimension and list
+comboboxes, after the rows, the suggestions and the field tooltip, and calls `layoutPopup(height, 8)` on each
+combobox first, so a combobox popup shows at most eight rows and opens on the side with room. Any
+`AbstractDropdownMenuWidget` in a leading row gets the same routing: its popup takes clicks before the rows
+it covers, an outside click closes it, and an open popup hides the field tooltips. The dimension combobox is populated from the same complete
 integrated-server or remote-suggestion dimension catalog as `WaypointManagerScreen`, with the
 supplied starting dimension retained. The list combobox offers the waypoint lists of the chosen
 dimension: the screen replaces its choices with `setValues` whenever the dimension changes, so the
@@ -640,7 +642,7 @@ int backgroundColor = WidgetThemeManager.getColor(
 context.fill(x, y, x + width, y + height, backgroundColor);
 ```
 
-Do not cache a resolved color in a `static final int` or a long-lived widget field. When an API needs a deferred value, use `WidgetThemeManager.getColorSupplier`. Inside the widgets package, reuse `WidgetThemeState` for the standard active/disabled, hover, focus, and text combinations. Components such as `ScalableText` should retain a `WidgetThemeVariable`, not a resolved integer, when they need live updates.
+Do not cache a resolved color in a `static final int` or a long-lived widget field. When an API needs a deferred value, use `WidgetThemeManager.getColorSupplier`. Inside the widgets package, reuse `WidgetThemeState` for the standard active/disabled, hover, focus, and text combinations. Its `controlBackground(active, hovered)` and `border(active, focused, hovered)` are public, so a control outside the package that sits beside text fields, as the waypoint form's Collection dropdown does, looks the same and follows any change to the fields' fill and outline. Components such as `ScalableText` should retain a `WidgetThemeVariable`, not a resolved integer, when they need live updates.
 
 When adding a theme variable, update all of these together:
 
@@ -713,9 +715,11 @@ writable aggregate manager. `WaypointListWidget` takes this query and exposes `s
 and `selectedWaypoint`; `WaypointSelection.identity()` is the operation key, including generation
 and Local profile UUID. Never reconstruct an action from the manager's current dropdown.
 
-The ordinary add form includes a destination combobox. Its usable options and selections are
-captured when opened; unavailable sources are explained in the subtitle. Save rechecks live
-availability and add permission. `AbstractWaypointPropertiesScreen.destinationAvailable()` extends
+The ordinary add form includes a Collection dropdown, a `TextChoiceDropdown` that is chosen from rather than
+typed in. It has one choice for each source that accepted Add when the form opened, so its usable options and
+selections are captured when opened; the trigger shows the form's current collection and the popup leaves it
+out, so a form with nothing else to offer opens no popup. Unavailable sources are explained in the subtitle.
+Choosing a source calls `selectDestination(source)`. Save rechecks live availability and add permission. `AbstractWaypointPropertiesScreen.destinationAvailable()` extends
 submission checks; `retargetDestination(...)` updates both the captured identity and validation
 lookup for an explicit source choice. The add screen's `selectDestination(source)` uses the
 opening generation and captured choices; permission revocation can still allow an explicit choice
@@ -808,6 +812,12 @@ use `ScalableText`; do not add a local `Font.split(...)` loop and repeated `draw
 While wrapping, `getWidth()` is the maximum width and `getTextWidth()` is the width of the widest
 wrapped line, scaled the same way. Without a maximum width `getTextWidth()` is the whole text's width,
 and with no lines it is 0. Use it to size a surface to its text, as `TranslucentTooltip` does.
+
+`setMaxLines(n)` limits wrapped text to `n` lines, and `getHeight()` follows the lines that are left. Text that
+needs more is cut so that its last line ends with an ellipsis. The cut is made on the text and the result is
+wrapped again, so styles are kept and right-to-left text loses its end rather than its start. Zero or less, the
+default, lifts the limit, and it applies only while a maximum width is set. The waypoint form's subtitle
+uses two lines.
 
 Direct text drawing remains appropriate inside the text widget itself and for specialized row or
 document renderers whose per-run formatting or geometry cannot be expressed by `ScalableText`.
@@ -1373,7 +1383,7 @@ If this widget draws outside `x/y/width/height`, add a `VisualBounds` constant a
 ### Choosing a base screen
 
 - Extend `MovementAllowedScreen` for the normal in-world GUI behavior used by this project. It provides the themed `SCREEN_BACKGROUND`, centering helpers, and optional movement-key forwarding. When no world is loaded, as when a screen opens from a mod list, it draws vanilla's background for screens outside a world (the panorama on 1.20.5 and later) under the themed overlay. It inherits vanilla's singleplayer pause behavior. `WaypointManagerScreen` always returns `false` from `isPauseScreen()`. `WaypointEditScreen` pauses while editing, but returns `false` while an edit request is pending so the integrated server can tick and send its queued result. A result, send failure, or timeout clears that pending state and restores pausing if the edit form remains open. Add, client settings, and theme settings screens pause regardless of their parent.
-- Extend `AbstractWaypointPropertiesScreen` for a new add/edit-style waypoint properties flow. Shared fields, coordinate rules, suggestions, color selection, checks, layout, and overlay behavior belong in this base. A subclass supplies what differs through methods the base calls from `init()`, after both constructors have finished, so the constructors call none of them: `leadingRows()` (Add's Dimension and List rows above Name), `subtitle()`, `hasDisplayNameRow()`, `footerButtons()` and `primaryButton()`, `checkInput()`, `submit()`, `pendingMessage()` and `refreshButtons(...)`, and optionally `hasChanges()`, `initialFocus()` and `onTick()`. `refreshControlStates()` sets every control's `active` flag and the footer message from the color picker, a pending request, the check result and whether Edit's form differs from the saved waypoint, so no screen keeps a list of controls to disable. `setControlActive(...)` also locks and restores text editability when activation changes, because older vanilla text fields accept typing even with `active = false`. Text length limits are set before saved values are loaded, preserving long names, keywords and descriptions.
+- Extend `AbstractWaypointPropertiesScreen` for a new add/edit-style waypoint properties flow. Shared fields, coordinate rules, suggestions, color selection, checks, layout, and overlay behavior belong in this base. A subclass supplies what differs through methods the base calls from `init()`, after both constructors have finished, so the constructors call none of them: `leadingRows()` (Add's Collection, Dimension and List rows above Name), `subtitle()`, `hasDisplayNameRow()`, `footerButtons()` and `primaryButton()`, `checkInput()`, `submit()`, `pendingMessage()` and `refreshButtons(...)`, and optionally `hasChanges()`, `initialFocus()` and `onTick()`. `refreshControlStates()` sets every control's `active` flag and the footer message from the color picker, a pending request, the check result and whether Edit's form differs from the saved waypoint, so no screen keeps a list of controls to disable. `setControlActive(...)` also locks and restores text editability when activation changes, because older vanilla text fields accept typing even with `active = false`. Text length limits are set before saved values are loaded, preserving long names, keywords and descriptions.
 - Extend vanilla `Screen` directly only if movement forwarding and the shared centering contract are deliberately not wanted.
 
 Use current screens as focused examples:
@@ -1384,7 +1394,7 @@ Use current screens as focused examples:
 - The manager's dimension rail includes empty dimensions that have no synchronized waypoint file. In an integrated world it reads the integrated server's level keys directly. On a remote connection it asynchronously extracts fully namespaced dimension identifiers from the `/wp list ` command suggestions, merges them with the synchronized client cache as a fallback, and ignores the command's literal list/search/sort options.
 - In all-dimensions mode, the waypoint-list scroll position and grouped dimension-node expansion choices are session-scoped static widget state, so both survive closing and reopening the manager as well as ordinary dimension changes. Scroll restoration is deferred until the reconstructed widget has rows and a real maximum scroll range. Selected-dimension mode never remembers scroll and resets to the top when its scope is selected. `WaypointClientMod.onJoinServer()` calls `WaypointManagerScreen.resetSessionWidgetStates()` so connecting to another server or opening another local save also starts at the top with every dimension expanded.
 - `WaypointManagerScreen.resolveViewState(integratedServer, networkState)` picks `LOADING` (`NOT_READY` or `HANDSHAKE_FINISHED`), `UNSUPPORTED`, `INCOMPATIBLE` or `READY` (`SYNC_FINISHED`, or any state in an integrated world). A non-ready build registers no widgets and shows one centered `ScalableText` message. `tick()` calls vanilla `rebuildWidgets()` when the resolved state changes, so a manager opened during sync builds itself in place when sync finishes. In the remote view a catalog session change still closes the screen; in the local view it rebuilds the screen, and the ready build rebinds `RemoteWaypointPanel` to the new session, clearing its selection and the requested dimension catalog. `removed()` clears the static `isRendering`/`activeScreen` registration, so a manager closed by teleport or `setScreen(null)` stops receiving refresh calls; returning from a child screen re-runs `init()`, which re-queries the list. Because the client reports `NO_SERVERSIDE_SUPPORT` until a dedicated server's handshake arrives, a manager open in that window briefly shows the unsupported message.
-- `AbstractWaypointPropertiesScreen`, `WaypointAddScreen`, and `WaypointEditScreen` demonstrate a compact, fixed form. `WaypointFormLayout` is pure and unit-tested: from measured sizes it works out the label and control columns, the gap between rows (9 pixels, down to 5 when the screen is short), the dividers and the footer, and the screen places its widgets from the answers with `placeOutline` and `placeInRow`, which position any widget by its outline whatever its anchor. Layout runs in `init()`, when the footer message changes because a wrapped message changes the footer's height, and on resize through `repositionElements()`, which keeps the widgets, so values, focus, the message and a pending request survive; it never runs every frame. `WaypointFormCheck` runs on every edit and tick and reports the first problem: a hint or an error blocks Add and Save and the footer says why, an error's field gets a `DANGER` outline through `setInvalid`, and a note doesn't block. `WaypointAddScreen` sends `/wp add`, locks the form with a `PendingAdd`, closes when the waypoint appears in the synced data and unlocks with a message after 5 seconds. `WaypointEditScreen` captures the list revision, builds one atomic patch with `WaypointFormPatch`, keeps entered values until a matching server result accepts the edit, and unlocks with that result's message otherwise. Its Display name field holds only the override, and an empty field over a saved override clears it. The add screen treats its name field only as the exact identifier and creates no display-name override. Resting the pointer on a field's label or controls for 500 ms shows that field's tooltip at the pointer through `TooltipLayer.scheduleAtPointer`, but not over the remove-icon button, which has its own, nor while a popup, the color picker or a pending request is open.
+- `AbstractWaypointPropertiesScreen`, `WaypointAddScreen`, and `WaypointEditScreen` demonstrate a compact, fixed form. `WaypointFormLayout` is pure and unit-tested: from measured sizes it works out the label and control columns, the gap between rows (9 pixels, down to 5 when the screen is short), the dividers and the footer, and the screen places its widgets from the answers with `placeOutline` and `placeInRow`, which position any widget by its outline whatever its anchor. The title is one line, cut with an ellipsis when it doesn't fit. The subtitle under it wraps to the panel's width on up to two lines (`SUBTITLE_MAX_LINES`), the last ending in an ellipsis when more would be needed, so that a long one cannot push the footer off a short screen; the header's height follows its line count. Layout runs in `init()`, when the footer message changes because a wrapped message changes the footer's height, and on resize through `repositionElements()`, which keeps the widgets, so values, focus, the message and a pending request survive; it never runs every frame. `WaypointFormCheck` runs on every edit and tick and reports the first problem: a hint or an error blocks Add and Save and the footer says why, an error's field gets a `DANGER` outline through `setInvalid`, and a note doesn't block. `WaypointAddScreen` sends `/wp add`, locks the form with a `PendingAdd`, closes when the waypoint appears in the synced data and unlocks with a message after 5 seconds. `WaypointEditScreen` captures the list revision, builds one atomic patch with `WaypointFormPatch`, keeps entered values until a matching server result accepts the edit, and unlocks with that result's message otherwise. Its Display name field holds only the override, and an empty field over a saved override clears it. The add screen treats its name field only as the exact identifier and creates no display-name override. Resting the pointer on a field's label or controls for 500 ms shows that field's tooltip at the pointer through `TooltipLayer.scheduleAtPointer`, but not over the remove-icon button, which has its own, nor while a popup, the color picker or a pending request is open.
 - `ClientConfigScreen` demonstrates `SettingsListWidget` with per-row reset buttons, a footer built with a `WidgetPack`, and confirmation dialogs that disable the underlying controls, close on Escape and return focus to the button that opened them. Its Map mods rows depend on which map mods the loader supports (`MapModIntegrations.find`) and the player installed; the pure rules live in `ClientConfigSync`, and the settings themselves in `ClientConfigSettings`. It saves the config in `removed()`, which every exit reaches.
 - `WidgetThemeConfigScreen` demonstrates a live-preview editing transaction, pure and unit-tested geometry (`WidgetThemeEditorLayout`), a `TreeViewWidget` key list that paints its own panel, a `SettingsListWidget` of real widgets (`WideRow`s) with usage markers, popups rendered separately from a scrolling list, and a modal `SwatchWidget`.
 
@@ -1805,7 +1815,13 @@ with the text 2 px in, like text fields and comboboxes; labels are clipped insid
 trigger reserves a 14-pixel column for the arrow (`triggerWidth(labelWidth)` adds it). Popup rows share
 single-pixel separators: a choice leaves out the edge it shares with the row or trigger before it, which is
 its top, or its bottom after `setExpansionDirection(REVERSE)`. A subclass supplies `triggerLabel()` and, to
-leave the selected choice out of the popup, `getSelectedMenuItemIndex()`.
+leave the selected choice out of the popup, `getSelectedMenuItemIndex()`. `setWidth` resizes the choices with
+the trigger, so a dropdown that a layout stretches keeps its popup as wide as the control. A dropdown among
+text fields overrides `usesFieldSurface()` so its trigger looks like them: `WidgetThemeState.controlBackground`
+fills it at rest, hovered and disabled, and `WidgetThemeState.border` draws the outline, which takes the focus
+ring while the trigger is active and hovered or focused. The default is the popup's fill with a wash while
+hovered or focused, and a ring while focused. The choices keep the popup look either way, because they float
+over other rows.
 
 - **Theme dropdown:** `ThemeSelector`, an inner class of the screen, offers Custom, Translucent Dark, Modern
   Dark, High Contrast and Classic (`WidgetThemeSelection`) and previews a choice at once. It is as wide as its
@@ -1815,6 +1831,13 @@ leave the selected choice out of the popup, `getSelectedMenuItemIndex()`.
   choices.
 - **Preview dropdown:** `WidgetThemePreview.SampleDropdown` shows "Choice 1" to "Choice 3" and keeps the
   choice made.
+- **Collection dropdown:** `WaypointAddScreen.DestinationDropdown`, a static nested class, fills the add form's
+  first row and is stretched to the control column. It has a choice for each collection that accepted Add when
+  the form opened, in Shared, Private, Local order. Its trigger shows the form's current collection, which the
+  popup leaves out; when that collection is not among the choices, because it did not accept Add when the form
+  opened, every choice shows. Choosing one runs `selectDestination`. Its trigger takes the text fields' surface
+  (`usesFieldSurface()`), so it matches the Dimension and List rows below it. The screen draws its popup after the
+  other rows, like the comboboxes' (`setRenderPopupSeparately(true)`).
 
 #### Footer, editing and status
 
@@ -2108,6 +2131,12 @@ Good test targets include:
   classes: `WaypointFormLayout`, `WaypointFormCheck`, `WaypointFormPatch`, `WaypointFormInitials` and
   `PendingAdd` have their own tests, and `WaypointFormTranslationTest` checks that every key the
   form uses exists in all six locales with the arguments of English.
+- A real shared form. `WaypointFormTestForm` is the real `AbstractWaypointPropertiesScreen` without client
+  data or rendering. `withClient(font, check)` supplies the font and the empty camera its construction reads,
+  `layOut(width, height)` runs its private build and layout, and `click(x, y)` dispatches a left click as the
+  game does, without the click sound that needs a game client. `WaypointFormSubtitleTest` measures how the
+  header grows with the subtitle's lines, and `WaypointFormDropdownTest` checks that a dropdown in a leading
+  row takes clicks on its popup and is closed by a click elsewhere.
 - Theme completeness, runtime updates, JSON round trips, invalid input, and file persistence.
 - Theme-editor session transitions: `setColor` and what it reports, `revert`, `revertAll`, `isChanged`,
   `isDirty`, save, cancel, idempotent rollback, a failed save that a later attempt completes, and opening on

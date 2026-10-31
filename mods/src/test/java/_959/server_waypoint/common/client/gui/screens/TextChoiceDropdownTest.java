@@ -41,6 +41,21 @@ class TextChoiceDropdownTest {
     }
 
     @Test
+    void aWidenedDropdownKeepsItsChoicesAsWideAsItsTrigger() {
+        List<String> chosen = new ArrayList<>();
+        Dropdown dropdown = new Dropdown(72, chosen);
+        dropdown.setPosition(10, 20);
+
+        dropdown.setWidth(120);
+
+        assertTrue(dropdown.mouseClicked(15, 25, InputConstants.MOUSE_BUTTON_LEFT));
+        // x 125 is past the old right edge at 82, where only a widened choice reaches; Two is at y 42.
+        assertTrue(dropdown.mouseClicked(125, 46, InputConstants.MOUSE_BUTTON_LEFT));
+
+        assertEquals(List.of("Two"), chosen);
+    }
+
+    @Test
     void aTriggerHasRoomForItsLabelTheTextInsetAndTheArrow() {
         assertEquals(2 + 100 + 14, TextChoiceDropdown.triggerWidth(100));
     }

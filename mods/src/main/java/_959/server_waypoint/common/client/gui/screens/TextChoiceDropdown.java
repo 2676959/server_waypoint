@@ -5,6 +5,7 @@ import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
 import _959.server_waypoint.common.client.gui.widgets.AbstractDropdownMenuWidget;
 import _959.server_waypoint.common.client.gui.widgets.ScalableText;
 import _959.server_waypoint.common.client.gui.widgets.ShiftableClickableWidget;
+import _959.server_waypoint.common.client.gui.widgets.WidgetThemeState;
 import java.util.Objects;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -50,6 +51,25 @@ abstract class TextChoiceDropdown extends AbstractDropdownMenuWidget {
     /** What the trigger shows, read each time it is drawn. */
     protected abstract Component triggerLabel();
 
+    /**
+     * Whether the trigger looks like a text field, as a dropdown among fields does: the theme's control
+     * background with its hover and disabled fills, and an outline that takes the focus ring while the trigger
+     * is active and hovered or focused. By default it looks like the popup: its fill with a wash while hovered
+     * or focused, and a focus ring while focused.
+     */
+    protected boolean usesFieldSurface() {
+        return false;
+    }
+
+    /** Resizes the choices with the trigger, so the popup stays as wide as the control. */
+    @Override
+    public void setWidth(int width) {
+        for (AbstractMenuItem choice : this.getMenuItems()) {
+            choice.setWidth(width);
+        }
+        super.setWidth(width);
+    }
+
     @Override
     protected void renderDropdownControl(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
         Component message = this.triggerLabel();
@@ -65,19 +85,23 @@ abstract class TextChoiceDropdown extends AbstractDropdownMenuWidget {
     }
 
     /**
-     * Draws the trigger or a choice: the popup fill, the hover fill, the outline, and the label clipped
-     * inside it. A choice in the popup leaves out the edge it shares with the row or trigger before it:
-     * its top when the popup opens downward, its bottom when it opens upward.
+     * Draws the trigger or a choice: the fill, the outline, and the label clipped inside it. A choice, and a
+     * trigger that doesn't look like a field, is filled like the popup, with a wash while hovered or focused.
+     * A choice in the popup leaves out the edge it shares with the row or trigger before it: its top when the
+     * popup opens downward, its bottom when it opens upward.
      */
     private void renderChoice(GuiGraphicsExtractor context, ShiftableClickableWidget widget,
             Component message, boolean popup, int mouseX, int mouseY, float deltaTicks) {
+        boolean field = !popup && this.usesFieldSurface();
         context.fill(widget.getX(), widget.getY(), widget.getX() + widget.getWidth(),
-                widget.getY() + widget.getHeight(), getColor(POPUP_BACKGROUND));
-        if (widget.isHovered() || widget.isFocused()) {
+                widget.getY() + widget.getHeight(),
+                field ? WidgetThemeState.controlBackground(widget.active, widget.isHovered()) : getColor(POPUP_BACKGROUND));
+        if (!field && (widget.isHovered() || widget.isFocused())) {
             context.fill(widget.getX(), widget.getY(), widget.getX() + widget.getWidth(),
                     widget.getY() + widget.getHeight(), getColor(ROW_HOVER_BACKGROUND));
         }
-        int border = getColor(widget.isFocused() ? FOCUS_RING : BORDER);
+        int border = field ? WidgetThemeState.border(widget.active, widget.isFocused(), widget.isHovered())
+                : getColor(widget.isFocused() ? FOCUS_RING : BORDER);
         if (!popup) {
             renderOutline(context, widget.getX(), widget.getY(), widget.getWidth(), widget.getHeight(), border);
         } else if (this.getExpansionDirection() == LayoutFlow.Direction.REVERSE) {

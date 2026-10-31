@@ -13,6 +13,7 @@ import _959.server_waypoint.common.client.gui.render.WaypointRowRenderer;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import _959.server_waypoint.common.client.gui.screens.WaypointFormLayout.Arrangement;
 import _959.server_waypoint.common.client.gui.screens.WaypointFormLayout.Columns;
+import _959.server_waypoint.common.client.gui.widgets.AbstractDropdownMenuWidget;
 import _959.server_waypoint.common.client.gui.widgets.ColorHexCodeField;
 import _959.server_waypoint.common.client.gui.widgets.ColorSquareButton;
 import _959.server_waypoint.common.client.gui.widgets.ComboBoxWidget;
@@ -98,6 +99,8 @@ import static _959.server_waypoint.util.WaypointInitials.getInitialsCandidatesFr
  */
 public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedScreen {
     private static final float TITLE_SCALE = 1.2F;
+    /** The subtitle wraps to this many lines at most, so a long one cannot push the footer off a short screen. */
+    private static final int SUBTITLE_MAX_LINES = 2;
     private static final long TOOLTIP_DELAY_NANOS = 500_000_000L;
     /**
      * The Visibility toggle's own fills, the same in every theme. They are the previous release's Local
@@ -166,7 +169,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     private List<TranslucentButton> buttons = List.of();
     private List<AbstractWidget> tabOrder = List.of();
     private List<AbstractWidget> fieldControls = List.of();
-    private List<ComboBoxWidget> dropdowns = List.of();
+    private List<AbstractDropdownMenuWidget> dropdowns = List.of();
     private List<TranslucentTextField> suggestionFields = List.of();
     private List<Renderable> staticParts = List.of();
     private @Nullable Arrangement arrangement;
@@ -371,18 +374,19 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         @Nullable Component subtitle = this.subtitle();
         if (subtitle != null) {
             this.subtitleText = new ScalableText(0, 0, subtitle, TEXT_MUTED, font);
+            this.subtitleText.setMaxLines(SUBTITLE_MAX_LINES);
         }
         for (FormField field : FormField.values()) {
             this.labels.put(field, new ScalableText(0, 0, Component.translatable(field.labelKey()), TEXT_PRIMARY, font));
         }
 
         List<AbstractWidget> controls = new ArrayList<>();
-        List<ComboBoxWidget> dropdownList = new ArrayList<>();
+        List<AbstractDropdownMenuWidget> dropdownList = new ArrayList<>();
         List<TranslucentTextField> textFields = new ArrayList<>();
         for (LeadingRow row : this.leading) {
             controls.add(row.control());
-            if (row.control() instanceof ComboBoxWidget combo) {
-                dropdownList.add(combo);
+            if (row.control() instanceof AbstractDropdownMenuWidget dropdown) {
+                dropdownList.add(dropdown);
             } else if (row.control() instanceof TranslucentTextField field) {
                 textFields.add(field);
             }
@@ -531,7 +535,8 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         this.titleText.setText(cutToWidth(font, this.getTitle(), (int) (columns.panelWidth() / TITLE_SCALE)));
         int headerHeight = this.titleText.getHeight();
         if (this.subtitleText != null) {
-            this.subtitleText.setText(cutToWidth(font, this.subtitle(), columns.panelWidth()));
+            this.subtitleText.setMaxWidth(columns.panelWidth());
+            this.subtitleText.setText(this.subtitle());
             headerHeight += WaypointFormLayout.TITLE_SUBTITLE_GAP + this.subtitleText.getHeight();
         }
         int[] buttonWidths = new int[this.buttons.size()];
@@ -1105,7 +1110,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     }
 
     private boolean clickDropdown(double mouseX, double mouseY, int button) {
-        for (ComboBoxWidget dropdown : this.dropdowns) {
+        for (AbstractDropdownMenuWidget dropdown : this.dropdowns) {
             if (dropdown.isMouseOver(mouseX, mouseY) && dropdown.mouseClicked(mouseX, mouseY, button)) {
                 this.setFocused(dropdown);
                 if (button == InputConstants.MOUSE_BUTTON_LEFT) {
@@ -1119,7 +1124,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     }
 
     private boolean releaseDropdown(double mouseX, double mouseY, int button) {
-        for (ComboBoxWidget dropdown : this.dropdowns) {
+        for (AbstractDropdownMenuWidget dropdown : this.dropdowns) {
             if (dropdown.mouseReleased(mouseX, mouseY, button)) {
                 this.setDragging(false);
                 return true;
@@ -1129,7 +1134,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     }
 
     private boolean scrollDropdown(double mouseX, double mouseY, double verticalAmount) {
-        for (ComboBoxWidget dropdown : this.dropdowns) {
+        for (AbstractDropdownMenuWidget dropdown : this.dropdowns) {
             if (dropdown.isExpanded() && dropdown.mouseScrolled(mouseX, mouseY, 0, verticalAmount)) {
                 return true;
             }
@@ -1156,8 +1161,10 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
             return;
         }
         // Popup placement must be current before deciding which layer owns hover.
-        for (ComboBoxWidget dropdown : this.dropdowns) {
-            dropdown.layoutPopup(this.height, 8);
+        for (AbstractDropdownMenuWidget dropdown : this.dropdowns) {
+            if (dropdown instanceof ComboBoxWidget combo) {
+                combo.layoutPopup(this.height, 8);
+            }
         }
         // Covered controls still calculate hover and request cursors during rendering.
         boolean blockContentHover = this.swatchWidget.visible || this.isMouseOverPopup(mouseX, mouseY);
@@ -1192,7 +1199,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
             field.renderSuggestions(context, popupMouseX, popupMouseY);
         }
         previousLayer(context);
-        for (ComboBoxWidget dropdown : this.dropdowns) {
+        for (AbstractDropdownMenuWidget dropdown : this.dropdowns) {
             dropdown.renderPopup(context, popupMouseX, popupMouseY, delta);
         }
         this.scheduleFieldTooltip(contentMouseX, contentMouseY);
@@ -1205,7 +1212,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     }
 
     private boolean isMouseOverPopup(double mouseX, double mouseY) {
-        for (ComboBoxWidget dropdown : this.dropdowns) {
+        for (AbstractDropdownMenuWidget dropdown : this.dropdowns) {
             if (dropdown.isMouseOverPopup(mouseX, mouseY)) {
                 return true;
             }
@@ -1256,8 +1263,8 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         if (this.swatchWidget.visible || this.pendingMessage() != null) {
             return true;
         }
-        for (ComboBoxWidget dropdown : this.dropdowns) {
-            if (dropdown.isExpanded() || dropdown.isSuggestionListOpen()) {
+        for (AbstractDropdownMenuWidget dropdown : this.dropdowns) {
+            if (dropdown.isExpanded() || dropdown instanceof ComboBoxWidget combo && combo.isSuggestionListOpen()) {
                 return true;
             }
         }

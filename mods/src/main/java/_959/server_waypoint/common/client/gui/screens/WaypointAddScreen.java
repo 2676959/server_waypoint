@@ -12,8 +12,11 @@ import _959.server_waypoint.core.waypoint.WaypointPos;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
@@ -28,8 +31,8 @@ import static _959.server_waypoint.text.FormattedTextHelper.parseKeywords;
  * form pending until their waypoint appears in that collection's authoritative data.
  */
 public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
-    private final ComboBoxWidget destinationField;
-    private final java.util.Map<String, ClientWaypointSelection> destinations = new java.util.LinkedHashMap<>();
+    private final DestinationDropdown destinationField;
+    private final java.util.Map<ClientWaypointSource, ClientWaypointSelection> destinations = new java.util.EnumMap<>(ClientWaypointSource.class);
     private final ComboBoxWidget dimensionField;
     private final ComboBoxWidget listNameField;
     private final TranslucentButton addButton;
@@ -77,12 +80,12 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
             try { captured = access.capture(source, destination.dimensionName(), destination.listIdentifier(), null); }
             catch (IllegalArgumentException exception) { continue; } // Local has no profile after a load failure.
             if (access.allowed(captured, ClientWaypointAccess.Action.ADD) || source == destination.source()) {
-                destinations.put(sourceName(source), captured);
+                destinations.put(source, captured);
             }
         }
-        this.destinationField = new ComboBoxWidget(0, 0, 155, Component.translatable("waypoint.form.destination"), font,
+        this.destinationField = new DestinationDropdown(font,
                 destinations.entrySet().stream().filter(entry -> access.allowed(entry.getValue(), ClientWaypointAccess.Action.ADD))
-                        .map(java.util.Map.Entry::getKey).toList(), sourceName(destination.source()), this::onDestinationEdited);
+                        .map(java.util.Map.Entry::getKey).toList(), () -> this.selection.source(), this::chooseDestination);
         this.destinationField.setRenderPopupSeparately(true);
         String dimensionName = destination.dimensionName();
         String listName = destination.listIdentifier();
@@ -162,33 +165,31 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
         if (profile != null) result = result.copy().append(" · ").append(Component.translatable("waypoint.profile.current", profile.name()));
         for (var source : ClientWaypointSource.values()) {
             var state = client.collections().state(source);
-            var captured = destinations.get(sourceName(source));
+            var captured = destinations.get(source);
             if (captured != null && access.allowed(captured, ClientWaypointAccess.Action.ADD)) continue;
             String reason = state == _959.server_waypoint.common.client.ClientWaypointCollections.State.READY ? "denied"
                     : state.name().toLowerCase(java.util.Locale.ROOT);
-            result = result.copy().append(" · ").append(sourceName(source)).append(": ")
+            result = result.copy().append(" · ").append(sourceLabel(source)).append(": ")
                     .append(Component.translatable("waypoint.collection.state." + reason));
         }
         return result;
     }
 
-    private static String sourceName(ClientWaypointSource source) {
-        return Component.translatable("waypoint.collection." + source.name().toLowerCase(java.util.Locale.ROOT)).getString();
+    private static Component sourceLabel(ClientWaypointSource source) {
+        return Component.translatable("waypoint.collection." + source.name().toLowerCase(java.util.Locale.ROOT));
     }
 
-    private void onDestinationEdited(String label) {
-        var destination = destinations.get(label);
-        if (destination != null) selectDestination(destination.source());
+    private void chooseDestination(ClientWaypointSource source) {
+        selectDestination(source);
         onFormEdited();
     }
 
     /** Explicit source choice uses only the destinations captured when this form opened. */
     boolean selectDestination(ClientWaypointSource source) {
-        var destination = destinations.get(sourceName(source));
+        var destination = destinations.get(source);
         if (destination == null || destination.generation() != selection.generation()
                 || !access.allowed(destination, ClientWaypointAccess.Action.ADD)) return false;
         retargetDestination(destination);
-        destinationField.setValue(sourceName(source));
         dimensionField.setValues(access.dimensions(selection));
         onDimensionEdited();
         return true;
@@ -196,9 +197,7 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
 
     @Override
     protected boolean destinationAvailable() {
-        var destination = destinations.get(destinationField.getValue());
-        return destination != null && destination.source() == selection.source()
-                && access.allowed(selection, ClientWaypointAccess.Action.ADD);
+        return access.allowed(selection, ClientWaypointAccess.Action.ADD);
     }
 
     @Override
@@ -289,6 +288,50 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
             this.onClose();
         } else if (this.pendingAdd.expire(System.nanoTime())) {
             this.showResult(Component.translatable("waypoint.form.status.add_timeout"), WaypointFormCheck.Field.NONE);
+        }
+    }
+
+    /**
+     * The Collection row's dropdown: one choice for each collection that accepted Add when the form opened.
+     * The trigger shows the form's current collection, which the popup leaves out.
+     */
+    private static final class DestinationDropdown extends TextChoiceDropdown {
+        private final List<ClientWaypointSource> choices;
+        private final Supplier<ClientWaypointSource> selected;
+
+        private DestinationDropdown(Font font, List<ClientWaypointSource> choices, Supplier<ClientWaypointSource> selected,
+                Consumer<ClientWaypointSource> onChosen) {
+            super(widestTriggerWidth(font), Component.translatable("waypoint.form.destination"), font);
+            this.choices = choices;
+            this.selected = selected;
+            for (ClientWaypointSource source : choices) {
+                this.addMenuItem(new TextChoice(sourceLabel(source), () -> onChosen.accept(source)));
+            }
+        }
+
+        /** As wide as the widest collection name, whichever is shown; the form stretches it to its column. */
+        private static int widestTriggerWidth(Font font) {
+            int widest = 0;
+            for (ClientWaypointSource source : ClientWaypointSource.values()) {
+                widest = Math.max(widest, font.width(sourceLabel(source)));
+            }
+            return triggerWidth(widest);
+        }
+
+        @Override
+        protected Component triggerLabel() {
+            return sourceLabel(this.selected.get());
+        }
+
+        @Override
+        protected int getSelectedMenuItemIndex() {
+            return this.choices.indexOf(this.selected.get());
+        }
+
+        /** It sits among the form's text fields and comboboxes, so its trigger is filled like them. */
+        @Override
+        protected boolean usesFieldSurface() {
+            return true;
         }
     }
 }

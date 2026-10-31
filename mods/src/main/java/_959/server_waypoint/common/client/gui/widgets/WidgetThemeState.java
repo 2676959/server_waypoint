@@ -14,11 +14,12 @@ import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_ON_ACCENT;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_PRIMARY;
 
-final class WidgetThemeState {
+public final class WidgetThemeState {
     private WidgetThemeState() {
     }
 
-    static int controlBackground(boolean active, boolean hovered) {
+    /** The fill of a control in its current state; public so a control beside text fields can match them. */
+    public static int controlBackground(boolean active, boolean hovered) {
         return controlBackground(active, hovered, true);
     }
 
@@ -37,7 +38,8 @@ final class WidgetThemeState {
         return fillAtRest ? getColor(CONTROL_BACKGROUND) : 0;
     }
 
-    static int border(boolean active, boolean focused, boolean hovered) {
+    /** The outline of a control in its current state: the focus ring while it is active and hovered or focused. */
+    public static int border(boolean active, boolean focused, boolean hovered) {
         return getColor(active && (focused || hovered) ? FOCUS_RING : BORDER);
     }
 

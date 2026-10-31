@@ -6,7 +6,9 @@ import _959.server_waypoint.common.client.local.LocalWaypointProfiles;
 import _959.server_waypoint.core.WaypointFilesManagerCore;
 import _959.server_waypoint.core.network.message.WaypointEditRequestMessage;
 import _959.server_waypoint.core.waypoint.*;
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
 import java.lang.reflect.Field;
@@ -23,6 +25,7 @@ class WaypointAddScreenCollectionTest {
     private ClientWaypointAccess access;
     private final List<String> commands = new ArrayList<>();
     private boolean serverAllowed = true;
+    private final Set<ClientWaypointSource> deniedSources = EnumSet.noneOf(ClientWaypointSource.class);
 
     @BeforeEach
     void setup() throws Exception {
@@ -62,7 +65,7 @@ class WaypointAddScreenCollectionTest {
             public String currentDimension() { return "minecraft:overworld"; }
             public int commandLimit() { return 32767; }
             public List<String> dimensions() { return List.of("minecraft:overworld"); }
-            public boolean allowed(ClientWaypointSource source, ClientWaypointAccess.Action action) { return serverAllowed; }
+            public boolean allowed(ClientWaypointSource source, ClientWaypointAccess.Action action) { return serverAllowed && !deniedSources.contains(source); }
             public boolean command(String command) { commands.add(command); return true; }
             public boolean edit(WaypointEditRequestMessage message) { fail("Add form must not send edit payloads"); return false; }
         });
@@ -117,5 +120,48 @@ class WaypointAddScreenCollectionTest {
         assertEquals("Unsubmitted draft", form.nameEditBox.getValue());
         assertTrue(commands.isEmpty());
         assertTrue(collections.files(ClientWaypointSource.LOCAL).getFileManagerMap().isEmpty());
+    }
+
+    @Test
+    void theCollectionIsPickedFromADropdownOfTheOtherAvailableCollections() throws Exception {
+        var form = form();
+        var dropdown = collectionDropdown(form);
+
+        assertEquals(collectionName("local"), dropdown.triggerLabel().getString());
+        assertTrue(dropdown.mouseClicked(15, 25, InputConstants.MOUSE_BUTTON_LEFT));
+        // Local, which the trigger shows, is left out of the popup: Shared is its first row, then Private.
+        assertEquals(2, dropdown.getPopupItemCount());
+        assertTrue(dropdown.mouseClicked(15, 36, InputConstants.MOUSE_BUTTON_LEFT));
+
+        assertEquals(ClientWaypointSource.SHARED, form.selection.source());
+        assertEquals(collectionName("shared"), dropdown.triggerLabel().getString());
+        assertFalse(dropdown.isExpanded());
+    }
+
+    @Test
+    void aCollectionThatCannotAcceptTheWaypointIsNotOffered() throws Exception {
+        deniedSources.add(ClientWaypointSource.PRIVATE);
+        var form = form();
+        var dropdown = collectionDropdown(form);
+
+        assertTrue(dropdown.mouseClicked(15, 25, InputConstants.MOUSE_BUTTON_LEFT));
+        assertEquals(1, dropdown.getPopupItemCount());
+        assertTrue(dropdown.mouseClicked(15, 36, InputConstants.MOUSE_BUTTON_LEFT));
+
+        // The one row was Shared: Private would have been the second.
+        assertEquals(ClientWaypointSource.SHARED, form.selection.source());
+    }
+
+    /** The Collection control with its trigger at (10, 20), so its first popup row is at y 31. */
+    private TextChoiceDropdown collectionDropdown(WaypointAddScreen form) throws Exception {
+        var dropdown = assertInstanceOf(TextChoiceDropdown.class, form.leadingRows().get(0).control());
+        dropdown.setPosition(10, 20);
+        // A click plays its sound through the game client, which these tests no longer need.
+        minecraftInstance.set(null, previousMinecraft);
+        return dropdown;
+    }
+
+    private static String collectionName(String source) {
+        return Component.translatable("waypoint.collection." + source).getString();
     }
 }
