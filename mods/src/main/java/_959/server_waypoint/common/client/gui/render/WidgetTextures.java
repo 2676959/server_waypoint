@@ -124,6 +124,21 @@ public final class WidgetTextures {
     public static final
     //$ resource_location_type_swap
     Identifier
+    CLOUD_ICON = modId("textures/gui/cloud.png");
+
+    public static final
+    //$ resource_location_type_swap
+    Identifier
+    CLOUD_LOCK_ICON = modId("textures/gui/cloud_lock.png");
+
+    public static final
+    //$ resource_location_type_swap
+    Identifier
+    DESKTOP_WINDOWS_ICON = modId("textures/gui/desktop_windows.png");
+
+    public static final
+    //$ resource_location_type_swap
+    Identifier
     RESET_ICON = modId("textures/gui/reset.png");
 
     public static final

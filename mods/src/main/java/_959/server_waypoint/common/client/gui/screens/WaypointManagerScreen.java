@@ -2,8 +2,6 @@
 //~ resource_location_import
 package _959.server_waypoint.common.client.gui.screens;
 
-import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.getIconColor;
-
 import _959.server_waypoint.common.client.ClientConfig;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.ClientWaypointQuery;
@@ -19,6 +17,7 @@ import _959.server_waypoint.crossserver.catalog.CatalogReceiver;
 import java.util.Map;
 import _959.server_waypoint.common.client.gui.layout.WidgetPack;
 import _959.server_waypoint.common.client.gui.render.WaypointSortButtonLabel;
+import _959.server_waypoint.common.client.gui.render.IconControlRenderer;
 import _959.server_waypoint.common.client.gui.render.WidgetTextures;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
@@ -53,7 +52,6 @@ import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.NO
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.nextLayer;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.previousLayer;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
-import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.texture;
 
 public class WaypointManagerScreen extends MovementAllowedScreen {
     private static final float MIDDLE_PART_WIDTH_RATIO = 0.38F;
@@ -81,7 +79,6 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     private static final int DIMENSION_HORIZONTAL_PADDING = 0;
     private static final int LEFT_PART_WIDTH = DIMENSION_ICON_SIZE + DIMENSION_HORIZONTAL_PADDING * 2;
     private static final int CONTROL_BUTTON_SIZE = 16;
-    private static final int CONTROL_ICON_PADDING = 2;
     private static final int CONTROL_COLUMN_X_OFFSET =
             (LEFT_PART_WIDTH - CONTROL_BUTTON_SIZE) / 2;
     private static final int MIN_DIMENSION_LIST_HEIGHT = DIMENSION_ICON_SIZE + DIMENSION_VERTICAL_PADDING * 2;
@@ -116,7 +113,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     private List<String> availableDimensionNames = List.of();
     private final WaypointClientMod waypointClientMod;
     private final ScalableText statusMessage;
-    private final IconMenuItem distanceSortItem;
+    private final AbstractDropdownMenuWidget.AbstractMenuItem distanceSortItem;
     private ManagerViewState builtState = ManagerViewState.LOADING;
     private boolean hasInitialized = false;
     private boolean hasRemoteServers;
@@ -132,9 +129,9 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         this.collectionDropdown = new IconDropdownMenu(Component.translatable(collectionView.translationKey()));
         for (var view : ClientWaypointQuery.View.values()) {
             collectionDropdown.addIconItem(Component.translatable(view.translationKey()), switch (view) {
-                case SHARED -> WidgetTextures.LAN_SERVERS_ICON;
-                case PRIVATE -> WidgetTextures.HOME_ICON;
-                case LOCAL -> WidgetTextures.CUBE_ICON;
+                case SHARED -> WidgetTextures.CLOUD_ICON;
+                case PRIVATE -> WidgetTextures.CLOUD_LOCK_ICON;
+                case LOCAL -> WidgetTextures.DESKTOP_WINDOWS_ICON;
                 case COMBINED -> WidgetTextures.STACKS_ICON;
             }, () -> setCollectionView(view));
         }
@@ -864,7 +861,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         for (int i = 0; i < 3; i++) {
             var source = ClientWaypointSource.values()[i];
             var state = waypointClientMod.collections().state(source);
-            collectionDropdown.iconItems.get(i).setTooltip(Component.translatable(ClientWaypointQuery.View.values()[i].translationKey())
+            collectionDropdown.getMenuItems().get(i).setTooltip(Component.translatable(ClientWaypointQuery.View.values()[i].translationKey())
                     .append(" · ").append(Component.translatable("waypoint.collection.state." + state.name().toLowerCase(java.util.Locale.ROOT))));
         }
     }
@@ -1580,83 +1577,6 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
 
     }
 
-    private static void renderIconControl(
-            GuiGraphicsExtractor context,
-            ShiftableClickableWidget widget,
-            //$ resource_location_type_swap
-            Identifier
-            icon,
-            boolean selected,
-            boolean focusVisible,
-            boolean fillAtRest
-    ) {
-        WidgetThemeVariable fill = resolveIconControlFill(widget.active, selected, widget.isHovered(), fillAtRest);
-        int borderColor = WidgetThemeManager.getColor(resolveIconControlBorder(
-                widget.active,
-                widget.isFocused(),
-                widget.isHovered(),
-                focusVisible
-        ));
-        int x = widget.getX();
-        int y = widget.getY();
-        if (fill != null) {
-            context.fill(x, y, x + widget.getWidth(), y + widget.getHeight(), WidgetThemeManager.getColor(fill));
-        }
-        renderOutline(context, x, y, widget.getWidth(), widget.getHeight(), borderColor);
-        int iconWidth = Math.max(0, widget.getWidth() - CONTROL_ICON_PADDING * 2);
-        int iconHeight = Math.max(0, widget.getHeight() - CONTROL_ICON_PADDING * 2);
-        if (iconWidth > 0 && iconHeight > 0) {
-            texture(
-                    context,
-                    icon,
-                    x + CONTROL_ICON_PADDING,
-                    y + CONTROL_ICON_PADDING,
-                    0,
-                    0,
-                    iconWidth,
-                    iconHeight,
-                    iconWidth,
-                    iconHeight,
-                    getIconColor(widget.active)
-            );
-        }
-    }
-
-    /**
-     * The fill behind an icon control, or null for none. Controls on a panel pass {@code fillAtRest} false:
-     * the panel already paints a translucent fill, so a second one at rest would stack on it. A popup row
-     * floats over other widgets and keeps its fill. Disabled panel controls dim their icon and keep
-     * the panel visible instead of adding a disabled fill.
-     */
-    static @Nullable WidgetThemeVariable resolveIconControlFill(
-            boolean active,
-            boolean selected,
-            boolean hovered,
-            boolean fillAtRest
-    ) {
-        if (!active) {
-            return fillAtRest ? WidgetThemeVariable.CONTROL_DISABLED_BACKGROUND : null;
-        }
-        if (selected) {
-            return WidgetThemeVariable.SELECTION_BACKGROUND;
-        }
-        if (hovered) {
-            return WidgetThemeVariable.CONTROL_HOVER_BACKGROUND;
-        }
-        return fillAtRest ? WidgetThemeVariable.CONTROL_BACKGROUND : null;
-    }
-
-    static WidgetThemeVariable resolveIconControlBorder(
-            boolean active,
-            boolean focused,
-            boolean hovered,
-            boolean focusVisible
-    ) {
-        return active && (hovered || (focused && focusVisible))
-                ? WidgetThemeVariable.FOCUS_RING
-                : WidgetThemeVariable.BORDER;
-    }
-
     /**
      * The pointer coordinate for the controls drawn before the sort dropdown. Its popup can open over one of
      * them, as it does over the sort-order toggle on a narrow screen, so while the popup is under the pointer
@@ -1664,149 +1584,6 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
      */
     static int resolveMouseBeneathPopup(int mouse, boolean popupUnderPointer) {
         return popupUnderPointer ? NO_MOUSE : mouse;
-    }
-
-    private static final class IconDropdownMenu extends AbstractDropdownMenuWidget {
-        private final List<IconMenuItem> iconItems = new ArrayList<>();
-        private int selectedIndex;
-        private int popupXOffset;
-        private int appliedPopupXOffset;
-        private int appliedPopupYOffset;
-
-        private IconDropdownMenu(Component message) {
-            super(
-                    0,
-                    0,
-                    CONTROL_BUTTON_SIZE,
-                    CONTROL_BUTTON_SIZE,
-                    message,
-                    LayoutFlow.Orientation.HORIZONTAL,
-                    LayoutFlow.Direction.REVERSE,
-                    DROPDOWN_ITEM_GAP
-            );
-            this.setTooltip(message);
-        }
-
-        @Override
-        public void setMessage(Component message) {
-            super.setMessage(message);
-            this.setTooltip(message);
-        }
-
-        private IconMenuItem addIconItem(
-                Component message,
-                //$ resource_location_type_swap
-                Identifier
-                icon,
-                Runnable callback
-        ) {
-            IconMenuItem menuItem = this.addMenuItem(new IconMenuItem(message, icon, callback));
-            this.iconItems.add(menuItem);
-            return menuItem;
-        }
-
-        private void setSelectedIndex(int selectedIndex) {
-            this.selectedIndex = selectedIndex;
-            for (int i = 0; i < this.iconItems.size(); i++) {
-                this.iconItems.get(i).selected = i == selectedIndex;
-            }
-        }
-
-        private void setPopupXOffset(int popupXOffset) {
-            this.popupXOffset = Math.max(0, popupXOffset);
-        }
-
-        @Override
-        protected void renderDropdownControl(
-                GuiGraphicsExtractor context,
-                int mouseX,
-                int mouseY,
-                float deltaTicks
-        ) {
-            renderIconControl(context, this, this.getSelectedIcon(), false, this.isExpanded(), false);
-        }
-
-        private
-        //$ resource_location_type_swap
-        Identifier
-        getSelectedIcon() {
-            return this.selectedIndex >= 0 && this.selectedIndex < this.iconItems.size()
-                    ? this.iconItems.get(this.selectedIndex).icon
-                    : WidgetTextures.PLACEHOLDER_ICON;
-        }
-
-        @Override
-        protected int getSelectedMenuItemIndex() {
-            return this.selectedIndex;
-        }
-
-        @Override
-        protected void onExpandedChanged(boolean expanded) {
-            this.removeAppliedPopupOffset();
-            if (!expanded) {
-                return;
-            }
-            if (this.popupXOffset == 0) {
-                return;
-            }
-            this.appliedPopupXOffset = this.popupXOffset;
-            this.appliedPopupYOffset = this.popupXOffset > DROPDOWN_ITEM_GAP
-                    ? -(CONTROL_BUTTON_SIZE + DROPDOWN_ITEM_GAP)
-                    : 0;
-            this.offsetMenuItems(this.appliedPopupXOffset, this.appliedPopupYOffset);
-        }
-
-        private void removeAppliedPopupOffset() {
-            if (this.appliedPopupXOffset == 0 && this.appliedPopupYOffset == 0) {
-                return;
-            }
-            this.offsetMenuItems(-this.appliedPopupXOffset, -this.appliedPopupYOffset);
-            this.appliedPopupXOffset = 0;
-            this.appliedPopupYOffset = 0;
-        }
-
-        private void offsetMenuItems(int xOffset, int yOffset) {
-            for (IconMenuItem iconItem : this.iconItems) {
-                iconItem.setPosition(iconItem.getX() + xOffset, iconItem.getY() + yOffset);
-            }
-        }
-    }
-
-    private static final class IconMenuItem extends AbstractDropdownMenuWidget.AbstractMenuItem {
-        private final
-        //$ resource_location_type_swap
-        Identifier
-        icon;
-        private final Runnable callback;
-        private boolean selected;
-
-        private IconMenuItem(
-                Component message,
-                //$ resource_location_type_swap
-                Identifier
-                icon,
-                Runnable callback
-        ) {
-            super(CONTROL_BUTTON_SIZE, CONTROL_BUTTON_SIZE, message);
-            this.icon = icon;
-            this.callback = callback;
-            this.setTooltip(message);
-        }
-
-        @Override
-        protected void onSelected() {
-            this.callback.run();
-        }
-
-        @Override
-        protected void renderMenuItem(
-                GuiGraphicsExtractor context,
-                int mouseX,
-                int mouseY,
-                float deltaTicks
-        ) {
-            renderIconControl(context, this, this.icon, this.selected, true, true);
-        }
     }
 
     private static final class IconToggleButton extends ShiftableButtonWidget {
@@ -1865,7 +1642,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         //$ render_widget_method_swap
         extractWidgetRenderState
                 (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
-            renderIconControl(
+            IconControlRenderer.render(
                     context,
                     this,
                     this.state ? this.state1Icon : this.state0Icon,

@@ -1,17 +1,16 @@
-package _959.server_waypoint.common.client.gui.screens;
+package _959.server_waypoint.common.client.gui.render;
 
-import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-class WaypointManagerScreenIconControlTest {
+class IconControlRendererTest {
     @Test
     void focusedClosedDropdownUsesTheNormalBorder() {
         assertEquals(
                 WidgetThemeVariable.BORDER,
-                WaypointManagerScreen.resolveIconControlBorder(true, true, false, false)
+                IconControlRenderer.resolveBorder(true, true, false, false)
         );
     }
 
@@ -19,11 +18,11 @@ class WaypointManagerScreenIconControlTest {
     void expandedFocusAndHoverStillUseTheFocusRing() {
         assertEquals(
                 WidgetThemeVariable.FOCUS_RING,
-                WaypointManagerScreen.resolveIconControlBorder(true, true, false, true)
+                IconControlRenderer.resolveBorder(true, true, false, true)
         );
         assertEquals(
                 WidgetThemeVariable.FOCUS_RING,
-                WaypointManagerScreen.resolveIconControlBorder(true, false, true, false)
+                IconControlRenderer.resolveBorder(true, false, true, false)
         );
     }
 
@@ -31,23 +30,23 @@ class WaypointManagerScreenIconControlTest {
     void railControlsPaintNoFillAtRestButKeepTheirStateFills() {
         // The panel under a rail control already paints a translucent fill, so a second fill at rest
         // would stack on it. Hover and selection keep their fills; disabled icons use a tint instead.
-        assertNull(WaypointManagerScreen.resolveIconControlFill(true, false, false, false));
+        assertNull(IconControlRenderer.resolveFill(true, false, false, false));
         assertEquals(
                 WidgetThemeVariable.CONTROL_HOVER_BACKGROUND,
-                WaypointManagerScreen.resolveIconControlFill(true, false, true, false)
+                IconControlRenderer.resolveFill(true, false, true, false)
         );
         assertEquals(
                 WidgetThemeVariable.SELECTION_BACKGROUND,
-                WaypointManagerScreen.resolveIconControlFill(true, true, false, false)
+                IconControlRenderer.resolveFill(true, true, false, false)
         );
-        assertNull(WaypointManagerScreen.resolveIconControlFill(false, false, false, false));
+        assertNull(IconControlRenderer.resolveFill(false, false, false, false));
     }
 
     @Test
     void popupRowsKeepTheirRestingFillBecauseTheyFloatOverOtherWidgets() {
         assertEquals(
                 WidgetThemeVariable.CONTROL_BACKGROUND,
-                WaypointManagerScreen.resolveIconControlFill(true, false, false, true)
+                IconControlRenderer.resolveFill(true, false, false, true)
         );
     }
 
@@ -55,7 +54,7 @@ class WaypointManagerScreenIconControlTest {
     void inactiveControlAlwaysUsesTheNormalBorder() {
         assertEquals(
                 WidgetThemeVariable.BORDER,
-                WaypointManagerScreen.resolveIconControlBorder(false, true, true, true)
+                IconControlRenderer.resolveBorder(false, true, true, true)
         );
     }
 }

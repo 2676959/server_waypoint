@@ -12,8 +12,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class GuiIconTextureTest {
     @Test
     void guiIconsAreWhiteMasksWithTransparentBackgrounds() throws IOException {
-        for (String name : new String[]{"add", "arrow_downward", "arrow_upward", "clear", "confirm_delete",
-                "cube", "delete", "edit", "hide", "home", "lan_servers", "list_arrow", "list_collapse",
+        for (String name : new String[]{"add", "arrow_downward", "arrow_upward", "clear", "cloud", "cloud_lock",
+                "confirm_delete", "cube", "delete", "desktop_windows", "edit", "hide", "home", "lan_servers", "list_arrow", "list_collapse",
                 "list_empty", "list_expand", "menu", "navigation", "palette", "placeholder", "reset",
                 "segment", "show", "sort_by_alpha", "stacks", "synced"}) {
             var resource = getClass().getResource("/assets/server_waypoint/textures/gui/" + name + ".png");

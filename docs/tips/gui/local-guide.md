@@ -299,6 +299,16 @@ the screen can close; screens need no Escape code of their own for it (see
 [Input](#4-input-preserve-focus-and-text-entry)). Losing focus closes the menu, so an open menu
 always belongs to the focused control.
 
+`widgets.IconDropdownMenu` is the public icon selector used by the manager's collection and sort
+controls. Construct it with its tooltip message, add choices with `addIconItem(message, icon, callback)`,
+and call `setSelectedIndex(index)` to choose the icon shown by the trigger and omitted from the popup.
+`addIconItem` returns an `AbstractMenuItem` so callers can control a choice's `active` and `visible`
+states. It uses 16×16 controls, a two-pixel item gap, and expands horizontally to the left.
+`setPopupXOffset(offset)` supplies a non-negative rightward correction for constrained screens;
+offsets greater than the item gap also move the popup up one row. Its `IconMenuItem` implementation
+is private to the widget. `render.IconControlRenderer` shares the icon fill, border and texture drawing
+with the manager's toggles; `render`, `resolveFill` and `resolveBorder` preserve their state styling.
+
 Use `InputConstants.KEY_*` and `InputConstants.MOUSE_BUTTON_*` for input comparisons and test
 events. Minecraft 26.3 uses SDL codes, so raw GLFW values and numeric mouse buttons no longer
 match the dispatched input. A `KeyEvent` carries its secondary code as `keycode()` on 26.3 and
@@ -507,7 +517,7 @@ Use the other render classes as follows:
 - `PaddingBackground` renders the background/outline associated with a padded widget or layout.
 - Small pure presentation calculations, such as `WaypointSortButtonLabel`, belong here when they are reusable and easy to unit test.
 
-The 25 reusable GUI textures are transparent 64×64 white masks downloaded from Google Material
+The 28 reusable GUI textures are transparent 64×64 white masks downloaded from Google Material
 Symbols Sharp, with FILL 0, weight 400, grade 200 and optical size 48. White RGB preserves the exact
 selected ARGB tint; antialiasing remains in the alpha channel. The source URL follows
 `https://fonts.gstatic.com/s/i/short-term/release/materialsymbolssharp/<symbol>/grad200/48px.svg`;
@@ -519,6 +529,9 @@ render that vector at 64×64 with `#FFFFFF` fill. Resource names map directly to
 `show` → `visibility`, and `synced` → `cloud_sync`. Cropped reset buttons use the visible region
 `(9, 9, 46, 43)` and the clear button uses `(13, 12, 38, 39)`, within a 64×64 texture.
 Item icons and waypoint-selected colors retain their own rendering rules.
+
+The Waypoint Manager collection dropdown uses `cloud` for Shared server waypoints, `cloud_lock`
+for Private server waypoints, and `desktop_windows` for Local waypoints.
 
 Rendering helpers should not own screen navigation, networking, or feature state.
 
@@ -675,7 +688,7 @@ the manager is reset to `WidgetThemes.DEFAULT`.
 `ClientConfig.getWaypointManagerView()` persists Shared, Private, Local or Combined. A new config
 starts in Combined, whose creation destination is Local; individual views default to their own
 source. The manager keeps the current-world/Remote toggle separate and hides its collection
-selector while browsing Remote. The selector uses the manager-owned `IconDropdownMenu`, including
+selector while browsing Remote. The selector uses the public `widgets.IconDropdownMenu`, including
 its offset, layering, outside-click and Escape contracts. Each other action sits beside what it acts
 on, which also keeps the sidebar's control count at constrained heights. Add ends the search row, a
 horizontal `WidgetPack` nested in the list column: a square as tall as the search bar, with the field
@@ -1005,7 +1018,7 @@ the same rule. The same goes for controls: the sidebar's icon buttons (the scope
 toggles and the sort dropdown's button), the add button and the search field paint no fill while idle, only
 their border, so a control isn't a second translucent layer stacked on the panel. Hovering, the disabled
 look and a selected control still fill. The sort dropdown's popup rows float over other widgets, so they keep
-their resting fill; `WaypointManagerScreen.resolveIconControlFill` makes that choice.
+their resting fill; `IconControlRenderer.resolveFill` makes that choice.
 
 On a narrow screen, where the choices don't fit left of the controls, the sort popup shifts right and up one
 row, over the sort-order toggle. That toggle is drawn before the dropdown, so with the real pointer it would be
