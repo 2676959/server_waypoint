@@ -214,3 +214,25 @@ property/revision, single-use restore, nonempty-list rejection and actual config
 reload behavior. It saves/reopens the server and compares exact contents. Generated
 quick-add color values are explicitly domain-checked before entering the operation ledger.
 This console smoke does not establish remaining player/permission/platform coverage.
+
+
+## Task 10 combined native audit
+
+The Paper anchor runs exhaustive command behavior separately from measured
+traffic, plus normal and 90%-single-list storage. Select the combined cases to
+avoid repeating the same behavioral setup under every named variant:
+
+```sh
+rtk proxy python3 tools/server-performance/run.py prepare --output "$SW_PERF_TASK10_ROOT" --suite all --scenarios commands,storage --variants leaves-suggestions,concurrent,skewed-list --tiers small,medium
+rtk proxy python3 tools/server-performance/run.py run --root "$SW_PERF_TASK10_ROOT" --suite all --tiers small,medium --repeats 3
+```
+
+`SW_PERF_TASK10_ROOT` must name a new absolute disposable directory. Keep suite
+sources, configuration and pinned binaries unchanged until the run ends. Native
+feedback/permission assertions are independent of the latency samples; a failed
+correctness assertion stays failed even if every scheduled command completes.
+A case that aborts retains its completed repetitions and reports the missing
+ones. Combined-case evidence does not automatically pass unexecuted case IDs or
+successful feature effects owned by navigation, upload and cross-server adapters.
+See the [Task 10 validation record](../../docs/features/server-performance/validation/2026-10-31-task10-storage-commands.md)
+for exact outcomes and retained roots.

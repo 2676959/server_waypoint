@@ -357,9 +357,9 @@ async fn run() -> anyhow::Result<()> {
     let mut failed = 0_u64;
     let mut max_lag = 0_f64;
     let mut barrier = false;
+    let mut include_wire = true;
     loop {
         if barrier && ledger.quiescent() {
-            let peers: Vec<Value> = state.wire.lock().unwrap().iter().map(|(name, peer)| json!({"name": name, "packets": peer.packets, "pendingTransfers": peer.receiver.pending()})).collect();
             let effects: BTreeMap<_, _> = state
                 .effects
                 .lock()
@@ -367,7 +367,15 @@ async fn run() -> anyhow::Result<()> {
                 .iter()
                 .map(|(name, value)| (name.clone(), value.snapshot()))
                 .collect();
-            output.emit("packet_summary", json!({"peers": peers,"effects":effects}));
+            let report = sw_performance_bots::driver::snapshot_report(
+                include_wire,
+                || {
+                    let peers: Vec<Value> = state.wire.lock().unwrap().iter().map(|(name, peer)| json!({"name": name, "packets": peer.packets, "pendingTransfers": peer.receiver.pending()})).collect();
+                    json!(peers)
+                },
+                json!(effects),
+            );
+            output.emit("packet_summary", report);
             output.emit("rate_sample", json!({"offered": offered, "completed": completed, "failed": failed,
                 "pending": offered - completed - failed, "elapsedSeconds": started.elapsed().as_secs_f64(),
                 "maxLagSeconds": max_lag, "barrierAcknowledged": true, "completionScope": "client-issued"}));
@@ -440,7 +448,14 @@ async fn run() -> anyhow::Result<()> {
                     })?;
                 offered += 1;
             }
-            "barrier" | "quiesce" => barrier = true,
+            "barrier" | "quiesce" => {
+                barrier = true;
+                include_wire = true;
+            }
+            "effects" => {
+                barrier = true;
+                include_wire = false;
+            }
             "stop" => {
                 for worker in &workers {
                     worker.abort();

@@ -28,10 +28,18 @@ final class CommandAssertions {
     private java.util.function.BiConsumer<String, JsonObject> observer;
     private long commandObservationId;
     private final java.util.Map<java.util.UUID, JsonObject> pending = new java.util.HashMap<>();
+    private final java.util.Map<java.util.UUID, org.bukkit.permissions.PermissionAttachment> attachments = new java.util.HashMap<>();
 
     void install(org.bukkit.plugin.Plugin owner, java.util.function.BiConsumer<String, JsonObject> observer) {
         plugin = owner;
         this.observer = observer;
+        Bukkit.getPluginManager().registerEvents(new org.bukkit.event.Listener() {
+            @org.bukkit.event.EventHandler
+            public void quit(org.bukkit.event.player.PlayerQuitEvent event) {
+                pending.remove(event.getPlayer().getUniqueId());
+                attachments.remove(event.getPlayer().getUniqueId());
+            }
+        }, owner);
         Bukkit.getMessenger().registerOutgoingPluginChannel(owner, "swperf:command_ack");
         Bukkit.getMessenger().registerOutgoingPluginChannel(owner, "swperf:command_ready");
         Bukkit.getMessenger().registerIncomingPluginChannel(owner, "swperf:command_request", (channel, player, bytes) -> {
@@ -45,7 +53,7 @@ final class CommandAssertions {
             if (id.isEmpty() || id.length() > 128 || command.length() > 256 || command.contains("\n")) {
                 throw new IllegalArgumentException("Invalid native command acknowledgement identity");
             }
-            request.addProperty("expiresNs", System.nanoTime() + 10_000_000_000L);
+            request.addProperty("expiresNs", System.nanoTime() + 30_000_000_000L);
             pending.put(player.getUniqueId(), request);
             JsonObject ready = request.deepCopy();
             ready.remove("expiresNs");
@@ -346,6 +354,13 @@ final class CommandAssertions {
         List<String> suggestions = Bukkit.getServer().getCommandMap().tabComplete(actor(request), input);
         JsonObject result = new JsonObject();
         result.addProperty("input", input);
+        if (request.has("requestId")) {
+            String requestId = request.get("requestId").getAsString();
+            if (requestId.isEmpty() || requestId.length() > 128) {
+                throw new IllegalArgumentException("Bounded suggestion request identity required");
+            }
+            result.addProperty("requestId", requestId);
+        }
         result.addProperty("durationNs", System.nanoTime() - started);
         result.addProperty("clock", "server-monotonic");
         result.add("suggestions", new Gson().toJsonTree(suggestions == null ? List.of() : suggestions));
@@ -355,6 +370,71 @@ final class CommandAssertions {
             providerCallbacks.asList().clear();
             droppedProviderCallbacks = 0;
         }
+        return result;
+    }
+
+    JsonObject permissions(JsonObject request) {
+        owner();
+        CommandSender sender = actor(request);
+        if (!(sender instanceof org.bukkit.entity.Player player) || dispatcher == null) {
+            throw new IllegalArgumentException("Connected player and observed native tree required");
+        }
+        JsonObject values = request.getAsJsonObject("permissions");
+        if (values == null || values.size() > 16) {
+            throw new IllegalArgumentException("Bounded explicit permissions required");
+        }
+        for (var entry : values.entrySet()) {
+            if (!entry.getKey().startsWith("server_waypoint.command.") || !entry.getValue().isJsonPrimitive()
+                    || !entry.getValue().getAsJsonPrimitive().isBoolean()) {
+                throw new IllegalArgumentException("Only explicit audited command permissions are allowed");
+            }
+        }
+        var previous = attachments.remove(player.getUniqueId());
+        if (previous != null) {
+            player.removeAttachment(previous);
+        }
+        player.setOp(request.get("operator").getAsBoolean());
+        if (!values.isEmpty()) {
+            var attachment = player.addAttachment(plugin);
+            values.entrySet().forEach(entry -> attachment.setPermission(entry.getKey(), entry.getValue().getAsBoolean()));
+            attachments.put(player.getUniqueId(), attachment);
+        }
+        player.recalculatePermissions();
+        var source = ((org.bukkit.craftbukkit.entity.CraftPlayer) player).getHandle().createCommandSourceStack();
+        JsonObject branches = new JsonObject();
+        for (var child : dispatcher.getRoot().getChild("wp").getChildren()) {
+            branches.addProperty(child.getName(), child.canUse(source));
+        }
+        var remote = dispatcher.getRoot().getChild("wp").getChild("remote");
+        for (String name : List.of("list", "tp")) {
+            branches.addProperty("remote." + name, remote.getChild(name).canUse(source));
+        }
+        var upload = dispatcher.getRoot().getChild("wp").getChild("upload");
+        branches.addProperty("upload.delete", upload.getChild("source").getChild("force").getChild("local").getChild("delete").canUse(source));
+        JsonObject effective = new JsonObject();
+        for (String key : values.keySet()) {
+            effective.addProperty(key, player.hasPermission(key));
+        }
+        JsonObject result = new JsonObject();
+        result.addProperty("actor", player.getName());
+        result.addProperty("operator", player.isOp());
+        result.addProperty("origin", "native-command-requirements");
+        result.add("branches", branches);
+        result.add("explicit", effective);
+        return result;
+    }
+
+    JsonObject resources() {
+        owner();
+        JsonObject result = new JsonObject();
+        result.addProperty("pendingAcknowledgements", pending.size());
+        result.addProperty("permissionAttachments", attachments.size());
+        result.addProperty("commandCallbacks", callbacks.size());
+        synchronized (providerCallbacks) {
+            result.addProperty("providerCallbacks", providerCallbacks.size());
+            result.addProperty("droppedProviderCallbacks", droppedProviderCallbacks);
+        }
+        result.addProperty("droppedCallbacks", droppedCallbacks);
         return result;
     }
 

@@ -110,6 +110,7 @@ public final class PaperPerformanceProbe extends JavaPlugin {
                     emit("scenario.stopped", stopped);
                 }
                 case "storage.snapshot" -> emit("storage.snapshot", StorageAssertions.snapshot());
+                case "storage.reload" -> emit("storage.reloaded", StorageAssertions.reload());
                 case "navigation.snapshot" -> emit("navigation.snapshot", NavigationAssertions.snapshot());
                 case "lifecycle.arm" -> emit("lifecycle.armed", lifecycle.arm());
                 case "lifecycle.prepare-nether" -> emit("lifecycle.nether.prepared", lifecycle.prepareNether());
@@ -125,6 +126,19 @@ public final class PaperPerformanceProbe extends JavaPlugin {
                     Bukkit.getScheduler().runTask(this, () -> emit("commands.executed", commands.completed(acknowledgement)));
                 }
                 case "commands.suggest" -> emit("commands.suggested", commands.suggest(data));
+                case "commands.permissions" -> emit("commands.permissions", commands.permissions(data));
+                case "commands.resources" -> emit("commands.resources", commands.resources());
+                case "process.snapshot" -> {
+                    var bean = java.lang.management.ManagementFactory.getThreadMXBean();
+                    JsonObject state = new JsonObject();
+                    state.addProperty("pid", ProcessHandle.current().pid());
+                    state.addProperty("startedMs", java.lang.management.ManagementFactory.getRuntimeMXBean().getStartTime());
+                    state.addProperty("allocatedBytes", bean instanceof com.sun.management.ThreadMXBean supported
+                            && supported.isThreadAllocatedMemorySupported() && supported.isThreadAllocatedMemoryEnabled()
+                            ? supported.getTotalThreadAllocatedBytes() : -1);
+                    state.addProperty("scope", "whole-process");
+                    emit("process.snapshot", state);
+                }
                 case "players.malformed" -> { bots.sendMalformed(); emit("players.malformed", new JsonObject()); }
                 case "players.snapshot" -> emit("players.snapshot", bots.snapshot(false));
                 case "players.reset" -> emit("players.reset", bots.snapshot(true));

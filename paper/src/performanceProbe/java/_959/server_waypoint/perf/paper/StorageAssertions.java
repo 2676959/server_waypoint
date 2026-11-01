@@ -13,6 +13,20 @@ final class StorageAssertions {
     private StorageAssertions() {
     }
 
+    static JsonObject reload() throws ReflectiveOperationException {
+        if (!Bukkit.isPrimaryThread()) {
+            throw new IllegalStateException("Paper storage reload requires server owner thread");
+        }
+        var plugin = Bukkit.getPluginManager().getPlugin("ServerWaypoint");
+        if (plugin == null) {
+            throw new IllegalStateException("Published plugin absent");
+        }
+        Class<?> coreType = Class.forName("_959.server_waypoint.core.WaypointServerCore", true, plugin.getClass().getClassLoader());
+        Object core = coreType.getField("INSTANCE").get(null);
+        coreType.getMethod("reloadWaypointFiles").invoke(core);
+        return snapshot();
+    }
+
     static JsonObject snapshot() throws ReflectiveOperationException {
         if (!Bukkit.isPrimaryThread()) {
             throw new IllegalStateException("Paper storage snapshot requires server owner thread");

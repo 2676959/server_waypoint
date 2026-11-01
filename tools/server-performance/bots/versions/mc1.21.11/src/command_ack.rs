@@ -1,17 +1,19 @@
 //! Test-probe acknowledgements; a marker alone never completes a command.
 use serde_json::Value;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, VecDeque};
 use tokio::sync::oneshot;
 
 pub struct PendingAcks {
     stage: &'static str,
     entries: BTreeMap<(String, String), (String, oneshot::Sender<Value>)>,
+    cancelled: VecDeque<(String, String)>,
 }
 impl Default for PendingAcks {
     fn default() -> Self {
         Self {
             stage: "command-completed",
             entries: BTreeMap::new(),
+            cancelled: VecDeque::new(),
         }
     }
 }
@@ -20,6 +22,7 @@ impl PendingAcks {
         Self {
             stage: "marker-registered",
             entries: BTreeMap::new(),
+            cancelled: VecDeque::new(),
         }
     }
     pub fn register(
@@ -35,6 +38,7 @@ impl PendingAcks {
         if self.entries.contains_key(&key) {
             return Err("duplicate pending command acknowledgement".into());
         }
+        self.cancelled.retain(|value| value != &key);
         let (sender, receiver) = oneshot::channel();
         self.entries
             .insert(key, (command.trim_start_matches('/').to_owned(), sender));
@@ -45,10 +49,14 @@ impl PendingAcks {
             .as_str()
             .ok_or("acknowledgement ID missing")?;
         let key = (bot.to_owned(), id.to_owned());
-        let (command, _) = self
-            .entries
-            .get(&key)
-            .ok_or("unknown actor/action acknowledgement")?;
+        if !self.entries.contains_key(&key) {
+            if let Some(index) = self.cancelled.iter().position(|value| value == &key) {
+                self.cancelled.remove(index);
+                return Ok(());
+            }
+            return Err("unknown actor/action acknowledgement".into());
+        }
+        let (command, _) = self.entries.get(&key).unwrap();
         if value["serverObserved"] != true
             || value["command"] != *command
             || value["stage"] != self.stage
@@ -61,7 +69,14 @@ impl PendingAcks {
             .map_err(|_| "command acknowledgement receiver expired".into())
     }
     pub fn cancel(&mut self, bot: &str, id: &str) {
-        self.entries.remove(&(bot.to_owned(), id.to_owned()));
+        let key = (bot.to_owned(), id.to_owned());
+        if self.entries.remove(&key).is_some() {
+            self.cancelled.retain(|value| value != &key);
+            if self.cancelled.len() >= 256 {
+                self.cancelled.pop_front();
+            }
+            self.cancelled.push_back(key);
+        }
     }
     pub fn len(&self) -> usize {
         self.entries.len()

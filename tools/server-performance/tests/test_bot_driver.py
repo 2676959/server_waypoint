@@ -7,6 +7,43 @@ from models import Status
 
 
 class BotDriverTest(unittest.TestCase):
+    def test_effects_scope_cannot_silently_include_full_wire_history(self):
+        from bot_driver import effects_snapshot
+        effects={"alice":{"chat":[{"sequence":1,"text":"delivered"}]}}
+        self.assertEqual(effects,effects_snapshot({"scope":"effects","peers":[],"effects":effects}))
+        for invalid in ({"scope":"full","peers":[],"effects":effects},{"scope":"effects","peers":[{}],"effects":effects},{"scope":"effects","peers":[],"effects":[]}):
+            with self.assertRaises(ValueError):effects_snapshot(invalid)
+
+    def test_recent_history_is_bounded_and_replaces_old_packet_snapshots(self):
+        import tempfile
+        from bot_driver import BotDriver
+        from controller import create_root
+        from processes import stop_owned
+        base={"schemaVersion":1,"runId":"run","attemptId":"attempt"}
+        messages=[{**base,"sequence":i+1,"type":"rate_sample","data":{"offered":i,"completed":i,"failed":0,"pending":0,"elapsedSeconds":i+1,"maxLagSeconds":0,"barrierAcknowledged":True,"completionScope":"client-issued"}} for i in range(1400)]
+        messages.append({**base,"sequence":1401,"type":"packet_summary","data":{"scope":"full","peers":[{"packets":[{"bodyHex":"old-wire-body"}]}],"effects":{}}})
+        messages.append({**base,"sequence":1402,"type":"packet_summary","data":{"scope":"effects","peers":[],"effects":{}}})
+        with tempfile.TemporaryDirectory() as directory:
+            root=create_root(Path(directory).resolve()/"owned")
+            driver=BotDriver(self.child(root,messages),root,"run","attempt")
+            try:
+                driver.process.process.wait(timeout=5)
+                self.assertEqual(1402,len(driver.poll()))
+                self.assertLessEqual(len(driver.events),1024)
+                summaries=[e for e in driver.events if e["type"]=="packet_summary"]
+                self.assertEqual(1,len(summaries))
+                self.assertEqual("effects",summaries[0]["data"]["scope"])
+                self.assertEqual(1402,len(driver.process.log.read_text().splitlines()))
+            finally: stop_owned(driver.process,1)
+
+    def test_full_queue_is_distinct_from_duplicate_action_identity(self):
+        from bot_driver import BotCapacityError
+        stream=BotStream("run","attempt")
+        for index in range(256): stream.offer(str(index))
+        with self.assertRaises(BotCapacityError): stream.offer("next")
+        with self.assertRaises(ValueError) as failure: stream.offer("0")
+        self.assertNotIsInstance(failure.exception,BotCapacityError)
+
     def ready(self):
         return {"bots": [{"name": "swp_reader_00", "uuid": "00000000-0000-0000-0000-000000000001", "mode": "vanilla", "connected": True}], "autoReconnect": False}
 

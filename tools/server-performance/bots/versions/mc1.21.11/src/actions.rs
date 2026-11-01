@@ -63,13 +63,29 @@ pub async fn perform(
                 bot.write_packet(azalea::protocol::packets::game::ServerboundChatCommand {
                     command: command[1..].to_owned(),
                 });
-                let reply = tokio::time::timeout(Duration::from_secs(10), receiver).await;
+                let reply = tokio::time::timeout(Duration::from_secs(90), receiver).await;
                 acknowledgements
                     .lock()
                     .unwrap()
                     .cancel(&bot.profile().name, id);
-                native_ack = reply
-                    .map_err(|_| anyhow::anyhow!("native command acknowledgement deadline"))??;
+                match reply {
+                    Ok(Ok(value)) => native_ack = value,
+                    Ok(Err(error)) => anyhow::bail!(error.to_string()),
+                    Err(_) => {
+                        let after = bot.position();
+                        return Ok(json!({
+                            "error": "native command acknowledgement deadline",
+                            "success": false,
+                            "clientElapsedNs": started.elapsed().as_nanos() as u64,
+                            "markerRegistrationNs": marker_elapsed,
+                            "clock": "client-monotonic",
+                            "completionScope": "client-issued",
+                            "nativeAck": Value::Null,
+                            "before": [before.x, before.y, before.z],
+                            "after": [after.x, after.y, after.z]
+                        }));
+                    }
+                }
             } else {
                 bot.chat(command);
                 tokio::time::sleep(Duration::from_millis(50)).await;

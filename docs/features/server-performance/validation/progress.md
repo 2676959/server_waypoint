@@ -429,3 +429,110 @@ lifecycle reconciliation remain.
 
 [Exact scope, queue receipts, artifacts and commands](2026-10-27-removal-reconciliation.md).
 Evidence root: `/Volumes/ssd/sw-removal-reconcile-20261027/`.
+
+
+## 2026-10-31 — Task 10 final workload integration
+
+All storage/command variants now have native runner paths. The extended suite has
+138 passing Python tests, and the Paper 1.21.11 probe builds. Independent review
+found missing distinct timing paths, restart-error masking and incomplete restore
+replay evidence. The fix pass adds tier-sized scans, separately reported measured
+TP/reload/direct-console/execute-as families, exact asynchronous completion counts,
+consumed-token/rejection checks and guarded restart cleanup. A native injected
+fixture-write failure reproduces the old masked exception and preserves the
+original error after the fix, with all owned process groups stopped.
+
+The final small/medium three-repetition run is in progress under
+`/Volumes/ssd/sw-task10-final-20261031b/`. Its sealed inputs match the executable
+suite; earlier prepared/diagnostic roots remain retained. No final numeric result
+or complete Task 10/M1 claim is made at this checkpoint. See the
+[Task 10 record](2026-10-31-task10-storage-commands.md) for command-layer versus
+successful-feature boundaries and the pending validation outcome. No production
+code, localization or active Stonecutter target changed; no commit or push.
+
+## 2026-11-01 — Task 10 command ACK and medium leaves
+
+Native `commands.tree` instruments callbacks; first-ACK smokes without that
+snapshot retain empty wrapper callbacks. After instrumentation, 10-player
+compatible `/wp help` ACK passes (smokes 15 and 16). The official medium
+leaves-suggestions case then completed two full repetitions with acknowledged
+timed actions, exact save/reopen, and the same retained `wp tp` / execute-as
+feedback FAIL as the small case. Repeat 3 hit ENOSPC. Task 10 execute checkbox
+stays open. No production/localization change, commit or push. Root:
+`/Users/mini/.codex/tmp/sw-task10-20261101-commands`.
+
+
+## 2026-11-01 — Task 10 completed with retained command-feedback failures
+
+Six selected published-4.0.0 Paper cases each completed three independent
+30-second warm-up / 60-second measurement repetitions, fulfilled scheduled
+traffic and matched full saved/reopened properties. Normal and 90%-single-list
+storage small/medium PASS. Exhaustive commands small/medium FAIL because direct
+and execute-as local-TP feedback is not observed; native final positions match.
+Each exhaustive repetition records all 10,663 executable paths, 62 suggestion
+paths, 44 permission configurations, 43 individual mutations and stale-wire-edit
+rejection. Successful foreign-feature effects remain owned by Tasks 11/12/15.
+
+Final medium root: `/Users/mini/.codex/tmp/sw-task10-20261101-command-final/`.
+Storage/small-command root: `/Users/mini/.codex/tmp/sw-task10-20261101-final/`.
+These retain separate tool/setup identities. Earlier watchdog, queue and ENOSPC
+failures remain; no healthy baseline or full M1/release acceptance is claimed.
+
+Final review's failure-retention gap is fixed after collection, with four
+RED/GREEN real-runner exception tests. Final verification: 158 Python tests,
+22 pinned Rust tests, optimized bot build and fully qualified Paper 1.21.11
+probe build pass; probe-only archive isolation and no active native workloads
+are verified. Active targets, production code and translations are unchanged.
+No commit, push or deployment. [Full report](2026-10-31-task10-storage-commands.md)
+and [exact per-repetition metrics](2026-11-01-task10-evidence.json).
+
+
+## 2026-11-01 — published 4.0.1 Task 10 rerun
+
+The pinned published Paper artifact (`d7e878b0…63f476`, source `eb3442e`)
+completed the same six small/medium cases, three fresh repetitions each:
+18 complete measurement / exact save-reopen windows. All four storage cases
+PASS; command small/medium FAIL only the retained direct-player / execute-as
+local-TP feedback assertions. Full native teleport coordinates match. Every
+medium timing window meets p95 <40 ms / p99 <50 ms.
+
+The native 4.0.1 tree has 2,834 nodes, 1,447 executable paths and 286 suggestion
+paths; each final command repetition exercises all of them, plus 43 mutations,
+44 permission configurations and stale-wire-edit rejection. The original small
+attempt's vanilla spam kick is retained as BLOCKED. A 1.1-second pause before
+untimed player requests clears that fixture blocker in three fresh native runs;
+measured workload/rates/budgets and assertions are unchanged. Review has no
+Critical/Important findings; 158 Python harness tests pass and owned workloads
+are stopped. No production change, commit, push or baseline promotion.
+
+[Results, identities, fixture ruling and reproduction](2026-11-01-4.0.1-task10.md),
+[per-repetition evidence](2026-11-01-4.0.1-task10-evidence.json).
+
+## 2026-11-01 — local-TP feedback was the bot decoder
+
+The retained direct and execute-as teleport feedback FAILs come from Azalea
+0.15.1 dropping system chat. The live 4.0.1 confirmation has no `text` field on
+its root and a player-head component with a `player` profile and no `object`
+type tag. The vendored `azalea-chat` patch decodes that shape. Functional
+4.0.1 small behavior at `/Volumes/ssd/sw-task10-object-decoder-20261101b`
+passes, including `✔ Teleported [unknown player head] swp_reader_00 to [P] alpha`.
+The sealed timing repetitions were not remeasured. Bot SHA-256
+`f39dbf5c…a843125`. No production change.
+
+## 2026-11-01 — published 4.0.1 Task 10 remasurement with patched decoder
+
+The same six selected Paper cases were remasured against published 4.0.1
+(`d7e878b0…63f476`, source `eb3442e`) with bot `f39dbf5c…a843125`. All six
+PASS: 18 complete 30/60-second measurement / exact save-reopen windows.
+Direct-player and execute-as local-TP feedback now observe
+`✔ Teleported [unknown player head] swp_reader_00 to [P] alpha`. Every medium
+timing window meets p95 <40 ms / p99 <50 ms.
+
+The first root is INCONCLUSIVE only because concurrent-medium repeat 1 offered
+3,298 of 3,300 measurement commands; that attempt is retained. A second root
+completed three fresh concurrent-medium repetitions and PASSes. The two roots
+are not a paired optimization. Decoder-blind 4.0.1 timings remain sealed. No
+production change, commit, push or baseline promotion.
+
+[Results, identities and reproduction](2026-11-01-4.0.1-task10-decoder.md),
+[per-repetition evidence](2026-11-01-4.0.1-task10-decoder-evidence.json).

@@ -23,6 +23,18 @@ class ServerHealthTest(unittest.TestCase):
         text='[22:35:51] [Server thread/INFO]: SW_PERF {"reason":"ERROR text fixture","exception":null}\n'
         self.assertEqual(Status.PASS,assess_log(text).status)
 
+    def test_terminal_color_and_prompt_preserve_native_watchdog_severity(self):
+        from server_health import assess_log
+        text = "\x1b[m> \r  \r\x1b[31;1m[00:49:49 ERROR]: The server has not responded for 10 seconds! Creating thread dump\n"
+        for source in (text, iter([text]), text.splitlines()):
+            result = assess_log(source)
+            self.assertEqual(Status.FAIL, result.status)
+            self.assertIn("native watchdog nonresponse reports: 1", result.reasons)
+
+    def test_terminal_control_sequences_alone_do_not_establish_a_native_log(self):
+        from server_health import assess_log
+        self.assertEqual(Status.BLOCKED, assess_log("\x1b[m> \r  \r\n").status)
+
     def test_missing_native_log_is_blocked(self):
         from server_health import native_log_health
         import tempfile

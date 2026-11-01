@@ -150,12 +150,12 @@ def async_reload_feedback(transcript,run_id,attempt_id,callback,token):
             event=stream.parse(line)
             data=event.get("data",{})
             if event["type"]=="command.begin":
-                if data.get("input")=="wp reload":
+                if data.get("commandObservationId")==callback["commandObservationId"]:
                     calls+=1
-                    if data.get("commandObservationId")!=callback["commandObservationId"] or begun:
+                    if data.get("input")!="wp reload" or begun:
                         raise ValueError("multiple/unmatched reload observations")
                     begun=True
-                elif ended and response is None:
+                elif begun and response is None:
                     raise ValueError("another command entered the exclusive reload response window")
             elif event["type"]=="command.end" and data.get("commandObservationId")==callback["commandObservationId"]:
                 if not begun or data.get("input")!="wp reload":

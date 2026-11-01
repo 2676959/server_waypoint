@@ -103,6 +103,7 @@
                 "revision-conflict",
                 "dimensions",
                 "concurrent",
+                "skewed-list",
                 "save-reload-restart"
             ],
             "fixture": "navigation-terrain",
@@ -116,6 +117,16 @@
             ],
             "clients": 1,
             "rates": {
+                "small": 10,
+                "medium": 50,
+                "stress": 100
+            },
+            "mutationRates": {
+                "small": 1,
+                "medium": 5,
+                "stress": 10
+            },
+            "suggestionRates": {
                 "small": 10,
                 "medium": 50,
                 "stress": 100
@@ -143,6 +154,16 @@
             ],
             "clients": 1,
             "rates": {
+                "small": 10,
+                "medium": 50,
+                "stress": 100
+            },
+            "mutationRates": {
+                "small": 1,
+                "medium": 5,
+                "stress": 10
+            },
+            "suggestionRates": {
                 "small": 10,
                 "medium": 50,
                 "stress": 100

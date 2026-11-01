@@ -1,6 +1,22 @@
 # Published 4.0.0 coverage ledger
 
-Source revision: `d9f532f8b5a14c9be4bc47531b05b44fd1dc5773`. Static requirements only; execution evidence is pending.
+Source revision: `d9f532f8b5a14c9be4bc47531b05b44fd1dc5773`. The table below
+records static requirements. Selected Task 10 execution is recorded in the
+[storage/command audit](2026-10-31-task10-storage-commands.md); all other rows
+still require their own native evidence.
+
+Task 10 expands the installed release tree into 10,663 executable paths and 62
+custom-suggestion paths. It retains separate callback/feedback evidence for each
+path, 44 permission configurations and exact local mutation snapshots. Timing
+alone is grouped by source-backed family. Navigation, upload and remote paths
+use explicit console/unpaired command-boundary outcomes here; successful feature
+effects stay required in Tasks 11, 12 and 15. Missing teleport feedback remains a
+failed assertion on the decoder-blind 4.0.0 / first 4.0.1 timings. The patched
+4.0.1 remasurement observes that confirmation and PASSes the selected command
+cases; see [2026-11-01-4.0.1-task10-decoder.md](2026-11-01-4.0.1-task10-decoder.md). 2026-11-01 medium leaves-suggestions repeats 1–2 execute that
+leaf with a native callback and still fail delivered player feedback; repeat 3
+is ENOSPC. This command-layer coverage does not mark those feature rows,
+other runtimes, stress tiers or the complete release matrix as passing.
 
 Current-development changes on 2026-10-26 remove the Paper inventory-transfer
 handler and the mod backend's allay/item-entity tick injections at the user's

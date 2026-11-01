@@ -1,0 +1,3003 @@
+{
+    "schemaVersion": 1,
+    "scope": "selected Paper 1.21.11 published 4.0.0 Task 10 audit; no full-release acceptance or baseline promotion",
+    "healthReplay": "/Users/mini/.codex/tmp/sw-task10-20261101-command-final/diagnostics/server-health-replay.json",
+    "cases": [
+        {
+            "root": "/Users/mini/.codex/tmp/sw-task10-20261101-final",
+            "caseId": "paper-1.21.11:storage:skewed-list:medium",
+            "originalDecision": {
+                "status": "PASS",
+                "reasons": [],
+                "schemaVersion": 1
+            },
+            "effectiveDecision": {
+                "status": "PASS",
+                "reasons": [],
+                "schemaVersion": 1
+            },
+            "identities": {
+                "runtime": "paper-1.21.11",
+                "serverSha256": "82a487ab8c2d0f6f072b8dbaedc9218c85ae3a7d167808124462b248955beec3",
+                "javaSha256": "04005388bac0c272ea914210ca519ce94b2f873ea3962b9874a6859f74d7f279",
+                "probeSha256": "6f6fb4723aad11234eed281cced9065591ae0389c2dfd2eaa1aa1af176e61d35",
+                "botSha256": "e3c1ec04c5a9bd9b1a325c3d7643c255009f05985e4596ded0498f68e3326ba6",
+                "fixtureSha256": "3688d27c9c871632a62c4e35fb7caf234fed80dc35c70aefe9287dee40795716"
+            },
+            "assertions": {
+                "repeat-1-native-actors-and-contiguous-ticks": true,
+                "repeat-1-acknowledged-completed-actions": true,
+                "repeat-1-command-resources-released": true,
+                "repeat-1-disconnected": true,
+                "repeat-1-native-log-healthy": true,
+                "repeat-1-saved-exactly": true,
+                "repeat-1-reopened-exactly": true,
+                "repeat-2-native-actors-and-contiguous-ticks": true,
+                "repeat-2-acknowledged-completed-actions": true,
+                "repeat-2-command-resources-released": true,
+                "repeat-2-disconnected": true,
+                "repeat-2-native-log-healthy": true,
+                "repeat-2-saved-exactly": true,
+                "repeat-2-reopened-exactly": true,
+                "repeat-3-native-actors-and-contiguous-ticks": true,
+                "repeat-3-acknowledged-completed-actions": true,
+                "repeat-3-command-resources-released": true,
+                "repeat-3-disconnected": true,
+                "repeat-3-native-log-healthy": true,
+                "repeat-3-saved-exactly": true,
+                "repeat-3-reopened-exactly": true
+            },
+            "attempts": [
+                {
+                    "attempt": "/Users/mini/.codex/tmp/sw-task10-20261101-final/attempts/a2ab3c1d-a22d-49bc-9c6e-e85fe0038bab",
+                    "savedExactly": true,
+                    "reopenedExactly": true
+                },
+                {
+                    "attempt": "/Users/mini/.codex/tmp/sw-task10-20261101-final/attempts/3d3c052f-8c63-4350-964d-d706ce88dc11",
+                    "savedExactly": true,
+                    "reopenedExactly": true
+                },
+                {
+                    "attempt": "/Users/mini/.codex/tmp/sw-task10-20261101-final/attempts/505bc0cb-fa6c-446a-b889-ec3fde015421",
+                    "savedExactly": true,
+                    "reopenedExactly": true
+                }
+            ],
+            "repetitions": [
+                {
+                    "ticks": {
+                        "count": 1126,
+                        "unit": "ns",
+                        "p50": 2225334,
+                        "p95": 3364792,
+                        "p99": 7029667,
+                        "max": 984002042
+                    },
+                    "clientAcknowledgementRTT": {
+                        "count": 3300,
+                        "unit": "ns",
+                        "p50": 39463958,
+                        "p95": 41080583,
+                        "p99": 58838125,
+                        "max": 1001829250
+                    },
+                    "botCommands": 3300,
+                    "consoleCommands": 0,
+                    "nativeSuggestions": 3000,
+                    "processAllocatedBytes": 23039560384,
+                    "allocationScope": "whole-process; all JVM threads, includes GC/runtime/probe",
+                    "controllerMaxLatenessSeconds": 0.0161756249988656,
+                    "nativeCommandFamilies": {
+                        "details": {
+                            "count": 1000,
+                            "duration": {
+                                "count": 1000,
+                                "unit": "ns",
+                                "p50": 90625,
+                                "p95": 195000,
+                                "p99": 333250,
+                                "max": 2470417
+                            },
+                            "allocation": {
+                                "count": 1000,
+                                "unit": "bytes",
+                                "p50": 49152,
+                                "p95": 49464,
+                                "p99": 49464,
+                                "max": 49496
+                            }
+                        },
+                        "edit": {
+                            "count": 300,
+                            "duration": {
+                                "count": 300,
+                                "unit": "ns",
+                                "p50": 1942125,
+                                "p95": 20726916,
+                                "p99": 28478542,
+                                "max": 33425833
+                            },
+                            "allocation": {
+                                "count": 300,
+                                "unit": "bytes",
+                                "p50": 5654784,
+                                "p95": 5657112,
+                                "p99": 5657208,
+                                "max": 5657208
+                            }
+                        },
+                        "help": {
+                            "count": 1000,
+                            "duration": {
+                                "count": 1000,
+                                "unit": "ns",
+                                "p50": 96125,
+                                "p95": 173083,
+                                "p99": 229708,
+                                "max": 2732292
+                            },
+                            "allocation": {
+                                "count": 1000,
+                                "unit": "bytes",
+                                "p50": 100720,
+                                "p95": 100808,
+                                "p99": 100808,
+                                "max": 100808
+                            }
+                        },
+                        "list": {
+                            "count": 1000,
+                            "duration": {
+                                "count": 1000,
+                                "unit": "ns",
+                                "p50": 2047167,
+                                "p95": 2940750,
+                                "p99": 4241584,
+                                "max": 7533500
+                            },
+                            "allocation": {
+                                "count": 1000,
+                                "unit": "bytes",
+                                "p50": 4239896,
+                                "p95": 4240400,
+                                "p99": 4240400,
+                                "max": 4240808
+                            }
+                        }
+                    }
+                },
+                {
+                    "ticks": {
+                        "count": 1147,
+                        "unit": "ns",
+                        "p50": 2155042,
+                        "p95": 3514709,
+                        "p99": 7743959,
+                        "max": 25284000
+                    },
+                    "clientAcknowledgementRTT": {
+                        "count": 3300,
+                        "unit": "ns",
+                        "p50": 39378208,
+                        "p95": 40975750,
+                        "p99": 44997375,
+                        "max": 1141365666
+                    },
+                    "botCommands": 3300,
+                    "consoleCommands": 0,
+                    "nativeSuggestions": 3000,
+                    "processAllocatedBytes": 22811706352,
+                    "allocationScope": "whole-process; all JVM threads, includes GC/runtime/probe",
+                    "controllerMaxLatenessSeconds": 0.016844125005299304,
+                    "nativeCommandFamilies": {
+                        "edit": {
+                            "count": 300,
+                            "duration": {
+                                "count": 300,
+                                "unit": "ns",
+                                "p50": 2059958,
+                                "p95": 19484791,
+                                "p99": 24518958,
+                                "max": 32260833
+                            },
+                            "allocation": {
+                                "count": 300,
+                                "unit": "bytes",
+                                "p50": 5654952,
+                                "p95": 5657256,
+                                "p99": 5657256,
+                                "max": 5657400
+                            }
+                        },
+                        "details": {
+                            "count": 1000,
+                            "duration": {
+                                "count": 1000,
+                                "unit": "ns",
+                                "p50": 80458,
+                                "p95": 179167,
+                                "p99": 352541,
+                                "max": 1134416
+                            },
+                            "allocation": {
+                                "count": 1000,
+                                "unit": "bytes",
+                                "p50": 49192,
+                                "p95": 49496,
+                                "p99": 49496,
+                                "max": 50936
+                            }
+                        },
+                        "list": {
+                            "count": 1000,
+                            "duration": {
+                                "count": 1000,
+                                "unit": "ns",
+                                "p50": 2070375,
+                                "p95": 2866959,
+                                "p99": 3847166,
+                                "max": 6094208
+                            },
+                            "allocation": {
+                                "count": 1000,
+                                "unit": "bytes",
+                                "p50": 4240000,
+                                "p95": 4240432,
+                                "p99": 4240432,
+                                "max": 4241640
+                            }
+                        },
+                        "help": {
+                            "count": 1000,
+                            "duration": {
+                                "count": 1000,
+                                "unit": "ns",
+                                "p50": 109458,
+                                "p95": 194375,
+                                "p99": 257167,
+                                "max": 4344375
+                            },
+                            "allocation": {
+                                "count": 1000,
+                                "unit": "bytes",
+                                "p50": 101800,
+                                "p95": 101800,
+                                "p99": 101800,
+                                "max": 101864
+                            }
+                        }
+                    }
+                },
+                {
+                    "ticks": {
+                        "count": 1218,
+                        "unit": "ns",
+                        "p50": 1944958,
+                        "p95": 2857125,
+                        "p99": 4229250,
+                        "max": 19353292
+                    },
+                    "clientAcknowledgementRTT": {
+                        "count": 3300,
+                        "unit": "ns",
+                        "p50": 39138083,
+                        "p95": 40836708,
+                        "p99": 58758750,
+                        "max": 61295958
+                    },
+                    "botCommands": 3300,
+                    "consoleCommands": 0,
+                    "nativeSuggestions": 3000,
+                    "processAllocatedBytes": 21655118800,
+                    "allocationScope": "whole-process; all JVM threads, includes GC/runtime/probe",
+                    "controllerMaxLatenessSeconds": 0.021059958006368618,
+                    "nativeCommandFamilies": {
+                        "edit": {
+                            "count": 300,
+                            "duration": {
+                                "count": 300,
+                                "unit": "ns",
+                                "p50": 2370500,
+                                "p95": 24774250,
+                                "p99": 30316417,
+                                "max": 35865667
+                            },
+                            "allocation": {
+                                "count": 300,
+                                "unit": "bytes",
+                                "p50": 5653488,
+                                "p95": 5653656,
+                                "p99": 5654376,
+                                "max": 5654432
+                            }
+                        },
+                        "details": {
+                            "count": 1000,
+                            "duration": {
+                                "count": 1000,
+                                "unit": "ns",
+                                "p50": 95334,
+                                "p95": 206583,
+                                "p99": 322750,
+                                "max": 1162417
+                            },
+                            "allocation": {
+                                "count": 1000,
+                                "unit": "bytes",
+                                "p50": 47792,
+                                "p95": 47848,
+                                "p99": 48056,
+                                "max": 49472
+                            }
+                        },
+                        "help": {
+                            "count": 1000,
+                            "duration": {
+                                "count": 1000,
+                                "unit": "ns",
+                                "p50": 113708,
+                                "p95": 194042,
+                                "p99": 244500,
+                                "max": 2360625
+                            },
+                            "allocation": {
+                                "count": 1000,
+                                "unit": "bytes",
+                                "p50": 99616,
+                                "p95": 99640,
+                                "p99": 99640,
+                                "max": 99680
+                            }
+                        },
+                        "list": {
+                            "count": 1000,
+                            "duration": {
+                                "count": 1000,
+                                "unit": "ns",
+                                "p50": 2242000,
+                                "p95": 3008750,
+                                "p99": 3324584,
+                                "max": 6932666
+                            },
+                            "allocation": {
+                                "count": 1000,
+                                "unit": "bytes",
+                                "p50": 4238536,
+                                "p95": 4238600,
+                                "p99": 4238624,
+                                "max": 4239032
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "root": "/Users/mini/.codex/tmp/sw-task10-20261101-final",
+            "caseId": "paper-1.21.11:storage:concurrent:medium",
+            "originalDecision": {
+                "status": "PASS",
+                "reasons": [],
+                "schemaVersion": 1
+            },
+            "effectiveDecision": {
+                "status": "PASS",
+                "reasons": [],
+                "schemaVersion": 1
+            },
+            "identities": {
+                "runtime": "paper-1.21.11",
+                "serverSha256": "82a487ab8c2d0f6f072b8dbaedc9218c85ae3a7d167808124462b248955beec3",
+                "javaSha256": "04005388bac0c272ea914210ca519ce94b2f873ea3962b9874a6859f74d7f279",
+                "probeSha256": "6f6fb4723aad11234eed281cced9065591ae0389c2dfd2eaa1aa1af176e61d35",
+                "botSha256": "e3c1ec04c5a9bd9b1a325c3d7643c255009f05985e4596ded0498f68e3326ba6",
+                "fixtureSha256": "3688d27c9c871632a62c4e35fb7caf234fed80dc35c70aefe9287dee40795716"
+            },
+            "assertions": {
+                "repeat-1-native-actors-and-contiguous-ticks": true,
+                "repeat-1-acknowledged-completed-actions": true,
+                "repeat-1-command-resources-released": true,
+                "repeat-1-disconnected": true,
+                "repeat-1-native-log-healthy": true,
+                "repeat-1-saved-exactly": true,
+                "repeat-1-reopened-exactly": true,
+                "repeat-2-native-actors-and-contiguous-ticks": true,
+                "repeat-2-acknowledged-completed-actions": true,
+                "repeat-2-command-resources-released": true,
+                "repeat-2-disconnected": true,
+                "repeat-2-native-log-healthy": true,
+                "repeat-2-saved-exactly": true,
+                "repeat-2-reopened-exactly": true,
+                "repeat-3-native-actors-and-contiguous-ticks": true,
+                "repeat-3-acknowledged-completed-actions": true,
+                "repeat-3-command-resources-released": true,
+                "repeat-3-disconnected": true,
+                "repeat-3-native-log-healthy": true,
+                "repeat-3-saved-exactly": true,
+                "repeat-3-reopened-exactly": true
+            },
+            "attempts": [
+                {
+                    "attempt": "/Users/mini/.codex/tmp/sw-task10-20261101-final/attempts/dec7c145-fbdd-4642-94cf-3045995f0452",
+                    "savedExactly": true,
+                    "reopenedExactly": true
+                },
+                {
+                    "attempt": "/Users/mini/.codex/tmp/sw-task10-20261101-final/attempts/7147cfb1-5c2c-41db-9f81-dd16afa9f117",
+                    "savedExactly": true,
+                    "reopenedExactly": true
+                },
+                {
+                    "attempt": "/Users/mini/.codex/tmp/sw-task10-20261101-final/attempts/bbf2badf-13f0-4772-93db-7d58a4c8d9b6",
+                    "savedExactly": true,
+                    "reopenedExactly": true
+                }
+            ],
+            "repetitions": [
+                {
+                    "ticks": {
+                        "count": 1134,
+                        "unit": "ns",
+                        "p50": 1677000,
+                        "p95": 3307917,
+                        "p99": 4393792,
+                        "max": 16909750
+                    },
+                    "clientAcknowledgementRTT": {
+                        "count": 3300,
+                        "unit": "ns",
+                        "p50": 39625917,
+                        "p95": 41828125,
+                        "p99": 43092208,
+                        "max": 1121931667
+                    },
+                    "botCommands": 3300,
+                    "consoleCommands": 0,
+                    "nativeSuggestions": 0,
+                    "processAllocatedBytes": 9047312624,
+                    "allocationScope": "whole-process; all JVM threads, includes GC/runtime/probe",
+                    "controllerMaxLatenessSeconds": 0.021307624996985908,
+                    "nativeCommandFamilies": {
+                        "edit": {
+                            "count": 300,
+                            "duration": {
+                                "count": 300,
+                                "unit": "ns",
+                                "p50": 1599458,
+                                "p95": 13208791,
+                                "p99": 18886417,
+                                "max": 20993292
+                            },
+                            "allocation": {
+                                "count": 300,
+                                "unit": "bytes",
+                                "p50": 1303928,
+                                "p95": 1306144,
+                                "p99": 1306232,
+                                "max": 1306232
+                            }
+                        },
+                        "details": {
+                            "count": 1000,
+                            "duration": {
+                                "count": 1000,
+                                "unit": "ns",
+                                "p50": 114917,
+                                "p95": 309583,
+                                "p99": 483333,
+                                "max": 1482416
+                            },
+                            "allocation": {
+                                "count": 1000,
+                                "unit": "bytes",
+                                "p50": 49176,
+                                "p95": 49416,
+                                "p99": 49416,
+                                "max": 49672
+                            }
+                        },
+                        "list": {
+                            "count": 1000,
+                            "duration": {
+                                "count": 1000,
+                                "unit": "ns",
+                                "p50": 229333,
+                                "p95": 572750,
+                                "p99": 834500,
+                                "max": 12244666
+                            },
+                            "allocation": {
+                                "count": 1000,
+                                "unit": "bytes",
+                                "p50": 127384,
+                                "p95": 127816,
+                                "p99": 127816,
+                                "max": 129272
+                            }
+                        },
+                        "help": {
+                            "count": 1000,
+                            "duration": {
+                                "count": 1000,
+                                "unit": "ns",
+                                "p50": 153208,
+                                "p95": 349666,
+                                "p99": 442625,
+                                "max": 958334
+                            },
+                            "allocation": {
+                                "count": 1000,
+                                "unit": "bytes",
+                                "p50": 100744,
+                                "p95": 100832,
+                                "p99": 100832,
+                                "max": 100832
+                            }
+                        }
+                    }
+                },
+                {
+                    "ticks": {
+                        "count": 1167,
+                        "unit": "ns",
+                        "p50": 1891208,
+                        "p95": 3578667,
+                        "p99": 5809417,
+                        "max": 1099164625
+                    },
+                    "clientAcknowledgementRTT": {
+                        "count": 3300,
+                        "unit": "ns",
+                        "p50": 39449417,
+                        "p95": 41710791,
+                        "p99": 43163541,
+                        "max": 1136150750
+                    },
+                    "botCommands": 3300,
+                    "consoleCommands": 0,
+                    "nativeSuggestions": 0,
+                    "processAllocatedBytes": 8544938592,
+                    "allocationScope": "whole-process; all JVM threads, includes GC/runtime/probe",
+                    "controllerMaxLatenessSeconds": 0.02680708299565282,
+                    "nativeCommandFamilies": {
+                        "edit": {
+                            "count": 300,
+                            "duration": {
+                                "count": 300,
+                                "unit": "ns",
+                                "p50": 1664166,
+                                "p95": 12938125,
+                                "p99": 17194666,
+                                "max": 18699417
+                            },
+                            "allocation": {
+                                "count": 300,
+                                "unit": "bytes",
+                                "p50": 1303976,
+                                "p95": 1304552,
+                                "p99": 1305272,
+                                "max": 1306192
+                            }
+                        },
+                        "details": {
+                            "count": 1000,
+                            "duration": {
+                                "count": 1000,
+                                "unit": "ns",
+                                "p50": 144083,
+                                "p95": 330708,
+                                "p99": 439125,
+                                "max": 2945584
+                            },
+                            "allocation": {
+                                "count": 1000,
+                                "unit": "bytes",
+                                "p50": 49176,
+                                "p95": 49296,
+                                "p99": 49536,
+                                "max": 49536
+                            }
+                        },
+                        "help": {
+                            "count": 1000,
+                            "duration": {
+                                "count": 1000,
+                                "unit": "ns",
+                                "p50": 166875,
+                                "p95": 355667,
+                                "p99": 479875,
+                                "max": 729458
+                            },
+                            "allocation": {
+                                "count": 1000,
+                                "unit": "bytes",
+                                "p50": 100744,
+                                "p95": 100864,
+                                "p99": 100864,
+                                "max": 102632
+                            }
+                        },
+                        "list": {
+                            "count": 1000,
+                            "duration": {
+                                "count": 1000,
+                                "unit": "ns",
+                                "p50": 265500,
+                                "p95": 583792,
+                                "p99": 759291,
+                                "max": 3746916
+                            },
+                            "allocation": {
+                                "count": 1000,
+                                "unit": "bytes",
+                                "p50": 127384,
+                                "p95": 127640,
+                                "p99": 127760,
+                                "max": 128536
+                            }
+                        }
+                    }
+                },
+                {
+                    "ticks": {
+                        "count": 1218,
+                        "unit": "ns",
+                        "p50": 1935458,
+                        "p95": 3198584,
+                        "p99": 3734417,
+                        "max": 11310833
+                    },
+                    "clientAcknowledgementRTT": {
+                        "count": 3300,
+                        "unit": "ns",
+                        "p50": 38132833,
+                        "p95": 39905750,
+                        "p99": 41395417,
+                        "max": 59308542
+                    },
+                    "botCommands": 3300,
+                    "consoleCommands": 0,
+                    "nativeSuggestions": 0,
+                    "processAllocatedBytes": 7830105520,
+                    "allocationScope": "whole-process; all JVM threads, includes GC/runtime/probe",
+                    "controllerMaxLatenessSeconds": 0.014397625000562186,
+                    "nativeCommandFamilies": {
+                        "edit": {
+                            "count": 300,
+                            "duration": {
+                                "count": 300,
+                                "unit": "ns",
+                                "p50": 2098958,
+                                "p95": 15917833,
+                                "p99": 19915292,
+                                "max": 20402292
+                            },
+                            "allocation": {
+                                "count": 300,
+                                "unit": "bytes",
+                                "p50": 1306416,
+                                "p95": 1306952,
+                                "p99": 1307672,
+                                "max": 1307672
+                            }
+                        },
+                        "help": {
+                            "count": 1000,
+                            "duration": {
+                                "count": 1000,
+                                "unit": "ns",
+                                "p50": 180541,
+                                "p95": 357834,
+                                "p99": 467541,
+                                "max": 5943708
+                            },
+                            "allocation": {
+                                "count": 1000,
+                                "unit": "bytes",
+                                "p50": 101536,
+                                "p95": 101664,
+                                "p99": 101664,
+                                "max": 102544
+                            }
+                        },
+                        "details": {
+                            "count": 1000,
+                            "duration": {
+                                "count": 1000,
+                                "unit": "ns",
+                                "p50": 169708,
+                                "p95": 344833,
+                                "p99": 500625,
+                                "max": 3149250
+                            },
+                            "allocation": {
+                                "count": 1000,
+                                "unit": "bytes",
+                                "p50": 49520,
+                                "p95": 49648,
+                                "p99": 49888,
+                                "max": 52616
+                            }
+                        },
+                        "list": {
+                            "count": 1000,
+                            "duration": {
+                                "count": 1000,
+                                "unit": "ns",
+                                "p50": 302334,
+                                "p95": 592291,
+                                "p99": 746333,
+                                "max": 1555250
+                            },
+                            "allocation": {
+                                "count": 1000,
+                                "unit": "bytes",
+                                "p50": 128240,
+                                "p95": 128456,
+                                "p99": 128720,
+                                "max": 128808
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "root": "/Users/mini/.codex/tmp/sw-task10-20261101-final",
+            "caseId": "paper-1.21.11:commands:leaves-suggestions:small",
+            "originalDecision": {
+                "status": "FAIL",
+                "reasons": [
+                    "player command has no correlated delivered feedback: wp tp minecraft:overworld semantic alpha",
+                    "execute-as player feedback missing",
+                    "player command has no correlated delivered feedback: wp tp minecraft:overworld semantic alpha",
+                    "execute-as player feedback missing",
+                    "player command has no correlated delivered feedback: wp tp minecraft:overworld semantic alpha",
+                    "execute-as player feedback missing",
+                    "correctness assertion failed"
+                ],
+                "schemaVersion": 1
+            },
+            "effectiveDecision": {
+                "status": "FAIL",
+                "reasons": [
+                    "player command has no correlated delivered feedback: wp tp minecraft:overworld semantic alpha",
+                    "execute-as player feedback missing",
+                    "player command has no correlated delivered feedback: wp tp minecraft:overworld semantic alpha",
+                    "execute-as player feedback missing",
+                    "player command has no correlated delivered feedback: wp tp minecraft:overworld semantic alpha",
+                    "execute-as player feedback missing",
+                    "correctness assertion failed"
+                ],
+                "schemaVersion": 1
+            },
+            "identities": {
+                "runtime": "paper-1.21.11",
+                "serverSha256": "82a487ab8c2d0f6f072b8dbaedc9218c85ae3a7d167808124462b248955beec3",
+                "javaSha256": "04005388bac0c272ea914210ca519ce94b2f873ea3962b9874a6859f74d7f279",
+                "probeSha256": "6f6fb4723aad11234eed281cced9065591ae0389c2dfd2eaa1aa1af176e61d35",
+                "botSha256": "e3c1ec04c5a9bd9b1a325c3d7643c255009f05985e4596ded0498f68e3326ba6",
+                "fixtureSha256": "1ce526d7fe0774670c851a144a159ff37ee8c861ab40ba85fb01fe921e78814f"
+            },
+            "assertions": {
+                "repeat-1-permissions-feedback-layout-tp-log": false,
+                "repeat-1-individual-read-leaves-and-providers": true,
+                "repeat-1-individual-mutation-leaves-properties-revisions": true,
+                "repeat-1-all-command-leaves-have-feedback": false,
+                "repeat-1-stale-wire-edit-rejected": true,
+                "repeat-1-native-storage-reload-exact": true,
+                "repeat-1-native-actors-and-contiguous-ticks": true,
+                "repeat-1-acknowledged-completed-actions": true,
+                "repeat-1-command-resources-released": true,
+                "repeat-1-disconnected": true,
+                "repeat-1-native-log-healthy": true,
+                "repeat-1-saved-exactly": true,
+                "repeat-1-reopened-exactly": true,
+                "repeat-2-permissions-feedback-layout-tp-log": false,
+                "repeat-2-individual-read-leaves-and-providers": true,
+                "repeat-2-individual-mutation-leaves-properties-revisions": true,
+                "repeat-2-all-command-leaves-have-feedback": false,
+                "repeat-2-stale-wire-edit-rejected": true,
+                "repeat-2-native-storage-reload-exact": true,
+                "repeat-2-native-actors-and-contiguous-ticks": true,
+                "repeat-2-acknowledged-completed-actions": true,
+                "repeat-2-command-resources-released": true,
+                "repeat-2-disconnected": true,
+                "repeat-2-native-log-healthy": true,
+                "repeat-2-saved-exactly": true,
+                "repeat-2-reopened-exactly": true,
+                "repeat-3-permissions-feedback-layout-tp-log": false,
+                "repeat-3-individual-read-leaves-and-providers": true,
+                "repeat-3-individual-mutation-leaves-properties-revisions": true,
+                "repeat-3-all-command-leaves-have-feedback": false,
+                "repeat-3-stale-wire-edit-rejected": true,
+                "repeat-3-native-storage-reload-exact": true,
+                "repeat-3-native-actors-and-contiguous-ticks": true,
+                "repeat-3-acknowledged-completed-actions": true,
+                "repeat-3-command-resources-released": true,
+                "repeat-3-disconnected": true,
+                "repeat-3-native-log-healthy": true,
+                "repeat-3-saved-exactly": true,
+                "repeat-3-reopened-exactly": true
+            },
+            "attempts": [
+                {
+                    "attempt": "/Users/mini/.codex/tmp/sw-task10-20261101-final/attempts/b09446b6-281c-4262-8886-8b519a044d8a",
+                    "savedExactly": true,
+                    "reopenedExactly": true,
+                    "reloadedExactly": true,
+                    "semantics": {
+                        "rows": 10,
+                        "permissionConfigurations": 44,
+                        "failures": [
+                            "player command has no correlated delivered feedback: wp tp minecraft:overworld semantic alpha",
+                            "execute-as player feedback missing"
+                        ],
+                        "cleanupError": null
+                    },
+                    "leafCoverage": {
+                        "localDecision": {
+                            "status": "FAIL",
+                            "reasons": [
+                                "missing native execution/feedback evidence: wp tp <dimension> <list identifier> <waypoint identifier>"
+                            ],
+                            "schemaVersion": 1
+                        },
+                        "commandDispatchDecision": {
+                            "status": "FAIL",
+                            "reasons": [
+                                "missing native execution/feedback evidence: wp tp <dimension> <list identifier> <waypoint identifier>"
+                            ],
+                            "schemaVersion": 1
+                        },
+                        "ownershipCounts": {
+                            "task10": 5340,
+                            "task11": 25,
+                            "task12": 21,
+                            "task15": 5277
+                        },
+                        "nativeExecutedLeafCount": 10663,
+                        "deliveredFeedbackLeafCount": 10662,
+                        "nativeMissingPaths": [],
+                        "feedbackMissingPaths": [
+                            "wp tp <dimension> <list identifier> <waypoint identifier>"
+                        ]
+                    },
+                    "readLeaves": 5295,
+                    "suggestionPaths": 62,
+                    "mutationLeaves": 43,
+                    "staleEditRejected": true
+                },
+                {
+                    "attempt": "/Users/mini/.codex/tmp/sw-task10-20261101-final/attempts/34d1ce6b-5784-4333-8c80-cedb436752a9",
+                    "savedExactly": true,
+                    "reopenedExactly": true,
+                    "reloadedExactly": true,
+                    "semantics": {
+                        "rows": 10,
+                        "permissionConfigurations": 44,
+                        "failures": [
+                            "player command has no correlated delivered feedback: wp tp minecraft:overworld semantic alpha",
+                            "execute-as player feedback missing"
+                        ],
+                        "cleanupError": null
+                    },
+                    "leafCoverage": {
+                        "localDecision": {
+                            "status": "FAIL",
+                            "reasons": [
+                                "missing native execution/feedback evidence: wp tp <dimension> <list identifier> <waypoint identifier>"
+                            ],
+                            "schemaVersion": 1
+                        },
+                        "commandDispatchDecision": {
+                            "status": "FAIL",
+                            "reasons": [
+                                "missing native execution/feedback evidence: wp tp <dimension> <list identifier> <waypoint identifier>"
+                            ],
+                            "schemaVersion": 1
+                        },
+                        "ownershipCounts": {
+                            "task10": 5340,
+                            "task11": 25,
+                            "task12": 21,
+                            "task15": 5277
+                        },
+                        "nativeExecutedLeafCount": 10663,
+                        "deliveredFeedbackLeafCount": 10662,
+                        "nativeMissingPaths": [],
+                        "feedbackMissingPaths": [
+                            "wp tp <dimension> <list identifier> <waypoint identifier>"
+                        ]
+                    },
+                    "readLeaves": 5295,
+                    "suggestionPaths": 62,
+                    "mutationLeaves": 43,
+                    "staleEditRejected": true
+                },
+                {
+                    "attempt": "/Users/mini/.codex/tmp/sw-task10-20261101-final/attempts/2f1de7c5-34cc-4cf2-ab76-a70d10821ec1",
+                    "savedExactly": true,
+                    "reopenedExactly": true,
+                    "reloadedExactly": true,
+                    "semantics": {
+                        "rows": 10,
+                        "permissionConfigurations": 44,
+                        "failures": [
+                            "player command has no correlated delivered feedback: wp tp minecraft:overworld semantic alpha",
+                            "execute-as player feedback missing"
+                        ],
+                        "cleanupError": null
+                    },
+                    "leafCoverage": {
+                        "localDecision": {
+                            "status": "FAIL",
+                            "reasons": [
+                                "missing native execution/feedback evidence: wp tp <dimension> <list identifier> <waypoint identifier>"
+                            ],
+                            "schemaVersion": 1
+                        },
+                        "commandDispatchDecision": {
+                            "status": "FAIL",
+                            "reasons": [
+                                "missing native execution/feedback evidence: wp tp <dimension> <list identifier> <waypoint identifier>"
+                            ],
+                            "schemaVersion": 1
+                        },
+                        "ownershipCounts": {
+                            "task10": 5340,
+                            "task11": 25,
+                            "task12": 21,
+                            "task15": 5277
+                        },
+                        "nativeExecutedLeafCount": 10663,
+                        "deliveredFeedbackLeafCount": 10662,
+                        "nativeMissingPaths": [],
+                        "feedbackMissingPaths": [
+                            "wp tp <dimension> <list identifier> <waypoint identifier>"
+                        ]
+                    },
+                    "readLeaves": 5295,
+                    "suggestionPaths": 62,
+                    "mutationLeaves": 43,
+                    "staleEditRejected": true
+                }
+            ],
+            "repetitions": [
+                {
+                    "ticks": {
+                        "count": 1124,
+                        "unit": "ns",
+                        "p50": 1884042,
+                        "p95": 3469750,
+                        "p99": 6789125,
+                        "max": 46371084
+                    },
+                    "clientAcknowledgementRTT": {
+                        "count": 600,
+                        "unit": "ns",
+                        "p50": 39317667,
+                        "p95": 41019791,
+                        "p99": 43940750,
+                        "max": 965690542
+                    },
+                    "botCommands": 600,
+                    "consoleCommands": 60,
+                    "nativeSuggestions": 600,
+                    "processAllocatedBytes": 56083110016,
+                    "allocationScope": "whole-process; all JVM threads, includes GC/runtime/probe",
+                    "controllerMaxLatenessSeconds": 0.05672400000621547,
+                    "nativeCommandFamilies": {
+                        "edit": {
+                            "count": 20,
+                            "duration": {
+                                "count": 20,
+                                "unit": "ns",
+                                "p50": 956166,
+                                "p95": 2320083,
+                                "p99": 2733875,
+                                "max": 2733875
+                            },
+                            "allocation": {
+                                "count": 20,
+                                "unit": "bytes",
+                                "p50": 279056,
+                                "p95": 279104,
+                                "p99": 279168,
+                                "max": 279168
+                            }
+                        },
+                        "list": {
+                            "count": 360,
+                            "duration": {
+                                "count": 360,
+                                "unit": "ns",
+                                "p50": 465167,
+                                "p95": 1341375,
+                                "p99": 2008958,
+                                "max": 13995208
+                            },
+                            "allocation": {
+                                "count": 360,
+                                "unit": "bytes",
+                                "p50": 141384,
+                                "p95": 679792,
+                                "p99": 679792,
+                                "max": 679792
+                            }
+                        },
+                        "details": {
+                            "count": 120,
+                            "duration": {
+                                "count": 120,
+                                "unit": "ns",
+                                "p50": 448708,
+                                "p95": 745167,
+                                "p99": 824042,
+                                "max": 910917
+                            },
+                            "allocation": {
+                                "count": 120,
+                                "unit": "bytes",
+                                "p50": 129008,
+                                "p95": 129056,
+                                "p99": 129056,
+                                "max": 129056
+                            }
+                        },
+                        "help": {
+                            "count": 60,
+                            "duration": {
+                                "count": 60,
+                                "unit": "ns",
+                                "p50": 323417,
+                                "p95": 575750,
+                                "p99": 2216208,
+                                "max": 2216208
+                            },
+                            "allocation": {
+                                "count": 60,
+                                "unit": "bytes",
+                                "p50": 100448,
+                                "p95": 100472,
+                                "p99": 100472,
+                                "max": 100472
+                            }
+                        },
+                        "console-execute-as": {
+                            "count": 30,
+                            "duration": {
+                                "count": 30,
+                                "unit": "ns",
+                                "p50": 474250,
+                                "p95": 877708,
+                                "p99": 953958,
+                                "max": 953958
+                            },
+                            "allocation": {
+                                "count": 30,
+                                "unit": "bytes",
+                                "p50": 242688,
+                                "p95": 242712,
+                                "p99": 242712,
+                                "max": 242712
+                            }
+                        },
+                        "tp": {
+                            "count": 20,
+                            "duration": {
+                                "count": 20,
+                                "unit": "ns",
+                                "p50": 363500,
+                                "p95": 634208,
+                                "p99": 645000,
+                                "max": 645000
+                            },
+                            "allocation": {
+                                "count": 20,
+                                "unit": "bytes",
+                                "p50": 23968,
+                                "p95": 24008,
+                                "p99": 24008,
+                                "max": 24008
+                            }
+                        },
+                        "console-direct": {
+                            "count": 30,
+                            "duration": {
+                                "count": 30,
+                                "unit": "ns",
+                                "p50": 187042,
+                                "p95": 454417,
+                                "p99": 513792,
+                                "max": 513792
+                            },
+                            "allocation": {
+                                "count": 30,
+                                "unit": "bytes",
+                                "p50": 73536,
+                                "p95": 73608,
+                                "p99": 73608,
+                                "max": 73608
+                            }
+                        },
+                        "reload": {
+                            "count": 20,
+                            "duration": {
+                                "count": 20,
+                                "unit": "ns",
+                                "p50": 70959,
+                                "p95": 106750,
+                                "p99": 144917,
+                                "max": 144917
+                            },
+                            "allocation": {
+                                "count": 20,
+                                "unit": "bytes",
+                                "p50": 952,
+                                "p95": 952,
+                                "p99": 952,
+                                "max": 952
+                            }
+                        }
+                    }
+                },
+                {
+                    "ticks": {
+                        "count": 1178,
+                        "unit": "ns",
+                        "p50": 2033250,
+                        "p95": 3479750,
+                        "p99": 5317375,
+                        "max": 21734542
+                    },
+                    "clientAcknowledgementRTT": {
+                        "count": 600,
+                        "unit": "ns",
+                        "p50": 39468166,
+                        "p95": 41190708,
+                        "p99": 41736750,
+                        "max": 41967250
+                    },
+                    "botCommands": 600,
+                    "consoleCommands": 60,
+                    "nativeSuggestions": 600,
+                    "processAllocatedBytes": 55513859144,
+                    "allocationScope": "whole-process; all JVM threads, includes GC/runtime/probe",
+                    "controllerMaxLatenessSeconds": 0.016962333000265062,
+                    "nativeCommandFamilies": {
+                        "edit": {
+                            "count": 20,
+                            "duration": {
+                                "count": 20,
+                                "unit": "ns",
+                                "p50": 843042,
+                                "p95": 1285041,
+                                "p99": 1490833,
+                                "max": 1490833
+                            },
+                            "allocation": {
+                                "count": 20,
+                                "unit": "bytes",
+                                "p50": 307232,
+                                "p95": 307280,
+                                "p99": 307280,
+                                "max": 307280
+                            }
+                        },
+                        "list": {
+                            "count": 360,
+                            "duration": {
+                                "count": 360,
+                                "unit": "ns",
+                                "p50": 443875,
+                                "p95": 1304542,
+                                "p99": 1945541,
+                                "max": 2002042
+                            },
+                            "allocation": {
+                                "count": 360,
+                                "unit": "bytes",
+                                "p50": 148104,
+                                "p95": 755088,
+                                "p99": 755088,
+                                "max": 755088
+                            }
+                        },
+                        "details": {
+                            "count": 120,
+                            "duration": {
+                                "count": 120,
+                                "unit": "ns",
+                                "p50": 492000,
+                                "p95": 974958,
+                                "p99": 1267459,
+                                "max": 1536209
+                            },
+                            "allocation": {
+                                "count": 120,
+                                "unit": "bytes",
+                                "p50": 131056,
+                                "p95": 131104,
+                                "p99": 131104,
+                                "max": 131104
+                            }
+                        },
+                        "help": {
+                            "count": 60,
+                            "duration": {
+                                "count": 60,
+                                "unit": "ns",
+                                "p50": 307208,
+                                "p95": 628917,
+                                "p99": 2163000,
+                                "max": 2163000
+                            },
+                            "allocation": {
+                                "count": 60,
+                                "unit": "bytes",
+                                "p50": 102416,
+                                "p95": 102512,
+                                "p99": 102512,
+                                "max": 102512
+                            }
+                        },
+                        "console-execute-as": {
+                            "count": 30,
+                            "duration": {
+                                "count": 30,
+                                "unit": "ns",
+                                "p50": 536500,
+                                "p95": 1049667,
+                                "p99": 1144250,
+                                "max": 1144250
+                            },
+                            "allocation": {
+                                "count": 30,
+                                "unit": "bytes",
+                                "p50": 243648,
+                                "p95": 243744,
+                                "p99": 243744,
+                                "max": 243744
+                            }
+                        },
+                        "tp": {
+                            "count": 20,
+                            "duration": {
+                                "count": 20,
+                                "unit": "ns",
+                                "p50": 322584,
+                                "p95": 531792,
+                                "p99": 679750,
+                                "max": 679750
+                            },
+                            "allocation": {
+                                "count": 20,
+                                "unit": "bytes",
+                                "p50": 24128,
+                                "p95": 24200,
+                                "p99": 24200,
+                                "max": 24200
+                            }
+                        },
+                        "console-direct": {
+                            "count": 30,
+                            "duration": {
+                                "count": 30,
+                                "unit": "ns",
+                                "p50": 226792,
+                                "p95": 388542,
+                                "p99": 940667,
+                                "max": 940667
+                            },
+                            "allocation": {
+                                "count": 30,
+                                "unit": "bytes",
+                                "p50": 74840,
+                                "p95": 75368,
+                                "p99": 75368,
+                                "max": 75368
+                            }
+                        },
+                        "reload": {
+                            "count": 20,
+                            "duration": {
+                                "count": 20,
+                                "unit": "ns",
+                                "p50": 45667,
+                                "p95": 94750,
+                                "p99": 107750,
+                                "max": 107750
+                            },
+                            "allocation": {
+                                "count": 20,
+                                "unit": "bytes",
+                                "p50": 968,
+                                "p95": 968,
+                                "p99": 968,
+                                "max": 968
+                            }
+                        }
+                    }
+                },
+                {
+                    "ticks": {
+                        "count": 1201,
+                        "unit": "ns",
+                        "p50": 2090792,
+                        "p95": 3253458,
+                        "p99": 3878208,
+                        "max": 12123334
+                    },
+                    "clientAcknowledgementRTT": {
+                        "count": 600,
+                        "unit": "ns",
+                        "p50": 39538083,
+                        "p95": 41138292,
+                        "p99": 41719000,
+                        "max": 42892792
+                    },
+                    "botCommands": 600,
+                    "consoleCommands": 60,
+                    "nativeSuggestions": 600,
+                    "processAllocatedBytes": 54920005784,
+                    "allocationScope": "whole-process; all JVM threads, includes GC/runtime/probe",
+                    "controllerMaxLatenessSeconds": 0.01772883300436945,
+                    "nativeCommandFamilies": {
+                        "edit": {
+                            "count": 20,
+                            "duration": {
+                                "count": 20,
+                                "unit": "ns",
+                                "p50": 1041834,
+                                "p95": 1552333,
+                                "p99": 1845250,
+                                "max": 1845250
+                            },
+                            "allocation": {
+                                "count": 20,
+                                "unit": "bytes",
+                                "p50": 280024,
+                                "p95": 280072,
+                                "p99": 280088,
+                                "max": 280088
+                            }
+                        },
+                        "list": {
+                            "count": 360,
+                            "duration": {
+                                "count": 360,
+                                "unit": "ns",
+                                "p50": 538958,
+                                "p95": 1891834,
+                                "p99": 2128791,
+                                "max": 2284708
+                            },
+                            "allocation": {
+                                "count": 360,
+                                "unit": "bytes",
+                                "p50": 141960,
+                                "p95": 680496,
+                                "p99": 680496,
+                                "max": 680496
+                            }
+                        },
+                        "details": {
+                            "count": 120,
+                            "duration": {
+                                "count": 120,
+                                "unit": "ns",
+                                "p50": 538083,
+                                "p95": 953291,
+                                "p99": 1069042,
+                                "max": 1243667
+                            },
+                            "allocation": {
+                                "count": 120,
+                                "unit": "bytes",
+                                "p50": 130000,
+                                "p95": 130048,
+                                "p99": 130048,
+                                "max": 130048
+                            }
+                        },
+                        "help": {
+                            "count": 60,
+                            "duration": {
+                                "count": 60,
+                                "unit": "ns",
+                                "p50": 312917,
+                                "p95": 608958,
+                                "p99": 1388959,
+                                "max": 1388959
+                            },
+                            "allocation": {
+                                "count": 60,
+                                "unit": "bytes",
+                                "p50": 100640,
+                                "p95": 100736,
+                                "p99": 100736,
+                                "max": 100736
+                            }
+                        },
+                        "console-execute-as": {
+                            "count": 30,
+                            "duration": {
+                                "count": 30,
+                                "unit": "ns",
+                                "p50": 554500,
+                                "p95": 932167,
+                                "p99": 978875,
+                                "max": 978875
+                            },
+                            "allocation": {
+                                "count": 30,
+                                "unit": "bytes",
+                                "p50": 242272,
+                                "p95": 242368,
+                                "p99": 242368,
+                                "max": 242368
+                            }
+                        },
+                        "tp": {
+                            "count": 20,
+                            "duration": {
+                                "count": 20,
+                                "unit": "ns",
+                                "p50": 301459,
+                                "p95": 526416,
+                                "p99": 529250,
+                                "max": 529250
+                            },
+                            "allocation": {
+                                "count": 20,
+                                "unit": "bytes",
+                                "p50": 24128,
+                                "p95": 24200,
+                                "p99": 24200,
+                                "max": 24200
+                            }
+                        },
+                        "console-direct": {
+                            "count": 30,
+                            "duration": {
+                                "count": 30,
+                                "unit": "ns",
+                                "p50": 284250,
+                                "p95": 484375,
+                                "p99": 1089416,
+                                "max": 1089416
+                            },
+                            "allocation": {
+                                "count": 30,
+                                "unit": "bytes",
+                                "p50": 73256,
+                                "p95": 73784,
+                                "p99": 73784,
+                                "max": 73784
+                            }
+                        },
+                        "reload": {
+                            "count": 20,
+                            "duration": {
+                                "count": 20,
+                                "unit": "ns",
+                                "p50": 52542,
+                                "p95": 87833,
+                                "p99": 118000,
+                                "max": 118000
+                            },
+                            "allocation": {
+                                "count": 20,
+                                "unit": "bytes",
+                                "p50": 952,
+                                "p95": 952,
+                                "p99": 952,
+                                "max": 952
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "root": "/Users/mini/.codex/tmp/sw-task10-20261101-final",
+            "caseId": "paper-1.21.11:storage:skewed-list:small",
+            "originalDecision": {
+                "status": "PASS",
+                "reasons": [],
+                "schemaVersion": 1
+            },
+            "effectiveDecision": {
+                "status": "PASS",
+                "reasons": [],
+                "schemaVersion": 1
+            },
+            "identities": {
+                "runtime": "paper-1.21.11",
+                "serverSha256": "82a487ab8c2d0f6f072b8dbaedc9218c85ae3a7d167808124462b248955beec3",
+                "javaSha256": "04005388bac0c272ea914210ca519ce94b2f873ea3962b9874a6859f74d7f279",
+                "probeSha256": "6f6fb4723aad11234eed281cced9065591ae0389c2dfd2eaa1aa1af176e61d35",
+                "botSha256": "e3c1ec04c5a9bd9b1a325c3d7643c255009f05985e4596ded0498f68e3326ba6",
+                "fixtureSha256": "1ce526d7fe0774670c851a144a159ff37ee8c861ab40ba85fb01fe921e78814f"
+            },
+            "assertions": {
+                "repeat-1-native-actors-and-contiguous-ticks": true,
+                "repeat-1-acknowledged-completed-actions": true,
+                "repeat-1-command-resources-released": true,
+                "repeat-1-disconnected": true,
+                "repeat-1-native-log-healthy": true,
+                "repeat-1-saved-exactly": true,
+                "repeat-1-reopened-exactly": true,
+                "repeat-2-native-actors-and-contiguous-ticks": true,
+                "repeat-2-acknowledged-completed-actions": true,
+                "repeat-2-command-resources-released": true,
+                "repeat-2-disconnected": true,
+                "repeat-2-native-log-healthy": true,
+                "repeat-2-saved-exactly": true,
+                "repeat-2-reopened-exactly": true,
+                "repeat-3-native-actors-and-contiguous-ticks": true,
+                "repeat-3-acknowledged-completed-actions": true,
+                "repeat-3-command-resources-released": true,
+                "repeat-3-disconnected": true,
+                "repeat-3-native-log-healthy": true,
+                "repeat-3-saved-exactly": true,
+                "repeat-3-reopened-exactly": true
+            },
+            "attempts": [
+                {
+                    "attempt": "/Users/mini/.codex/tmp/sw-task10-20261101-final/attempts/0570203d-0420-418c-8716-1e781ea35743",
+                    "savedExactly": true,
+                    "reopenedExactly": true
+                },
+                {
+                    "attempt": "/Users/mini/.codex/tmp/sw-task10-20261101-final/attempts/bd1ba781-250d-4b72-a11f-643bdd6b8d81",
+                    "savedExactly": true,
+                    "reopenedExactly": true
+                },
+                {
+                    "attempt": "/Users/mini/.codex/tmp/sw-task10-20261101-final/attempts/dbdc4428-22ce-4e0d-9b9f-14ba6a7c62b2",
+                    "savedExactly": true,
+                    "reopenedExactly": true
+                }
+            ],
+            "repetitions": [
+                {
+                    "ticks": {
+                        "count": 1202,
+                        "unit": "ns",
+                        "p50": 2209542,
+                        "p95": 3903209,
+                        "p99": 4682084,
+                        "max": 14608416
+                    },
+                    "clientAcknowledgementRTT": {
+                        "count": 660,
+                        "unit": "ns",
+                        "p50": 39408584,
+                        "p95": 40936042,
+                        "p99": 41722750,
+                        "max": 57985875
+                    },
+                    "botCommands": 660,
+                    "consoleCommands": 0,
+                    "nativeSuggestions": 600,
+                    "processAllocatedBytes": 2263809608,
+                    "allocationScope": "whole-process; all JVM threads, includes GC/runtime/probe",
+                    "controllerMaxLatenessSeconds": 0.009618499997305463,
+                    "nativeCommandFamilies": {
+                        "edit": {
+                            "count": 60,
+                            "duration": {
+                                "count": 60,
+                                "unit": "ns",
+                                "p50": 1083333,
+                                "p95": 3116042,
+                                "p99": 7087250,
+                                "max": 7087250
+                            },
+                            "allocation": {
+                                "count": 60,
+                                "unit": "bytes",
+                                "p50": 676328,
+                                "p95": 678360,
+                                "p99": 683976,
+                                "max": 683976
+                            }
+                        },
+                        "list": {
+                            "count": 200,
+                            "duration": {
+                                "count": 200,
+                                "unit": "ns",
+                                "p50": 1036750,
+                                "p95": 1544500,
+                                "p99": 1947250,
+                                "max": 2606916
+                            },
+                            "allocation": {
+                                "count": 200,
+                                "unit": "bytes",
+                                "p50": 512104,
+                                "p95": 513824,
+                                "p99": 513824,
+                                "max": 513824
+                            }
+                        },
+                        "details": {
+                            "count": 200,
+                            "duration": {
+                                "count": 200,
+                                "unit": "ns",
+                                "p50": 332625,
+                                "p95": 600000,
+                                "p99": 814292,
+                                "max": 1936042
+                            },
+                            "allocation": {
+                                "count": 200,
+                                "unit": "bytes",
+                                "p50": 50320,
+                                "p95": 51456,
+                                "p99": 51456,
+                                "max": 52120
+                            }
+                        },
+                        "help": {
+                            "count": 200,
+                            "duration": {
+                                "count": 200,
+                                "unit": "ns",
+                                "p50": 387583,
+                                "p95": 683625,
+                                "p99": 966625,
+                                "max": 1220000
+                            },
+                            "allocation": {
+                                "count": 200,
+                                "unit": "bytes",
+                                "p50": 102480,
+                                "p95": 104016,
+                                "p99": 104016,
+                                "max": 104288
+                            }
+                        }
+                    }
+                },
+                {
+                    "ticks": {
+                        "count": 1202,
+                        "unit": "ns",
+                        "p50": 1648584,
+                        "p95": 2563083,
+                        "p99": 3241292,
+                        "max": 10710541
+                    },
+                    "clientAcknowledgementRTT": {
+                        "count": 660,
+                        "unit": "ns",
+                        "p50": 39379875,
+                        "p95": 40910416,
+                        "p99": 41446250,
+                        "max": 42037167
+                    },
+                    "botCommands": 660,
+                    "consoleCommands": 0,
+                    "nativeSuggestions": 600,
+                    "processAllocatedBytes": 2348692304,
+                    "allocationScope": "whole-process; all JVM threads, includes GC/runtime/probe",
+                    "controllerMaxLatenessSeconds": 0.010260666988322953,
+                    "nativeCommandFamilies": {
+                        "edit": {
+                            "count": 60,
+                            "duration": {
+                                "count": 60,
+                                "unit": "ns",
+                                "p50": 1093333,
+                                "p95": 2200625,
+                                "p99": 6765250,
+                                "max": 6765250
+                            },
+                            "allocation": {
+                                "count": 60,
+                                "unit": "bytes",
+                                "p50": 779304,
+                                "p95": 781088,
+                                "p99": 781576,
+                                "max": 781576
+                            }
+                        },
+                        "list": {
+                            "count": 200,
+                            "duration": {
+                                "count": 200,
+                                "unit": "ns",
+                                "p50": 1026417,
+                                "p95": 1641791,
+                                "p99": 1920833,
+                                "max": 10220042
+                            },
+                            "allocation": {
+                                "count": 200,
+                                "unit": "bytes",
+                                "p50": 562264,
+                                "p95": 563744,
+                                "p99": 564224,
+                                "max": 564224
+                            }
+                        },
+                        "details": {
+                            "count": 200,
+                            "duration": {
+                                "count": 200,
+                                "unit": "ns",
+                                "p50": 346917,
+                                "p95": 585916,
+                                "p99": 706292,
+                                "max": 1097083
+                            },
+                            "allocation": {
+                                "count": 200,
+                                "unit": "bytes",
+                                "p50": 50080,
+                                "p95": 50976,
+                                "p99": 51456,
+                                "max": 51456
+                            }
+                        },
+                        "help": {
+                            "count": 200,
+                            "duration": {
+                                "count": 200,
+                                "unit": "ns",
+                                "p50": 361791,
+                                "p95": 599375,
+                                "p99": 844917,
+                                "max": 1294208
+                            },
+                            "allocation": {
+                                "count": 200,
+                                "unit": "bytes",
+                                "p50": 102240,
+                                "p95": 103536,
+                                "p99": 103920,
+                                "max": 103960
+                            }
+                        }
+                    }
+                },
+                {
+                    "ticks": {
+                        "count": 1202,
+                        "unit": "ns",
+                        "p50": 1599041,
+                        "p95": 2615167,
+                        "p99": 3144625,
+                        "max": 13463875
+                    },
+                    "clientAcknowledgementRTT": {
+                        "count": 660,
+                        "unit": "ns",
+                        "p50": 39352583,
+                        "p95": 41053458,
+                        "p99": 41732042,
+                        "max": 43853166
+                    },
+                    "botCommands": 660,
+                    "consoleCommands": 0,
+                    "nativeSuggestions": 600,
+                    "processAllocatedBytes": 2270301984,
+                    "allocationScope": "whole-process; all JVM threads, includes GC/runtime/probe",
+                    "controllerMaxLatenessSeconds": 0.01004508299811313,
+                    "nativeCommandFamilies": {
+                        "edit": {
+                            "count": 60,
+                            "duration": {
+                                "count": 60,
+                                "unit": "ns",
+                                "p50": 1134958,
+                                "p95": 5522041,
+                                "p99": 6573917,
+                                "max": 6573917
+                            },
+                            "allocation": {
+                                "count": 60,
+                                "unit": "bytes",
+                                "p50": 779584,
+                                "p95": 781136,
+                                "p99": 781624,
+                                "max": 781624
+                            }
+                        },
+                        "list": {
+                            "count": 200,
+                            "duration": {
+                                "count": 200,
+                                "unit": "ns",
+                                "p50": 953291,
+                                "p95": 1543666,
+                                "p99": 1745625,
+                                "max": 13607833
+                            },
+                            "allocation": {
+                                "count": 200,
+                                "unit": "bytes",
+                                "p50": 562504,
+                                "p95": 563744,
+                                "p99": 564224,
+                                "max": 564224
+                            }
+                        },
+                        "details": {
+                            "count": 200,
+                            "duration": {
+                                "count": 200,
+                                "unit": "ns",
+                                "p50": 329084,
+                                "p95": 557084,
+                                "p99": 617958,
+                                "max": 803875
+                            },
+                            "allocation": {
+                                "count": 200,
+                                "unit": "bytes",
+                                "p50": 50320,
+                                "p95": 51024,
+                                "p99": 51504,
+                                "max": 51504
+                            }
+                        },
+                        "help": {
+                            "count": 200,
+                            "duration": {
+                                "count": 200,
+                                "unit": "ns",
+                                "p50": 369167,
+                                "p95": 649791,
+                                "p99": 787625,
+                                "max": 2057958
+                            },
+                            "allocation": {
+                                "count": 200,
+                                "unit": "bytes",
+                                "p50": 102480,
+                                "p95": 103536,
+                                "p99": 104016,
+                                "max": 104744
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "root": "/Users/mini/.codex/tmp/sw-task10-20261101-final",
+            "caseId": "paper-1.21.11:storage:concurrent:small",
+            "originalDecision": {
+                "status": "PASS",
+                "reasons": [],
+                "schemaVersion": 1
+            },
+            "effectiveDecision": {
+                "status": "PASS",
+                "reasons": [],
+                "schemaVersion": 1
+            },
+            "identities": {
+                "runtime": "paper-1.21.11",
+                "serverSha256": "82a487ab8c2d0f6f072b8dbaedc9218c85ae3a7d167808124462b248955beec3",
+                "javaSha256": "04005388bac0c272ea914210ca519ce94b2f873ea3962b9874a6859f74d7f279",
+                "probeSha256": "6f6fb4723aad11234eed281cced9065591ae0389c2dfd2eaa1aa1af176e61d35",
+                "botSha256": "e3c1ec04c5a9bd9b1a325c3d7643c255009f05985e4596ded0498f68e3326ba6",
+                "fixtureSha256": "1ce526d7fe0774670c851a144a159ff37ee8c861ab40ba85fb01fe921e78814f"
+            },
+            "assertions": {
+                "repeat-1-native-actors-and-contiguous-ticks": true,
+                "repeat-1-acknowledged-completed-actions": true,
+                "repeat-1-command-resources-released": true,
+                "repeat-1-disconnected": true,
+                "repeat-1-native-log-healthy": true,
+                "repeat-1-saved-exactly": true,
+                "repeat-1-reopened-exactly": true,
+                "repeat-2-native-actors-and-contiguous-ticks": true,
+                "repeat-2-acknowledged-completed-actions": true,
+                "repeat-2-command-resources-released": true,
+                "repeat-2-disconnected": true,
+                "repeat-2-native-log-healthy": true,
+                "repeat-2-saved-exactly": true,
+                "repeat-2-reopened-exactly": true,
+                "repeat-3-native-actors-and-contiguous-ticks": true,
+                "repeat-3-acknowledged-completed-actions": true,
+                "repeat-3-command-resources-released": true,
+                "repeat-3-disconnected": true,
+                "repeat-3-native-log-healthy": true,
+                "repeat-3-saved-exactly": true,
+                "repeat-3-reopened-exactly": true
+            },
+            "attempts": [
+                {
+                    "attempt": "/Users/mini/.codex/tmp/sw-task10-20261101-final/attempts/6aeb8118-f189-47fe-a1f7-a2aa35e2e655",
+                    "savedExactly": true,
+                    "reopenedExactly": true
+                },
+                {
+                    "attempt": "/Users/mini/.codex/tmp/sw-task10-20261101-final/attempts/225af8e1-e83f-4279-89db-51905957c60f",
+                    "savedExactly": true,
+                    "reopenedExactly": true
+                },
+                {
+                    "attempt": "/Users/mini/.codex/tmp/sw-task10-20261101-final/attempts/c624ab28-bf56-4e64-9bcc-6cf153d93d95",
+                    "savedExactly": true,
+                    "reopenedExactly": true
+                }
+            ],
+            "repetitions": [
+                {
+                    "ticks": {
+                        "count": 1202,
+                        "unit": "ns",
+                        "p50": 1132417,
+                        "p95": 1784667,
+                        "p99": 2344917,
+                        "max": 3526833
+                    },
+                    "clientAcknowledgementRTT": {
+                        "count": 660,
+                        "unit": "ns",
+                        "p50": 37926625,
+                        "p95": 39027833,
+                        "p99": 39302083,
+                        "max": 42813625
+                    },
+                    "botCommands": 660,
+                    "consoleCommands": 0,
+                    "nativeSuggestions": 0,
+                    "processAllocatedBytes": 1065706360,
+                    "allocationScope": "whole-process; all JVM threads, includes GC/runtime/probe",
+                    "controllerMaxLatenessSeconds": 0.010144540996407159,
+                    "nativeCommandFamilies": {
+                        "edit": {
+                            "count": 60,
+                            "duration": {
+                                "count": 60,
+                                "unit": "ns",
+                                "p50": 994834,
+                                "p95": 1598125,
+                                "p99": 3802500,
+                                "max": 3802500
+                            },
+                            "allocation": {
+                                "count": 60,
+                                "unit": "bytes",
+                                "p50": 262832,
+                                "p95": 264200,
+                                "p99": 265528,
+                                "max": 265528
+                            }
+                        },
+                        "list": {
+                            "count": 200,
+                            "duration": {
+                                "count": 200,
+                                "unit": "ns",
+                                "p50": 693583,
+                                "p95": 1021416,
+                                "p99": 1111833,
+                                "max": 2165333
+                            },
+                            "allocation": {
+                                "count": 200,
+                                "unit": "bytes",
+                                "p50": 120656,
+                                "p95": 121552,
+                                "p99": 121696,
+                                "max": 122976
+                            }
+                        },
+                        "details": {
+                            "count": 200,
+                            "duration": {
+                                "count": 200,
+                                "unit": "ns",
+                                "p50": 389875,
+                                "p95": 635292,
+                                "p99": 918459,
+                                "max": 1055750
+                            },
+                            "allocation": {
+                                "count": 200,
+                                "unit": "bytes",
+                                "p50": 49840,
+                                "p95": 50176,
+                                "p99": 50320,
+                                "max": 51600
+                            }
+                        },
+                        "help": {
+                            "count": 200,
+                            "duration": {
+                                "count": 200,
+                                "unit": "ns",
+                                "p50": 425667,
+                                "p95": 712209,
+                                "p99": 846583,
+                                "max": 2713750
+                            },
+                            "allocation": {
+                                "count": 200,
+                                "unit": "bytes",
+                                "p50": 102000,
+                                "p95": 102688,
+                                "p99": 102784,
+                                "max": 104064
+                            }
+                        }
+                    }
+                },
+                {
+                    "ticks": {
+                        "count": 1203,
+                        "unit": "ns",
+                        "p50": 1936417,
+                        "p95": 3228875,
+                        "p99": 5746709,
+                        "max": 8903208
+                    },
+                    "clientAcknowledgementRTT": {
+                        "count": 660,
+                        "unit": "ns",
+                        "p50": 39363500,
+                        "p95": 40929625,
+                        "p99": 41565500,
+                        "max": 42093916
+                    },
+                    "botCommands": 660,
+                    "consoleCommands": 0,
+                    "nativeSuggestions": 0,
+                    "processAllocatedBytes": 1090190840,
+                    "allocationScope": "whole-process; all JVM threads, includes GC/runtime/probe",
+                    "controllerMaxLatenessSeconds": 0.00952004199498191,
+                    "nativeCommandFamilies": {
+                        "edit": {
+                            "count": 60,
+                            "duration": {
+                                "count": 60,
+                                "unit": "ns",
+                                "p50": 900500,
+                                "p95": 1899959,
+                                "p99": 2940125,
+                                "max": 2940125
+                            },
+                            "allocation": {
+                                "count": 60,
+                                "unit": "bytes",
+                                "p50": 263072,
+                                "p95": 265480,
+                                "p99": 265576,
+                                "max": 265576
+                            }
+                        },
+                        "list": {
+                            "count": 200,
+                            "duration": {
+                                "count": 200,
+                                "unit": "ns",
+                                "p50": 635167,
+                                "p95": 897667,
+                                "p99": 1067667,
+                                "max": 1273209
+                            },
+                            "allocation": {
+                                "count": 200,
+                                "unit": "bytes",
+                                "p50": 120896,
+                                "p95": 122976,
+                                "p99": 122976,
+                                "max": 122976
+                            }
+                        },
+                        "details": {
+                            "count": 200,
+                            "duration": {
+                                "count": 200,
+                                "unit": "ns",
+                                "p50": 351375,
+                                "p95": 660834,
+                                "p99": 818667,
+                                "max": 1557583
+                            },
+                            "allocation": {
+                                "count": 200,
+                                "unit": "bytes",
+                                "p50": 50080,
+                                "p95": 51600,
+                                "p99": 51600,
+                                "max": 51600
+                            }
+                        },
+                        "help": {
+                            "count": 200,
+                            "duration": {
+                                "count": 200,
+                                "unit": "ns",
+                                "p50": 409834,
+                                "p95": 670917,
+                                "p99": 944750,
+                                "max": 2445916
+                            },
+                            "allocation": {
+                                "count": 200,
+                                "unit": "bytes",
+                                "p50": 102240,
+                                "p95": 104160,
+                                "p99": 104160,
+                                "max": 104160
+                            }
+                        }
+                    }
+                },
+                {
+                    "ticks": {
+                        "count": 1202,
+                        "unit": "ns",
+                        "p50": 1510125,
+                        "p95": 2192417,
+                        "p99": 3063375,
+                        "max": 7944333
+                    },
+                    "clientAcknowledgementRTT": {
+                        "count": 660,
+                        "unit": "ns",
+                        "p50": 39399500,
+                        "p95": 41066958,
+                        "p99": 41756750,
+                        "max": 42212750
+                    },
+                    "botCommands": 660,
+                    "consoleCommands": 0,
+                    "nativeSuggestions": 0,
+                    "processAllocatedBytes": 1122959704,
+                    "allocationScope": "whole-process; all JVM threads, includes GC/runtime/probe",
+                    "controllerMaxLatenessSeconds": 0.009331833009490254,
+                    "nativeCommandFamilies": {
+                        "edit": {
+                            "count": 60,
+                            "duration": {
+                                "count": 60,
+                                "unit": "ns",
+                                "p50": 938250,
+                                "p95": 2221500,
+                                "p99": 5970667,
+                                "max": 5970667
+                            },
+                            "allocation": {
+                                "count": 60,
+                                "unit": "bytes",
+                                "p50": 286824,
+                                "p95": 288304,
+                                "p99": 289496,
+                                "max": 289496
+                            }
+                        },
+                        "list": {
+                            "count": 200,
+                            "duration": {
+                                "count": 200,
+                                "unit": "ns",
+                                "p50": 644042,
+                                "p95": 978042,
+                                "p99": 1185125,
+                                "max": 1508583
+                            },
+                            "allocation": {
+                                "count": 200,
+                                "unit": "bytes",
+                                "p50": 125440,
+                                "p95": 126480,
+                                "p99": 127680,
+                                "max": 127680
+                            }
+                        },
+                        "details": {
+                            "count": 200,
+                            "duration": {
+                                "count": 200,
+                                "unit": "ns",
+                                "p50": 358500,
+                                "p95": 612334,
+                                "p99": 764375,
+                                "max": 873000
+                            },
+                            "allocation": {
+                                "count": 200,
+                                "unit": "bytes",
+                                "p50": 49872,
+                                "p95": 50400,
+                                "p99": 51600,
+                                "max": 51600
+                            }
+                        },
+                        "help": {
+                            "count": 200,
+                            "duration": {
+                                "count": 200,
+                                "unit": "ns",
+                                "p50": 425959,
+                                "p95": 693375,
+                                "p99": 913708,
+                                "max": 1852250
+                            },
+                            "allocation": {
+                                "count": 200,
+                                "unit": "bytes",
+                                "p50": 102080,
+                                "p95": 102960,
+                                "p99": 104160,
+                                "max": 104160
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "root": "/Users/mini/.codex/tmp/sw-task10-20261101-command-final",
+            "caseId": "paper-1.21.11:commands:leaves-suggestions:medium",
+            "originalDecision": {
+                "status": "FAIL",
+                "reasons": [
+                    "player command has no correlated delivered feedback: wp tp minecraft:overworld semantic alpha",
+                    "execute-as player feedback missing",
+                    "player command has no correlated delivered feedback: wp tp minecraft:overworld semantic alpha",
+                    "execute-as player feedback missing",
+                    "player command has no correlated delivered feedback: wp tp minecraft:overworld semantic alpha",
+                    "execute-as player feedback missing",
+                    "correctness assertion failed"
+                ],
+                "schemaVersion": 1
+            },
+            "effectiveDecision": {
+                "status": "FAIL",
+                "reasons": [
+                    "player command has no correlated delivered feedback: wp tp minecraft:overworld semantic alpha",
+                    "execute-as player feedback missing",
+                    "player command has no correlated delivered feedback: wp tp minecraft:overworld semantic alpha",
+                    "execute-as player feedback missing",
+                    "player command has no correlated delivered feedback: wp tp minecraft:overworld semantic alpha",
+                    "execute-as player feedback missing",
+                    "correctness assertion failed"
+                ],
+                "schemaVersion": 1
+            },
+            "identities": {
+                "runtime": "paper-1.21.11",
+                "serverSha256": "82a487ab8c2d0f6f072b8dbaedc9218c85ae3a7d167808124462b248955beec3",
+                "javaSha256": "04005388bac0c272ea914210ca519ce94b2f873ea3962b9874a6859f74d7f279",
+                "probeSha256": "588192cf705de2e10f722385759e4dd7593df016d608f6a5492573d11d7b337d",
+                "botSha256": "7a197abfac1962b9666a6dd7ab3d676291d0c78168817123cfa3ff663e300bff",
+                "fixtureSha256": "3688d27c9c871632a62c4e35fb7caf234fed80dc35c70aefe9287dee40795716"
+            },
+            "assertions": {
+                "repeat-1-permissions-feedback-layout-tp-log": false,
+                "repeat-1-individual-read-leaves-and-providers": true,
+                "repeat-1-individual-mutation-leaves-properties-revisions": true,
+                "repeat-1-all-command-leaves-have-feedback": false,
+                "repeat-1-stale-wire-edit-rejected": true,
+                "repeat-1-native-storage-reload-exact": true,
+                "repeat-1-native-actors-and-contiguous-ticks": true,
+                "repeat-1-acknowledged-completed-actions": true,
+                "repeat-1-command-resources-released": true,
+                "repeat-1-disconnected": true,
+                "repeat-1-native-log-healthy": true,
+                "repeat-1-saved-exactly": true,
+                "repeat-1-reopened-exactly": true,
+                "repeat-2-permissions-feedback-layout-tp-log": false,
+                "repeat-2-individual-read-leaves-and-providers": true,
+                "repeat-2-individual-mutation-leaves-properties-revisions": true,
+                "repeat-2-all-command-leaves-have-feedback": false,
+                "repeat-2-stale-wire-edit-rejected": true,
+                "repeat-2-native-storage-reload-exact": true,
+                "repeat-2-native-actors-and-contiguous-ticks": true,
+                "repeat-2-acknowledged-completed-actions": true,
+                "repeat-2-command-resources-released": true,
+                "repeat-2-disconnected": true,
+                "repeat-2-native-log-healthy": true,
+                "repeat-2-saved-exactly": true,
+                "repeat-2-reopened-exactly": true,
+                "repeat-3-permissions-feedback-layout-tp-log": false,
+                "repeat-3-individual-read-leaves-and-providers": true,
+                "repeat-3-individual-mutation-leaves-properties-revisions": true,
+                "repeat-3-all-command-leaves-have-feedback": false,
+                "repeat-3-stale-wire-edit-rejected": true,
+                "repeat-3-native-storage-reload-exact": true,
+                "repeat-3-native-actors-and-contiguous-ticks": true,
+                "repeat-3-acknowledged-completed-actions": true,
+                "repeat-3-command-resources-released": true,
+                "repeat-3-disconnected": true,
+                "repeat-3-native-log-healthy": true,
+                "repeat-3-saved-exactly": true,
+                "repeat-3-reopened-exactly": true
+            },
+            "attempts": [
+                {
+                    "attempt": "/Users/mini/.codex/tmp/sw-task10-20261101-command-final/attempts/2ee3931d-3e72-49ca-b4e7-077a0d5656f5",
+                    "savedExactly": true,
+                    "reopenedExactly": true,
+                    "reloadedExactly": true,
+                    "semantics": {
+                        "rows": 10,
+                        "permissionConfigurations": 44,
+                        "failures": [
+                            "player command has no correlated delivered feedback: wp tp minecraft:overworld semantic alpha",
+                            "execute-as player feedback missing"
+                        ],
+                        "cleanupError": null
+                    },
+                    "leafCoverage": {
+                        "localDecision": {
+                            "status": "FAIL",
+                            "reasons": [
+                                "missing native execution/feedback evidence: wp tp <dimension> <list identifier> <waypoint identifier>"
+                            ],
+                            "schemaVersion": 1
+                        },
+                        "commandDispatchDecision": {
+                            "status": "FAIL",
+                            "reasons": [
+                                "missing native execution/feedback evidence: wp tp <dimension> <list identifier> <waypoint identifier>"
+                            ],
+                            "schemaVersion": 1
+                        },
+                        "ownershipCounts": {
+                            "task10": 5340,
+                            "task11": 25,
+                            "task12": 21,
+                            "task15": 5277
+                        },
+                        "nativeExecutedLeafCount": 10663,
+                        "deliveredFeedbackLeafCount": 10662,
+                        "nativeMissingPaths": [],
+                        "feedbackMissingPaths": [
+                            "wp tp <dimension> <list identifier> <waypoint identifier>"
+                        ]
+                    },
+                    "readLeaves": 5295,
+                    "suggestionPaths": 62,
+                    "mutationLeaves": 43,
+                    "staleEditRejected": true
+                },
+                {
+                    "attempt": "/Users/mini/.codex/tmp/sw-task10-20261101-command-final/attempts/2a1789a8-5c6c-40ab-8da8-b6f6aa4ebe9b",
+                    "savedExactly": true,
+                    "reopenedExactly": true,
+                    "reloadedExactly": true,
+                    "semantics": {
+                        "rows": 10,
+                        "permissionConfigurations": 44,
+                        "failures": [
+                            "player command has no correlated delivered feedback: wp tp minecraft:overworld semantic alpha",
+                            "execute-as player feedback missing"
+                        ],
+                        "cleanupError": null
+                    },
+                    "leafCoverage": {
+                        "localDecision": {
+                            "status": "FAIL",
+                            "reasons": [
+                                "missing native execution/feedback evidence: wp tp <dimension> <list identifier> <waypoint identifier>"
+                            ],
+                            "schemaVersion": 1
+                        },
+                        "commandDispatchDecision": {
+                            "status": "FAIL",
+                            "reasons": [
+                                "missing native execution/feedback evidence: wp tp <dimension> <list identifier> <waypoint identifier>"
+                            ],
+                            "schemaVersion": 1
+                        },
+                        "ownershipCounts": {
+                            "task10": 5340,
+                            "task11": 25,
+                            "task12": 21,
+                            "task15": 5277
+                        },
+                        "nativeExecutedLeafCount": 10663,
+                        "deliveredFeedbackLeafCount": 10662,
+                        "nativeMissingPaths": [],
+                        "feedbackMissingPaths": [
+                            "wp tp <dimension> <list identifier> <waypoint identifier>"
+                        ]
+                    },
+                    "readLeaves": 5295,
+                    "suggestionPaths": 62,
+                    "mutationLeaves": 43,
+                    "staleEditRejected": true
+                },
+                {
+                    "attempt": "/Users/mini/.codex/tmp/sw-task10-20261101-command-final/attempts/e4a4b7c2-049d-45e2-968d-1673cf83f6a6",
+                    "savedExactly": true,
+                    "reopenedExactly": true,
+                    "reloadedExactly": true,
+                    "semantics": {
+                        "rows": 10,
+                        "permissionConfigurations": 44,
+                        "failures": [
+                            "player command has no correlated delivered feedback: wp tp minecraft:overworld semantic alpha",
+                            "execute-as player feedback missing"
+                        ],
+                        "cleanupError": null
+                    },
+                    "leafCoverage": {
+                        "localDecision": {
+                            "status": "FAIL",
+                            "reasons": [
+                                "missing native execution/feedback evidence: wp tp <dimension> <list identifier> <waypoint identifier>"
+                            ],
+                            "schemaVersion": 1
+                        },
+                        "commandDispatchDecision": {
+                            "status": "FAIL",
+                            "reasons": [
+                                "missing native execution/feedback evidence: wp tp <dimension> <list identifier> <waypoint identifier>"
+                            ],
+                            "schemaVersion": 1
+                        },
+                        "ownershipCounts": {
+                            "task10": 5340,
+                            "task11": 25,
+                            "task12": 21,
+                            "task15": 5277
+                        },
+                        "nativeExecutedLeafCount": 10663,
+                        "deliveredFeedbackLeafCount": 10662,
+                        "nativeMissingPaths": [],
+                        "feedbackMissingPaths": [
+                            "wp tp <dimension> <list identifier> <waypoint identifier>"
+                        ]
+                    },
+                    "readLeaves": 5295,
+                    "suggestionPaths": 62,
+                    "mutationLeaves": 43,
+                    "staleEditRejected": true
+                }
+            ],
+            "repetitions": [
+                {
+                    "ticks": {
+                        "count": 1218,
+                        "unit": "ns",
+                        "p50": 999208,
+                        "p95": 1524209,
+                        "p99": 5246292,
+                        "max": 18043625
+                    },
+                    "clientAcknowledgementRTT": {
+                        "count": 3000,
+                        "unit": "ns",
+                        "p50": 37523667,
+                        "p95": 38635458,
+                        "p99": 39125708,
+                        "max": 64372459
+                    },
+                    "botCommands": 3000,
+                    "consoleCommands": 300,
+                    "nativeSuggestions": 3000,
+                    "processAllocatedBytes": 268442131224,
+                    "allocationScope": "whole-process; all JVM threads, includes GC/runtime/probe",
+                    "controllerMaxLatenessSeconds": 0.03461429102229907,
+                    "nativeCommandFamilies": {
+                        "edit": {
+                            "count": 100,
+                            "duration": {
+                                "count": 100,
+                                "unit": "ns",
+                                "p50": 1031125,
+                                "p95": 1407125,
+                                "p99": 1541708,
+                                "max": 1858625
+                            },
+                            "allocation": {
+                                "count": 100,
+                                "unit": "bytes",
+                                "p50": 1519712,
+                                "p95": 1520888,
+                                "p99": 1521104,
+                                "max": 1521104
+                            }
+                        },
+                        "list": {
+                            "count": 1800,
+                            "duration": {
+                                "count": 1800,
+                                "unit": "ns",
+                                "p50": 201917,
+                                "p95": 4373792,
+                                "p99": 5669000,
+                                "max": 13452083
+                            },
+                            "allocation": {
+                                "count": 1800,
+                                "unit": "bytes",
+                                "p50": 155272,
+                                "p95": 6014920,
+                                "p99": 6015016,
+                                "max": 6015016
+                            }
+                        },
+                        "help": {
+                            "count": 300,
+                            "duration": {
+                                "count": 300,
+                                "unit": "ns",
+                                "p50": 120041,
+                                "p95": 175459,
+                                "p99": 258042,
+                                "max": 307167
+                            },
+                            "allocation": {
+                                "count": 300,
+                                "unit": "bytes",
+                                "p50": 101888,
+                                "p95": 101888,
+                                "p99": 101888,
+                                "max": 101888
+                            }
+                        },
+                        "details": {
+                            "count": 600,
+                            "duration": {
+                                "count": 600,
+                                "unit": "ns",
+                                "p50": 244208,
+                                "p95": 389833,
+                                "p99": 591583,
+                                "max": 689584
+                            },
+                            "allocation": {
+                                "count": 600,
+                                "unit": "bytes",
+                                "p50": 129176,
+                                "p95": 129680,
+                                "p99": 129696,
+                                "max": 129696
+                            }
+                        },
+                        "console-execute-as": {
+                            "count": 150,
+                            "duration": {
+                                "count": 150,
+                                "unit": "ns",
+                                "p50": 203083,
+                                "p95": 245292,
+                                "p99": 311084,
+                                "max": 320000
+                            },
+                            "allocation": {
+                                "count": 150,
+                                "unit": "bytes",
+                                "p50": 243464,
+                                "p95": 243464,
+                                "p99": 243464,
+                                "max": 243464
+                            }
+                        },
+                        "tp": {
+                            "count": 100,
+                            "duration": {
+                                "count": 100,
+                                "unit": "ns",
+                                "p50": 201291,
+                                "p95": 436084,
+                                "p99": 577417,
+                                "max": 663417
+                            },
+                            "allocation": {
+                                "count": 100,
+                                "unit": "bytes",
+                                "p50": 23872,
+                                "p95": 23944,
+                                "p99": 23944,
+                                "max": 23976
+                            }
+                        },
+                        "console-direct": {
+                            "count": 150,
+                            "duration": {
+                                "count": 150,
+                                "unit": "ns",
+                                "p50": 96083,
+                                "p95": 141333,
+                                "p99": 217834,
+                                "max": 1207125
+                            },
+                            "allocation": {
+                                "count": 150,
+                                "unit": "bytes",
+                                "p50": 75256,
+                                "p95": 75256,
+                                "p99": 75256,
+                                "max": 75256
+                            }
+                        },
+                        "reload": {
+                            "count": 100,
+                            "duration": {
+                                "count": 100,
+                                "unit": "ns",
+                                "p50": 40584,
+                                "p95": 62708,
+                                "p99": 74041,
+                                "max": 84125
+                            },
+                            "allocation": {
+                                "count": 100,
+                                "unit": "bytes",
+                                "p50": 952,
+                                "p95": 952,
+                                "p99": 952,
+                                "max": 952
+                            }
+                        }
+                    }
+                },
+                {
+                    "ticks": {
+                        "count": 1218,
+                        "unit": "ns",
+                        "p50": 1015334,
+                        "p95": 1783833,
+                        "p99": 4995667,
+                        "max": 30149458
+                    },
+                    "clientAcknowledgementRTT": {
+                        "count": 3000,
+                        "unit": "ns",
+                        "p50": 37559541,
+                        "p95": 38750292,
+                        "p99": 39149209,
+                        "max": 63343792
+                    },
+                    "botCommands": 3000,
+                    "consoleCommands": 300,
+                    "nativeSuggestions": 3000,
+                    "processAllocatedBytes": 267851300088,
+                    "allocationScope": "whole-process; all JVM threads, includes GC/runtime/probe",
+                    "controllerMaxLatenessSeconds": 0.03383595798513994,
+                    "nativeCommandFamilies": {
+                        "edit": {
+                            "count": 100,
+                            "duration": {
+                                "count": 100,
+                                "unit": "ns",
+                                "p50": 1048916,
+                                "p95": 1569333,
+                                "p99": 1725167,
+                                "max": 3595583
+                            },
+                            "allocation": {
+                                "count": 100,
+                                "unit": "bytes",
+                                "p50": 1320936,
+                                "p95": 1321920,
+                                "p99": 1322112,
+                                "max": 1322112
+                            }
+                        },
+                        "list": {
+                            "count": 1800,
+                            "duration": {
+                                "count": 1800,
+                                "unit": "ns",
+                                "p50": 204875,
+                                "p95": 4209709,
+                                "p99": 5343125,
+                                "max": 9424333
+                            },
+                            "allocation": {
+                                "count": 1800,
+                                "unit": "bytes",
+                                "p50": 147616,
+                                "p95": 5263376,
+                                "p99": 5263472,
+                                "max": 5263472
+                            }
+                        },
+                        "details": {
+                            "count": 600,
+                            "duration": {
+                                "count": 600,
+                                "unit": "ns",
+                                "p50": 229250,
+                                "p95": 364416,
+                                "p99": 509250,
+                                "max": 15697500
+                            },
+                            "allocation": {
+                                "count": 600,
+                                "unit": "bytes",
+                                "p50": 127464,
+                                "p95": 127800,
+                                "p99": 127816,
+                                "max": 127816
+                            }
+                        },
+                        "help": {
+                            "count": 300,
+                            "duration": {
+                                "count": 300,
+                                "unit": "ns",
+                                "p50": 118166,
+                                "p95": 182541,
+                                "p99": 281708,
+                                "max": 326333
+                            },
+                            "allocation": {
+                                "count": 300,
+                                "unit": "bytes",
+                                "p50": 99968,
+                                "p95": 99968,
+                                "p99": 99968,
+                                "max": 99968
+                            }
+                        },
+                        "console-execute-as": {
+                            "count": 150,
+                            "duration": {
+                                "count": 150,
+                                "unit": "ns",
+                                "p50": 207375,
+                                "p95": 294666,
+                                "p99": 391666,
+                                "max": 5191000
+                            },
+                            "allocation": {
+                                "count": 150,
+                                "unit": "bytes",
+                                "p50": 241432,
+                                "p95": 241432,
+                                "p99": 241432,
+                                "max": 241432
+                            }
+                        },
+                        "tp": {
+                            "count": 100,
+                            "duration": {
+                                "count": 100,
+                                "unit": "ns",
+                                "p50": 197292,
+                                "p95": 317667,
+                                "p99": 441625,
+                                "max": 482958
+                            },
+                            "allocation": {
+                                "count": 100,
+                                "unit": "bytes",
+                                "p50": 23600,
+                                "p95": 23672,
+                                "p99": 23672,
+                                "max": 23672
+                            }
+                        },
+                        "console-direct": {
+                            "count": 150,
+                            "duration": {
+                                "count": 150,
+                                "unit": "ns",
+                                "p50": 89625,
+                                "p95": 131542,
+                                "p99": 183500,
+                                "max": 391375
+                            },
+                            "allocation": {
+                                "count": 150,
+                                "unit": "bytes",
+                                "p50": 75624,
+                                "p95": 75624,
+                                "p99": 75624,
+                                "max": 75624
+                            }
+                        },
+                        "reload": {
+                            "count": 100,
+                            "duration": {
+                                "count": 100,
+                                "unit": "ns",
+                                "p50": 34583,
+                                "p95": 52791,
+                                "p99": 82208,
+                                "max": 99833
+                            },
+                            "allocation": {
+                                "count": 100,
+                                "unit": "bytes",
+                                "p50": 952,
+                                "p95": 952,
+                                "p99": 952,
+                                "max": 952
+                            }
+                        }
+                    }
+                },
+                {
+                    "ticks": {
+                        "count": 1218,
+                        "unit": "ns",
+                        "p50": 882166,
+                        "p95": 2233208,
+                        "p99": 5304083,
+                        "max": 36319166
+                    },
+                    "clientAcknowledgementRTT": {
+                        "count": 3000,
+                        "unit": "ns",
+                        "p50": 37690292,
+                        "p95": 40013208,
+                        "p99": 40880333,
+                        "max": 124330833
+                    },
+                    "botCommands": 3000,
+                    "consoleCommands": 300,
+                    "nativeSuggestions": 3000,
+                    "processAllocatedBytes": 268447671784,
+                    "allocationScope": "whole-process; all JVM threads, includes GC/runtime/probe",
+                    "controllerMaxLatenessSeconds": 0.10065650000819204,
+                    "nativeCommandFamilies": {
+                        "edit": {
+                            "count": 100,
+                            "duration": {
+                                "count": 100,
+                                "unit": "ns",
+                                "p50": 914833,
+                                "p95": 1601334,
+                                "p99": 9039250,
+                                "max": 52332834
+                            },
+                            "allocation": {
+                                "count": 100,
+                                "unit": "bytes",
+                                "p50": 1518360,
+                                "p95": 1518840,
+                                "p99": 1519016,
+                                "max": 1519056
+                            }
+                        },
+                        "list": {
+                            "count": 1800,
+                            "duration": {
+                                "count": 1800,
+                                "unit": "ns",
+                                "p50": 204708,
+                                "p95": 4288750,
+                                "p99": 5857291,
+                                "max": 72745583
+                            },
+                            "allocation": {
+                                "count": 1800,
+                                "unit": "bytes",
+                                "p50": 154264,
+                                "p95": 6013840,
+                                "p99": 6013888,
+                                "max": 6013984
+                            }
+                        },
+                        "details": {
+                            "count": 600,
+                            "duration": {
+                                "count": 600,
+                                "unit": "ns",
+                                "p50": 207042,
+                                "p95": 395958,
+                                "p99": 645083,
+                                "max": 2650792
+                            },
+                            "allocation": {
+                                "count": 600,
+                                "unit": "bytes",
+                                "p50": 128112,
+                                "p95": 128592,
+                                "p99": 128608,
+                                "max": 128608
+                            }
+                        },
+                        "help": {
+                            "count": 300,
+                            "duration": {
+                                "count": 300,
+                                "unit": "ns",
+                                "p50": 116083,
+                                "p95": 266875,
+                                "p99": 373084,
+                                "max": 8781500
+                            },
+                            "allocation": {
+                                "count": 300,
+                                "unit": "bytes",
+                                "p50": 100768,
+                                "p95": 100768,
+                                "p99": 100768,
+                                "max": 100768
+                            }
+                        },
+                        "console-execute-as": {
+                            "count": 150,
+                            "duration": {
+                                "count": 150,
+                                "unit": "ns",
+                                "p50": 187958,
+                                "p95": 309792,
+                                "p99": 408709,
+                                "max": 413417
+                            },
+                            "allocation": {
+                                "count": 150,
+                                "unit": "bytes",
+                                "p50": 242232,
+                                "p95": 242232,
+                                "p99": 242232,
+                                "max": 242232
+                            }
+                        },
+                        "tp": {
+                            "count": 100,
+                            "duration": {
+                                "count": 100,
+                                "unit": "ns",
+                                "p50": 186250,
+                                "p95": 432459,
+                                "p99": 521833,
+                                "max": 742375
+                            },
+                            "allocation": {
+                                "count": 100,
+                                "unit": "bytes",
+                                "p50": 23832,
+                                "p95": 23840,
+                                "p99": 23864,
+                                "max": 23872
+                            }
+                        },
+                        "console-direct": {
+                            "count": 150,
+                            "duration": {
+                                "count": 150,
+                                "unit": "ns",
+                                "p50": 80334,
+                                "p95": 165208,
+                                "p99": 275375,
+                                "max": 2252584
+                            },
+                            "allocation": {
+                                "count": 150,
+                                "unit": "bytes",
+                                "p50": 75256,
+                                "p95": 75256,
+                                "p99": 75256,
+                                "max": 75256
+                            }
+                        },
+                        "reload": {
+                            "count": 100,
+                            "duration": {
+                                "count": 100,
+                                "unit": "ns",
+                                "p50": 34041,
+                                "p95": 64375,
+                                "p99": 91708,
+                                "max": 122958
+                            },
+                            "allocation": {
+                                "count": 100,
+                                "unit": "bytes",
+                                "p50": 952,
+                                "p95": 952,
+                                "p99": 952,
+                                "max": 952
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

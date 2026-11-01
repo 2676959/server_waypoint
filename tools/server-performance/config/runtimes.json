@@ -530,7 +530,7 @@
                 "candidate": "0.15.1+mc1.21.11",
                 "verifiedNativeActions": true,
                 "path": "/Volumes/ssd/fabric_mods_repo/server_waypoint/tools/server-performance/bots/versions/mc1.21.11/target/release/sw-performance-bots",
-                "sha256": "500fe7ed605aa88372404424ae4d2c60c866c40a04309b3d66a762b62388f13a",
+                "sha256": "f39dbf5ce6ce70557be3745ebb5fd75900cb6a21369379db49729c02fa843125",
                 "toolchain": "nightly-2026-07-15",
                 "nativeModes": [
                     "vanilla",
@@ -578,7 +578,7 @@
             ],
             "probe": {
                 "path": "/Volumes/ssd/fabric_mods_repo/server_waypoint/paper/versions/1.21.11-paper/build/libs/server-waypoint-performance-paper-probe.jar",
-                "sha256": "d80d06a017761680140f9f69d534e8fa0128b16b25a0030c59c4d33b0a0c6e97"
+                "sha256": "588192cf705de2e10f722385759e4dd7593df016d608f6a5492573d11d7b337d"
             }
         },
         {

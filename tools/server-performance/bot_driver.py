@@ -10,6 +10,16 @@ from contracts import validate_document
 from models import Decision, Status
 
 
+class BotCapacityError(ValueError):
+    """The bounded queue cannot accept more offered work."""
+
+
+def effects_snapshot(data):
+    if data.get("scope") != "effects" or data.get("peers") != [] or not isinstance(data.get("effects"),dict):
+        raise ValueError("lightweight effects snapshot unexpectedly contains/misses wire/effect data")
+    return data["effects"]
+
+
 class BotStream:
     TYPES = {"ready", "action_result", "packet_summary", "rate_sample", "stopped", "error"}
 
@@ -21,8 +31,10 @@ class BotStream:
         self.completed = set()
 
     def offer(self, action_id):
-        if not action_id or action_id in self.pending | self.completed or len(self.pending) >= 256:
-            raise ValueError("duplicate action or bounded queue full")
+        if not action_id or action_id in self.pending | self.completed:
+            raise ValueError("duplicate or empty action identity")
+        if len(self.pending) >= 256:
+            raise BotCapacityError("bounded bot queue full; offered workload incomplete")
         self.pending.add(action_id)
 
     def parse(self, value):
@@ -111,12 +123,12 @@ class BotDriver:
         self.stream = BotStream(run_id, attempt_id)
         self.sequence = 0
         self.offset = 0
-        self.events = []
+        self.events = deque(maxlen=1024)
         self.inbox = deque()
         os.set_blocking(self.process.process.stdin.fileno(), False)
 
     def send(self, kind, data=None, timeout=5):
-        if kind not in {"start", "action", "barrier", "quiesce", "stop"}:
+        if kind not in {"start", "action", "barrier", "effects", "quiesce", "stop"}:
             raise ValueError("unsupported bot command")
         if kind == "action":
             self.stream.offer(data["actionId"])
@@ -152,6 +164,8 @@ class BotDriver:
                     break
                 value = self.stream.parse(line)
                 values.append(value)
+                if value["type"] == "packet_summary":
+                    self.events = deque((event for event in self.events if event["type"] != "packet_summary"),maxlen=1024)
                 self.events.append(value)
             self.offset = source.tell()
         return values

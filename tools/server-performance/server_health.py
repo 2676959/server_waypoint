@@ -4,6 +4,7 @@ import re
 from models import Decision, Status
 
 
+ANSI = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
 SEVERE = re.compile(r"^\[[^\]]+\] \[[^\]]*/(?:ERROR|SEVERE)\]: (.*)$|^\[[^\]]+ (?:ERROR|SEVERE)\]: (.*)$")
 
 
@@ -13,8 +14,11 @@ def assess_log(text):
     watchdog = 0
     observed = False
     for line in lines:
-        observed |= bool(line.strip())
-        matched = SEVERE.match(line.rstrip("\n"))
+        line = ANSI.sub("", line).strip()
+        if line.startswith(">"):
+            line = line[1:].strip()
+        observed |= bool(line)
+        matched = SEVERE.match(line)
         if matched:
             entries += 1
             message = matched.group(1) or matched.group(2)

@@ -41,6 +41,9 @@ continue running throughout the sample.
 
 ## Documents
 
+- [Published 4.0.1 Task 10 remasurement with patched decoder](validation/2026-11-01-4.0.1-task10-decoder.md)
+- [Published 4.0.1 Task 10 revalidation](validation/2026-11-01-4.0.1-task10.md)
+- [Task 10 storage/command validation and proof boundaries](validation/2026-10-31-task10-storage-commands.md)
 - [Per-player Paper reconciliation merging and verification](validation/2026-10-27-player-reconciliation.md)
 - [System build reference captured October 27, 2026](validation/2026-10-27-system-build.md)
 - [Issue #35 command-tree reduction and native 26.3 measurements](validation/2026-10-27-command-tree.md)
