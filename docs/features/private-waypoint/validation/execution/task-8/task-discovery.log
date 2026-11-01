@@ -1,0 +1,319 @@
+Configuration on demand is an incubating feature.
+Running Stonecutter 0.9.7
+
+> Configure project :mods:1.20.1-fabric
+Fabric Loom: 1.15.5
+
+> Configure project :mods:1.20.1-forge
+Minecraft Maven is up-to-date, took 0:01.632
+
+> Configure project :mods:1.20.2-fabric
+Fabric Loom: 1.15.5
+
+> Configure project :mods:1.20.2-forge
+Minecraft Maven is up-to-date, took 0:01.475
+
+> Configure project :mods:1.20.4-fabric
+Fabric Loom: 1.15.5
+
+> Configure project :mods:1.20.4-forge
+Minecraft Maven is up-to-date, took 0:01.518
+
+> Configure project :mods:1.20.6-fabric
+Fabric Loom: 1.15.5
+
+> Configure project :mods:1.20.6-forge
+Minecraft Maven is up-to-date, took 0:01.565
+
+> Configure project :mods:1.21-fabric
+Fabric Loom: 1.15.5
+
+> Configure project :mods:1.21-forge
+Minecraft Maven is up-to-date, took 0:01.650
+
+> Configure project :mods:1.21.11-fabric
+Fabric Loom: 1.15.5
+
+> Configure project :mods:1.21.11-forge
+Minecraft Maven is up-to-date, took 0:01.934
+
+> Configure project :mods:1.21.2-fabric
+Fabric Loom: 1.15.5
+
+> Configure project :mods:1.21.3-fabric
+Fabric Loom: 1.15.5
+
+> Configure project :mods:1.21.3-forge
+Minecraft Maven is up-to-date, took 0:01.792
+
+> Configure project :mods:1.21.5-fabric
+Fabric Loom: 1.15.5
+
+> Configure project :mods:1.21.5-forge
+Minecraft Maven is up-to-date, took 0:02.094
+
+> Configure project :mods:1.21.6-fabric
+Fabric Loom: 1.15.5
+
+> Configure project :mods:1.21.6-forge
+Minecraft Maven is up-to-date, took 0:02.067
+
+> Configure project :mods:1.21.9-fabric
+Fabric Loom: 1.15.5
+
+> Configure project :mods:1.21.9-forge
+Minecraft Maven is up-to-date, took 0:02.288
+
+> Configure project :mods:26.1.2-fabric
+Fabric Loom: 1.15.5
+
+> Configure project :mods:26.1.2-forge
+Minecraft Maven is up-to-date, took 0:02.040
+
+> Configure project :mods:26.2-fabric
+Fabric Loom: 1.15.5
+
+> Configure project :mods:26.2-forge
+Minecraft Maven is up-to-date, took 0:02.199
+
+> Configure project :mods:26.3-fabric
+Fabric Loom: 1.15.5
+
+> Configure project :mods:26.3-forge
+Minecraft Maven is up-to-date, took 0:02.550
+
+> Task :projects
+
+Projects:
+
+------------------------------------------------------------
+Root project 'server_waypoint'
+------------------------------------------------------------
+
+Location: /Volumes/ssd/fabric_mods_repo/server_waypoint
+
+Project hierarchy:
+
+Root project 'server_waypoint'
++--- Project ':common'
++--- Project ':cross-server'
++--- Project ':mods'
+|    +--- Project ':mods:1.20.1-fabric'
+|    +--- Project ':mods:1.20.1-forge'
+|    +--- Project ':mods:1.20.2-fabric'
+|    +--- Project ':mods:1.20.2-forge'
+|    +--- Project ':mods:1.20.2-neoforge'
+|    +--- Project ':mods:1.20.4-fabric'
+|    +--- Project ':mods:1.20.4-forge'
+|    +--- Project ':mods:1.20.4-neoforge'
+|    +--- Project ':mods:1.20.6-fabric'
+|    +--- Project ':mods:1.20.6-forge'
+|    +--- Project ':mods:1.20.6-neoforge'
+|    +--- Project ':mods:1.21-fabric'
+|    +--- Project ':mods:1.21-forge'
+|    +--- Project ':mods:1.21-neoforge'
+|    +--- Project ':mods:1.21.11-fabric'
+|    +--- Project ':mods:1.21.11-forge'
+|    +--- Project ':mods:1.21.11-neoforge'
+|    +--- Project ':mods:1.21.2-fabric'
+|    +--- Project ':mods:1.21.2-neoforge'
+|    +--- Project ':mods:1.21.3-fabric'
+|    +--- Project ':mods:1.21.3-forge'
+|    +--- Project ':mods:1.21.3-neoforge'
+|    +--- Project ':mods:1.21.5-fabric'
+|    +--- Project ':mods:1.21.5-forge'
+|    +--- Project ':mods:1.21.5-neoforge'
+|    +--- Project ':mods:1.21.6-fabric'
+|    +--- Project ':mods:1.21.6-forge'
+|    +--- Project ':mods:1.21.6-neoforge'
+|    +--- Project ':mods:1.21.7-neoforge'
+|    +--- Project ':mods:1.21.9-fabric'
+|    +--- Project ':mods:1.21.9-forge'
+|    +--- Project ':mods:1.21.9-neoforge'
+|    +--- Project ':mods:26.1.2-fabric'
+|    +--- Project ':mods:26.1.2-forge'
+|    +--- Project ':mods:26.1.2-neoforge'
+|    +--- Project ':mods:26.2-fabric'
+|    +--- Project ':mods:26.2-forge'
+|    +--- Project ':mods:26.2-neoforge'
+|    +--- Project ':mods:26.3-fabric'
+|    +--- Project ':mods:26.3-forge'
+|    \--- Project ':mods:26.3-neoforge'
++--- Project ':paper'
+|    +--- Project ':paper:1.21-paper'
+|    +--- Project ':paper:1.21.11-paper'
+|    +--- Project ':paper:1.21.9-paper'
+|    \--- Project ':paper:26.2-paper'
++--- Project ':proxy-common'
+\--- Project ':velocity'
+
+Project locations:
+
+project ':common' - /common
+project ':cross-server' - /cross-server
+project ':mods' - /mods
+project ':mods:1.20.1-fabric' - /mods/versions/1.20.1-fabric
+project ':mods:1.20.1-forge' - /mods/versions/1.20.1-forge
+project ':mods:1.20.2-fabric' - /mods/versions/1.20.2-fabric
+project ':mods:1.20.2-forge' - /mods/versions/1.20.2-forge
+project ':mods:1.20.2-neoforge' - /mods/versions/1.20.2-neoforge
+project ':mods:1.20.4-fabric' - /mods/versions/1.20.4-fabric
+project ':mods:1.20.4-forge' - /mods/versions/1.20.4-forge
+project ':mods:1.20.4-neoforge' - /mods/versions/1.20.4-neoforge
+project ':mods:1.20.6-fabric' - /mods/versions/1.20.6-fabric
+project ':mods:1.20.6-forge' - /mods/versions/1.20.6-forge
+project ':mods:1.20.6-neoforge' - /mods/versions/1.20.6-neoforge
+project ':mods:1.21-fabric' - /mods/versions/1.21-fabric
+project ':mods:1.21-forge' - /mods/versions/1.21-forge
+project ':mods:1.21-neoforge' - /mods/versions/1.21-neoforge
+project ':mods:1.21.11-fabric' - /mods/versions/1.21.11-fabric
+project ':mods:1.21.11-forge' - /mods/versions/1.21.11-forge
+project ':mods:1.21.11-neoforge' - /mods/versions/1.21.11-neoforge
+project ':mods:1.21.2-fabric' - /mods/versions/1.21.2-fabric
+project ':mods:1.21.2-neoforge' - /mods/versions/1.21.2-neoforge
+project ':mods:1.21.3-fabric' - /mods/versions/1.21.3-fabric
+project ':mods:1.21.3-forge' - /mods/versions/1.21.3-forge
+project ':mods:1.21.3-neoforge' - /mods/versions/1.21.3-neoforge
+project ':mods:1.21.5-fabric' - /mods/versions/1.21.5-fabric
+project ':mods:1.21.5-forge' - /mods/versions/1.21.5-forge
+project ':mods:1.21.5-neoforge' - /mods/versions/1.21.5-neoforge
+project ':mods:1.21.6-fabric' - /mods/versions/1.21.6-fabric
+project ':mods:1.21.6-forge' - /mods/versions/1.21.6-forge
+project ':mods:1.21.6-neoforge' - /mods/versions/1.21.6-neoforge
+project ':mods:1.21.7-neoforge' - /mods/versions/1.21.7-neoforge
+project ':mods:1.21.9-fabric' - /mods/versions/1.21.9-fabric
+project ':mods:1.21.9-forge' - /mods/versions/1.21.9-forge
+project ':mods:1.21.9-neoforge' - /mods/versions/1.21.9-neoforge
+project ':mods:26.1.2-fabric' - /mods/versions/26.1.2-fabric
+project ':mods:26.1.2-forge' - /mods/versions/26.1.2-forge
+project ':mods:26.1.2-neoforge' - /mods/versions/26.1.2-neoforge
+project ':mods:26.2-fabric' - /mods/versions/26.2-fabric
+project ':mods:26.2-forge' - /mods/versions/26.2-forge
+project ':mods:26.2-neoforge' - /mods/versions/26.2-neoforge
+project ':mods:26.3-fabric' - /mods/versions/26.3-fabric
+project ':mods:26.3-forge' - /mods/versions/26.3-forge
+project ':mods:26.3-neoforge' - /mods/versions/26.3-neoforge
+project ':paper' - /paper
+project ':paper:1.21-paper' - /paper/versions/1.21-paper
+project ':paper:1.21.11-paper' - /paper/versions/1.21.11-paper
+project ':paper:1.21.9-paper' - /paper/versions/1.21.9-paper
+project ':paper:26.2-paper' - /paper/versions/26.2-paper
+project ':proxy-common' - /proxy-common
+project ':velocity' - /velocity
+
+To see a list of the tasks of a project, run gradlew <project-path>:tasks
+For example, try running gradlew :common:tasks
+
+> Task :mods:26.1.2-fabric:tasks
+
+------------------------------------------------------------
+Tasks runnable from project ':mods:26.1.2-fabric'
+------------------------------------------------------------
+
+Build tasks
+-----------
+assemble - Assembles the outputs of this project.
+build - Assembles and tests this project.
+buildAndCollect
+buildDependents - Assembles and tests this project and all projects that depend on it.
+buildNeeded - Assembles and tests this project and all projects it depends on.
+classes - Assembles main classes.
+clean - Deletes the build directory.
+jar - Assembles a jar archive containing the classes of the 'main' feature.
+shadowJar - Create a combined JAR of project and runtime dependencies
+testClasses - Assembles test classes.
+
+Documentation tasks
+-------------------
+javadoc - Generates Javadoc API documentation for the 'main' feature.
+
+Fabric tasks
+------------
+configureClientLaunch - Setup the required files to launch the Minecraft client
+configureLaunch - Setup the required files to launch Minecraft
+downloadAssets - Downloads required game assets for Minecraft.
+exportClasspath
+generateDLIConfig - Generate the DevLaunchInjector config file
+generateLog4jConfig - Generate the log4j config file
+genSources - Decompile minecraft using the default decompiler.
+genSourcesWithCfr - Decompile minecraft using Cfr.
+genSourcesWithVineflower - Decompile minecraft using Vineflower.
+processIncludeJars
+runClient - Starts the 'null' run configuration
+runServer - Starts the 'null' run configuration
+
+Help tasks
+----------
+artifactTransforms - Displays the Artifact Transforms that can be executed in project ':mods:26.1.2-fabric'.
+buildEnvironment - Displays all buildscript dependencies declared in project ':mods:26.1.2-fabric'.
+dependencies - Displays all dependencies declared in project ':mods:26.1.2-fabric'.
+dependencyInsight - Displays the insight into a specific dependency in project ':mods:26.1.2-fabric'.
+help - Displays a help message.
+javaToolchains - Displays the detected java toolchains.
+kotlinDslAccessorsReport - Prints the Kotlin code for accessing the currently available project extensions.
+outgoingVariants - Displays the outgoing variants of project ':mods:26.1.2-fabric'.
+projects - Displays the sub-projects of project ':mods:26.1.2-fabric'.
+properties - Displays the properties of project ':mods:26.1.2-fabric'.
+resolvableConfigurations - Displays the configurations that can be resolved in project ':mods:26.1.2-fabric'.
+tasks - Displays the tasks runnable from project ':mods:26.1.2-fabric'.
+
+IDE tasks
+---------
+cleanEclipse - Cleans all Eclipse files.
+eclipse - Generates all Eclipse files.
+genEclipseRuns - Generates Eclipse run configurations for this project.
+ideaSyncTask
+vscode - Generates VSCode launch configurations.
+
+Publishing tasks
+----------------
+curseforge - Builds and uploads the 26.1.2-fabric artifact to CurseForge.
+modrinth - Builds and uploads the 26.1.2-fabric artifact to Modrinth.
+modrinthSyncBody - Sync project description to Modrinth
+
+Stonecutter-impl tasks
+----------------------
+stonecutterGenerate - Internal Stonecutter task. Do not call manually.
+stonecutterGenerateTest - Internal Stonecutter task. Do not call manually.
+stonecutterMerge - Internal Stonecutter task. Do not call manually.
+stonecutterMergeTest - Internal Stonecutter task. Do not call manually.
+stonecutterPrepare - Internal Stonecutter task. Do not call manually.
+stonecutterPrepareTest - Internal Stonecutter task. Do not call manually.
+stonecutterSaveNodeModel - Internal Stonecutter task. Do not call manually.
+
+Verification tasks
+------------------
+check - Runs all checks.
+test - Runs the test suite.
+validateAccessWidener - Validate all the rules in the access widener against the Minecraft jar
+verifyNoiseDependency - Verifies the exact reviewed Noise runtime bytes before platform packaging.
+
+Other tasks
+-----------
+cleanEclipseClasspath
+cleanEclipseJdt
+cleanEclipseProject
+compileJava - Compiles main Java source.
+compileTestJava - Compiles test Java source.
+eclipseClasspath - Generates the Eclipse classpath file.
+eclipseJdt - Generates the Eclipse JDT settings file.
+eclipseProject - Generates the Eclipse project file.
+processResources - Processes main resources.
+processTestResources - Processes test resources.
+
+Rules
+-----
+Pattern: clean<TaskName>: Cleans the output files of a task.
+Pattern: build<ConfigurationName>: Assembles the artifacts of a configuration.
+
+[Incubating] Problems report is available at: file:///Volumes/ssd/fabric_mods_repo/server_waypoint/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.5.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 41s
+2 actionable tasks: 2 executed
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.5.1/userguide/configuration_cache_enabling.html

@@ -1,0 +1,18 @@
+{
+  "chat": [
+    {
+      "text": "✔ Restored [BA] Base to Homes",
+      "commands": [
+        "/wp private details waypoint minecraft:overworld Homes Base",
+        "/wp private list minecraft:overworld Homes"
+      ]
+    }
+  ],
+  "position": [
+    8.5,
+    173.0,
+    9.5,
+    "minecraft:overworld"
+  ],
+  "screen": "_959.server_waypoint.common.client.gui.screens.WaypointManagerScreen"
+}

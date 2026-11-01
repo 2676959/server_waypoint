@@ -1,0 +1,12 @@
+wait 80
+send /wp private details waypoint minecraft:overworld Homes Base
+wait 40
+send /wp private add -44 80 22 Homes Base
+wait 40
+send /wp private details waypoint minecraft:overworld Homes Base
+wait 40
+send /wp private tp minecraft:overworld Homes Base
+wait 60
+send /wp private list all
+wait 120
+exit

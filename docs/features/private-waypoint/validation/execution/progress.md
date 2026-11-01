@@ -22,8 +22,8 @@ The user authorized implementation and a separate local commit for each verified
 4. Complete: owner-only protocol and client collections (verified 2026-10-28).
 5. Complete: local profiles (verified 2026-10-28).
 6. Complete: client operations and teleport templates (verified 2026-10-28).
-7. Pending: manager and composed rendering.
-8. Pending: platform/live validation and player documentation.
+7. Complete: manager and composed rendering (Tasks 7 and subsequent UI refinements).
+8. Complete: platform/documentation plus remaining planned live acceptance, verified 2026-10-31; certification boundaries are recorded.
 
 ## Task 1 evidence
 
@@ -384,3 +384,62 @@ The user authorized implementation and a separate local commit for each verified
   worded like the server's `/wp list` translations, and the key left English and Simplified Chinese;
   all six client locales now hold the same 316 keys. The manager key, retired key and network message
   tests failed first; verified with Fabric 26.1.2 (1,110 tests) and Fabric 1.20.1 (1,098 tests).
+
+## Task 8: platform validation and player documentation (2026-10-31)
+
+- Starting worktree clean at `ea91edcb`, existing `feature/private-waypoint` branch.
+- Ruling: continue in the existing feature checkout, inline — the owning plan and this ledger
+  explicitly establish that workflow; no branch/worktree or subagent is needed. If wrong, isolation
+  is limited to this feature branch. No commits or publication are authorized.
+- Ruling: retain checked automated contracts separately from unchecked live requirements — fixtures
+  and native game-thread handlers cannot establish physical input, graphical vanilla or fluent
+  translation acceptance. If wrong, acceptance remains conservative rather than overstated.
+- Fresh full suites: common 720, Fabric 26.1.2 1,120, Fabric 1.20.1 1,098, Paper 26.2 58;
+  no failures, errors or skips. All six representative compilation targets passed.
+- Added player collection/permission/quota/profile/copy/teleport/storage guidance and refreshed
+  GUI, feature and manager indexes. No production code or release changelogs changed.
+- Native integrated-server collection, copy, profile and persistence assertions passed. Native
+  Spanish popup/wheel/Escape/Tab and profile/template dialog assertions passed. Their strict
+  runner statuses retain offline account/Realms errors rather than treating them as clean runs.
+- Stock native Fabric 1.21.5 editor/map suite passed, including independent disk assertions.
+- Live Paper/MCC Alice and Bob checks demonstrated separate identical identifiers, default
+  teleport denial, operator authorization, actual Overworld/Nether arrival, quotas and execute-as.
+- Native probe setup failures and compatibility boundaries are recorded in the dated report;
+  no production compatibility code was added.
+- Review: self-review in accordance with the plan's no-subagent instruction. Reviewed critical
+  collection ownership/delivery, client lifecycle, query/form identities, rendering boundaries
+  and the final documentation/evidence diff. Remaining live scenarios stay open.
+- See [Task 8 record](../2026-10-31-platform-validation.md). Task 8 is not claimed fully accepted.
+
+- Additional native checks: Local persisted across a plugin-free server and protocol-2 backend
+  restart at one address; manual profiles survived reconnect. Both map exports retained Shared
+  and excluded Local/Private. All final feature assertions passed; offline services still fail
+  the strict 26.1.2 runner, whereas both 1.21.5 map runs exit 0.
+- Documentation checker: applicable keys/placeholders and relative file links pass. Legacy
+  non-wp common locale fallbacks remain outside new-key coverage. Fluent review remains open.
+
+- Final checks: 111 relative link paths across eight owning documents passed; six common wp-key
+  sets/existing placeholder sets and six complete 316-key client locales passed. `git diff --check`
+  passed. Configured targets and all production sources remain unchanged.
+- All 41 final native scenario groups have PASS assertions. Strict runner outcomes remain
+  core/gui/multiplayer FAIL for recorded offline services; editor/maps PASS. Both disposable
+  listening ports are closed and the test clients exited. No commit or publish.
+
+## Task 8 continuation: final acceptance (2026-10-31)
+
+- Completed real two-modded-player plus graphical-vanilla checks for owner isolation, suggestions,
+  click-event prefixes, restore ownership/single-use/conflict, navigation reconnect and teleport arrival.
+- Live read permission revocation clears Private only; regrant recovers it. Copy metadata, cancellation,
+  conflicts, stale forms and actual permission/quota denial passed without unintended destination data.
+- Folia 26.2 and Fabric 1.21.4 dedicated command checks passed, with actual arrival evidence.
+- Actual Velocity transfer saved/rebound Local, rejected a stale selection, preserved a manual profile
+  under a late valid handshake packet, and restored the original store on return.
+- Native marker identity, visibility, Shared refresh, Private tombstone and two unmodified-server
+  reconnects passed. Remote fixture browsing remained read-only and outside Combined.
+- Captured all four views and profiles in six locales; checked localized dropdown narration, popup hover,
+  wheel/Escape and native profile input/dialog handling. Codex linguistic review was recorded separately.
+- Ruling: completion refers to the plan's native/runtime acceptance, not universal OS input or native-
+  speaker certification — no such certification was obtained, and the final report states that boundary.
+  If wrong, additional external acceptance is needed; no implementation claim is silently expanded.
+- No production changes were needed. Test setup failures and offline service errors remain retained.
+- See [final acceptance](../2026-10-31-final-acceptance.md). No commit, push or publish.

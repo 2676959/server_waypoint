@@ -1,0 +1,5 @@
+FAIL 1.21.5-Fabric errors=0 warnings=65 03-collection-isolation: FAIL java.util.concurrent.ExecutionException: java.lang.AssertionError: Shared fixture missing from XAERO at java.base/java.util.concurrent.CompletableFuture.reportGet(CompletableFuture.java:396) at java.base/java.util.concurrent.Completabl
+  WARN Compatibility level JAVA_21 specified by fabric-api-lookup-api-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13). (game/logs/latest.log:63)
+  WARN Compatibility level JAVA_17 specified by server_waypoint-common.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13). (game/logs/latest.log:65)
+  WARN Compatibility level JAVA_17 specified by server_waypoint-voxelmap.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13). (game/logs/latest.log:66)
+Report: /Volumes/ssd/sw-private-task8-20261031/map-results/report.md

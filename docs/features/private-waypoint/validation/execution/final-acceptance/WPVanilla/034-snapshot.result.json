@@ -1,0 +1,18 @@
+{
+  "chat": [
+    {
+      "commands": [
+        "/wp private tp minecraft:overworld Homes Base",
+        "/wp private details waypoint minecraft:overworld Homes Base"
+      ],
+      "text": "✔ Teleported [unknown player head] WPVanilla to [BA] Base"
+    }
+  ],
+  "position": [
+    70.5,
+    76.45489320398093,
+    -29.5,
+    "minecraft:overworld"
+  ],
+  "screen": "null"
+}

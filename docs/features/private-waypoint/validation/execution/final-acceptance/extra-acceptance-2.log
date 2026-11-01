@@ -1,0 +1,21 @@
+Traceback (most recent call last):
+  File "/Volumes/ssd/sw-private-final-20261031/extra_acceptance.py", line 21, in <module>
+    op('feature:ready');cmd('wp add 100 80 100 Homes Base');cmd('wp private add 12 80 -30 Homes Base');op('feature:scene');op('feature:tombstone');cmd('wp private add 12 80 -30 Homes Base')
+                                                                                                                           ~~^^^^^^^^^^^^^^^^^^^^^
+  File "/Volumes/ssd/sw-private-final-20261031/extra_acceptance.py", line 15, in op
+    n+=1;f=home/f'extra-{n:02}.result';attach(data['java'],prep/'tools.jar',p,prep/'agent.jar',f'scenario|{f}|{action}|{root/"checks.jar"}',home/f'extra-{n:02}.attach.log');wait_result(p,f,180)
+                                                                                                                                                                             ~~~~~~~~~~~^^^^^^^^^
+  File "/Volumes/ssd/fabric_mods_repo/server_waypoint/tools/live-game-test/runner.py", line 191, in wait_result
+    raise RuntimeError(state)
+RuntimeError: FAIL
+java.lang.reflect.InvocationTargetException
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:119)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at LiveChecks.run(LiveChecks.java:67)
+	at LiveChecks.lambda$start$0(LiveChecks.java:18)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+Caused by: java.lang.IllegalArgumentException: tombstone
+	at FeatureChecks.run(FeatureChecks.java:95)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	... 4 more
+

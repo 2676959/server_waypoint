@@ -1,0 +1,30 @@
+[
+    {
+        "directory": "common/build/test-results/test",
+        "tests": 720,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+    },
+    {
+        "directory": "mods/versions/26.1.2-fabric/build/test-results/test",
+        "tests": 1120,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+    },
+    {
+        "directory": "mods/versions/1.20.1-fabric/build/test-results/test",
+        "tests": 1098,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+    },
+    {
+        "directory": "paper/versions/26.2-paper/build/test-results/test",
+        "tests": 58,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+    }
+]

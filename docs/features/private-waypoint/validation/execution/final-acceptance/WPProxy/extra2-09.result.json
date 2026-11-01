@@ -1,0 +1,15 @@
+{
+  "chat": [
+    {
+      "text": "✘ Its name is taken again. The restore link keeps working.",
+      "commands": []
+    }
+  ],
+  "position": [
+    8.5,
+    173.0,
+    9.5,
+    "minecraft:overworld"
+  ],
+  "screen": "_959.server_waypoint.common.client.gui.screens.WaypointManagerScreen"
+}

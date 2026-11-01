@@ -1,0 +1,31 @@
+Configuration on demand is an incubating feature.
+Running Stonecutter 0.9.7
+
+> Configure project :mods:1.21.3-fabric
+Fabric Loom: 1.15.5
+
+> Task :cross-server:updateModInfo UP-TO-DATE
+> Task :cross-server:compileJava UP-TO-DATE
+> Task :common:compileJava UP-TO-DATE
+> Task :common:processResources UP-TO-DATE
+> Task :common:classes UP-TO-DATE
+> Task :common:jar UP-TO-DATE
+> Task :cross-server:processResources NO-SOURCE
+> Task :cross-server:classes UP-TO-DATE
+> Task :cross-server:jar UP-TO-DATE
+> Task :mods:1.21.3-fabric:stonecutterPrepare
+> Task :mods:1.21.3-fabric:stonecutterGenerate
+> Task :mods:1.21.3-fabric:compileJava
+> Task :mods:1.21.3-fabric:processResources
+> Task :mods:1.21.3-fabric:classes
+> Task :mods:1.21.3-fabric:jar
+> Task :mods:1.21.3-fabric:processIncludeJars UP-TO-DATE
+> Task :mods:1.21.3-fabric:verifyNoiseDependency
+> Task :mods:1.21.3-fabric:shadowJar
+> Task :mods:1.21.3-fabric:remapJar
+> Task :mods:1.21.3-fabric:remapSourcesJar SKIPPED
+> Task :mods:1.21.3-fabric:assemble
+
+BUILD SUCCESSFUL in 9s
+15 actionable tasks: 8 executed, 7 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.5.1/userguide/configuration_cache_enabling.html

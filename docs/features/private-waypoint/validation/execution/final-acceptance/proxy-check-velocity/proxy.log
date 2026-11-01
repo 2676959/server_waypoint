@@ -1,0 +1,25 @@
+[22:16:35 INFO]: Booting up Velocity 4.2.0...
+[22:16:35 INFO]: Connections will use kqueue channels, libdeflate (macOS ARM64 / Apple Silicon) compression, native (macOS ARM64 / Apple Silicon) ciphers
+[33;1m[22:16:35 WARN]: The proxy is running in offline mode! This is a security risk and you will NOT receive any support!
+[m[33;1m[22:16:35 WARN]: Player info forwarding is disabled! All players will appear to be connecting from the proxy and will have offline-mode UUIDs.
+[m[22:16:35 INFO]: Loading localizations...
+[22:16:35 INFO]: Loading plugins...
+[22:16:35 INFO]: Loaded 1 plugins
+[22:16:35 INFO]: Listening on /127.0.0.1:25653
+[22:16:35 INFO]: Velocity and some of its plugins collect metrics and send them to bStats (https://bStats.org).
+[22:16:35 INFO]: bStats collects some basic information for plugin authors, like how many people use
+[22:16:35 INFO]: their plugin and their total player count. It's recommended to keep bStats enabled, but
+[22:16:35 INFO]: if you're not comfortable with this, you can opt-out by editing the config.txt file in
+[22:16:35 INFO]: the '/plugins/bStats/' folder and setting enabled to false.
+[22:16:35 INFO]: Done (0.77s)!
+>   [22:16:46 INFO]: [connected player] WPProxy (/127.0.0.1:51687) has connected
+>   [22:16:46 INFO]: [server connection] WPProxy -> a has connected
+>   [22:16:51 INFO]: [server connection] WPProxy -> b has connected
+>   [22:16:51 INFO]: [server connection] WPProxy -> a has disconnected
+>   [22:16:58 INFO]: [server connection] WPProxy -> a has connected
+>   [22:16:58 INFO]: [server connection] WPProxy -> b has disconnected
+>   [22:22:08 INFO]: [connected player] WPProxy (/127.0.0.1:51687) has disconnected
+>   [22:22:08 INFO]: [server connection] WPProxy -> a has disconnected
+> >   [22:25:43 INFO]: Shutting down the proxy...
+>   [22:25:43 INFO]: Closing endpoint /127.0.0.1:25653
+> 

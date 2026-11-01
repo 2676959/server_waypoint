@@ -1,0 +1,21 @@
+{
+  "chat": [
+    {
+      "commands": [
+        "/wp private details waypoint minecraft:overworld OnlyAlice AliceSecret",
+        "/wp private list minecraft:overworld OnlyAlice",
+        "/wp private details waypoint minecraft:overworld OnlyAlice AliceSecret",
+        "/wp private navigate minecraft:overworld OnlyAlice AliceSecret",
+        "/wp private remove minecraft:overworld OnlyAlice AliceSecret"
+      ],
+      "text": "✔ Added [AS] AliceSecret to OnlyAlice   Details · Navigate · Undo"
+    }
+  ],
+  "position": [
+    7.5,
+    76.0,
+    10.5,
+    "minecraft:overworld"
+  ],
+  "screen": "null"
+}

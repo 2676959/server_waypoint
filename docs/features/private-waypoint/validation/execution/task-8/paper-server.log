@@ -1,0 +1,167 @@
+[19:07:27] [ServerMain/INFO]: [bootstrap] Running Java 21 (OpenJDK 64-Bit Server VM 21.0.11; Homebrew Homebrew) on Mac OS X 26.5 (aarch64)
+[19:07:27] [ServerMain/INFO]: [bootstrap] Loading Paper 1.21-130-master@b1b5d4c (2024-08-10T10:02:42Z) for Minecraft 1.21
+[19:07:27] [ServerMain/INFO]: [PluginInitializerManager] Initializing plugins...
+[19:07:27] [ServerMain/INFO]: [PluginInitializerManager] Initialized 1 plugin
+[19:07:27] [ServerMain/INFO]: [PluginInitializerManager] Paper plugins (1):
+ - ServerWaypoint (4.0.1)
+[19:07:29] [ServerMain/INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, name=PROD]
+[19:07:29] [ServerMain/INFO]: Loaded 1290 recipes
+[19:07:29] [ServerMain/INFO]: Loaded 1399 advancements
+[19:07:29] [Server thread/INFO]: Starting minecraft server version 1.21
+[19:07:29] [Server thread/INFO]: Loading properties
+[19:07:29] [Server thread/INFO]: This server is running Paper version 1.21-130-master@b1b5d4c (2024-08-10T10:02:42Z) (Implementing API version 1.21-R0.1-SNAPSHOT)
+[19:07:30] [Server thread/INFO]: [spark] This server bundles the spark profiler. For more information please visit https://docs.papermc.io/paper/profiling
+[19:07:30] [Server thread/INFO]: Server Ping Player Sample Count: 12
+[19:07:30] [Server thread/INFO]: Using 4 threads for Netty based IO
+[19:07:30] [Server thread/INFO]: [ChunkTaskScheduler] Chunk system is using 1 I/O threads, 2 worker threads, and population gen parallelism of 2 threads
+[19:07:30] [Server thread/INFO]: Default game type: SURVIVAL
+[19:07:30] [Server thread/INFO]: Generating keypair
+[19:07:30] [Server thread/INFO]: Starting Minecraft server on 127.0.0.1:25638
+[19:07:30] [Server thread/INFO]: Using default channel type
+[19:07:30] [Server thread/INFO]: Paper: Using libdeflate (macOS ARM64 / Apple Silicon) compression from Velocity.
+[19:07:30] [Server thread/INFO]: Paper: Using native (macOS ARM64 / Apple Silicon) cipher from Velocity.
+[19:07:30] [Server thread/INFO]: [server_waypoint_plugin] Loading server plugin ServerWaypoint v4.0.1
+[19:07:30] [Server thread/INFO]: Server permissions file permissions.yml is empty, ignoring it
+[19:07:30] [Server thread/WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[19:07:30] [Server thread/WARN]: The server will make no attempt to authenticate usernames. Beware.
+[19:07:30] [Server thread/WARN]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[19:07:30] [Server thread/WARN]: To change this, set "online-mode" to "true" in the server.properties file.
+[19:07:30] [Server thread/INFO]: Preparing level "task8"
+[19:07:31] [Server thread/INFO]: Preparing start region for dimension minecraft:overworld
+[19:07:31] [Server thread/INFO]: Time elapsed: 280 ms
+[19:07:31] [Server thread/INFO]: Preparing start region for dimension minecraft:the_nether
+[19:07:31] [Server thread/INFO]: Time elapsed: 46 ms
+[19:07:31] [Server thread/INFO]: Preparing start region for dimension minecraft:the_end
+[19:07:31] [Server thread/INFO]: Time elapsed: 31 ms
+[19:07:31] [Server thread/INFO]: [server_waypoint_plugin] Enabling ServerWaypoint v4.0.1
+[19:07:31] [Server thread/INFO]: [server_waypoint_translator] Internal translations: zh_hk, en_us, zh_cn, he_il, es_es, zh_tw
+[19:07:31] [Server thread/INFO]: [server_waypoint_core] Loaded config Config{serverId=-1266857939, defaultPageLimit=10, defaultNavigationMethods=[ACTIONBAR], CommandPermission=CommandPermission{privateList=0, privateAdd=0, privateEdit=0, privateRemove=0, privateNavigate=0, privateTp=2, add=0, edit=0, remove=0, navigate=0, tp=2, reload=2, upload=2, uploadDelete=4, remoteList=0, remoteTp=2}, Features={addWaypointFromChatSharing=true, sendXaerosWorldId=true, compressChunkedMessages=true}}
+[19:07:31] [Server thread/INFO]: [server_waypoint_core] Loaded 0 languages: 
+[19:07:31] [server-waypoint-backend-startup/INFO]: [server_waypoint_core] Cross-server backend startup: DISABLED
+[19:07:31] [Server thread/INFO]: [spark] Starting background profiler...
+[19:07:32] [Server thread/INFO]: Done preparing level "task8" (1.212s)
+[19:07:32] [Server thread/INFO]: Running delayed init tasks
+[19:07:32] [Server thread/INFO]: Done (5.519s)! For help, type "help"
+[19:07:32] [Server thread/INFO]: Timings Reset
+[19:07:39] [Server thread/INFO]: There are 0 of a max of 20 players online: 
+[19:07:40] [User Authenticator #0/INFO]: UUID of player Alice is 10920508-d5d8-3eed-93d2-92f193afe7d7
+[19:07:40] [Server thread/INFO]: Alice joined the game
+[19:07:41] [Server thread/INFO]: Alice[/127.0.0.1:50829] logged in with entity id 25 at ([task8]4.5, -60.0, 3.5)
+[19:07:41] [User Authenticator #0/INFO]: UUID of player Bob is faa5dca3-c3d4-354b-ae1b-dde9e5a14b3b
+[19:07:41] [Server thread/INFO]: Bob joined the game
+[19:07:41] [Server thread/INFO]: Bob[/127.0.0.1:50832] logged in with entity id 26 at ([task8]6.5, -60.0, 8.5)
+[19:07:53] [Server thread/INFO]: Made Alice a server operator
+[19:07:53] [Server thread/INFO]: Viewed as Alice
+✔ Added [BA] Base to Homes   Details · Navigate · Undo
+[19:07:53] [Server thread/INFO]: ✘ Only players can do that.
+[19:07:54] [Folia Async Scheduler Thread Timer/INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/waypoints/minecraft$overworld.json
+[19:07:54] [Folia Async Scheduler Thread Timer/INFO]: [server_waypoint.actions] action=add player=Alice player_id=10920508-d5d8-3eed-93d2-92f193afe7d7 sender=CONSOLE sender_id=non-player outcome=success dimension=minecraft:overworld list=Homes waypoint=Base
+[19:07:54] [Server thread/INFO]: Bob issued server command: /wp private add -44 80 22 Homes Base
+[19:07:54] [Server thread/INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/private-waypoints/faa5dca3-c3d4-354b-ae1b-dde9e5a14b3b/minecraft$overworld.json
+[19:07:54] [Server thread/INFO]: [server_waypoint.actions] action=add player=Bob player_id=faa5dca3-c3d4-354b-ae1b-dde9e5a14b3b sender=Bob sender_id=faa5dca3-c3d4-354b-ae1b-dde9e5a14b3b outcome=success dimension=minecraft:overworld list=Homes waypoint=Base
+[19:07:55] [Server thread/INFO]: Bob issued server command: /wp private details waypoint minecraft:overworld Homes Base
+[19:07:55] [Server thread/INFO]: Alice issued server command: /wp private list
+[19:07:55] [Server thread/INFO]: [server_waypoint_core] Loaded 1 lists and 1 waypoints from file: plugins/ServerWaypoint/private-waypoints/10920508-d5d8-3eed-93d2-92f193afe7d7/minecraft$overworld.json
+[19:07:56] [Server thread/INFO]: Alice issued server command: /wp private tp minecraft:overworld Homes Base
+[19:07:56] [Server thread/INFO]: [server_waypoint.actions] action=tp player=Alice player_id=10920508-d5d8-3eed-93d2-92f193afe7d7 sender=Alice sender_id=10920508-d5d8-3eed-93d2-92f193afe7d7 outcome=success dimension=minecraft:overworld list=Homes waypoint=Base
+[19:08:14] [Server thread/INFO]: Alice has the following entity data: [12.5d, 80.0d, -29.5d]
+[19:08:14] [Server thread/INFO]: Expected whitespace to end one argument, but found trailing data
+...tity Alice[x=12,y=80,z=-30,distance=..1] run say TASK8_PRIVATE_ARRIVAL_OK<--[HERE]
+[19:08:23] [Server thread/INFO]: [Not Secure] [Server] TASK8_PRIVATE_ARRIVAL_OK
+[19:08:24] [Server thread/INFO]: Alice issued server command: /wp private add minecraft:the_nether Homes -12 80 30 NetherBase
+[19:08:24] [Server thread/INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/private-waypoints/10920508-d5d8-3eed-93d2-92f193afe7d7/minecraft$overworld.json
+[19:08:24] [Server thread/INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/private-waypoints/10920508-d5d8-3eed-93d2-92f193afe7d7/minecraft$the_nether.json
+[19:08:24] [Server thread/INFO]: [server_waypoint.actions] action=add player=Alice player_id=10920508-d5d8-3eed-93d2-92f193afe7d7 sender=Alice sender_id=10920508-d5d8-3eed-93d2-92f193afe7d7 outcome=success dimension=minecraft:the_nether list=Homes waypoint=NetherBase
+[19:08:25] [Server thread/INFO]: Alice issued server command: /wp private tp minecraft:the_nether Homes NetherBase
+[19:08:25] [Server thread/INFO]: Alice has made the advancement [We Need to Go Deeper]
+[19:08:25] [Server thread/INFO]: [server_waypoint.actions] action=tp player=Alice player_id=10920508-d5d8-3eed-93d2-92f193afe7d7 sender=Alice sender_id=10920508-d5d8-3eed-93d2-92f193afe7d7 outcome=success dimension=minecraft:the_nether list=Homes waypoint=NetherBase
+[19:08:25] [Server thread/INFO]: Bob issued server command: /wp private details waypoint minecraft:overworld Homes Base
+[19:08:26] [Server thread/INFO]: Alice issued server command: /wp private edit waypoint minecraft:overworld Homes Base set description AliceOnly
+[19:08:26] [Server thread/INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/private-waypoints/10920508-d5d8-3eed-93d2-92f193afe7d7/minecraft$overworld.json
+[19:08:26] [Server thread/INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/private-waypoints/10920508-d5d8-3eed-93d2-92f193afe7d7/minecraft$the_nether.json
+[19:08:26] [Server thread/INFO]: [server_waypoint.actions] action=edit player=Alice player_id=10920508-d5d8-3eed-93d2-92f193afe7d7 sender=Alice sender_id=10920508-d5d8-3eed-93d2-92f193afe7d7 outcome=success dimension=minecraft:overworld list=Homes waypoint=Base new_waypoint=Base
+[19:08:26] [Server thread/INFO]: Bob issued server command: /wp private list all
+[19:08:49] [Server thread/INFO]: Alice has the following entity data: [-11.5d, 80.0d, 30.5d]
+[19:08:49] [Server thread/INFO]: Alice has the following entity data: "minecraft:the_nether"
+[19:08:49] [Server thread/INFO]: [Not Secure] [Server] TASK8_NETHER_ARRIVAL_OK
+[19:08:50] [Server thread/INFO]: Alice issued server command: /wp private navigate minecraft:overworld Homes Base actionbar
+[19:08:50] [Server thread/INFO]: [server_waypoint.actions] action=navigation player=Alice player_id=10920508-d5d8-3eed-93d2-92f193afe7d7 sender=Alice sender_id=10920508-d5d8-3eed-93d2-92f193afe7d7 outcome=navigation_started dimension=minecraft:overworld list=Homes waypoint=Base method=-
+[19:08:51] [Server thread/INFO]: Alice issued server command: /wp private remove minecraft:overworld Homes Base
+[19:08:51] [Server thread/INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/private-waypoints/10920508-d5d8-3eed-93d2-92f193afe7d7/minecraft$overworld.json
+[19:08:51] [Server thread/INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/private-waypoints/10920508-d5d8-3eed-93d2-92f193afe7d7/minecraft$the_nether.json
+[19:08:51] [Server thread/INFO]: [server_waypoint.actions] action=remove player=Alice player_id=10920508-d5d8-3eed-93d2-92f193afe7d7 sender=Alice sender_id=10920508-d5d8-3eed-93d2-92f193afe7d7 outcome=success dimension=minecraft:overworld list=Homes waypoint=Base
+[19:09:05] [Folia Async Scheduler Thread Timer/INFO]: [server_waypoint_core] Loaded config Config{serverId=-1266857939, defaultPageLimit=10, defaultNavigationMethods=[ACTIONBAR], CommandPermission=CommandPermission{privateList=0, privateAdd=0, privateEdit=0, privateRemove=0, privateNavigate=0, privateTp=2, add=0, edit=0, remove=0, navigate=0, tp=2, reload=2, upload=2, uploadDelete=4, remoteList=0, remoteTp=2}, Features={addWaypointFromChatSharing=true, sendXaerosWorldId=true, compressChunkedMessages=true}}
+[19:09:05] [Folia Async Scheduler Thread Timer/INFO]: [server_waypoint.actions] action=reload player=CONSOLE player_id=non-player sender=CONSOLE sender_id=non-player outcome=completed
+[19:09:05] [Server thread/INFO]: ✔ Reloaded the configuration and language files
+[19:09:05] [Server thread/INFO]: Alice issued server command: /wp private add minecraft:overworld Homes 12 80 -30 Base
+[19:09:05] [Server thread/INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/private-waypoints/10920508-d5d8-3eed-93d2-92f193afe7d7/minecraft$overworld.json
+[19:09:05] [Server thread/INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/private-waypoints/10920508-d5d8-3eed-93d2-92f193afe7d7/minecraft$the_nether.json
+[19:09:05] [Server thread/INFO]: [server_waypoint.actions] action=add player=Alice player_id=10920508-d5d8-3eed-93d2-92f193afe7d7 sender=Alice sender_id=10920508-d5d8-3eed-93d2-92f193afe7d7 outcome=success dimension=minecraft:overworld list=Homes waypoint=Base
+[19:09:07] [Server thread/INFO]: Alice issued server command: /wp private add minecraft:overworld RejectedList 90 80 90 Overflow
+[19:09:08] [Server thread/INFO]: Alice issued server command: /wp private list all
+[19:09:56] [Server thread/INFO]: Alice suffocated in a wall
+[19:10:09] [Server thread/INFO]: Set Alice's game mode to Spectator Mode
+[19:10:10] [Folia Async Scheduler Thread Timer/INFO]: [server_waypoint_core] Loaded config Config{serverId=-1266857939, defaultPageLimit=10, defaultNavigationMethods=[ACTIONBAR], CommandPermission=CommandPermission{privateList=0, privateAdd=0, privateEdit=0, privateRemove=0, privateNavigate=0, privateTp=2, add=0, edit=0, remove=0, navigate=0, tp=2, reload=2, upload=2, uploadDelete=4, remoteList=0, remoteTp=2}, Features={addWaypointFromChatSharing=true, sendXaerosWorldId=true, compressChunkedMessages=true}}
+[19:10:10] [Folia Async Scheduler Thread Timer/INFO]: [server_waypoint.actions] action=reload player=CONSOLE player_id=non-player sender=CONSOLE sender_id=non-player outcome=completed
+[19:10:10] [Server thread/INFO]: ✔ Reloaded the configuration and language files
+[19:10:25] [Server thread/INFO]: Alice issued server command: /wp private list all
+[19:10:31] [Server thread/INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/private-waypoints/10920508-d5d8-3eed-93d2-92f193afe7d7/minecraft$overworld.json
+[19:10:31] [Server thread/INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/private-waypoints/10920508-d5d8-3eed-93d2-92f193afe7d7/minecraft$the_nether.json
+[19:10:31] [Server thread/INFO]: [server_waypoint.actions] action=edit player=Alice player_id=10920508-d5d8-3eed-93d2-92f193afe7d7 sender=CONSOLE sender_id=non-player outcome=success dimension=minecraft:overworld list=Homes waypoint=Base new_waypoint=Base
+[19:10:31] [Server thread/INFO]: Viewed as Alice
+✔ Updated the description
+Overworld › Homes › [BA] Base
+[✎] Display name: Base
+[✎] Identifier: Base
+[✎] Initials: BA
+[✎] Icon: none
+[✎] Position: 12, 80, -30 [Here]
+[✎] Color: █ #8BD267
+[✎] Yaw: 0° (south)
+[✎] Visibility: Global
+[✎] Keywords: none
+[✎] Description: RetainedAboveQuota [×]
+[Navigate] [Teleport] [Remove] [Back]
+[19:10:31] [Server thread/INFO]: Viewed as Bob
+Overworld › Homes › [BA] Base
+[✎] Display name: Base
+[✎] Identifier: Base
+[✎] Initials: BA
+[✎] Icon: none
+[✎] Position: -44, 80, 22 [Here]
+[✎] Color: █ #03E896
+[✎] Yaw: 0° (south)
+[✎] Visibility: Global
+[✎] Keywords: none
+[✎] Description: none
+[Navigate] [Remove] [Back]
+[19:10:40] [Server thread/INFO]: Alice lost connection: Disconnected
+[19:10:40] [Server thread/INFO]: Alice left the game
+[19:10:40] [Server thread/INFO]: Bob lost connection: Disconnected
+[19:10:40] [Server thread/INFO]: Bob left the game
+[19:10:40] [Server thread/INFO]: Stopping the server
+[19:10:40] [Server thread/INFO]: Stopping server
+[19:10:40] [Server thread/INFO]: [server_waypoint_plugin] Disabling ServerWaypoint v4.0.1
+[19:10:40] [Server thread/INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/waypoints/minecraft$overworld.json
+[19:10:40] [Server thread/INFO]: [server_waypoint_core] Saved config file: plugins/ServerWaypoint/config.json
+[19:10:40] [Server thread/INFO]: Saving players
+[19:10:41] [Server thread/INFO]: Saving worlds
+[19:10:41] [Server thread/INFO]: Saving chunks for level 'ServerLevel[task8]'/minecraft:overworld
+[19:10:41] [Server thread/INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'task8'
+[19:10:41] [Server thread/INFO]: [ChunkHolderManager] Halted chunk system for world 'task8'
+[19:10:41] [Server thread/INFO]: [ChunkHolderManager] Saving all chunkholders for world 'task8'
+[19:10:41] [Server thread/INFO]: [ChunkHolderManager] Saved 1001 block chunks, 154 entity chunks, 0 poi chunks in world 'task8' in 0.47s
+[19:10:41] [Server thread/INFO]: Saving chunks for level 'ServerLevel[task8_nether]'/minecraft:the_nether
+[19:10:41] [Server thread/INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'task8_nether'
+[19:10:41] [Server thread/INFO]: [ChunkHolderManager] Halted chunk system for world 'task8_nether'
+[19:10:41] [Server thread/INFO]: [ChunkHolderManager] Saving all chunkholders for world 'task8_nether'
+[19:10:41] [Server thread/INFO]: [ChunkHolderManager] Saved 841 block chunks, 121 entity chunks, 0 poi chunks in world 'task8_nether' in 0.38s
+[19:10:42] [Server thread/INFO]: Saving chunks for level 'ServerLevel[task8_the_end]'/minecraft:the_end
+[19:10:42] [Server thread/INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'task8_the_end'
+[19:10:42] [Server thread/INFO]: [ChunkHolderManager] Halted chunk system for world 'task8_the_end'
+[19:10:42] [Server thread/INFO]: [ChunkHolderManager] Saving all chunkholders for world 'task8_the_end'
+[19:10:42] [Server thread/INFO]: [ChunkHolderManager] Saved 49 block chunks, 49 entity chunks, 0 poi chunks in world 'task8_the_end' in 0.14s
+[19:10:42] [Server thread/INFO]: ThreadedAnvilChunkStorage (task8): All chunks are saved
+[19:10:42] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[19:10:42] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[19:10:42] [Server thread/INFO]: ThreadedAnvilChunkStorage: All dimensions are saved

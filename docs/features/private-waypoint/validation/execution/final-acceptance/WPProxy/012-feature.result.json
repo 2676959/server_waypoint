@@ -1,0 +1,20 @@
+{
+  "SHARED": {
+    "rows": [],
+    "state": "READY"
+  },
+  "PRIVATE": {
+    "rows": [],
+    "state": "READY"
+  },
+  "LOCAL": {
+    "rows": [],
+    "state": "READY"
+  },
+  "profile": {
+    "id": "9dcf37bb-7a6d-4bf1-8423-03d19ee930e6",
+    "name": "Manual late-handshake profile",
+    "teleportCommand": "/execute in {dimension} run tp @s {x} {y} {z} {yaw} ~"
+  },
+  "remoteCount": 0
+}

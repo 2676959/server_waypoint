@@ -1,0 +1,20 @@
+{
+  "SHARED": {
+    "rows": [],
+    "state": "READY"
+  },
+  "PRIVATE": {
+    "rows": [],
+    "state": "READY"
+  },
+  "LOCAL": {
+    "rows": [],
+    "state": "READY"
+  },
+  "profile": {
+    "id": "ae06a9d1-0963-4ec8-8b04-9e31f9f17e6c",
+    "name": "Default",
+    "teleportCommand": "/execute in {dimension} run tp @s {x} {y} {z} {yaw} ~"
+  },
+  "remoteCount": 0
+}

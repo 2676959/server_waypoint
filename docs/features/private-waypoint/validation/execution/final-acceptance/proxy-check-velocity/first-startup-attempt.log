@@ -1,0 +1,10 @@
+[22:16:00 INFO]: Booting up Velocity 4.2.0...
+[22:16:01 INFO]: Connections will use kqueue channels, libdeflate (macOS ARM64 / Apple Silicon) compression, native (macOS ARM64 / Apple Silicon) ciphers
+[22:16:01 INFO]: The forwarding-secret-file does not exist. A new file has been created at null
+[33;1m[22:16:01 WARN]: The proxy is running in offline mode! This is a security risk and you will NOT receive any support!
+[m[33;1m[22:16:01 WARN]: Player info forwarding is disabled! All players will appear to be connecting from the proxy and will have offline-mode UUIDs.
+[m[31;1m[22:16:01 ERROR]: Server 'lobby' for forced host 'lobby.example.com' does not exist
+[m[31;1m[22:16:01 ERROR]: Server 'factions' for forced host 'factions.example.com' does not exist
+[m[31;1m[22:16:01 ERROR]: Server 'minigames' for forced host 'minigames.example.com' does not exist
+[m[31;1m[22:16:01 ERROR]: Your configuration is invalid. Velocity will not start up until the errors are resolved.
+[m

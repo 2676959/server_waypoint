@@ -1,0 +1,17 @@
+{
+  "chat": [
+    {
+      "text": "WPProxy joined the game",
+      "commands": [
+        "/tell WPProxy "
+      ]
+    }
+  ],
+  "position": [
+    8.5,
+    173.0,
+    9.5,
+    "minecraft:overworld"
+  ],
+  "screen": "null"
+}

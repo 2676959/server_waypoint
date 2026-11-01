@@ -1,6 +1,75 @@
 # Server setup and command reference
 
-Use the [quick-start guide](../../README.md) for installation and your first waypoint. This reference covers full command options, map uploads, server settings and Velocity setup for 4.0.0.
+Use the [quick-start guide](../../README.md) for installation and your first waypoint. This reference covers full command options, waypoint collections, map uploads, server settings and Velocity setup for the current source tree.
+
+## Shared, Private and Local waypoints
+
+Collections keep their own lists and waypoints. `Homes / Base` can exist in all three with different coordinates; editing one does not change the others. The waypoint's `global` visibility property controls marker visibility, not who owns or can read its collection.
+
+| Collection | Where it is saved | How to use it |
+| --- | --- | --- |
+| Shared | On the server, available through its existing permissions | `/wp …` or the mod's Shared view |
+| Private | On the server, in a separate collection for your player UUID | `/wp private …`, including without a client mod, or the mod's Private view |
+| Local | On your client, in the selected account/world profile | The mod's Local view, on singleplayer worlds or any server |
+
+### Private commands and permissions
+
+Run `/wp private` for your private menu. Add `private` after `wp` to use the existing `add`, `list`, `details`, `edit`, `remove`, `restore`, `navigate`, `tp` and `help` commands with your own collection. The remaining arguments, quoting, properties and filters work as described below. For example:
+
+```text
+/wp private add 12 64 -30 Homes Base
+/wp private list
+/wp private details waypoint minecraft:overworld Homes Base
+/wp private navigate minecraft:overworld Homes Base
+/wp private tp minecraft:overworld Homes Base
+```
+
+Ordinary players can browse, add, edit, remove, restore and navigate by default. Private teleport defaults to permission level 2. The nodes are `server_waypoint.command.private.list`, `.add`, `.edit`, `.remove`, `.navigate` and `.tp`; the corresponding `CommandPermission` settings are `privateList`, `privateAdd`, `privateEdit`, `privateRemove`, `privateNavigate` and `privateTp`. `privateList` also controls client snapshots and details; `privateAdd` controls restore and copying into Private. Shared grants do not grant Private actions.
+
+Private changes give feedback to the executor and synchronize only to the owner. They do not appear in Shared announcements, remote catalogs, or map-mod upload/download operations. Private commands need an executing player: bare console/RCON execution cannot choose an owner. `/execute as <player> run wp private …` uses that player's collection and the existing **Viewed as** feedback. Operators with filesystem or impersonation access can still access the data.
+
+Restore links expire after ten minutes and work once, for the same player and collection. A failed restore caused by a name conflict or quota does not consume the token. Shared and Private navigation use one active session per player: starting either replaces the previous target.
+
+### Local profiles, manager views and copying
+
+The client manager starts in **Combined**, which shows Shared, Private and Local entries with their sources. Its collection dropdown also offers each collection alone. Search, sorting and selection retain the source even when identifiers match. Remote browsing has its own toggle and stays read-only. Enabled markers from the current collections render independently of the manager view; Local needs neither a server installation nor another map mod.
+
+**Add** defaults to Local in Combined, or to the collection of a single-source view. Check the form's Collection destination before saving. **Copy** opens an add draft with detached waypoint properties; choose its destination and resolve any name conflict before saving. Cancelling creates nothing. Copies are independent afterward. Server permissions and Private quotas still apply. A profile or connection change makes an open form's captured destination obsolete; it cannot silently save into the replacement store.
+
+Use the **Local waypoint profiles** button above the manager's panels to create, select, rename or delete a profile and edit its teleport command. Each profile has independent waypoint files and a UUID; renaming its display name does not move its data. Deleting the last profile creates an empty Default profile. Profiles are isolated by account and server host/port, or by account and singleplayer save. Back up Local data before deleting profiles.
+
+On first join, Local starts with Default. A compatible server's backend identity selects its saved profile binding. An unfamiliar backend binds an unused fallback profile or creates an empty profile when the fallback already belongs to another backend. A manual selection takes precedence over a late identity announcement and is saved for reconnects. Behind an address whose servers do not provide identities, select the appropriate profile manually. Profiles are saved before switching or leaving; a save failure is reported and a failed switch keeps the outgoing profile active.
+
+### Local teleport command
+
+Each Local profile starts with:
+
+```text
+/execute in {dimension} run tp @s {x} {y} {z} {yaw} ~
+```
+
+The supported placeholders are exactly `{dimension}`, `{x}`, `{y}`, `{z}` and `{yaw}`. For a Nether waypoint at `(-12, 64, 30)` with yaw `90`, the default submits `execute in minecraft:the_nether run tp @s -12 64 30 90 ~`. Set a command your server accepts; the server decides whether you have permission. Sending the command does not confirm that you arrived.
+
+Blank commands, unknown or unbalanced placeholders, control characters and commands exceeding the connection's length limit are rejected. A template without `{dimension}` can only target your current dimension. Local storage and editing do not require teleport permission.
+
+### Private quotas and backups
+
+Private limits apply per player across dimensions, counting empty lists. Configure them in the server's `config.json`:
+
+```json
+{
+    "privateWaypoints": {
+        "maxWaypointsPerPlayer": 1000,
+        "maxListsPerPlayer": 100
+    }
+}
+```
+
+Zero means unlimited; negative values are invalid. `/wp reload` applies valid quota changes. Lowering a quota retains existing data and still permits edits, renames and deletion. A rejected addition does not create an empty list.
+
+Dedicated-server Private files live in `private-waypoints/<player-uuid>/` beside `config.json`; integrated-server Private files live in `<world-save>/server_waypoint/private-waypoints/<player-uuid>/`. Shared backups of `waypoints/` do not include them.
+
+Multiplayer Local files live in `<game-directory>/server_waypoint/local/<account-uuid>/<address-digest>/`; singleplayer Local files live in `<world-save>/server_waypoint/client-local/<account-uuid>/`. Back up each directory's `index.json` and `profiles/` together. The address digest includes the normalized host and port; it is not the server's display name. Each `profiles/<profile-uuid>/` contains dimension JSON files. Stop the client/server before editing its files. No automatic merging or copying occurs between these stores.
 
 ## Commands
 
@@ -29,7 +98,7 @@ On Minecraft 1.21.9 and later, player chat can show supported vanilla item icons
     - Catalog synchronization starts when cross-server configuration is enabled. See [Velocity runtime setup](../features/cross-server/specs/cross-server-velocity-runtime.md) and [remote catalog queries](../features/cross-server/specs/cross-server-catalog-queries.md).
 - `/wp remote tp <server> <dimension> <list> <waypoint>` requests a teleport using exact cached identities (quote names with spaces). Stale or missing targets fail before preparation; the player stays on the source until destination preparation and fresh permission checks succeed, and the destination confirms the arrival. See [remote teleport initiation](../features/cross-server/specs/cross-server-source-teleport.md).
     - Velocity and dedicated backend runtime integration is implemented and disabled by default. Suggestions use only the local cache. Use unquoted dimension identifiers such as `minecraft:overworld` or `overworld` (default namespace: `minecraft`). See [configuration and validation](../features/cross-server/specs/cross-server-velocity-runtime.md).
-- `/wp reload` reloads `config.json` and the translation files in the `lang/` directory beside it (see [configuration paths](#server-configurations)). `defaultPageLimit`, `defaultNavigationMethods`, `CommandPermission`, `addWaypointFromChatSharing` and `compressChunkedMessages` apply at once; `serverId`, `cross-server.json` and turning on `sendXaerosWorldId` need a restart. Waypoint files are not reloaded, so edit them while the server is stopped.
+- `/wp reload` reloads `config.json` and the translation files in the `lang/` directory beside it (see [configuration paths](#server-configurations)). `defaultPageLimit`, `defaultNavigationMethods`, `CommandPermission`, `privateWaypoints`, `addWaypointFromChatSharing` and `compressChunkedMessages` apply at once; `serverId`, `cross-server.json` and turning on `sendXaerosWorldId` need a restart. Waypoint files are not reloaded, so edit them while the server is stopped.
 - `/wp remove` removes a waypoint by identifier and answers with a temporary, single-use Restore link.
     - `/wp remove <dimension> <list-identifier>` removes an empty waypoint list.
 - `/wp restore <token>` restores a waypoint removed in the last 10 minutes. Each token works once.
@@ -223,7 +292,7 @@ Display names are optional presentation overrides edited separately with `/wp ed
 
 Messages follow each player's Minecraft language setting without requiring the client mod. Bundled languages include English, Simplified Chinese, Traditional Chinese, Hong Kong Chinese, Spanish and Hebrew. Help translate on [Crowdin](https://crowdin.com/project/server-waypoint).
 
-English and Simplified Chinese include every current server and client translation key. The other bundled languages fall back to English for some client controls and server messages. Key coverage does not establish translation quality; see the [translation credits and human review status](../../TRANSLATOR_CREDITS.md).
+Bundled locale coverage is checked separately from fluent-language review. Custom files with missing keys fall back to bundled translations; see the [translation credits and human review status](../../TRANSLATOR_CREDITS.md).
 
 ### Add translations
 
@@ -278,7 +347,7 @@ Paper, Folia, Purpur:
 
 `<server-root>/plugins/ServerWaypoint/config.json`
 
-`/wp reload` applies changes to `defaultPageLimit`, `defaultNavigationMethods`, `CommandPermission`, `addWaypointFromChatSharing` and `compressChunkedMessages`. Changes to `serverId`, turning on `sendXaerosWorldId` and changes to `cross-server.json` take effect after a restart.
+`/wp reload` applies changes to `defaultPageLimit`, `defaultNavigationMethods`, `CommandPermission`, `privateWaypoints`, `addWaypointFromChatSharing` and `compressChunkedMessages`. Changes to `serverId`, turning on `sendXaerosWorldId` and changes to `cross-server.json` take effect after a restart.
 
 ### Default Page Limit
 Sets the page limit `L` that `/wp list` and `/wp remote list` use when the command does not include `limit`: flat views and single lists show `L` rows, while the tree view, the one-line-per-list view and the dimension and server lists hold `L + 5` lines. Values are constrained to `1-100`, and the default is `10`. This setting takes effect after `/wp reload`.
@@ -309,7 +378,7 @@ Remote browsing uses `server_waypoint.command.remote.list` (`remoteList`, level 
 Remote teleport source authorization requires `server_waypoint.command.remote.tp` (`remoteTp`,
 level 2), independently of the source's local teleport and browsing permissions. Destination
 preparation checks both `server_waypoint.command.tp` and `server_waypoint.command.remote.tp`,
-and arrival rechecks both destination permissions. Local waypoint teleportation still requires only `tp`.
+and arrival rechecks both destination permissions. Shared waypoint teleportation still requires only `tp`; Private uses `privateTp`. Client-local teleports submit the profile's ordinary server command and follow that command's permissions.
 Paper uses the vanilla command-source level for unset nodes; explicit permission grants or denials
 take precedence. Fabric's permissions API supports node overrides; the current Forge/NeoForge
 adapters use vanilla levels.
@@ -331,6 +400,13 @@ Default value:
       "navigate": 0,
       // /wp tp
       "tp": 2,
+      // /wp private list, details and snapshots
+      "privateList": 0,
+      "privateAdd": 0,
+      "privateEdit": 0,
+      "privateRemove": 0,
+      "privateNavigate": 0,
+      "privateTp": 2,
       // /wp reload
       "reload": 2,
       // /wp upload xaero

@@ -1,0 +1,15 @@
+{
+    "source": "ea91edcb",
+    "production_changes": false,
+    "main_multiplayer": "PASS",
+    "folia": "PASS",
+    "fabric": "PASS",
+    "velocity_transfer_and_late_handshake": "PASS",
+    "copy_permission_quota_and_navigation_retarget": "PASS",
+    "unmodified_server_markers": "PASS",
+    "locale_capture_count": 30,
+    "hover_feature_assertions": "PASS",
+    "hover_strict_runner": "FAIL (offline account/Realms services)",
+    "os_input": "not certified: CUA did not expose the Java app",
+    "linguistic_review": "Codex review; no native-speaker sign-off"
+}

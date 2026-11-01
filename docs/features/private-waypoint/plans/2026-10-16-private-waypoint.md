@@ -17,7 +17,7 @@ JUnit 5, Gradle Kotlin DSL, and Stonecutter across Fabric, Forge, NeoForge, and 
 
 **Spec:** [Private and local waypoint design](../specs/2026-10-16-private-waypoint-design.md).
 
-Status: implementation in progress; Tasks 1–2 verified on 2026-10-23, Tasks 3–6 on 2026-10-28, and Task 7 on 2026-10-29. Task 8 remains pending. Prepared on 2026-10-16 against branch
+Status: implementation in progress; Tasks 1–2 verified on 2026-10-23, Tasks 3–6 on 2026-10-28, and Task 7 on 2026-10-29. Task 8 platform/documentation and planned live acceptance were completed on 2026-10-31; evidence and certification boundaries are tracked in the validation checklist. Prepared on 2026-10-16 against branch
 `feature/private-waypoint`. Exact proposed class names below are implementation contracts,
 not claims that those classes already exist.
 
@@ -321,20 +321,20 @@ a composed render scene. Reuse the screen-owned `IconDropdownMenu` for source sw
 **Files:** update `docs/tips/server-guide.md`, GUI guide and relevant feature indexes; fill
 the feature validation record only with executed evidence.
 
-- [ ] Run the full common suite and representative versioned loader/Paper checks below.
-- [ ] Run the validation checklist with two player identities, one vanilla client, and a modded
+- [x] Run the full common suite and representative versioned loader/Paper checks below.
+- [x] Run the validation checklist with two player identities, one vanilla client, and a modded
   client. Verify actual target coordinates after authorized teleports.
-- [ ] Test Local on a server without Server Waypoint, an incompatible backend, a singleplayer save,
+- [x] Test Local on a server without Server Waypoint, an incompatible backend, a singleplayer save,
   and multiple worlds behind one address. Verify persistence by reconnecting/restarting.
-- [ ] Inspect all four views at a constrained viewport and with long translated labels. Exercise
+- [x] Inspect all four views at a constrained viewport and with long translated labels. Exercise
   dropdown overlap, wheel handling, keyboard focus, Escape, copy cancellation, and profile dialogs.
-- [ ] Verify existing Shared map synchronization still works and receives no Local/Private events.
+- [x] Verify existing Shared map synchronization still works and receives no Local/Private events.
   No other map mod is required for the local feature.
-- [ ] Add user-facing documentation distinguishing collection storage, permissions, quotas,
+- [x] Add user-facing documentation distinguishing collection storage, permissions, quotas,
   profiles, custom teleport commands, and explicit copy behavior.
-- [ ] Run whitespace/link/translation checks. Record exact commands, targets, outcomes, screenshots
+- [x] Run whitespace/link/translation checks. Record exact commands, targets, outcomes, screenshots
   or log locations, and remaining proof gaps. Leave unexecuted items unchecked.
-- [ ] Review the whole feature diff and remaining working-tree changes. Do not commit or publish.
+- [x] Review the whole feature diff and remaining working-tree changes. Do not commit or publish.
 
 ## Verification commands and proof boundaries
 

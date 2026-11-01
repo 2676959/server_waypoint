@@ -1,0 +1,36 @@
+{
+  "SHARED": {
+    "rows": [
+      {
+        "name": "Base",
+        "list": "Homes",
+        "dimension": "minecraft:overworld",
+        "x": 100,
+        "description": ""
+      }
+    ],
+    "state": "READY"
+  },
+  "PRIVATE": {
+    "rows": [
+      {
+        "name": "Base",
+        "list": "Homes",
+        "dimension": "minecraft:overworld",
+        "x": -44,
+        "description": ""
+      }
+    ],
+    "state": "READY"
+  },
+  "LOCAL": {
+    "rows": [],
+    "state": "READY"
+  },
+  "profile": {
+    "id": "4b3d8a44-4920-40a7-9b67-e1e3a2efb254",
+    "name": "Default",
+    "teleportCommand": "/execute in {dimension} run tp @s {x} {y} {z} {yaw} ~"
+  },
+  "remoteCount": 0
+}

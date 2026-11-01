@@ -79,7 +79,7 @@ also releases obsolete requests. Private and Shared replies use the same routing
 `WaypointFormPatch.draftDisplayName` preserves an intentionally empty override in a copied draft,
 while clearing a previously named override falls back to the new identifier. Add forms with copied
 metadata show the existing Display name row and reuse the same controls, checks, popup and layout.
-Task 7 supplies collection/destination/profile selectors and Copy buttons; these APIs do not change
+The manager supplies collection/destination/profile selectors and Copy buttons; these APIs do not change
 which view the existing manager opens.
 
 ## How the packages work together
@@ -2224,3 +2224,12 @@ The shared visual-bounds lookup includes padding for trees and settings lists wi
 row hover or input handling. The waypoint list, details, client settings and theme variable list
 all use this renderer. The theme gallery still has no scrollbar sample; hover the variable list
 to preview `scrollbar.*` colors.
+
+### Collection acceptance evidence
+
+Player-facing collection, profile, copying and teleport behavior is described in the
+[server guide](../server-guide.md#shared-private-and-local-waypoints). Use the
+[private/local validation checklist](../../features/private-waypoint/validation/2026-10-16-private-waypoint-checklist.md)
+for acceptance. Unit tests and compilation establish collection routing and layout contracts;
+record actual client/server interactions separately for visible markers, native screen input,
+multiplayer privacy and teleport arrival. Native game-thread clicks do not certify physical input.

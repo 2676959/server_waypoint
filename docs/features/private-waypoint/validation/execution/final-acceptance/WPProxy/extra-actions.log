@@ -1,0 +1,45 @@
+1 feature:ready
+2 cmd:wp add 100 80 100 Homes Base
+3 cmd:wp private add 12 80 -30 Homes Base
+4 feature:scene
+1 feature:ready
+2 cmd:wp add 100 80 100 Homes Base
+3 cmd:wp private add 12 80 -30 Homes Base
+4 feature:scene
+1 feature:ready
+2 cmd:wp add 100 80 100 Homes Base
+3 cmd:wp private add 12 80 -30 Homes Base
+4 feature:scene
+5 feature:tombstone
+6 cmd:wp private add 12 80 -30 Homes Base
+7 cmd:wp private remove minecraft:overworld Homes Base
+8 cmd:wp private add 12 80 -30 Homes Base
+9 cmd:wp private restore 4NUOqYr7cSm-JKJ9nc3s-6Dp
+10 cmd:wp private remove minecraft:overworld Homes Base
+11 cmd:wp private restore 4NUOqYr7cSm-JKJ9nc3s-6Dp
+12 feature:locales
+1 feature:ready
+2 feature:remote-and-collapse
+3 feature:locales
+1 leave
+1 connect:127.0.0.1:25648
+2 feature:ready
+3 feature:seed-local
+4 cmd:wp private add 12 80 -30 Homes Base
+5 cmd:wp add 100 80 100 Homes Base
+7 feature:copy-denied
+1 feature:copy-quota
+2 cmd:wp private navigate minecraft:overworld Homes Base bossbar
+3 feature:bossbar-count
+4 cmd:wp navigate minecraft:overworld Homes Base actionbar
+5 feature:bossbar-count
+6 cmd:wp navigate
+1 feature:world-frame
+2 leave
+1 connect:127.0.0.1:25648
+2 feature:local-marker
+3 leave
+4 connect:127.0.0.1:25648
+5 feature:local-marker
+6 feature:world-frame
+7 leave

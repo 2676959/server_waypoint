@@ -1,0 +1,7 @@
+READY a
+READY b
+Traceback (most recent call last):
+  File "/Volumes/ssd/sw-private-final-20261031/proxy_acceptance.py", line 11, in <module>
+    if proxy.poll()!=None or time.time()>until:raise RuntimeError('proxy startup')
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: proxy startup

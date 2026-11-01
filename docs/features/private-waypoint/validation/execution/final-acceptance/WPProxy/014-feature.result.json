@@ -1,0 +1,35 @@
+{
+  "SHARED": {
+    "rows": [],
+    "state": "READY"
+  },
+  "PRIVATE": {
+    "rows": [],
+    "state": "READY"
+  },
+  "LOCAL": {
+    "rows": [
+      {
+        "x": 12,
+        "description": "",
+        "name": "Base",
+        "list": "Homes",
+        "dimension": "minecraft:overworld"
+      },
+      {
+        "x": -12,
+        "description": "Complete copy metadata",
+        "name": "Rich",
+        "list": "Source",
+        "dimension": "minecraft:overworld"
+      }
+    ],
+    "state": "READY"
+  },
+  "profile": {
+    "id": "dc91842d-dc9c-49b9-abf9-200c606a4ff0",
+    "name": "Default",
+    "teleportCommand": "/execute in {dimension} run tp @s {x} {y} {z} {yaw} ~"
+  },
+  "remoteCount": 0
+}

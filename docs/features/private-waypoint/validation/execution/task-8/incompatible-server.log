@@ -1,0 +1,110 @@
+Starting org.bukkit.craftbukkit.Main
+[19:16:21 INFO]: [bootstrap] Running Java 25 (OpenJDK 64-Bit Server VM 25.0.4.1; Homebrew Homebrew) on Mac OS X 26.5 (aarch64)
+[19:16:21 INFO]: [bootstrap] Loading Paper 26.1.2-63-main@711c5de (2026-05-11T08:20:02Z) for Minecraft 26.1.2
+[19:16:21 INFO]: [PluginInitializerManager] Initializing plugins...
+[19:16:22 INFO]: [PluginInitializerManager] Initialized 1 plugin
+[19:16:22 INFO]: [PluginInitializerManager] Paper plugins (1):
+ - ServerWaypoint (4.0.0)
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.joml.MemUtil$MemUtilUnsafe (file:/Volumes/ssd/sw-private-task8-20261031/multiplayer/libraries/org/joml/joml/1.10.8/joml-1.10.8.jar)
+WARNING: Please consider reporting this to the maintainers of class org.joml.MemUtil$MemUtilUnsafe
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[19:16:24 INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, profilesHost=https://api.mojang.com, name=PROD]
+[19:16:25 INFO]: Loaded 1515 recipes
+[19:16:25 INFO]: Loaded 1617 advancements
+[19:16:25 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Initialising converters for DataConverter...
+[19:16:25 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Finished initialising converters for DataConverter in 209.6ms
+[19:16:25 INFO]: Starting minecraft server version 26.1.2
+[19:16:25 INFO]: Loading properties
+[19:16:25 INFO]: This server is running Paper version 26.1.2-63-main@711c5de (2026-05-11T08:20:02Z) (Implementing API version 26.1.2.build.63-stable)
+[19:16:25 INFO]: [spark] This server bundles the spark profiler. For more information please visit https://docs.papermc.io/paper/profiling
+[19:16:25 INFO]: Server Ping Player Sample Count: 12
+[19:16:25 INFO]: Using 4 threads for Netty based IO
+[19:16:25 INFO]: [MoonriseCommon] Paper is using 2 worker threads, 1 I/O threads
+[19:16:25 INFO]: Default game type: SURVIVAL
+[19:16:25 INFO]: Generating keypair
+>   [19:16:26 INFO]: Starting Minecraft server on 127.0.0.1:25639
+>   [19:16:26 INFO]: Paper: Using libdeflate (macOS ARM64 / Apple Silicon) compression from Velocity.
+>   [19:16:26 INFO]: Paper: Using native (macOS ARM64 / Apple Silicon) cipher from Velocity.
+>   [19:16:26 INFO]: [server_waypoint_plugin] Loading server plugin ServerWaypoint v4.0.0
+>   [19:16:26 INFO]: Server permissions file permissions.yml is empty, ignoring it
+>   [33;1m[19:16:26 WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[m>   [33;1m[19:16:26 WARN]: The server will make no attempt to authenticate usernames. Beware.
+[m>   [33;1m[19:16:26 WARN]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[m>   [33;1m[19:16:26 WARN]: To change this, set "online-mode" to "true" in the server.properties file.
+[m>   [19:16:26 INFO]: Preparing level "incompatible"
+>   [19:16:27 INFO]: Loading 0 persistent chunks for level 'minecraft:overworld'...
+>   [19:16:27 INFO]: Preparing spawn area: 100%
+>   [19:16:27 INFO]: Prepared spawn area in 1 ms
+>   [19:16:27 INFO]: Loading 0 persistent chunks for level 'minecraft:the_nether'...
+>   [19:16:27 INFO]: Prepared spawn area in 0 ms
+>   [19:16:27 INFO]: Loading 0 persistent chunks for level 'minecraft:the_end'...
+>   [19:16:27 INFO]: Prepared spawn area in 0 ms
+>   [19:16:27 INFO]: Done preparing level "incompatible" (0.290s)
+>   [19:16:27 INFO]: [server_waypoint_plugin] Enabling ServerWaypoint v4.0.0
+>   [19:16:27 INFO]: [server_waypoint_translator] Internal translations: zh_tw, zh_hk, en_us, zh_cn, he_il, es_es
+>   [19:16:27 INFO]: [server_waypoint_core] Loaded config Config{serverId=1559723756, defaultPageLimit=10, defaultNavigationMethods=[ACTIONBAR], CommandPermission=CommandPermission{add=0, edit=0, remove=0, navigate=0, tp=2, reload=2, upload=2, uploadDelete=4, remoteList=0, remoteTp=2}, Features={addWaypointFromChatSharing=true, sendXaerosWorldId=true, compressChunkedMessages=true}}
+>   [19:16:27 INFO]: [server_waypoint_core] Loaded 0 languages: 
+>   [19:16:27 INFO]: [server_waypoint_core] Cross-server backend startup: DISABLED
+>   [19:16:27 INFO]: [spark] Starting background profiler...
+>   [19:16:27 INFO]: Saving chunks for level 'ServerLevel[incompatible]'/minecraft:overworld
+>   [19:16:27 INFO]: Saving chunks for level 'ServerLevel[incompatible]'/minecraft:the_nether
+>   [19:16:27 INFO]: Saving chunks for level 'ServerLevel[incompatible]'/minecraft:the_end
+>   [19:16:27 INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+>   [19:16:27 INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+>   [19:16:27 INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+>   [19:16:27 INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+>   [19:16:27 INFO]: Running delayed init tasks
+>   [19:16:27 INFO]: Done (7.436s)! For help, type "help"
+>   [33;1m[19:16:28 WARN]: *** You are running an outdated version of Minecraft, which is 4 release(s) and 11 build(s) behind!
+[m>   [33;1m[19:16:28 WARN]: *** Please update to the latest stable version on https://papermc.io/downloads/paper ***
+[m>   [19:16:28 INFO]: UUID of player SwLiveTest is 5f938de1-5274-31b3-bcea-2b976aff4632
+>   [19:16:29 INFO]: [93mSwLiveTest joined the game[0m
+>   [19:16:29 INFO]: SwLiveTest[/127.0.0.1:51064] logged in with entity id 44 at ([minecraft:overworld]-19.5, 73.0, -19.5)
+>   [19:16:29 INFO]: [server_waypoint_core] client join with protocol version: 3
+>   [33;1m[19:16:29 WARN]: [server_waypoint_core] client version mismatch: 3
+[m>   [19:16:38 INFO]: SwLiveTest lost connection: Disconnected
+>   [19:16:38 INFO]: [93mSwLiveTest left the game[0m
+>   [19:16:38 INFO]: UUID of player SwLiveTest is 5f938de1-5274-31b3-bcea-2b976aff4632
+>   [19:16:38 INFO]: [93mSwLiveTest joined the game[0m
+>   [19:16:38 INFO]: SwLiveTest[/127.0.0.1:51067] logged in with entity id 72 at ([minecraft:overworld]-19.5, 73.0, -19.5)
+>   [19:16:38 INFO]: [server_waypoint_core] client join with protocol version: 3
+>   [33;1m[19:16:38 WARN]: [server_waypoint_core] client version mismatch: 3
+[m>   [19:16:47 INFO]: SwLiveTest lost connection: Disconnected
+>   [19:16:47 INFO]: [93mSwLiveTest left the game[0m
+> >   [19:16:47 INFO]: Stopping the server
+>   [19:16:48 INFO]: Stopping server
+>   [19:16:48 INFO]: [server_waypoint_plugin] Disabling ServerWaypoint v4.0.0
+>   [19:16:48 INFO]: [server_waypoint_core] Saved config file: plugins/ServerWaypoint/config.json
+>   [19:16:48 INFO]: Saving players
+>   [19:16:48 INFO]: Saving worlds
+>   [19:16:48 INFO]: Saving chunks for level 'ServerLevel[incompatible]'/minecraft:overworld
+>   [19:16:48 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:overworld'
+>   [19:16:48 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:overworld'
+>   [19:16:48 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:overworld'
+>   [19:16:48 INFO]: [ChunkHolderManager] Saved 121 block chunks, 121 entity chunks, 0 poi chunks in world 'minecraft:overworld' in 0.29s
+>   [19:16:48 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:overworld'
+>   [19:16:48 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:overworld'
+>   [19:16:48 INFO]: Saving chunks for level 'ServerLevel[incompatible]'/minecraft:the_nether
+>   [19:16:48 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:the_nether'
+>   [19:16:48 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:the_nether'
+>   [19:16:48 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:the_nether'
+>   [19:16:48 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'minecraft:the_nether' in 0.00s
+>   [19:16:48 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:the_nether'
+>   [19:16:48 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:the_nether'
+>   [19:16:48 INFO]: Saving chunks for level 'ServerLevel[incompatible]'/minecraft:the_end
+>   [19:16:48 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:the_end'
+>   [19:16:48 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:the_end'
+>   [19:16:48 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:the_end'
+>   [19:16:48 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'minecraft:the_end' in 0.00s
+>   [19:16:48 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:the_end'
+>   [19:16:48 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:the_end'
+>   [19:16:48 INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+>   [19:16:48 INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+>   [19:16:48 INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+>   [19:16:48 INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+>   [19:16:48 INFO]: Waiting for all RegionFile I/O tasks to complete...
+>   [19:16:48 INFO]: All RegionFile I/O tasks to complete
+>   [19:16:48 INFO]: [MoonriseCommon] Awaiting termination of worker pool for up to 60s...
+>   [19:16:48 INFO]: [MoonriseCommon] Awaiting termination of I/O pool for up to 60s...
+> 

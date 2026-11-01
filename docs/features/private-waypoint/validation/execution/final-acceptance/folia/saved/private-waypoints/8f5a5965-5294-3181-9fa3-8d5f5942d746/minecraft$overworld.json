@@ -1,0 +1,18 @@
+[
+  {
+    "list_name": "Homes",
+    "n": 3,
+    "waypoints": [
+      {
+        "name": "Base",
+        "initials": "BA",
+        "pos": [12, 80, -30],
+        "color": "#89714A",
+        "yaw": 0,
+        "global": true,
+        "keywords": [],
+        "description": "AliceSecret"
+      }
+    ]
+  }
+]

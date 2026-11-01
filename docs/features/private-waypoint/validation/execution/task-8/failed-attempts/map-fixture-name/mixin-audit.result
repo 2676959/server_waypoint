@@ -1,0 +1,54 @@
+PASS
+TRANSFORMED com.mamiyaotaru.voxelmap.persistent.GuiPersistentMap
+TRANSFORMED net.minecraft.class_918
+OPTIONAL_ABSENT net.minecraft.client.gui.render.GuiRenderer
+OPTIONAL_ABSENT net.minecraft.client.gui.render.pip.PictureInPictureRenderer
+OPTIONAL_ABSENT net.minecraft.client.gui.render.state.GuiItemRenderState
+TRANSFORMED xaero.common.gui.GuiWaypoints
+TRANSFORMED xaero.common.gui.dropdown.DropDownWidget
+TRANSFORMED com.mamiyaotaru.voxelmap.VoxelMap
+TRANSFORMED com.mamiyaotaru.voxelmap.gui.GuiAddWaypoint
+TRANSFORMED com.mamiyaotaru.voxelmap.gui.GuiSlotWaypoints
+TRANSFORMED com.mamiyaotaru.voxelmap.gui.GuiSlotWaypoints$WaypointItem
+TRANSFORMED com.mamiyaotaru.voxelmap.gui.GuiWaypoints
+TRANSFORMED com.mamiyaotaru.voxelmap.persistent.GuiPersistentMap
+TRANSFORMED com.mamiyaotaru.voxelmap.util.WaypointContainer
+TRANSFORMED net.minecraft.class_1531
+TRANSFORMED net.minecraft.class_1533
+TRANSFORMED net.minecraft.class_1542
+TRANSFORMED net.minecraft.class_1661
+TRANSFORMED net.minecraft.class_1703
+TRANSFORMED net.minecraft.class_1714
+TRANSFORMED net.minecraft.class_1759
+TRANSFORMED net.minecraft.class_2168
+TRANSFORMED net.minecraft.class_22
+TRANSFORMED net.minecraft.class_304
+TRANSFORMED net.minecraft.class_310
+TRANSFORMED net.minecraft.class_3222
+TRANSFORMED net.minecraft.class_329
+TRANSFORMED net.minecraft.class_3324
+TRANSFORMED net.minecraft.class_342
+TRANSFORMED net.minecraft.class_3910
+TRANSFORMED net.minecraft.class_4185
+TRANSFORMED net.minecraft.class_634
+TRANSFORMED net.minecraft.class_7298
+TRANSFORMED net.minecraft.class_757
+TRANSFORMED net.minecraft.class_761
+TRANSFORMED net.minecraft.class_7975
+TRANSFORMED net.minecraft.class_8168
+TRANSFORMED net.minecraft.class_8172
+TRANSFORMED net.minecraft.class_9279
+TRANSFORMED xaero.common.gui.GuiWaypoints
+TRANSFORMED xaero.common.gui.GuiWaypoints$List
+TRANSFORMED xaero.common.minimap.waypoints.Waypoint
+TRANSFORMED xaero.hud.minimap.waypoint.render.WaypointMapRenderer
+TRANSFORMED xaero.hud.minimap.world.state.MinimapWorldStateUpdater
+TRANSFORMED xaero.map.gui.GuiMap
+TRANSFORMED xaero.map.mods.gui.Waypoint
+TRANSFORMED xaero.map.mods.gui.WaypointReader
+PASS native set identity=sw␟Bases
+PASS World Map mixin access interface
+PASS applied handlers xaero.map.mods.gui.WaypointReader [handler$zpi000$server_waypoint$sw$addDropDownOption, sw$getFallbackY, sw$getListName]
+PASS applied handlers xaero.common.gui.dropdown.DropDownWidget [localvar$zpd000$server_waypoint$sw$displaySyncedWaypointSetString, modify$zpd000$server_waypoint$sw$useSyncedWaypointSetBackground, localvar$zpd000$server_waypoint$sw$displaySyncedWaypointSetComponent]
+PASS MixinEnvironment.audit
+SUCCESS targets=44

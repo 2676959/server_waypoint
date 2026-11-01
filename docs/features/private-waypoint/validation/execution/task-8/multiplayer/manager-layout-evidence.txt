@@ -1,0 +1,2 @@
+Local reconnect: ready, server sources unavailable, profile=1a018852-b2fe-4661-9780-d7499905eb36, network=INCOMPATIBLE_PROTOCOL
+saved /Volumes/ssd/sw-private-task8-20261031/multiplayer-results-3/26.1.2-Fabric/multiplayer-reconnect.png

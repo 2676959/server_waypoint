@@ -1,0 +1,142 @@
+Starting net.fabricmc.loader.impl.game.minecraft.BundlerClassPathCapture
+[22:14:28] [main/INFO]: Loading Minecraft 1.21.4 with Fabric Loader 0.16.14
+[22:14:28] [main/INFO]: Loading 43 mods:
+	- fabric-api 0.119.3+1.21.4
+	   |-- fabric-api-base 0.4.54+b47eab6b04
+	   |-- fabric-api-lookup-api-v1 1.6.86+b1caf1e904
+	   |-- fabric-biome-api-v1 15.0.6+b1c29d8e04
+	   |-- fabric-block-api-v1 1.0.31+7feeb73304
+	   |-- fabric-block-view-api-v2 1.0.20+9c49cc8c04
+	   |-- fabric-blockrenderlayer-v1 2.0.8+7feeb73304
+	   |-- fabric-client-tags-api-v1 1.1.29+20ea1e2304
+	   |-- fabric-command-api-v1 1.2.62+f71b366f04
+	   |-- fabric-command-api-v2 2.2.41+e496eb1504
+	   |-- fabric-commands-v0 0.2.79+df3654b304
+	   |-- fabric-content-registries-v0 9.1.19+25d1a67604
+	   |-- fabric-convention-tags-v1 2.1.20+7f945d5b04
+	   |-- fabric-convention-tags-v2 2.14.1+aebda09404
+	   |-- fabric-crash-report-info-v1 0.3.6+7feeb73304
+	   |-- fabric-data-attachment-api-v1 1.6.2+e99da0f704
+	   |-- fabric-data-generation-api-v1 22.3.1+0f4e5f5504
+	   |-- fabric-dimensions-v1 4.0.10+7feeb73304
+	   |-- fabric-entity-events-v1 2.0.15+62245bef04
+	   |-- fabric-events-interaction-v0 4.0.4+a4eebcf004
+	   |-- fabric-game-rule-api-v1 1.0.63+7d48d43904
+	   |-- fabric-item-api-v1 11.3.0+ee91fa1f04
+	   |-- fabric-item-group-api-v1 4.2.2+fcb9601404
+	   |-- fabric-key-binding-api-v1 1.0.57+7d48d43904
+	   |-- fabric-keybindings-v0 0.2.55+df3654b304
+	   |-- fabric-lifecycle-events-v1 2.5.4+bf2a60eb04
+	   |-- fabric-loot-api-v2 3.0.38+3f89f5a504
+	   |-- fabric-loot-api-v3 1.0.26+203e6b2304
+	   |-- fabric-message-api-v1 6.0.26+238a33c004
+	   |-- fabric-model-loading-api-v1 4.3.0+ae23723504
+	   |-- fabric-networking-api-v1 4.4.0+db5e668204
+	   |-- fabric-object-builder-api-v1 18.0.14+38b0d59804
+	   |-- fabric-particles-v1 4.0.14+7feeb73304
+	   |-- fabric-recipe-api-v1 8.1.1+640e77ae04
+	   |-- fabric-registry-sync-v0 6.1.11+4a9c1ece04
+	   |-- fabric-renderer-api-v1 5.0.3+50f0feb204
+	   |-- fabric-renderer-indigo 2.0.3+50f0feb204
+	   |-- fabric-rendering-data-attachment-v1 0.3.58+73761d2e04
+	   |-- fabric-rendering-fluids-v1 3.1.19+7feeb73304
+	   |-- fabric-rendering-v1 10.2.1+0d31b09f04
+	   |-- fabric-resource-conditions-api-v1 5.0.13+203e6b2304
+	   |-- fabric-resource-loader-v0 3.1.1+360374ac04
+	   |-- fabric-screen-api-v1 2.0.38+7feeb73304
+	   |-- fabric-screen-handler-api-v1 1.3.118+7feeb73304
+	   |-- fabric-sound-api-v1 1.0.32+7feeb73304
+	   |-- fabric-tag-api-v1 1.0.7+7d48d43904
+	   |-- fabric-transfer-api-v1 5.4.9+efa825c904
+	   \-- fabric-transitive-access-wideners-v1 6.3.2+56e78b9b04
+	- fabricloader 0.16.14
+	   \-- mixinextras 0.4.1
+	- java 25
+	- minecraft 1.21.4
+	- server_waypoint 4.0.1
+[22:14:28] [main/INFO]: SpongePowered MIXIN Subsystem Version=0.8.7 Source=file:/Volumes/ssd/sw-private-final-20261031/fabric/libraries/net/fabricmc/sponge-mixin/0.15.5+mixin.0.8.7/sponge-mixin-0.15.5+mixin.0.8.7.jar Service=Knot/Fabric Env=SERVER
+[22:14:28] [main/INFO]: Compatibility level set to JAVA_21
+[22:14:28] [main/WARN]: Reference map 'server_waypoint-common.refmap.json' for server_waypoint-common.mixins.json could not be read. If this is a development environment you can ignore this message
+[22:14:28] [main/WARN]: Reference map 'server_waypoint-common.refmap.json' for server_waypoint-voxelmap.mixins.json could not be read. If this is a development environment you can ignore this message
+[22:14:28] [main/INFO]: Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.4.1).
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by com.sun.jna.Native in an unnamed module (file:/Volumes/ssd/sw-private-final-20261031/fabric/libraries/net/java/dev/jna/jna/5.15.0/jna-5.15.0.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.joml.MemUtil$MemUtilUnsafe (file:/Volumes/ssd/sw-private-final-20261031/fabric/libraries/org/joml/joml/1.10.8/joml-1.10.8.jar)
+WARNING: Please consider reporting this to the maintainers of class org.joml.MemUtil$MemUtilUnsafe
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[22:14:30] [main/INFO]: Internal translations: es_es, he_il, zh_cn, en_us, zh_hk, zh_tw
+[22:14:30] [main/INFO]: fabric-permissions-api is not loaded, use vanilla permission system
+[22:14:30] [main/INFO]: xaero's mod is not loaded, set sendXaerosWorldId to true by config.json
+[22:14:30] [main/INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, name=PROD]
+[22:14:31] [main/INFO]: No existing world data, creating new world
+[22:14:31] [main/INFO]: Loaded 1370 recipes
+[22:14:31] [main/INFO]: Loaded 1481 advancements
+[22:14:31] [main/INFO]: Applied 0 biome modifications to 0 of 65 new biomes in 477.9 μs
+[22:14:31] [Server thread/INFO]: Created config file at: ./config/server_waypoint/config.json
+[22:14:31] [Server thread/INFO]: Loaded 0 languages: 
+[22:14:31] [Server thread/INFO]: Created waypoints directory at: ./config/server_waypoint/waypoints
+[22:14:31] [Server thread/INFO]: Starting minecraft server version 1.21.4
+[22:14:31] [Server thread/INFO]: Loading properties
+[22:14:31] [Server thread/INFO]: Default game type: SURVIVAL
+[22:14:31] [Server thread/INFO]: Generating keypair
+[22:14:31] [server-waypoint-backend-startup/INFO]: Cross-server backend startup: DISABLED
+[22:14:31] [Server thread/INFO]: Starting Minecraft server on 127.0.0.1:25650
+[22:14:31] [Server thread/INFO]: Using default channel type
+[22:14:31] [Server thread/WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[22:14:31] [Server thread/WARN]: The server will make no attempt to authenticate usernames. Beware.
+[22:14:31] [Server thread/WARN]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[22:14:31] [Server thread/WARN]: To change this, set "online-mode" to "true" in the server.properties file.
+[22:14:31] [Server thread/INFO]: Preparing level "acceptance"
+[22:14:32] [Server thread/INFO]: Preparing start region for dimension minecraft:overworld
+[22:14:32] [Worker-Main-4/INFO]: Preparing spawn area: 2%
+[22:14:33] [Worker-Main-1/INFO]: Preparing spawn area: 18%
+[22:14:33] [Worker-Main-2/INFO]: Preparing spawn area: 51%
+[22:14:34] [Server thread/INFO]: Time elapsed: 1223 ms
+[22:14:34] [Server thread/INFO]: Done (2.501s)! For help, type "help"
+[22:14:35] [Server thread/INFO]: ScriptBob2[/127.0.0.1:51641] logged in with entity id 25 at (40.5, 70.0, -25.5)
+[22:14:35] [Server thread/INFO]: ScriptBob2 joined the game
+[22:14:35] [Server thread/INFO]: ScriptAlice2[/127.0.0.1:51644] logged in with entity id 27 at (31.5, 63.0, -20.5)
+[22:14:35] [Server thread/INFO]: ScriptAlice2 joined the game
+[22:14:39] [Server thread/INFO]: Created waypoints directory at: ./config/server_waypoint/private-waypoints/b2e09e25-6e28-3560-80da-0e80929813e2
+[22:14:39] [Server thread/INFO]: Saved 1 waypoint lists to file: ./config/server_waypoint/private-waypoints/b2e09e25-6e28-3560-80da-0e80929813e2/minecraft$overworld.json
+[22:14:39] [Server thread/INFO]: action=add player=ScriptAlice2 player_id=b2e09e25-6e28-3560-80da-0e80929813e2 sender=ScriptAlice2 sender_id=b2e09e25-6e28-3560-80da-0e80929813e2 outcome=success dimension=minecraft:overworld list=Homes waypoint=Base
+[22:14:40] [Server thread/INFO]: Created waypoints directory at: ./config/server_waypoint/private-waypoints/a61d0242-51f0-32d5-876e-4561b60ec970
+[22:14:41] [Server thread/INFO]: Saved 1 waypoint lists to file: ./config/server_waypoint/private-waypoints/b2e09e25-6e28-3560-80da-0e80929813e2/minecraft$overworld.json
+[22:14:41] [Server thread/INFO]: action=edit player=ScriptAlice2 player_id=b2e09e25-6e28-3560-80da-0e80929813e2 sender=ScriptAlice2 sender_id=b2e09e25-6e28-3560-80da-0e80929813e2 outcome=success dimension=minecraft:overworld list=Homes waypoint=Base new_waypoint=Base
+[22:14:42] [Server thread/INFO]: Saved 1 waypoint lists to file: ./config/server_waypoint/private-waypoints/a61d0242-51f0-32d5-876e-4561b60ec970/minecraft$overworld.json
+[22:14:42] [Server thread/INFO]: action=add player=ScriptBob2 player_id=a61d0242-51f0-32d5-876e-4561b60ec970 sender=ScriptBob2 sender_id=a61d0242-51f0-32d5-876e-4561b60ec970 outcome=success dimension=minecraft:overworld list=Homes waypoint=Base
+[22:14:43] [Server thread/INFO]: action=tp player=ScriptAlice2 player_id=b2e09e25-6e28-3560-80da-0e80929813e2 sender=ScriptAlice2 sender_id=b2e09e25-6e28-3560-80da-0e80929813e2 outcome=success dimension=minecraft:overworld list=Homes waypoint=Base
+[22:14:45] [Server thread/INFO]: ScriptAlice2 has the following entity data: [12.5d, 80.0d, -29.5d]
+[22:14:45] [Server thread/INFO]: action=navigation player=ScriptAlice2 player_id=b2e09e25-6e28-3560-80da-0e80929813e2 sender=ScriptAlice2 sender_id=b2e09e25-6e28-3560-80da-0e80929813e2 outcome=navigation_started dimension=minecraft:overworld list=Homes waypoint=Base method=-
+[22:14:47] [Server thread/INFO]: ScriptAlice2 has the following entity data: [12.5d, 80.0d, -29.5d]
+[22:14:47] [Server thread/INFO]: ✘ Only players can do that.
+[22:14:47] [Server thread/INFO]: Viewed as ScriptBob2
+Overworld ⏷  1 list · 1 waypoint · All
+Homes  +
+  [BA] Base · 92 m
+Lists · Tree · Flat · Search · New list
+Sort Default · Name · Distance · Color
+[22:14:48] [Server thread/INFO]: action=navigation_stop player=ScriptAlice2 player_id=b2e09e25-6e28-3560-80da-0e80929813e2 sender=ScriptAlice2 sender_id=b2e09e25-6e28-3560-80da-0e80929813e2 outcome=success dimension=minecraft:overworld list=Homes waypoint=Base
+[22:14:49] [Server thread/INFO]: ScriptAlice2 has the following entity data: [12.5d, 80.0d, -29.5d]
+[22:14:50] [Server thread/INFO]: Saved 1 waypoint lists to file: ./config/server_waypoint/private-waypoints/b2e09e25-6e28-3560-80da-0e80929813e2/minecraft$overworld.json
+[22:14:50] [Server thread/INFO]: action=remove player=ScriptAlice2 player_id=b2e09e25-6e28-3560-80da-0e80929813e2 sender=ScriptAlice2 sender_id=b2e09e25-6e28-3560-80da-0e80929813e2 outcome=success dimension=minecraft:overworld list=Homes waypoint=Base
+[22:14:52] [Server thread/INFO]: ScriptAlice2 lost connection: Disconnected
+[22:14:52] [Server thread/INFO]: ScriptAlice2 left the game
+[22:14:56] [Server thread/INFO]: ScriptBob2 lost connection: Disconnected
+[22:14:56] [Server thread/INFO]: ScriptBob2 left the game
+[22:14:56] [Server thread/INFO]: Stopping the server
+[22:14:56] [Server thread/INFO]: Saved config file: ./config/server_waypoint/config.json
+[22:14:56] [Server thread/INFO]: Stopping server
+[22:14:56] [Server thread/INFO]: Saving players
+[22:14:56] [Server thread/INFO]: Saving worlds
+[22:14:56] [Server thread/INFO]: Saving chunks for level 'ServerLevel[acceptance]'/minecraft:overworld
+[22:14:57] [Server thread/INFO]: Saving chunks for level 'ServerLevel[acceptance]'/minecraft:the_nether
+[22:14:57] [Server thread/INFO]: Saving chunks for level 'ServerLevel[acceptance]'/minecraft:the_end
+[22:14:57] [Server thread/INFO]: ThreadedAnvilChunkStorage (acceptance): All chunks are saved
+[22:14:57] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[22:14:57] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[22:14:57] [Server thread/INFO]: ThreadedAnvilChunkStorage: All dimensions are saved

@@ -1,0 +1,287 @@
+[22:10:42] [Datafixer Bootstrap/INFO]: 291 Datafixer optimizations took 191 milliseconds
+[22:10:45] [main/INFO]: Completely ignored arguments: [--userType, legacy]
+[22:10:45] [Render thread/INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, profilesHost=https://api.mojang.com, name=PROD]
+[22:10:45] [Render thread/INFO]: Setting user: WPVanilla
+[22:10:45] [Render thread/INFO]: Backend library: LWJGL version 3.4.1+2
+[22:10:45] [Render thread/INFO]: [STDOUT]: [lwjgl-unsafe-agent] Add exports java.base/jdk.internal.misc to <unnamed module for jdk.internal.loader.ClassLoaders$AppClassLoader@14dad5dc>
+[22:10:45] [Render thread/INFO]: [STDOUT]: [lwjgl-unsafe-agent] Rewrote org.lwjgl.system.MemoryUtil.memGetByte(long)
+[22:10:45] [Render thread/INFO]: [STDOUT]: [lwjgl-unsafe-agent] Rewrote org.lwjgl.system.MemoryUtil.memGetShort(long)
+[22:10:45] [Render thread/INFO]: [STDOUT]: [lwjgl-unsafe-agent] Rewrote org.lwjgl.system.MemoryUtil.memGetInt(long)
+[22:10:45] [Render thread/INFO]: [STDOUT]: [lwjgl-unsafe-agent] Rewrote org.lwjgl.system.MemoryUtil.memGetLong(long)
+[22:10:45] [Render thread/INFO]: [STDOUT]: [lwjgl-unsafe-agent] Rewrote org.lwjgl.system.MemoryUtil.memGetFloat(long)
+[22:10:45] [Render thread/INFO]: [STDOUT]: [lwjgl-unsafe-agent] Rewrote org.lwjgl.system.MemoryUtil.memGetDouble(long)
+[22:10:45] [Render thread/INFO]: [STDOUT]: [lwjgl-unsafe-agent] Rewrote org.lwjgl.system.MemoryUtil.memPutByte(long, byte)
+[22:10:45] [Render thread/INFO]: [STDOUT]: [lwjgl-unsafe-agent] Rewrote org.lwjgl.system.MemoryUtil.memPutShort(long, short)
+[22:10:45] [Render thread/INFO]: [STDOUT]: [lwjgl-unsafe-agent] Rewrote org.lwjgl.system.MemoryUtil.memPutInt(long, int)
+[22:10:45] [Render thread/INFO]: [STDOUT]: [lwjgl-unsafe-agent] Rewrote org.lwjgl.system.MemoryUtil.memPutLong(long, long)
+[22:10:45] [Render thread/INFO]: [STDOUT]: [lwjgl-unsafe-agent] Rewrote org.lwjgl.system.MemoryUtil.memPutFloat(long, float)
+[22:10:45] [Render thread/INFO]: [STDOUT]: [lwjgl-unsafe-agent] Rewrote org.lwjgl.system.MemoryUtil.memPutDouble(long, double)
+[22:10:45] [Render thread/INFO]: [STDOUT]: [lwjgl-unsafe-agent] Rewrote org.lwjgl.system.MemoryUtil.memGetAddress(long)
+[22:10:45] [Render thread/INFO]: [STDOUT]: [lwjgl-unsafe-agent] Rewrote org.lwjgl.system.MemoryUtil.memPutAddress(long, long)
+[22:10:45] [Render thread/INFO]: [STDOUT]: [lwjgl-unsafe-agent] Successfully transformed MemoryUtil
+[22:10:45] [Download-2/ERROR]: Failed to fetch user properties
+com.mojang.authlib.exceptions.InvalidCredentialsException: Status: 401
+	at com.mojang.authlib.exceptions.MinecraftClientHttpException.toAuthenticationException(MinecraftClientHttpException.java:59)
+	at com.mojang.authlib.yggdrasil.YggdrasilUserApiService.fetchProperties(YggdrasilUserApiService.java:150)
+	at net.minecraft.client.Minecraft.lambda$new$1(Minecraft.java:459)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1789)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+Caused by: com.mojang.authlib.exceptions.MinecraftClientHttpException: Status: 401
+	at com.mojang.authlib.minecraft.client.MinecraftClient.readInputStream(MinecraftClient.java:103)
+	at com.mojang.authlib.minecraft.client.MinecraftClient.get(MinecraftClient.java:56)
+	at com.mojang.authlib.yggdrasil.YggdrasilUserApiService.fetchProperties(YggdrasilUserApiService.java:121)
+	... 5 more
+[22:10:46] [Render thread/INFO]: Using optional rendering extensions: GL_EXT_texture_filter_anisotropic
+[22:10:46] [Download-2/INFO]: Could not authorize you against Realms server: java.lang.RuntimeException: Failed to parse into SignedJWT: 0
+[22:10:46] [Download-2/ERROR]: Failed to fetch Realms feature flags
+com.mojang.realmsclient.exception.RealmsServiceException: Realms authentication error with message 'java.lang.RuntimeException: Failed to parse into SignedJWT: 0'
+	at com.mojang.realmsclient.client.RealmsClient.execute(RealmsClient.java:526)
+	at com.mojang.realmsclient.client.RealmsClient.fetchFeatureFlags(RealmsClient.java:186)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1789)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+[22:10:46] [Render thread/INFO]: Reloading ResourceManager: vanilla
+[22:10:47] [Worker-Main-6/INFO]: Found unifont_all_no_pua-17.0.01.hex, loading
+[22:10:47] [Worker-Main-3/INFO]: Found unifont_pua-17.0.01.hex, loading
+[22:10:47] [Worker-Main-4/INFO]: Found unifont_jp_patch-17.0.01.hex, loading
+[22:10:48] [Render thread/INFO]: Info log when linking program containing VS minecraft:core/entity and FS minecraft:core/entity. Log output: WARNING: Could not find vertex shader attribute 'UV1' to match BindAttributeLocation request.
+
+[22:10:48] [Render thread/INFO]: Info log when linking program containing VS minecraft:core/rendertype_entity_shadow and FS minecraft:core/rendertype_entity_shadow. Log output: WARNING: Could not find vertex shader attribute 'UV1' to match BindAttributeLocation request.
+WARNING: Could not find vertex shader attribute 'Normal' to match BindAttributeLocation request.
+WARNING: Could not find vertex shader attribute 'UV2' to match BindAttributeLocation request.
+
+[22:10:48] [Render thread/INFO]: Info log when linking program containing VS minecraft:core/entity and FS minecraft:core/entity. Log output: WARNING: Could not find vertex shader attribute 'UV1' to match BindAttributeLocation request.
+
+[22:10:48] [Render thread/INFO]: Info log when linking program containing VS minecraft:core/rendertype_text_background_see_through and FS minecraft:core/rendertype_text_background_see_through. Log output: WARNING: Could not find vertex shader attribute 'UV2' to match BindAttributeLocation request.
+
+[22:10:48] [Render thread/INFO]: Info log when linking program containing VS minecraft:core/entity and FS minecraft:core/entity. Log output: WARNING: Could not find vertex shader attribute 'UV1' to match BindAttributeLocation request.
+
+[22:10:48] [Render thread/INFO]: Info log when linking program containing VS minecraft:core/entity and FS minecraft:core/entity. Log output: WARNING: Could not find vertex shader attribute 'UV1' to match BindAttributeLocation request.
+WARNING: Could not find vertex shader attribute 'Normal' to match BindAttributeLocation request.
+WARNING: Could not find vertex shader attribute 'UV2' to match BindAttributeLocation request.
+
+[22:10:48] [Render thread/INFO]: Info log when linking program containing VS minecraft:core/entity and FS minecraft:core/entity. Log output: WARNING: Could not find vertex shader attribute 'UV1' to match BindAttributeLocation request.
+WARNING: Could not find vertex shader attribute 'Normal' to match BindAttributeLocation request.
+
+[22:10:48] [Render thread/INFO]: Info log when linking program containing VS minecraft:core/animate_sprite and FS minecraft:core/animate_sprite_blit. Log output: WARNING: Output of vertex shader 'fAnimationProgress' not read by fragment shader
+
+[22:10:48] [Render thread/INFO]: Info log when linking program containing VS minecraft:core/rendertype_crumbling and FS minecraft:core/rendertype_crumbling. Log output: WARNING: Could not find vertex shader attribute 'UV2' to match BindAttributeLocation request.
+
+[22:10:48] [Render thread/INFO]: Info log when linking program containing VS minecraft:core/entity and FS minecraft:core/entity. Log output: WARNING: Could not find vertex shader attribute 'UV1' to match BindAttributeLocation request.
+
+[22:10:48] [Render thread/INFO]: Info log when linking program containing VS minecraft:core/rendertype_text_intensity_see_through and FS minecraft:core/rendertype_text_intensity_see_through. Log output: WARNING: Could not find vertex shader attribute 'UV2' to match BindAttributeLocation request.
+
+[22:10:48] [Render thread/INFO]: Info log when linking program containing VS minecraft:core/rendertype_text_see_through and FS minecraft:core/rendertype_text_see_through. Log output: WARNING: Could not find vertex shader attribute 'UV2' to match BindAttributeLocation request.
+
+[22:10:48] [Render thread/INFO]: Info log when linking program containing VS minecraft:core/item and FS minecraft:core/item. Log output: WARNING: Could not find vertex shader attribute 'UV1' to match BindAttributeLocation request.
+
+[22:10:48] [Render thread/INFO]: Info log when linking program containing VS minecraft:core/entity and FS minecraft:core/entity. Log output: WARNING: Could not find vertex shader attribute 'UV2' to match BindAttributeLocation request.
+
+[22:10:48] [Render thread/INFO]: Info log when linking program containing VS minecraft:core/rendertype_beacon_beam and FS minecraft:core/rendertype_beacon_beam. Log output: WARNING: Could not find vertex shader attribute 'UV2' to match BindAttributeLocation request.
+
+[22:10:48] [Render thread/INFO]: Info log when linking program containing VS minecraft:core/item and FS minecraft:core/item. Log output: WARNING: Could not find vertex shader attribute 'UV1' to match BindAttributeLocation request.
+
+[22:10:48] [Render thread/INFO]: Info log when linking program containing VS minecraft:core/rendertype_beacon_beam and FS minecraft:core/rendertype_beacon_beam. Log output: WARNING: Could not find vertex shader attribute 'UV2' to match BindAttributeLocation request.
+
+[22:10:48] [Render thread/INFO]: Info log when linking program containing VS minecraft:core/entity and FS minecraft:core/entity. Log output: WARNING: Could not find vertex shader attribute 'UV1' to match BindAttributeLocation request.
+
+[22:10:48] [Render thread/INFO]: Info log when linking program containing VS minecraft:core/entity and FS minecraft:core/entity. Log output: WARNING: Could not find vertex shader attribute 'UV1' to match BindAttributeLocation request.
+WARNING: Could not find vertex shader attribute 'Normal' to match BindAttributeLocation request.
+WARNING: Could not find vertex shader attribute 'UV2' to match BindAttributeLocation request.
+
+[22:10:48] [Render thread/INFO]: OpenAL initialized on device External Headphones
+[22:10:48] [Render thread/INFO]: Sound engine started
+[22:10:48] [Render thread/INFO]: Created: 512x256x0 minecraft:textures/atlas/particles.png-atlas
+[22:10:48] [Render thread/INFO]: Created: 128x128x0 minecraft:textures/atlas/decorated_pot.png-atlas
+[22:10:48] [Render thread/INFO]: Created: 2048x1024x0 minecraft:textures/atlas/armor_trims.png-atlas
+[22:10:48] [Render thread/INFO]: Created: 512x256x0 minecraft:textures/atlas/paintings.png-atlas
+[22:10:48] [Render thread/INFO]: Created: 1024x512x0 minecraft:textures/atlas/shield_patterns.png-atlas
+[22:10:48] [Render thread/INFO]: Created: 2048x2048x4 minecraft:textures/atlas/blocks.png-atlas
+[22:10:48] [Render thread/INFO]: Created: 512x512x0 minecraft:textures/atlas/chest.png-atlas
+[22:10:48] [Render thread/INFO]: Created: 256x128x0 minecraft:textures/atlas/celestials.png-atlas
+[22:10:48] [Render thread/INFO]: Created: 1024x512x0 minecraft:textures/atlas/banner_patterns.png-atlas
+[22:10:48] [Render thread/INFO]: Created: 512x512x0 minecraft:textures/atlas/beds.png-atlas
+[22:10:48] [Render thread/INFO]: Created: 1024x512x0 minecraft:textures/atlas/items.png-atlas
+[22:10:48] [Render thread/INFO]: Created: 1024x1024x0 minecraft:textures/atlas/gui.png-atlas
+[22:10:48] [Render thread/INFO]: Created: 128x64x0 minecraft:textures/atlas/map_decorations.png-atlas
+[22:10:48] [Render thread/INFO]: Created: 512x256x0 minecraft:textures/atlas/signs.png-atlas
+[22:10:48] [Render thread/INFO]: Created: 512x512x0 minecraft:textures/atlas/shulker_boxes.png-atlas
+[22:10:48] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[22:10:50] [Download-1/WARN]: Couldn't look up profile properties for 3bc7425a-2e45-38b2-87ac-e38ca8a38ea1
+com.mojang.authlib.exceptions.MinecraftClientException: Failed to read from https://sessionserver.mojang.com/session/minecraft/profile/3bc7425a2e4538b287ace38ca8a38ea1?unsigned=false due to Read timed out
+	at com.mojang.authlib.minecraft.client.MinecraftClient.readInputStream(MinecraftClient.java:111)
+	at com.mojang.authlib.minecraft.client.MinecraftClient.get(MinecraftClient.java:56)
+	at com.mojang.authlib.yggdrasil.YggdrasilMinecraftSessionService.fetchProfileUncached(YggdrasilMinecraftSessionService.java:197)
+	at com.mojang.authlib.yggdrasil.YggdrasilMinecraftSessionService.fetchProfile(YggdrasilMinecraftSessionService.java:167)
+	at net.minecraft.client.Minecraft.lambda$new$0(Minecraft.java:455)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1789)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+Caused by: java.net.SocketTimeoutException: Read timed out
+	at java.base/sun.nio.ch.NioSocketImpl.timedRead(NioSocketImpl.java:277)
+	at java.base/sun.nio.ch.NioSocketImpl.implRead(NioSocketImpl.java:302)
+	at java.base/sun.nio.ch.NioSocketImpl.read(NioSocketImpl.java:354)
+	at java.base/sun.nio.ch.NioSocketImpl$1.read(NioSocketImpl.java:798)
+	at java.base/java.net.Socket$SocketInputStream.implRead(Socket.java:974)
+	at java.base/java.net.Socket$SocketInputStream.read(Socket.java:964)
+	at java.base/sun.security.ssl.SSLSocketInputRecord.read(SSLSocketInputRecord.java:489)
+	at java.base/sun.security.ssl.SSLSocketInputRecord.readHeader(SSLSocketInputRecord.java:483)
+	at java.base/sun.security.ssl.SSLSocketInputRecord.bytesInCompletePacket(SSLSocketInputRecord.java:70)
+	at java.base/sun.security.ssl.SSLSocketImpl.readApplicationRecord(SSLSocketImpl.java:1461)
+	at java.base/sun.security.ssl.SSLSocketImpl$AppInputStream.read(SSLSocketImpl.java:1068)
+	at java.base/java.io.BufferedInputStream.fill(BufferedInputStream.java:289)
+	at java.base/java.io.BufferedInputStream.read1(BufferedInputStream.java:330)
+	at java.base/java.io.BufferedInputStream.read(BufferedInputStream.java:388)
+	at java.base/sun.net.www.http.HttpClient.parseHTTPHeader(HttpClient.java:803)
+	at java.base/sun.net.www.http.HttpClient.parseHTTP(HttpClient.java:735)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:1402)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1305)
+	at java.base/java.net.HttpURLConnection.getResponseCode(HttpURLConnection.java:493)
+	at java.base/sun.net.www.protocol.https.HttpsURLConnectionImpl.getResponseCode(HttpsURLConnectionImpl.java:307)
+	at com.mojang.authlib.minecraft.client.MinecraftClient.readInputStream(MinecraftClient.java:82)
+	... 8 more
+[22:10:50] [IO-Worker-1/INFO]: Could not authorize you against Realms server: java.lang.RuntimeException: Failed to parse into SignedJWT: 0
+[22:10:50] [IO-Worker-1/ERROR]: Couldn't connect to realms
+com.mojang.realmsclient.exception.RealmsServiceException: Realms authentication error with message 'java.lang.RuntimeException: Failed to parse into SignedJWT: 0'
+	at com.mojang.realmsclient.client.RealmsClient.execute(RealmsClient.java:526)
+	at com.mojang.realmsclient.client.RealmsClient.clientCompatible(RealmsClient.java:307)
+	at com.mojang.realmsclient.RealmsAvailability.lambda$check$0(RealmsAvailability.java:48)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1789)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+[22:10:51] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[22:10:54] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[22:10:54] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[22:10:54] [Render thread/INFO]: Connecting to 127.0.0.1, 25648
+[22:10:56] [Render thread/INFO]: [System] [CHAT] WPVanilla joined the game
+[22:10:56] [Render thread/INFO]: Loaded 2 advancements
+[22:10:56] [Render thread/INFO]: Resizing Dynamic Transforms UBO, capacity limit of 2 reached during a single frame. New capacity will be 4.
+[22:10:56] [Download-1/ERROR]: Failed to retrieve profile key pair
+com.mojang.authlib.exceptions.MinecraftClientHttpException: Status: 401
+	at com.mojang.authlib.minecraft.client.MinecraftClient.readInputStream(MinecraftClient.java:103)
+	at com.mojang.authlib.minecraft.client.MinecraftClient.post(MinecraftClient.java:64)
+	at com.mojang.authlib.yggdrasil.YggdrasilUserApiService.getKeyPair(YggdrasilUserApiService.java:61)
+	at net.minecraft.client.multiplayer.AccountProfileKeyPairManager.fetchProfileKeyPair(AccountProfileKeyPairManager.java:128)
+	at net.minecraft.client.multiplayer.AccountProfileKeyPairManager.lambda$readOrFetchProfileKeyPair$0(AccountProfileKeyPairManager.java:77)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1789)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+[22:10:56] [Render thread/INFO]: Resizing Dynamic Transforms UBO, capacity limit of 4 reached during a single frame. New capacity will be 8.
+[22:10:56] [Render thread/INFO]: Resizing Chunk Sections UBO, capacity limit of 2 reached during a single frame. New capacity will be 4.
+[22:10:56] [Render thread/INFO]: Resizing Chunk Sections UBO, capacity limit of 4 reached during a single frame. New capacity will be 8.
+[22:10:56] [Render thread/INFO]: Resizing Chunk Sections UBO, capacity limit of 8 reached during a single frame. New capacity will be 16.
+[22:10:56] [Render thread/INFO]: Resizing Chunk Sections UBO, capacity limit of 16 reached during a single frame. New capacity will be 32.
+[22:10:56] [Render thread/INFO]: Resizing Chunk Sections UBO, capacity limit of 32 reached during a single frame. New capacity will be 64.
+[22:11:00] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[22:11:00] [Render thread/INFO]: [System] [CHAT] ✔ Added [BA] Base to Homes   Details · Navigate · Undo
+[22:11:02] [Render thread/INFO]: [System] [CHAT] [unknown player head] WPAlice added [BA] Base to Homes
+[22:11:08] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[22:11:08] [Render thread/INFO]: [System] [CHAT] Private waypoints   Help\nBrowse\n  This dimension · All · Search\nCreate\n  Waypoint here · List\nTravel\n  Navigation\n
+[22:11:09] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[22:11:09] [Render thread/INFO]: [System] [CHAT] Server Waypoint help\nMost things are a click away: open the menu.\nCommands  List · Details · Add · Edit · Remove\n  Navigate\n
+[22:11:10] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[22:11:10] [Render thread/INFO]: [System] [CHAT] Overworld › Homes › [BA] Base\n[✎] Display name: Base\n[✎] Identifier: Base\n[✎] Initials: BA\n[✎] Icon: none\n[✎] Position: 70, 80, -30 [Here]\n[✎] Color: █ #9C985F\n[✎] Yaw: 0° (south)\n[✎] Visibility: Global\n[✎] Keywords: none\n[✎] Description: none\n[Navigate] [Remove] [Back]\n
+[22:11:11] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[22:11:11] [Render thread/INFO]: [System] [CHAT] All dimensions ⏷\nOverworld · 1 ●\n  Homes · 1\nSearch\n
+[22:11:12] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[22:11:12] [Render thread/INFO]: [System] [CHAT] ✔ Removed [BA] Base from Homes   Restore
+[22:11:14] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[22:11:15] [Render thread/INFO]: [System] [CHAT] ✔ Restored [BA] Base to Homes
+[22:11:16] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[22:11:16] [Render thread/INFO]: [System] [CHAT] ✘ That restore link has expired.
+[22:11:17] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[22:11:17] [Render thread/INFO]: [System] [CHAT] ✔ Started navigating\nNavigating to [BA] Base · 80 m\nCompass · Map · Bossbar · ✔ Actionbar · Text display\nStop · Change target\n
+[22:11:18] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[22:11:19] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[22:11:19] [Render thread/INFO]: Connecting to 127.0.0.1, 25648
+[22:11:19] [Download-1/ERROR]: Failed to retrieve profile key pair
+com.mojang.authlib.exceptions.MinecraftClientHttpException: Status: 401
+	at com.mojang.authlib.minecraft.client.MinecraftClient.readInputStream(MinecraftClient.java:103)
+	at com.mojang.authlib.minecraft.client.MinecraftClient.post(MinecraftClient.java:64)
+	at com.mojang.authlib.yggdrasil.YggdrasilUserApiService.getKeyPair(YggdrasilUserApiService.java:61)
+	at net.minecraft.client.multiplayer.AccountProfileKeyPairManager.fetchProfileKeyPair(AccountProfileKeyPairManager.java:128)
+	at net.minecraft.client.multiplayer.AccountProfileKeyPairManager.lambda$readOrFetchProfileKeyPair$0(AccountProfileKeyPairManager.java:77)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1789)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+[22:11:20] [Render thread/INFO]: [System] [CHAT] WPVanilla joined the game
+[22:11:20] [Render thread/INFO]: Loaded 2 advancements
+[22:11:21] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[22:11:21] [Render thread/INFO]: [System] [CHAT] Navigating to [BA] Base · 80 m\nCompass · Map · Bossbar · ✔ Actionbar · Text display\nStop · Change target\n
+[22:11:22] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[22:11:22] [Render thread/INFO]: [System] [CHAT] Incorrect argument for command\n...p private tp minecraft:overworld Homes Base<--[HERE]
+[22:11:24] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[22:11:24] [Render thread/INFO]: [System] [CHAT] ✔ Teleported [unknown player head] WPVanilla to [BA] Base
+[22:11:25] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[22:11:26] [Render thread/INFO]: [System] [CHAT] [unknown player head] WPAlice added [item/diamond@items] [RH] Rich home to Copies
+[22:11:36] [Render thread/INFO]: [System] [CHAT] WPAlice left the game
+[22:11:36] [Render thread/INFO]: [System] [CHAT] WPBob left the game
+[22:11:37] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[22:11:37] [Render thread/INFO]: Stopping!

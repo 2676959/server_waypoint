@@ -1,0 +1,63 @@
+{
+  "chat": [
+    {
+      "commands": [
+        "/wp private list minecraft:overworld",
+        "/wp private list minecraft:overworld Homes",
+        "/wp private edit waypoint minecraft:overworld Homes Base set display-name Base",
+        "/wp private edit waypoint minecraft:overworld Homes Base set display-name Base",
+        "/wp private edit waypoint minecraft:overworld Homes Base set display-name Base",
+        "/wp private edit waypoint minecraft:overworld Homes Base set identifier Base",
+        "/wp private edit waypoint minecraft:overworld Homes Base set identifier Base",
+        "/wp private edit waypoint minecraft:overworld Homes Base set identifier Base",
+        "/wp private edit waypoint minecraft:overworld Homes Base set initials BA",
+        "/wp private edit waypoint minecraft:overworld Homes Base set initials BA",
+        "/wp private edit waypoint minecraft:overworld Homes Base set initials BA",
+        "/wp private edit waypoint minecraft:overworld Homes Base set icon ",
+        "/wp private edit waypoint minecraft:overworld Homes Base set icon ",
+        "/wp private edit waypoint minecraft:overworld Homes Base set icon ",
+        "/wp private edit waypoint minecraft:overworld Homes Base set position 12 80 -30",
+        "/wp private edit waypoint minecraft:overworld Homes Base set position 12 80 -30",
+        "/wp private edit waypoint minecraft:overworld Homes Base set position 12 80 -30",
+        "/wp private edit waypoint minecraft:overworld Homes Base set position ~ ~ ~",
+        "/wp private edit waypoint minecraft:overworld Homes Base set position ~ ~ ~",
+        "/wp private edit waypoint minecraft:overworld Homes Base set position ~ ~ ~",
+        "/wp private edit waypoint minecraft:overworld Homes Base set color",
+        "/wp private edit waypoint minecraft:overworld Homes Base set color",
+        "/wp private edit waypoint minecraft:overworld Homes Base set color",
+        "/wp private edit waypoint minecraft:overworld Homes Base set yaw",
+        "/wp private edit waypoint minecraft:overworld Homes Base set yaw",
+        "/wp private edit waypoint minecraft:overworld Homes Base set yaw",
+        "/wp private edit waypoint minecraft:overworld Homes Base set visibility local",
+        "/wp private edit waypoint minecraft:overworld Homes Base set visibility local",
+        "/wp private edit waypoint minecraft:overworld Homes Base set visibility local",
+        "/wp private edit waypoint minecraft:overworld Homes Base set keywords \"\"",
+        "/wp private edit waypoint minecraft:overworld Homes Base set keywords \"\"",
+        "/wp private edit waypoint minecraft:overworld Homes Base set keywords \"\"",
+        "/wp private edit waypoint minecraft:overworld Homes Base set description AliceOnly",
+        "/wp private edit waypoint minecraft:overworld Homes Base set description AliceOnly",
+        "/wp private edit waypoint minecraft:overworld Homes Base set description AliceOnly",
+        "/wp private edit waypoint minecraft:overworld Homes Base clear description",
+        "/wp private edit waypoint minecraft:overworld Homes Base clear description",
+        "/wp private edit waypoint minecraft:overworld Homes Base clear description",
+        "/wp private navigate minecraft:overworld Homes Base",
+        "/wp private navigate minecraft:overworld Homes Base",
+        "/wp private navigate minecraft:overworld Homes Base",
+        "/wp private remove minecraft:overworld Homes Base",
+        "/wp private remove minecraft:overworld Homes Base",
+        "/wp private remove minecraft:overworld Homes Base",
+        "/wp private list minecraft:overworld Homes",
+        "/wp private list minecraft:overworld Homes",
+        "/wp private list minecraft:overworld Homes"
+      ],
+      "text": "✔ Updated the description\nOverworld › Homes › [BA] Base\n[✎] Display name: Base\n[✎] Identifier: Base\n[✎] Initials: BA\n[✎] Icon: none\n[✎] Position: 12, 80, -30 [Here]\n[✎] Color: █ #D25526\n[✎] Yaw: 0° (south)\n[✎] Visibility: Global\n[✎] Keywords: none\n[✎] Description: AliceOnly [×]\n[Navigate] [Remove] [Back]\n"
+    }
+  ],
+  "position": [
+    7.5,
+    76.0,
+    10.5,
+    "minecraft:overworld"
+  ],
+  "screen": "null"
+}

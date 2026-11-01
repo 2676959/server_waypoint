@@ -1,0 +1,13 @@
+READY paper
+READY WPAlice MODDED
+READY WPBob MODDED
+READY WPVanilla VANILLA
+PASS owner-only menus/suggestions/caches across two modded identities
+PASS owner-only edit delivery/no Bob announcement or state mutation
+PASS graphical vanilla private menu/help/details/pagination click-event prefixes
+PASS live wrong-owner restore, owner restore, single-use
+PASS vanilla private navigation reconnect/prefix
+PASS graphical vanilla default tp denial, permission grant and arrival
+PASS manager defaults/search/grouping, copy metadata/cancel/conflict, captured edit, stale form, source-owned native markers/resync
+PASS live read-permission revocation clears Private only and regrant recovers
+COMPLETE main acceptance

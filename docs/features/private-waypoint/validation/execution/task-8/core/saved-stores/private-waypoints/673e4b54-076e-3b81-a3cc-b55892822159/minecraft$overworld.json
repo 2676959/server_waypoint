@@ -1,0 +1,20 @@
+[
+  {
+    "list_name": "Homes",
+    "n": 2,
+    "waypoints": [
+      {
+        "name": "Base",
+        "initials": "B",
+        "pos": [30, 80, -30],
+        "color": "#3366CC",
+        "yaw": 90,
+        "global": false,
+        "keywords": [],
+        "description": ""
+      }
+    ],
+    "show": true,
+    "expand": true
+  }
+]

@@ -1,0 +1,150 @@
+Starting org.bukkit.craftbukkit.Main
+[22:16:24 INFO]: [bootstrap] Running Java 25 (OpenJDK 64-Bit Server VM 25.0.4.1; Homebrew Homebrew) on Mac OS X 26.5 (aarch64)
+[22:16:24 INFO]: [bootstrap] Loading Paper 26.1.2-63-main@711c5de (2026-05-11T08:20:02Z) for Minecraft 26.1.2
+[22:16:24 INFO]: [PluginInitializerManager] Initializing plugins...
+[22:16:25 INFO]: [PluginInitializerManager] Initialized 2 plugins
+[22:16:25 INFO]: [PluginInitializerManager] Paper plugins (1):
+ - ServerWaypoint (4.0.1)
+[22:16:25 INFO]: [PluginInitializerManager] Bukkit plugins (1):
+ - AccessProbe (1)
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.joml.MemUtil$MemUtilUnsafe (file:/Volumes/ssd/sw-private-final-20261031/proxy-check/a/libraries/org/joml/joml/1.10.8/joml-1.10.8.jar)
+WARNING: Please consider reporting this to the maintainers of class org.joml.MemUtil$MemUtilUnsafe
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[22:16:26 INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, profilesHost=https://api.mojang.com, name=PROD]
+[22:16:27 INFO]: Loaded 1515 recipes
+[22:16:27 INFO]: Loaded 1617 advancements
+[22:16:27 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Initialising converters for DataConverter...
+[22:16:27 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Finished initialising converters for DataConverter in 133.1ms
+[22:16:27 INFO]: Starting minecraft server version 26.1.2
+[22:16:27 INFO]: Loading properties
+[22:16:27 INFO]: This server is running Paper version 26.1.2-63-main@711c5de (2026-05-11T08:20:02Z) (Implementing API version 26.1.2.build.63-stable)
+[22:16:27 INFO]: [spark] This server bundles the spark profiler. For more information please visit https://docs.papermc.io/paper/profiling
+[22:16:27 INFO]: Server Ping Player Sample Count: 12
+[22:16:27 INFO]: Using 4 threads for Netty based IO
+[22:16:27 INFO]: [MoonriseCommon] Paper is using 2 worker threads, 1 I/O threads
+[22:16:27 INFO]: Default game type: SURVIVAL
+[22:16:27 INFO]: Generating keypair
+>   [22:16:27 INFO]: Starting Minecraft server on 127.0.0.1:25651
+>   [22:16:27 INFO]: Paper: Using libdeflate (macOS ARM64 / Apple Silicon) compression from Velocity.
+>   [22:16:27 INFO]: Paper: Using native (macOS ARM64 / Apple Silicon) cipher from Velocity.
+>   [22:16:28 INFO]: [server_waypoint_plugin] Loading server plugin ServerWaypoint v4.0.1
+>   [22:16:28 INFO]: [AccessProbe] Loading server plugin AccessProbe v1
+>   [22:16:28 INFO]: Server permissions file permissions.yml is empty, ignoring it
+>   [33;1m[22:16:28 WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[m>   [33;1m[22:16:28 WARN]: The server will make no attempt to authenticate usernames. Beware.
+[m>   [33;1m[22:16:28 WARN]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[m>   [33;1m[22:16:28 WARN]: To change this, set "online-mode" to "true" in the server.properties file.
+[m>   [22:16:28 INFO]: Preparing level "world-a"
+>   [22:16:28 INFO]: Loading 0 persistent chunks for level 'minecraft:overworld'...
+>   [22:16:28 INFO]: Prepared spawn area in 0 ms
+>   [22:16:28 INFO]: Loading 0 persistent chunks for level 'minecraft:the_nether'...
+>   [22:16:28 INFO]: Prepared spawn area in 0 ms
+>   [22:16:28 INFO]: Loading 0 persistent chunks for level 'minecraft:the_end'...
+>   [22:16:28 INFO]: Prepared spawn area in 0 ms
+>   [22:16:28 INFO]: Done preparing level "world-a" (0.157s)
+>   [22:16:28 INFO]: [server_waypoint_plugin] Enabling ServerWaypoint v4.0.1
+>   [22:16:28 INFO]: [server_waypoint_translator] Internal translations: zh_tw, zh_hk, en_us, zh_cn, he_il, es_es
+>   [22:16:28 INFO]: [server_waypoint_core] Loaded config Config{serverId=1059363022, defaultPageLimit=10, defaultNavigationMethods=[ACTIONBAR], CommandPermission=CommandPermission{privateList=0, privateAdd=0, privateEdit=0, privateRemove=0, privateNavigate=0, privateTp=2, add=0, edit=0, remove=0, navigate=0, tp=2, reload=2, upload=2, uploadDelete=4, remoteList=0, remoteTp=2}, Features={addWaypointFromChatSharing=true, sendXaerosWorldId=true, compressChunkedMessages=true}}
+>   [22:16:28 INFO]: [server_waypoint_core] Loaded 0 languages: 
+>   [22:16:28 INFO]: [server_waypoint_core] Cross-server backend startup: DISABLED
+>   [22:16:28 INFO]: [AccessProbe] Enabling AccessProbe v1
+>   [22:16:28 INFO]: [spark] Starting background profiler...
+>   [22:16:28 INFO]: Saving chunks for level 'ServerLevel[world-a]'/minecraft:overworld
+>   [22:16:28 INFO]: Saving chunks for level 'ServerLevel[world-a]'/minecraft:the_nether
+>   [22:16:28 INFO]: Saving chunks for level 'ServerLevel[world-a]'/minecraft:the_end
+>   [22:16:28 INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+>   [22:16:28 INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+>   [22:16:28 INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+>   [22:16:28 INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+>   [22:16:28 INFO]: Running delayed init tasks
+>   [22:16:28 INFO]: Done (4.909s)! For help, type "help"
+>   [33;1m[22:16:29 WARN]: *** You are running an outdated version of Minecraft, which is 4 release(s) and 11 build(s) behind!
+[m>   [33;1m[22:16:29 WARN]: *** Please update to the latest stable version on https://papermc.io/downloads/paper ***
+[m>   [22:16:46 INFO]: UUID of player WPProxy is 42c0de2e-ca80-3696-9ff5-9c411169a409
+>   [22:16:49 INFO]: [93mWPProxy joined the game[0m
+>   [22:16:49 INFO]: WPProxy[/127.0.0.1:51688] logged in with entity id 1 at ([minecraft:overworld]8.5, 173.0, 9.5)
+>   [22:16:49 INFO]: [server_waypoint_core] client join with protocol version: 3
+>   [22:16:49 INFO]: [server_waypoint_core] Created waypoints directory at: plugins/ServerWaypoint/private-waypoints/42c0de2e-ca80-3696-9ff5-9c411169a409
+>   [22:16:51 INFO]: WPProxy lost connection: Disconnected
+>   [22:16:51 INFO]: [93mWPProxy left the game[0m
+>   [22:16:58 INFO]: UUID of player WPProxy is 42c0de2e-ca80-3696-9ff5-9c411169a409
+>   [22:16:58 INFO]: [93mWPProxy joined the game[0m
+>   [22:16:58 INFO]: WPProxy[/127.0.0.1:51728] logged in with entity id 23 at ([minecraft:overworld]8.5, 173.0, 9.5)
+>   [22:16:58 INFO]: [server_waypoint_core] client join with protocol version: 3
+>   [22:18:24 INFO]: WPProxy issued server command: /wp add 100 80 100 Homes Base
+>   [22:18:25 INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/waypoints/minecraft$overworld.json
+>   [22:18:25 INFO]: [server_waypoint.actions] action=add player=WPProxy player_id=42c0de2e-ca80-3696-9ff5-9c411169a409 sender=WPProxy sender_id=42c0de2e-ca80-3696-9ff5-9c411169a409 outcome=success dimension=minecraft:overworld list=Homes waypoint=Base
+>   [22:18:25 INFO]: WPProxy issued server command: /wp private add 12 80 -30 Homes Base
+>   [22:18:25 INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/private-waypoints/42c0de2e-ca80-3696-9ff5-9c411169a409/minecraft$overworld.json
+>   [22:18:25 INFO]: [server_waypoint.actions] action=add player=WPProxy player_id=42c0de2e-ca80-3696-9ff5-9c411169a409 sender=WPProxy sender_id=42c0de2e-ca80-3696-9ff5-9c411169a409 outcome=success dimension=minecraft:overworld list=Homes waypoint=Base
+>   [22:18:46 INFO]: WPProxy issued server command: /wp add 100 80 100 Homes Base
+>   [22:18:46 INFO]: WPProxy issued server command: /wp private add 12 80 -30 Homes Base
+>   [22:18:46 INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/private-waypoints/42c0de2e-ca80-3696-9ff5-9c411169a409/minecraft$overworld.json
+>   [22:18:46 INFO]: WPProxy issued server command: /wp private remove minecraft:overworld Homes Base
+>   [22:18:46 INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/private-waypoints/42c0de2e-ca80-3696-9ff5-9c411169a409/minecraft$overworld.json
+>   [22:18:46 INFO]: [server_waypoint.actions] action=remove player=WPProxy player_id=42c0de2e-ca80-3696-9ff5-9c411169a409 sender=WPProxy sender_id=42c0de2e-ca80-3696-9ff5-9c411169a409 outcome=success dimension=minecraft:overworld list=Homes waypoint=Base
+>   [22:19:06 INFO]: WPProxy issued server command: /wp add 100 80 100 Homes Base
+>   [22:19:08 INFO]: WPProxy issued server command: /wp private add 12 80 -30 Homes Base
+>   [22:19:08 INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/private-waypoints/42c0de2e-ca80-3696-9ff5-9c411169a409/minecraft$overworld.json
+>   [22:19:08 INFO]: [server_waypoint.actions] action=add player=WPProxy player_id=42c0de2e-ca80-3696-9ff5-9c411169a409 sender=WPProxy sender_id=42c0de2e-ca80-3696-9ff5-9c411169a409 outcome=success dimension=minecraft:overworld list=Homes waypoint=Base
+>   [22:19:09 INFO]: WPProxy issued server command: /wp private remove minecraft:overworld Homes Base
+>   [22:19:09 INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/private-waypoints/42c0de2e-ca80-3696-9ff5-9c411169a409/minecraft$overworld.json
+>   [22:19:09 INFO]: [server_waypoint.actions] action=remove player=WPProxy player_id=42c0de2e-ca80-3696-9ff5-9c411169a409 sender=WPProxy sender_id=42c0de2e-ca80-3696-9ff5-9c411169a409 outcome=success dimension=minecraft:overworld list=Homes waypoint=Base
+>   [22:19:11 INFO]: WPProxy issued server command: /wp private add 12 80 -30 Homes Base
+>   [22:19:11 INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/private-waypoints/42c0de2e-ca80-3696-9ff5-9c411169a409/minecraft$overworld.json
+>   [22:19:11 INFO]: [server_waypoint.actions] action=add player=WPProxy player_id=42c0de2e-ca80-3696-9ff5-9c411169a409 sender=WPProxy sender_id=42c0de2e-ca80-3696-9ff5-9c411169a409 outcome=success dimension=minecraft:overworld list=Homes waypoint=Base
+>   [22:19:12 INFO]: WPProxy issued server command: /wp private remove minecraft:overworld Homes Base
+>   [22:19:12 INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/private-waypoints/42c0de2e-ca80-3696-9ff5-9c411169a409/minecraft$overworld.json
+>   [22:19:12 INFO]: [server_waypoint.actions] action=remove player=WPProxy player_id=42c0de2e-ca80-3696-9ff5-9c411169a409 sender=WPProxy sender_id=42c0de2e-ca80-3696-9ff5-9c411169a409 outcome=success dimension=minecraft:overworld list=Homes waypoint=Base
+>   [22:19:13 INFO]: WPProxy issued server command: /wp private add 12 80 -30 Homes Base
+>   [22:19:13 INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/private-waypoints/42c0de2e-ca80-3696-9ff5-9c411169a409/minecraft$overworld.json
+>   [22:19:13 INFO]: [server_waypoint.actions] action=add player=WPProxy player_id=42c0de2e-ca80-3696-9ff5-9c411169a409 sender=WPProxy sender_id=42c0de2e-ca80-3696-9ff5-9c411169a409 outcome=success dimension=minecraft:overworld list=Homes waypoint=Base
+>   [22:19:14 INFO]: WPProxy issued server command: /wp private restore 4NUOqYr7cSm-JKJ9nc3s-6Dp
+>   [22:19:14 INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/private-waypoints/42c0de2e-ca80-3696-9ff5-9c411169a409/minecraft$overworld.json
+>   [22:19:15 INFO]: WPProxy issued server command: /wp private remove minecraft:overworld Homes Base
+>   [22:19:15 INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/private-waypoints/42c0de2e-ca80-3696-9ff5-9c411169a409/minecraft$overworld.json
+>   [22:19:15 INFO]: [server_waypoint.actions] action=remove player=WPProxy player_id=42c0de2e-ca80-3696-9ff5-9c411169a409 sender=WPProxy sender_id=42c0de2e-ca80-3696-9ff5-9c411169a409 outcome=success dimension=minecraft:overworld list=Homes waypoint=Base
+>   [22:19:17 INFO]: WPProxy issued server command: /wp private restore 4NUOqYr7cSm-JKJ9nc3s-6Dp
+>   [22:19:17 INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/private-waypoints/42c0de2e-ca80-3696-9ff5-9c411169a409/minecraft$overworld.json
+>   [22:19:17 INFO]: [server_waypoint.actions] action=restore player=WPProxy player_id=42c0de2e-ca80-3696-9ff5-9c411169a409 sender=WPProxy sender_id=42c0de2e-ca80-3696-9ff5-9c411169a409 outcome=success dimension=minecraft:overworld list=Homes waypoint=Base
+>   [22:22:08 INFO]: WPProxy lost connection: Disconnected
+>   [22:22:08 INFO]: [93mWPProxy left the game[0m
+> >   [22:25:43 INFO]: Stopping the server
+>   [22:25:43 INFO]: Stopping server
+>   [22:25:43 INFO]: [AccessProbe] Disabling AccessProbe v1
+>   [22:25:43 INFO]: [server_waypoint_plugin] Disabling ServerWaypoint v4.0.1
+>   [22:25:43 INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/waypoints/minecraft$overworld.json
+>   [22:25:43 INFO]: [server_waypoint_core] Saved config file: plugins/ServerWaypoint/config.json
+>   [22:25:43 INFO]: Saving players
+>   [22:25:43 INFO]: Saving worlds
+>   [22:25:43 INFO]: Saving chunks for level 'ServerLevel[world-a]'/minecraft:overworld
+>   [22:25:43 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:overworld'
+>   [22:25:43 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:overworld'
+>   [22:25:43 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:overworld'
+>   [22:25:43 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'minecraft:overworld' in 0.01s
+>   [22:25:43 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:overworld'
+>   [22:25:43 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:overworld'
+>   [22:25:43 INFO]: Saving chunks for level 'ServerLevel[world-a]'/minecraft:the_nether
+>   [22:25:43 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:the_nether'
+>   [22:25:43 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:the_nether'
+>   [22:25:43 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:the_nether'
+>   [22:25:43 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'minecraft:the_nether' in 0.00s
+>   [22:25:43 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:the_nether'
+>   [22:25:43 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:the_nether'
+>   [22:25:43 INFO]: Saving chunks for level 'ServerLevel[world-a]'/minecraft:the_end
+>   [22:25:43 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'minecraft:the_end'
+>   [22:25:43 INFO]: [ChunkHolderManager] Halted chunk system for world 'minecraft:the_end'
+>   [22:25:43 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'minecraft:the_end'
+>   [22:25:43 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'minecraft:the_end' in 0.00s
+>   [22:25:43 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'minecraft:the_end'
+>   [22:25:43 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'minecraft:the_end'
+>   [22:25:43 INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+>   [22:25:43 INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+>   [22:25:43 INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+>   [22:25:43 INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+>   [22:25:43 INFO]: Waiting for all RegionFile I/O tasks to complete...
+>   [22:25:43 INFO]: All RegionFile I/O tasks to complete
+>   [22:25:43 INFO]: [MoonriseCommon] Awaiting termination of worker pool for up to 60s...
+>   [22:25:43 INFO]: [MoonriseCommon] Awaiting termination of I/O pool for up to 60s...
+> 

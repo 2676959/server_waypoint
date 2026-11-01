@@ -1,0 +1,11 @@
+Spanish SHARED: popup/wheel/Escape/Tab native handlers passed at 427x240
+saved /Volumes/ssd/sw-private-task8-20261031/gui-results-2/26.1.2-Fabric/spanish-shared.png
+Spanish PRIVATE: popup/wheel/Escape/Tab native handlers passed at 427x240
+saved /Volumes/ssd/sw-private-task8-20261031/gui-results-2/26.1.2-Fabric/spanish-private.png
+Spanish LOCAL: popup/wheel/Escape/Tab native handlers passed at 427x240
+saved /Volumes/ssd/sw-private-task8-20261031/gui-results-2/26.1.2-Fabric/spanish-local.png
+Spanish COMBINED: popup/wheel/Escape/Tab native handlers passed at 427x240
+saved /Volumes/ssd/sw-private-task8-20261031/gui-results-2/26.1.2-Fabric/spanish-combined.png
+Spanish profile New cancel/create/Enter focus and invalid/valid template controls passed
+saved /Volumes/ssd/sw-private-task8-20261031/gui-results-2/26.1.2-Fabric/spanish-profiles.png
+Spanish profile Delete cancel/confirm native handlers passed

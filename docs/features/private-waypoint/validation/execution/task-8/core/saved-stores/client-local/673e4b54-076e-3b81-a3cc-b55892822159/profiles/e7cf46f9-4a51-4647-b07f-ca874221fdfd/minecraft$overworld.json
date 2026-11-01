@@ -1,0 +1,56 @@
+[
+  {
+    "list_name": "Copies",
+    "n": 2,
+    "waypoints": [
+      {
+        "name": "Base",
+        "initials": "B",
+        "pos": [30, 80, -30],
+        "color": "#3366CC",
+        "yaw": 90,
+        "global": false,
+        "keywords": [],
+        "description": ""
+      }
+    ],
+    "show": true,
+    "expand": true
+  },
+  {
+    "list_name": "Bases",
+    "n": 2,
+    "waypoints": [
+      {
+        "name": "Home base",
+        "initials": "HB",
+        "pos": [120, 64, -38],
+        "color": "#3366CC",
+        "yaw": 0,
+        "global": false,
+        "keywords": [],
+        "description": ""
+      }
+    ],
+    "show": true,
+    "expand": true
+  },
+  {
+    "list_name": "Homes",
+    "n": 2,
+    "waypoints": [
+      {
+        "name": "Base",
+        "initials": "B",
+        "pos": [50, 80, -30],
+        "color": "#3366CC",
+        "yaw": 90,
+        "global": false,
+        "keywords": [],
+        "description": ""
+      }
+    ],
+    "show": true,
+    "expand": true
+  }
+]

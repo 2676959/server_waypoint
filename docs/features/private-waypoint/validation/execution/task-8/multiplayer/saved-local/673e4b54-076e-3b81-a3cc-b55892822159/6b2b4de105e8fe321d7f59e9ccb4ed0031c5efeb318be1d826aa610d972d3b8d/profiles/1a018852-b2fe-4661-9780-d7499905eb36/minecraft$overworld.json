@@ -1,0 +1,20 @@
+[
+  {
+    "list_name": "Offline",
+    "n": 2,
+    "waypoints": [
+      {
+        "name": "Unmodified",
+        "initials": "U",
+        "pos": [2, 80, 3],
+        "color": "#33AA55",
+        "yaw": 0,
+        "global": false,
+        "keywords": [],
+        "description": ""
+      }
+    ],
+    "show": true,
+    "expand": true
+  }
+]

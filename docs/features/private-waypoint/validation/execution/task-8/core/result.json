@@ -1,0 +1,106 @@
+{
+    "profile": "26.1.2-Fabric",
+    "target": "26.1.2-fabric",
+    "minecraft": "26.1.2",
+    "prepared": "/Volumes/ssd/sw-private-task8-20261031/prepared",
+    "suite": "core",
+    "status": "FAIL",
+    "steps": [
+        {
+            "name": "create",
+            "result": "01-create.result",
+            "state": "PASS\n"
+        },
+        {
+            "name": "collections",
+            "result": "02-collections.result",
+            "state": "PASS\n"
+        },
+        {
+            "name": "manager-layout",
+            "result": "03-manager-layout.result",
+            "state": "PASS\n"
+        },
+        {
+            "name": "close",
+            "result": "04-close.result",
+            "state": "PASS\n"
+        },
+        {
+            "name": "load",
+            "result": "05-load.result",
+            "state": "PASS\n"
+        },
+        {
+            "name": "persisted",
+            "result": "06-persisted.result",
+            "state": "PASS\n"
+        },
+        {
+            "name": "close",
+            "result": "07-close.result",
+            "state": "PASS\n"
+        }
+    ],
+    "heap_mb": 1024,
+    "stage": "complete",
+    "awt_headless": true,
+    "started_at": 1793487987.361721,
+    "jars": [
+        {
+            "path": "/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/26.1.2-fabric/build/libs/server_waypoint-4.0.1-fabric-mc26.1-26.1.2.jar",
+            "name": "server_waypoint-4.0.1-fabric-mc26.1-26.1.2.jar",
+            "sha256": "c0f833d3b872de3e56be54ffa6cb210c78d1028807a2489a795bc2de7061edd3"
+        },
+        {
+            "path": "/Volumes/ssd/gradle_home/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-api/0.148.2+26.1.2/2ae5145d7e6e8d6221f3df7855f6f3b020fa89df/fabric-api-0.148.2+26.1.2.jar",
+            "name": "fabric-api-0.148.2+26.1.2.jar",
+            "sha256": "99c5b8fdb6128dd3f2fff25b5357f465226c3c08d0ce4b9d01b37b921c7126ab"
+        }
+    ],
+    "probe_hashes": {
+        "tools": "9650ce18698fd2d679df920b631f8031098dd75c8a816f6a6beac00c770c4761",
+        "agent": "c34f86421865c87a4f2f8c6a8b38809fa263c49ec6b8f91abdd9d16c337d9ee5",
+        "scenario": "4d7444c2bec287c7883a576b9c19329ee68041b67393556e0065fefd12e6d0cd",
+        "targets": "cfc9277dafdacc0aa2da06ff95ccb621ba3da21640bf3a182bff6934fc943686"
+    },
+    "java": "/opt/homebrew/Cellar/openjdk@25/25.0.4.1/libexec/openjdk.jdk/Contents/Home/bin/java",
+    "pid": 88716,
+    "actual_minecraft": "26.1.2",
+    "mixin_audit": "PASS\nOPTIONAL_ABSENT com.mamiyaotaru.voxelmap.VoxelMap\nOPTIONAL_ABSENT com.mamiyaotaru.voxelmap.gui.GuiAddWaypoint\nOPTIONAL_ABSENT com.mamiyaotaru.voxelmap.gui.GuiListWaypoints\nOPTIONAL_ABSENT com.mamiyaotaru.voxelmap.gui.GuiListWaypoints$WaypointItem\nOPTIONAL_ABSENT com.mamiyaotaru.voxelmap.gui.GuiWaypoints\nOPTIONAL_ABSENT com.mamiyaotaru.voxelmap.persistent.GuiPersistentMap\nOPTIONAL_ABSENT com.mamiyaotaru.voxelmap.util.WaypointContainer\nTRANSFORMED net.minecraft.client.gui.render.GuiRenderer\nTRANSFORMED net.minecraft.client.gui.render.pip.PictureInPictureRenderer\nOPTIONAL_ABSENT net.minecraft.client.renderer.entity.ItemRenderer\nTRANSFORMED net.minecraft.client.renderer.state.gui.GuiItemRenderState\nOPTIONAL_ABSENT xaero.common.gui.GuiWaypoints\nOPTIONAL_ABSENT xaero.common.gui.GuiWaypoints$List\nOPTIONAL_ABSENT xaero.common.minimap.waypoints.Waypoint\nOPTIONAL_ABSENT xaero.hud.minimap.waypoint.render.WaypointMapRenderer\nOPTIONAL_ABSENT xaero.hud.minimap.world.state.MinimapWorldStateUpdater\nOPTIONAL_ABSENT xaero.lib.client.gui.widget.dropdown.DropDownWidget\nOPTIONAL_ABSENT xaero.map.gui.GuiMap\nOPTIONAL_ABSENT xaero.map.mods.gui.Waypoint\nOPTIONAL_ABSENT xaero.map.mods.gui.WaypointReader\nTRANSFORMED net.minecraft.client.KeyMapping\nTRANSFORMED net.minecraft.client.Minecraft\nTRANSFORMED net.minecraft.client.gui.Gui\nTRANSFORMED net.minecraft.client.gui.components.Button\nTRANSFORMED net.minecraft.client.gui.components.EditBox\nTRANSFORMED net.minecraft.client.multiplayer.ClientPacketListener\nTRANSFORMED net.minecraft.client.renderer.GameRenderer\nTRANSFORMED net.minecraft.client.renderer.LevelRenderer\nTRANSFORMED net.minecraft.client.telemetry.WorldSessionTelemetryManager\nTRANSFORMED net.minecraft.commands.CommandSourceStack\nTRANSFORMED net.minecraft.server.level.ServerPlayer\nTRANSFORMED net.minecraft.server.players.PlayerList\nTRANSFORMED net.minecraft.world.entity.animal.allay.Allay\nTRANSFORMED net.minecraft.world.entity.decoration.ArmorStand\nTRANSFORMED net.minecraft.world.entity.decoration.ItemFrame\nTRANSFORMED net.minecraft.world.entity.item.ItemEntity\nTRANSFORMED net.minecraft.world.entity.player.Inventory\nTRANSFORMED net.minecraft.world.inventory.AbstractContainerMenu\nTRANSFORMED net.minecraft.world.inventory.CartographyTableMenu\nTRANSFORMED net.minecraft.world.inventory.CraftingMenu\nTRANSFORMED net.minecraft.world.item.CompassItem\nTRANSFORMED net.minecraft.world.item.component.CustomData\nTRANSFORMED net.minecraft.world.level.block.DecoratedPotBlock\nTRANSFORMED net.minecraft.world.level.block.entity.DecoratedPotBlockEntity\nTRANSFORMED net.minecraft.world.level.saveddata.maps.MapItemSavedData\nOPTIONAL_ABSENT Xaero native identity checks\nPASS MixinEnvironment.audit\nSUCCESS targets=28\n",
+    "exit_code": 0,
+    "finished_at": 1793488066.200109,
+    "diagnostics": {
+        "errors": 2,
+        "warnings": 48,
+        "ignored": 1
+    },
+    "crash_reports": [],
+    "diagnostic_preview": [
+        {
+            "severity": "ERROR",
+            "message": "Failed to fetch user properties",
+            "source": {
+                "file": "game/logs/latest.log",
+                "line": 550
+            }
+        },
+        {
+            "severity": "ERROR",
+            "message": "Couldn't connect to realms",
+            "source": {
+                "file": "game/logs/latest.log",
+                "line": 841
+            }
+        },
+        {
+            "severity": "WARN",
+            "message": "Compatibility level JAVA_25 specified by fabric-api-lookup-api-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+            "source": {
+                "file": "game/logs/latest.log",
+                "line": 54
+            }
+        }
+    ],
+    "failure": "Runtime errors or crash reports; see diagnostics.json"
+}

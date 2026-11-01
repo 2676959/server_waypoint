@@ -1,0 +1,6 @@
+Local unsupported: ready, server sources unavailable, profile=1a018852-b2fe-4661-9780-d7499905eb36, network=NO_SERVERSIDE_SUPPORT
+saved /Volumes/ssd/sw-private-task8-20261031/multiplayer-results-3/26.1.2-Fabric/multiplayer-unsupported.png
+Local incompatible: ready, server sources unavailable, profile=ee8acd66-0166-4d95-a630-a1edd8fda71e, network=INCOMPATIBLE_PROTOCOL
+saved /Volumes/ssd/sw-private-task8-20261031/multiplayer-results-3/26.1.2-Fabric/multiplayer-incompatible.png
+Local reconnect: ready, server sources unavailable, profile=1a018852-b2fe-4661-9780-d7499905eb36, network=INCOMPATIBLE_PROTOCOL
+saved /Volumes/ssd/sw-private-task8-20261031/multiplayer-results-3/26.1.2-Fabric/multiplayer-reconnect.png

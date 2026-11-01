@@ -1,0 +1,37 @@
+[
+    {
+        "probe": "core",
+        "runner_status": "FAIL",
+        "stage": "complete",
+        "scenario_count": 7,
+        "feature_assertions": "PASS"
+    },
+    {
+        "probe": "gui",
+        "runner_status": "FAIL",
+        "stage": "complete",
+        "scenario_count": 4,
+        "feature_assertions": "PASS"
+    },
+    {
+        "probe": "multiplayer",
+        "runner_status": "FAIL",
+        "stage": "complete",
+        "scenario_count": 6,
+        "feature_assertions": "PASS"
+    },
+    {
+        "probe": "editor",
+        "runner_status": "PASS",
+        "stage": "complete",
+        "scenario_count": 20,
+        "feature_assertions": "PASS"
+    },
+    {
+        "probe": "maps",
+        "runner_status": "PASS",
+        "stage": "complete",
+        "scenario_count": 4,
+        "feature_assertions": "PASS"
+    }
+]

@@ -1,0 +1,12 @@
+2 connect:127.0.0.1:25648
+5 feature:ready
+7 cmd:wp private add -44 80 -30 Homes Base
+11 feature:state
+12 cmd:wp private list all
+13 suggest:wp private details list minecraft:overworld 
+14 suggest:wp private details waypoint minecraft:overworld Homes 
+15 clear
+16 feature:state
+18 feature:state
+19 snapshot
+25 cmd:wp private restore IEx2mkkOBMgWyT95935ODzAE

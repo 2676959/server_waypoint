@@ -6,7 +6,7 @@
 - [Cross-server waypoints](cross-server/) — discovery and teleportation over Velocity.
 - [GUI tooltips](gui-tooltips/) — themed tooltips in the mod's screens: surface, scheduling, placement and layering.
 - [Jar packaging](jar-packaging/) — what each release jar ships, the `cross-server` module boundary and the release gate's content checks.
-- [Private and local waypoints](private-waypoint/) — proposed owner-only server collections, independent client profiles, collection views, and explicit copying.
+- [Private and local waypoints](private-waypoint/) — owner-only server collections, independent client profiles, collection views, and explicit copying.
 - [Publishing](publishing/) — Modrinth and CurseForge metadata, release checklists, artifact manifests and upload recovery.
 - [Server performance](server-performance/) — current-release audits, zero-player test worlds, Azalea bot tiers, measured repairs and future regression gates.
 - [Theme editor](theme-editor/) — the color theme editor: raw key list, key editor, live preview with usage markers, Reset and Save.

@@ -1,0 +1,17 @@
+{
+  "chat": [
+    {
+      "text": "✘ Homes already has a waypoint called Base. Details",
+      "commands": [
+        "/wp details waypoint minecraft:overworld Homes Base"
+      ]
+    }
+  ],
+  "position": [
+    8.5,
+    173.0,
+    9.5,
+    "minecraft:overworld"
+  ],
+  "screen": "_959.server_waypoint.common.client.gui.screens.WaypointManagerScreen"
+}

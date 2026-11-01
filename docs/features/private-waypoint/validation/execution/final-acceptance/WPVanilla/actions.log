@@ -1,0 +1,16 @@
+3 connect:127.0.0.1:25648
+8 cmd:wp private add 70 80 -30 Homes Base
+20 cmd:wp private
+21 cmd:wp private help
+22 cmd:wp private details waypoint minecraft:overworld Homes Base
+23 cmd:wp private list all limit 1 view flat page 1
+24 cmd:wp private remove minecraft:overworld Homes Base
+26 cmd:wp private restore IEx2mkkOBMgWyT95935ODzAE
+27 cmd:wp private restore IEx2mkkOBMgWyT95935ODzAE
+28 cmd:wp private navigate minecraft:overworld Homes Base actionbar
+29 leave
+30 connect:127.0.0.1:25648
+31 cmd:wp private navigate
+32 cmd:wp private tp minecraft:overworld Homes Base
+33 cmd:wp private tp minecraft:overworld Homes Base
+34 snapshot

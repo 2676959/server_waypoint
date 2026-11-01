@@ -1,11 +1,12 @@
 # Private and local waypoints
 
-Status: implementation in progress. Collection-aware navigation and owner storage (plan Tasks 1–2)
+Status: implementation and planned acceptance complete. Collection-aware navigation and owner storage (plan Tasks 1–2)
 were verified on 2026-10-23; private commands (Task 3) and owner-only synchronization with separate
 client caches (Task 4), independent Local profiles/persistence (Task 5), and source-aware client
 operations/teleport templates (Task 6) on 2026-10-28. Collection manager views, destination/profile
 controls, copying and composed markers (Task 7) were verified automatically on 2026-10-29.
-Task 8 live acceptance remains pending.
+Task 8 suites, representative builds, documentation and remaining live checks were completed on
+2026-10-31. The final record describes input, language-review and runtime certification boundaries.
 
 This feature adds two independent waypoint collections alongside existing shared server waypoints:
 
@@ -25,6 +26,9 @@ there is no automatic mirroring between collections.
   [implementation plan](plans/2026-10-30-local-profile-list.md)
 - [Implementation plan](plans/2026-10-16-private-waypoint.md)
 - [Validation checklist](validation/2026-10-16-private-waypoint-checklist.md)
+- [Final multiplayer/platform/proxy/UI acceptance](validation/2026-10-31-final-acceptance.md)
+- [Task 8 platform, player documentation and live evidence](validation/2026-10-31-platform-validation.md)
+- [Player guide: collections, profiles and copying](../../tips/server-guide.md#shared-private-and-local-waypoints)
 - [Private command validation](validation/2026-10-28-private-commands.md)
 - [Owner-only synchronization validation](validation/2026-10-28-private-synchronization.md)
 - [Local profile persistence validation](validation/2026-10-28-local-profiles.md)
@@ -44,8 +48,9 @@ there is no automatic mirroring between collections.
 3. Manager views, source labels, creation/copy routing, rendering, and live validation.
 
 The implementation plan records the task dependencies. Stage 3 implementation is complete;
-its live validation and the remaining Task 8 documentation/acceptance work are pending. The
-validation checklist records required checks, not evidence that they passed.
+Task 8 documentation, automated platform validation and planned live acceptance are complete.
+The validation records distinguish passing feature scenarios from offline service errors,
+native event input from OS input, and linguistic review from native-speaker sign-off.
 
 ## Related guidance
 
