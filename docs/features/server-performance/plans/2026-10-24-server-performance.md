@@ -232,6 +232,15 @@ shallower and plain controls pass; independent item graphs, exact carrier metada
 owner isolation and entity cleanup are recorded in [navigation evidence](../validation/2026-10-25-m1-navigation.md).
 The remaining implementation and full original-Paper case checkboxes stay open.
 
+Task 11 checkpoint (2026-11-01): other-container chest open/dirty-close passes for
+one and ten owners. Real Azalea block-open receipts clean direct and nested
+protected items and dirty top/cursor state; ordinary contents are conserved. See
+[navigation evidence](../validation/2026-10-25-m1-navigation.md). Review follow-up
+tightens nested expected carriers, open-receipt contents, dirty before-counts and
+world-item rejection; native suites were not rerun. Drag, craft/cartography,
+pickup, entity/frame/equipment, deletion, remaining terrain boundaries and timed
+CLI integration stay open.
+
 ### Task 12: Synchronization, upload/edit traffic and chat sharing
 
 **Files:** Create `tools/server-performance/scenarios/sync_upload.py`, `tests/test_sync_upload.py`; extend Azalea protocol actions and production-codec vectors.

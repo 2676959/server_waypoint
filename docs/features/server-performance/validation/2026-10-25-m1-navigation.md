@@ -325,3 +325,42 @@ servers/bots are stopped. No production or localization changes were made.
 These are functional observations, not timed navigation acceptance. Other
 protection hooks, carrier inputs, deletion/terrain boundaries and prepared CLI
 integration remain pending; Task 11 and M1 remain in progress.
+
+## Other-container open and dirty-close
+
+`/Volumes/ssd/sw-performance-m1-container-small/` and
+`/Volumes/ssd/sw-performance-m1-container-medium/` pass five chest cases for one
+and ten real Azalea owners. Bots use `open_container_at` on owned native chests
+and hold/close across the dirty-close cases. These are functional observations,
+not timed acceptance.
+
+1. Opening a chest that already holds a cloned compass plus ordinary diamonds/stone
+   removes the protected item and leaves the ordinary identities/counts exact.
+2. Opening a chest that holds a nested blue shulker/map sanitizes the carrier
+   in place: independent graphs change from 1 protected / 67 ordinary leaves to
+   0 / 67, and the chest reclassifies the shulker as ordinary.
+3. After an ordinary chest is open, injecting a cloned compass into the top
+   inventory and closing removes that extra tagged item and preserves ordinary
+   contents.
+4. Injecting a cloned compass onto the cursor while the chest is open and then
+   closing clears the cursor without changing the chest or owner method items.
+5. An ordinary-only chest survives open/close with exact contents.
+
+Native `InventoryOpenEvent` / `InventoryCloseEvent` receipts record `CHEST` and
+the cleaned top inventory after the installed HIGHEST handlers. Owner all-five
+method targets, map IDs and live client effects remain exact. Ten owners produce
+50 PASS decisions. Native logger health PASSes. Owned chests are removed after
+each case.
+
+This nested-in-chest PASS does not override the retained depth-nine world-spawn
+FAIL: published 4.0.0 inventory open/close sanitizes the shulker carrier, while
+`onItemSpawn` still stops at detector depth nine. No production repair was made.
+
+Current verification: 166 Python tests, 29 Rust tests and the Paper 1.21.11 probe
+build pass; probe/production archives have zero overlapping classes. Helper
+processes are stopped. Container assertions now require an independent expected
+carrier, open-receipt `topItems`, recipe-specific dirty before-counts, and zero
+protected world items; native one-/ten-owner container suites were not rerun
+against those tighter checks. Drag, craft/cartography, pickup,
+entity/frame/equipment, deletion, remaining terrain boundaries and timed CLI
+integration remain open.

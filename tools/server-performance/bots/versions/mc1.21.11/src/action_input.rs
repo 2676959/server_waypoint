@@ -31,3 +31,21 @@ pub fn player_action(data: &Value) -> Result<Action, &'static str> {
         _ => Err("unsupported physical player action"),
     }
 }
+
+pub fn container_position(data: &Value) -> Result<(i32, i32, i32), &'static str> {
+    let coordinate = |key| {
+        data[key]
+            .as_i64()
+            .ok_or("container block coordinate required")
+    };
+    let x = coordinate("x")?;
+    let y = coordinate("y")?;
+    let z = coordinate("z")?;
+    if !(-30_000_000..=30_000_000).contains(&x) || !(-30_000_000..=30_000_000).contains(&z) {
+        return Err("container block is outside the world");
+    }
+    if !(-64..=319).contains(&y) {
+        return Err("container block is outside world height");
+    }
+    Ok((x as i32, y as i32, z as i32))
+}

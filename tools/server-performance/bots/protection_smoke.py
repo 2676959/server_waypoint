@@ -14,9 +14,14 @@ from controller import create_root
 from models import Status
 from processes import stop_owned
 from server_health import native_log_health
-from scenarios.navigation import METHODS, physical_receipts, physical_drop_spawned, restored_session, ordinary_conservation, nested_recipes, nested_item_outcome
+from scenarios.navigation import METHODS, physical_receipts, physical_drop_spawned, restored_session, ordinary_conservation, nested_recipes, nested_item_outcome, container_cleanup, container_cases, container_recipe
 from worlds import install_server, boot
 from navigation_smoke import execute, snapshot
+
+
+def probe_container(probe, name):
+    probe.send("protection.container.snapshot", {"player": name})
+    return probe.wait("protection.container.snapshot")["data"]
 
 
 def run(root, count, case_set="physical", candidate=None):
@@ -43,6 +48,8 @@ def run(root, count, case_set="physical", candidate=None):
     evidence["artifactProvenance"] = artifact.provenance
     if case_set == "nested":
         evidence["scope"] = "native-world-spawn-independent-nested-graph"
+    if case_set == "container":
+        evidence["scope"] = "other-container-open-dirty-close"
     paths = (Path(__file__).resolve(), tools / "bots/navigation_smoke.py", tools / "scenarios/navigation.py", tools / "bot_driver.py", tools / "worlds.py", tools / "server_health.py")
     atomic_write(root / "inputs.json", {"schemaVersion": 1, "files": {str(path.relative_to(tools)): sha256(path) for path in paths}})
     for path in paths:
@@ -212,6 +219,70 @@ def run(root, count, case_set="physical", candidate=None):
             print(f"native {count}-owner independent nested item graphs verified")
             return
 
+        if case_set == "container":
+            chests = {name: {"x": 300 + index * 3, "y": -61, "z": 297} for index, name in enumerate(names)}
+            for case in container_cases():
+                probe.send("lifecycle.arm")
+                probe.wait("lifecycle.armed")
+                start = 0
+                for name in names:
+                    probe.send("protection.container.place", {"player": name, "kind": case["kind"], "method": case["method"], **chests[name]})
+                    placed = probe.wait("protection.container.placed")["data"]
+                    if placed.get("inventoryType") != "CHEST":
+                        raise ValueError("native other-container fixture is not a chest")
+                before = {name: probe_container(probe, name) for name in names}
+                actions({name: {"operation": "open-container", "hold": case["hold"], **chests[name]} for name in names})
+                held = case["hold"]
+                if case.get("inject"):
+                    for name in names:
+                        probe.send("protection.container.dirty", {"player": name, "method": case["method"], "inject": case["inject"]})
+                        before[name] = probe.wait("protection.container.dirtied")["data"]
+                    actions({name: {"operation": "close-container"} for name in names})
+                    held = False
+                after = {name: probe_container(probe, name) for name in names}
+                observed = monitor()
+                if observed["droppedObservations"]:
+                    raise ValueError("native other-container receipts overflowed")
+                client = packets()
+                owners = {player["name"]: restored_session({"uuid": identities[player["name"]], "mapId": ids[player["name"]], "methods": METHODS, "target": expected_target}, player, client[player["name"]]) for player in snapshot(probe)["players"]}
+                if len(owners) != count or any(value.status != Status.PASS for value in owners.values()):
+                    raise ValueError("other-container case changed owner navigation state")
+                decisions = {}
+                for name in names:
+                    recipe = container_recipe(case, before[name])
+                    sample = {"trigger": case["trigger"],
+                              "before": {**before[name]["top"], "inventoryType": "CHEST",
+                                         "cursorProtectedItems": before[name].get("cursor", {}).get("protectedItems", 0)},
+                              "after": {**after[name]["top"], "inventoryType": "CHEST",
+                                        "cursorProtectedItems": after[name].get("cursor", {}).get("protectedItems", 0)},
+                              "world": observed["worldItems"],
+                              "graphs": after[name]["graphs"],
+                              "expectedGraphs": before[name]["expectedGraphs"],
+                              "receipts": [event for event in observed["events"][start:] if event.get("uuid") == identities[name]]}
+                    decisions[name] = container_cleanup(recipe, sample)
+                step = {"recipe": case, "before": before, "after": after, "monitor": observed, "ownerDecisions": owners, "decisions": decisions}
+                evidence["steps"].append(step)
+                atomic_write(root / "protection.json", evidence)
+                if held:
+                    actions({name: {"operation": "close-container"} for name in names})
+                for name in names:
+                    probe.send("protection.container.remove", {"player": name})
+                    removed = probe.wait("protection.container.removed")["data"]
+                    if removed.get("present") is not False:
+                        raise ValueError("owned other-container cleanup incomplete")
+            evidence["allCasesExecuted"] = True
+            evidence["containerOutcomes"] = dict(Counter(step["decisions"][name].status.value for step in evidence["steps"] for name in names))
+            evidence["serverHealth"] = native_log_health(server / "logs/latest.log")
+            if evidence["serverHealth"].status != Status.PASS:
+                raise ValueError("native other-container server log health failed")
+            if any(step["decisions"][name].status != Status.PASS for step in evidence["steps"] for name in names):
+                raise ValueError("native other-container assertions failed or incomplete")
+            evidence["completed"] = True
+            driver.close()
+            driver = None
+            print(f"native {count}-owner other-container open/dirty-close verified")
+            return
+
         for method in ("compass", "map"):
             select(slot(method))
             start = len(monitor()["events"])
@@ -266,7 +337,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--count", type=int, choices=(1, 10), default=1)
-    parser.add_argument("--case-set", choices=("physical", "nested"), default="physical")
+    parser.add_argument("--case-set", choices=("physical", "nested", "container"), default="physical")
     parser.add_argument("--candidate", type=Path, help="Explicit development candidate JAR; retain its own hash and provenance")
     args = parser.parse_args()
     run(args.root, args.count, args.case_set, args.candidate)

@@ -165,9 +165,20 @@ final class LifecycleAssertions implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
+    public void onOpen(org.bukkit.event.inventory.InventoryOpenEvent event) throws Exception {
+        if (armed && event.getPlayer() instanceof Player player) {
+            JsonObject value = playerEvent("inventory-open", player);
+            value.addProperty("type", event.getView().getType().name());
+            value.add("topItems", classify(Arrays.asList(event.getView().getTopInventory().getContents())));
+            retain(value);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onClose(InventoryCloseEvent event) throws Exception {
         if (armed && event.getPlayer() instanceof Player player) {
             JsonObject value = playerEvent("inventory-close", player);
+            value.addProperty("type", event.getView().getType().name());
             value.add("topItems", classify(Arrays.asList(event.getView().getTopInventory().getContents())));
             value.add("cursorItems", classify(List.of(player.getItemOnCursor())));
             retain(value);
@@ -254,7 +265,7 @@ final class LifecycleAssertions implements Listener {
         return found.deepCopy();
     }
 
-    private JsonObject classify(Collection<ItemStack> stacks) throws Exception {
+    JsonObject classify(Collection<ItemStack> stacks) throws Exception {
         var plugin = Bukkit.getPluginManager().getPlugin("ServerWaypoint");
         if (plugin == null) {
             throw new IllegalStateException("Installed release absent");

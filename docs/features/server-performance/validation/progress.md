@@ -536,3 +536,48 @@ production change, commit, push or baseline promotion.
 
 [Results, identities and reproduction](2026-11-01-4.0.1-task10-decoder.md),
 [per-repetition evidence](2026-11-01-4.0.1-task10-decoder-evidence.json).
+
+## 2026-11-01 — Task 11 other-container open/dirty-close
+
+Native one- and ten-owner chest cases pass at
+`/Volumes/ssd/sw-performance-m1-container-small/` and
+`/Volumes/ssd/sw-performance-m1-container-medium/`. Real Azalea block-open and
+hold/close exercise `InventoryOpenEvent` / `InventoryCloseEvent` on owned chests.
+Direct protected clones and nested shulker/map carriers are removed or sanitized;
+ordinary chest identities/counts and owner method items remain exact. Dirty top
+and cursor injections are cleaned on close. 5 / 50 decisions PASS. Native logger
+health PASSes.
+
+Ruling: published 4.0.0 other-container open/close sanitizes a nested shulker
+carrier while preserving ordinary children. That does not reclassify the retained
+depth-nine `onItemSpawn` detector FAIL. Cost if wrong: later nested-inventory
+cases still need their own graphs.
+
+Verification: 161 Python tests (3 new container contracts), 29 Rust tests
+(container coordinates + existing suite), Paper 1.21.11 probe build, and
+probe/production class isolation. Bot SHA-256 `4a9516ee…ba935513`; probe
+`7dc893a8…b7208b`. No production/localization change, commit or push. Task 11
+remains open for drag, craft/cartography, pickup, entity/frame/equipment,
+deletion, remaining terrain boundaries and timed CLI integration.
+
+### Task 11 other-container assertion review (2026-11-01)
+
+Four P2 false-PASS paths in the new container checks:
+
+- Nested ordinary conservation was copied from `top_after`, so deleting the
+  sanitized shulker still passed. Recipes now take ordinary identities from an
+  independently constructed `expectedTop`, and after graphs must match that
+  carrier's sha256/leaf counts.
+- Open cases auto-closed before the snapshot, and `container_cleanup` only
+  required an open receipt to exist. Open recipes now hold the chest until the
+  snapshot, and the matching `inventory-open` `topItems` must already be clean.
+- Before-state field presence accepted a never-dirtied fixture. Recipes now
+  require the intended top/nested/cursor protected counts before cleanup.
+- `monitor.worldItems` was collected and ignored. Cleanup now fails if any
+  protected world item or nested carrier remains.
+
+RED: the four new contract tests returned PASS on the altered evidence.
+GREEN: 166 Python tests and 29 Rust tests; Paper 1.21.11 probe rebuild
+`2d9586bc…fb0a6eeb`; probe/production class overlap 0. Native one-/ten-owner
+container suites were not rerun. No production/localization change, commit or
+push.

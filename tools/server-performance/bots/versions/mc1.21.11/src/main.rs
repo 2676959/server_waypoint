@@ -338,10 +338,17 @@ async fn run() -> anyhow::Result<()> {
         let acknowledgements = state.acknowledgements.clone();
         let markers = state.markers.clone();
         workers.push(tokio::task::spawn_local(async move {
+            let mut open_container = None;
             while let Some((id, data, enqueued)) = requests.recv().await {
-                let result = actions::perform(&bot, &data, &acknowledgements, &markers)
-                    .await
-                    .map_err(|error| error.to_string());
+                let result = actions::perform(
+                    &bot,
+                    &data,
+                    &acknowledgements,
+                    &markers,
+                    &mut open_container,
+                )
+                .await
+                .map_err(|error| error.to_string());
                 if outcomes
                     .send((id, name.clone(), result, enqueued))
                     .await

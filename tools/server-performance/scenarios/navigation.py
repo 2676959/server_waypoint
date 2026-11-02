@@ -210,3 +210,107 @@ def nested_recipes():
                      ("bundle-9","map",True,1,9),
                      ("plain-shulker","compass",True,0,67),
                      ("plain-bundle-9","map",True,0,9)))
+
+
+def container_cases():
+    return (
+        {"label":"open-direct","kind":"direct","method":"compass","trigger":"open","hold":True,
+         "expectedBeforeProtected":1,"expectedBeforeNested":0,"expectedBeforeCursorProtected":0,
+         "expectedAfterProtected":0,"expectedAfterNested":0},
+        {"label":"open-nested","kind":"nested","method":"map","trigger":"open","hold":True,
+         "expectedBeforeProtected":0,"expectedBeforeNested":1,"expectedBeforeCursorProtected":0,
+         "expectedAfterProtected":0,"expectedAfterNested":0},
+        {"label":"dirty-close-top","kind":"ordinary","method":"compass","trigger":"close","hold":True,
+         "inject":"top","expectedBeforeProtected":1,"expectedBeforeNested":0,"expectedBeforeCursorProtected":0,
+         "expectedAfterProtected":0,"expectedAfterNested":0},
+        {"label":"dirty-close-cursor","kind":"ordinary","method":"compass","trigger":"close","hold":True,
+         "inject":"cursor","expectedBeforeProtected":0,"expectedBeforeNested":0,"expectedBeforeCursorProtected":1,
+         "expectedAfterProtected":0,"expectedAfterNested":0,"expectedAfterCursorProtected":0},
+        {"label":"ordinary-control","kind":"ordinary","method":"compass","trigger":"open","hold":True,
+         "expectedBeforeProtected":0,"expectedBeforeNested":0,"expectedBeforeCursorProtected":0,
+         "expectedAfterProtected":0,"expectedAfterNested":0},
+    )
+
+
+def container_recipe(case,snapshot):
+    expected=snapshot.get("expectedTop")
+    if not isinstance(expected,dict) or not isinstance(expected.get("ordinary"),dict):
+        raise ValueError("independent expected sanitized container missing")
+    recipe={"trigger":case["trigger"],"inventoryType":"CHEST",
+            "expectedBeforeProtected":case["expectedBeforeProtected"],
+            "expectedBeforeNested":case["expectedBeforeNested"],
+            "expectedBeforeCursorProtected":case["expectedBeforeCursorProtected"],
+            "expectedAfterProtected":case["expectedAfterProtected"],
+            "expectedAfterNested":case["expectedAfterNested"],
+            "ordinary":dict(expected["ordinary"])}
+    if "expectedAfterCursorProtected" in case:
+        recipe["expectedAfterCursorProtected"]=case["expectedAfterCursorProtected"]
+    return recipe
+
+
+def container_cleanup(recipe,sample):
+    trigger=recipe.get("trigger")
+    inventory_type=recipe.get("inventoryType")
+    if trigger not in {"open","close"} or not inventory_type:
+        return Decision(Status.BLOCKED,("other-container cleanup recipe missing trigger or inventory type",))
+    if any(key not in recipe for key in ("expectedBeforeProtected","expectedBeforeNested","expectedBeforeCursorProtected")):
+        return Decision(Status.BLOCKED,("other-container cleanup recipe missing intended dirty fixture counts",))
+    if sample.get("trigger")!=trigger:
+        return Decision(Status.FAIL,("other-container cleanup trigger differs from recipe",))
+    before=sample.get("before",{})
+    after=sample.get("after",{})
+    keys=("ordinary","protectedItems","nestedProtectedCarriers","inventoryType")
+    if any(key not in before or key not in after for key in keys) or "cursorProtectedItems" not in before:
+        return Decision(Status.BLOCKED,("other-container before/after inventory evidence missing",))
+    if before.get("inventoryType")!=inventory_type or after.get("inventoryType")!=inventory_type:
+        return Decision(Status.FAIL,("other-container inventory type differs",))
+    if (before.get("protectedItems")!=recipe["expectedBeforeProtected"]
+            or before.get("nestedProtectedCarriers")!=recipe["expectedBeforeNested"]
+            or before.get("cursorProtectedItems")!=recipe["expectedBeforeCursorProtected"]):
+        return Decision(Status.FAIL,("other-container did not start from the intended dirty fixture",))
+    world=sample.get("world")
+    if not isinstance(world,dict) or any(key not in world for key in ("protectedItems","nestedProtectedCarriers")):
+        return Decision(Status.BLOCKED,("other-container world item evidence missing",))
+    if world.get("protectedItems")!=0 or world.get("nestedProtectedCarriers")!=0:
+        return Decision(Status.FAIL,("protected item escaped into the world",))
+    event="inventory-open" if trigger=="open" else "inventory-close"
+    receipts=[receipt for receipt in sample.get("receipts",[]) if receipt.get("event")==event and receipt.get("type")==inventory_type]
+    if not receipts:
+        return Decision(Status.BLOCKED,("matching native other-container "+trigger+" receipt missing",))
+    if len(receipts)!=1:
+        return Decision(Status.FAIL,("native other-container "+trigger+" receipt duplicated",))
+    observed=receipts[0].get("topItems")
+    if not isinstance(observed,dict) or any(key not in observed for key in ("ordinary","protectedItems","nestedProtectedCarriers")):
+        return Decision(Status.BLOCKED,("other-container "+trigger+" receipt top inventory missing",))
+    if observed.get("protectedItems")!=recipe.get("expectedAfterProtected") or observed.get("nestedProtectedCarriers")!=recipe.get("expectedAfterNested"):
+        return Decision(Status.FAIL,("protected item remained in the other container at "+trigger,))
+    decision=ordinary_conservation(recipe.get("ordinary"),observed.get("ordinary"))
+    if decision.status!=Status.PASS:
+        return decision
+    if after.get("protectedItems")!=recipe.get("expectedAfterProtected") or after.get("nestedProtectedCarriers")!=recipe.get("expectedAfterNested"):
+        return Decision(Status.FAIL,("protected item remained in the other container after "+trigger,))
+    if "expectedAfterCursorProtected" in recipe:
+        if "cursorProtectedItems" not in after:
+            return Decision(Status.BLOCKED,("other-container cursor evidence missing",))
+        if after.get("cursorProtectedItems")!=recipe["expectedAfterCursorProtected"]:
+            return Decision(Status.FAIL,("protected cursor survived other-container close",))
+        cursor=receipts[0].get("cursorItems")
+        if not isinstance(cursor,dict) or "protectedItems" not in cursor:
+            return Decision(Status.BLOCKED,("other-container close receipt cursor missing",))
+        if cursor.get("protectedItems")!=recipe["expectedAfterCursorProtected"]:
+            return Decision(Status.FAIL,("protected cursor survived other-container close",))
+    graphs=sample.get("graphs")
+    expected_graphs=sample.get("expectedGraphs")
+    if graphs is not None or expected_graphs is not None:
+        if not isinstance(graphs,list) or not isinstance(expected_graphs,list):
+            return Decision(Status.BLOCKED,("independent expected sanitized carrier graphs missing",))
+        if len(graphs)!=len(expected_graphs):
+            return Decision(Status.FAIL,("nested protected item escaped or ordinary carrier metadata/contents changed",))
+        for actual,expected in zip(graphs,expected_graphs):
+            for graph in (actual,expected):
+                if graph.get("origin")!="independent-bukkit-item-graph" or graph.get("complete") is not True or not graph.get("sha256"):
+                    return Decision(Status.BLOCKED,("complete independent item-graph observation missing",))
+            if (actual.get("protectedUnits")!=0 or actual.get("ordinaryLeafUnits")!=expected.get("ordinaryLeafUnits")
+                    or actual.get("sha256")!=expected.get("sha256")):
+                return Decision(Status.FAIL,("nested protected item escaped or ordinary carrier metadata/contents changed",))
+    return ordinary_conservation(recipe.get("ordinary"),after.get("ordinary"))

@@ -146,3 +146,107 @@ class NavigationScenariosTest(unittest.TestCase):
         sample={"before":graph,"expectedAfter":expected,"after":graph,"worldPresent":False,"spawnCancelled":True,"roundTripValid":True}
         self.assertEqual(Status.PASS,nested_item_outcome(recipe,sample).status)
         self.assertEqual(Status.FAIL,nested_item_outcome(recipe,{**sample,"worldPresent":True}).status)
+
+    def test_other_container_open_removes_protected_and_preserves_ordinary(self):
+        from scenarios.navigation import container_cleanup
+        ordinary={"stone-identity":16,"diamond-identity":3}
+        before={"ordinary":ordinary,"protectedItems":1,"nestedProtectedCarriers":0,"cursorProtectedItems":0,"inventoryType":"CHEST"}
+        after={"ordinary":ordinary,"protectedItems":0,"nestedProtectedCarriers":0,"cursorProtectedItems":0,"inventoryType":"CHEST"}
+        recipe={"trigger":"open","inventoryType":"CHEST","expectedBeforeProtected":1,"expectedBeforeNested":0,"expectedBeforeCursorProtected":0,"expectedAfterProtected":0,"expectedAfterNested":0,"ordinary":ordinary}
+        clean={"ordinary":ordinary,"protectedItems":0,"nestedProtectedCarriers":0}
+        sample={"trigger":"open","before":before,"after":after,"world":{"ordinary":{},"protectedItems":0,"nestedProtectedCarriers":0},"receipts":[{"event":"inventory-open","uuid":"owner-1","type":"CHEST","topItems":clean}]}
+        self.assertEqual(Status.PASS,container_cleanup(recipe,sample).status)
+        self.assertEqual(Status.FAIL,container_cleanup(recipe,{**sample,"after":{**after,"protectedItems":1}}).status)
+        self.assertEqual(Status.FAIL,container_cleanup(recipe,{**sample,"after":{**after,"ordinary":{"stone-identity":16}}}).status)
+        self.assertEqual(Status.BLOCKED,container_cleanup(recipe,{**sample,"receipts":[]}).status)
+
+    def test_dirty_close_cleans_top_inventory_and_cursor(self):
+        from scenarios.navigation import container_cleanup
+        ordinary={"stone-identity":16}
+        before={"ordinary":ordinary,"protectedItems":1,"nestedProtectedCarriers":0,"cursorProtectedItems":1,"inventoryType":"CHEST"}
+        after={"ordinary":ordinary,"protectedItems":0,"nestedProtectedCarriers":0,"cursorProtectedItems":0,"inventoryType":"CHEST"}
+        recipe={"trigger":"close","inventoryType":"CHEST","expectedBeforeProtected":1,"expectedBeforeNested":0,"expectedBeforeCursorProtected":1,"expectedAfterProtected":0,"expectedAfterNested":0,"expectedAfterCursorProtected":0,"ordinary":ordinary}
+        top={"ordinary":ordinary,"protectedItems":0,"nestedProtectedCarriers":0}
+        cursor={"ordinary":{},"protectedItems":0,"nestedProtectedCarriers":0}
+        sample={"trigger":"close","before":before,"after":after,"world":{"ordinary":{},"protectedItems":0,"nestedProtectedCarriers":0},"receipts":[{"event":"inventory-close","uuid":"owner-1","type":"CHEST","topItems":top,"cursorItems":cursor}]}
+        self.assertEqual(Status.PASS,container_cleanup(recipe,sample).status)
+        self.assertEqual(Status.FAIL,container_cleanup(recipe,{**sample,"after":{**after,"cursorProtectedItems":1}}).status)
+        self.assertEqual(Status.BLOCKED,container_cleanup(recipe,{**sample,"before":{"ordinary":ordinary}}).status)
+
+    def test_nested_other_container_escape_is_independent_of_top_level_only_cleanup(self):
+        from scenarios.navigation import container_cleanup
+        ordinary={"diamond-identity":3}
+        before={"ordinary":ordinary,"protectedItems":0,"nestedProtectedCarriers":1,"cursorProtectedItems":0,"inventoryType":"CHEST"}
+        after={"ordinary":ordinary,"protectedItems":0,"nestedProtectedCarriers":0,"cursorProtectedItems":0,"inventoryType":"CHEST"}
+        recipe={"trigger":"open","inventoryType":"CHEST","expectedBeforeProtected":0,"expectedBeforeNested":1,"expectedBeforeCursorProtected":0,"expectedAfterProtected":0,"expectedAfterNested":0,"ordinary":ordinary}
+        clean={"ordinary":ordinary,"protectedItems":0,"nestedProtectedCarriers":0}
+        sample={"trigger":"open","before":before,"after":after,"world":{"ordinary":{},"protectedItems":0,"nestedProtectedCarriers":0},"receipts":[{"event":"inventory-open","uuid":"owner-1","type":"CHEST","topItems":clean}]}
+        self.assertEqual(Status.PASS,container_cleanup(recipe,sample).status)
+        self.assertEqual(Status.FAIL,container_cleanup(recipe,{**sample,"after":{**after,"nestedProtectedCarriers":1}}).status)
+
+    def test_other_container_open_cases_hold_until_state_is_checked(self):
+        from scenarios.navigation import container_cases
+        cases=container_cases()
+        self.assertTrue(all(case["hold"] for case in cases if case["trigger"]=="open"))
+        cursor=next(case for case in cases if case.get("inject")=="cursor")
+        self.assertEqual(1,cursor["expectedBeforeCursorProtected"])
+        self.assertEqual(0,cursor["expectedBeforeProtected"])
+
+    def test_other_container_open_receipt_contents_are_checked_not_just_presence(self):
+        from scenarios.navigation import container_cleanup
+        ordinary={"stone-identity":16,"diamond-identity":3}
+        before={"ordinary":ordinary,"protectedItems":1,"nestedProtectedCarriers":0,"cursorProtectedItems":0,"inventoryType":"CHEST"}
+        after={"ordinary":ordinary,"protectedItems":0,"nestedProtectedCarriers":0,"cursorProtectedItems":0,"inventoryType":"CHEST"}
+        recipe={"trigger":"open","inventoryType":"CHEST","expectedBeforeProtected":1,"expectedBeforeNested":0,"expectedBeforeCursorProtected":0,"expectedAfterProtected":0,"expectedAfterNested":0,"ordinary":ordinary}
+        world={"ordinary":{},"protectedItems":0,"nestedProtectedCarriers":0}
+        dirty={"ordinary":ordinary,"protectedItems":1,"nestedProtectedCarriers":0}
+        clean={"ordinary":ordinary,"protectedItems":0,"nestedProtectedCarriers":0}
+        sample={"trigger":"open","before":before,"after":after,"world":world,"receipts":[{"event":"inventory-open","uuid":"owner-1","type":"CHEST","topItems":dirty}]}
+        self.assertEqual(Status.FAIL,container_cleanup(recipe,sample).status)
+        sample["receipts"]=[{"event":"inventory-open","uuid":"owner-1","type":"CHEST","topItems":clean}]
+        self.assertEqual(Status.PASS,container_cleanup(recipe,sample).status)
+
+    def test_other_container_requires_the_intended_dirty_fixture_before_cleanup(self):
+        from scenarios.navigation import container_cleanup
+        ordinary={"stone-identity":16}
+        clean={"ordinary":ordinary,"protectedItems":0,"nestedProtectedCarriers":0,"cursorProtectedItems":0,"inventoryType":"CHEST"}
+        recipe={"trigger":"close","inventoryType":"CHEST","expectedBeforeProtected":0,"expectedBeforeNested":0,"expectedBeforeCursorProtected":1,"expectedAfterProtected":0,"expectedAfterNested":0,"expectedAfterCursorProtected":0,"ordinary":ordinary}
+        top={"ordinary":ordinary,"protectedItems":0,"nestedProtectedCarriers":0}
+        cursor={"ordinary":{},"protectedItems":0,"nestedProtectedCarriers":0}
+        sample={"trigger":"close","before":clean,"after":clean,"world":{"ordinary":{},"protectedItems":0,"nestedProtectedCarriers":0},"receipts":[{"event":"inventory-close","uuid":"owner-1","type":"CHEST","topItems":top,"cursorItems":cursor}]}
+        self.assertEqual(Status.FAIL,container_cleanup(recipe,sample).status)
+        self.assertEqual(Status.PASS,container_cleanup(recipe,{**sample,"before":{**clean,"cursorProtectedItems":1}}).status)
+
+    def test_other_container_rejects_protected_items_that_escape_into_the_world(self):
+        from scenarios.navigation import container_cleanup
+        ordinary={"stone-identity":16,"diamond-identity":3}
+        before={"ordinary":ordinary,"protectedItems":1,"nestedProtectedCarriers":0,"cursorProtectedItems":0,"inventoryType":"CHEST"}
+        after={"ordinary":ordinary,"protectedItems":0,"nestedProtectedCarriers":0,"cursorProtectedItems":0,"inventoryType":"CHEST"}
+        recipe={"trigger":"open","inventoryType":"CHEST","expectedBeforeProtected":1,"expectedBeforeNested":0,"expectedBeforeCursorProtected":0,"expectedAfterProtected":0,"expectedAfterNested":0,"ordinary":ordinary}
+        clean={"ordinary":ordinary,"protectedItems":0,"nestedProtectedCarriers":0}
+        sample={"trigger":"open","before":before,"after":after,"world":{"ordinary":{},"protectedItems":1,"nestedProtectedCarriers":0},"receipts":[{"event":"inventory-open","uuid":"owner-1","type":"CHEST","topItems":clean}]}
+        self.assertEqual(Status.FAIL,container_cleanup(recipe,sample).status)
+        sample["world"]={"ordinary":{},"protectedItems":0,"nestedProtectedCarriers":1}
+        self.assertEqual(Status.FAIL,container_cleanup(recipe,sample).status)
+        sample["world"]={"ordinary":{},"protectedItems":0,"nestedProtectedCarriers":0}
+        self.assertEqual(Status.PASS,container_cleanup(recipe,sample).status)
+
+    def test_nested_container_conservation_uses_independent_expected_carrier(self):
+        from scenarios.navigation import container_cleanup,container_recipe
+        expected_ordinary={"sanitized-shulker":1}
+        graph={"origin":"independent-bukkit-item-graph","complete":True,"protectedUnits":0,"ordinaryLeafUnits":67,"sha256":"clean-carrier"}
+        case={"trigger":"open","expectedBeforeProtected":0,"expectedBeforeNested":1,"expectedBeforeCursorProtected":0,"expectedAfterProtected":0,"expectedAfterNested":0}
+        recipe=container_recipe(case,{"top":{"ordinary":{}},"expectedTop":{"ordinary":expected_ordinary}})
+        self.assertEqual(expected_ordinary,recipe["ordinary"])
+        before={"ordinary":{},"protectedItems":0,"nestedProtectedCarriers":1,"cursorProtectedItems":0,"inventoryType":"CHEST"}
+        deleted={"ordinary":{},"protectedItems":0,"nestedProtectedCarriers":0,"cursorProtectedItems":0,"inventoryType":"CHEST"}
+        world={"ordinary":{},"protectedItems":0,"nestedProtectedCarriers":0}
+        sample={"trigger":"open","before":before,"after":deleted,"world":world,"graphs":[],"expectedGraphs":[graph],
+                "receipts":[{"event":"inventory-open","uuid":"owner-1","type":"CHEST","topItems":{"ordinary":{},"protectedItems":0,"nestedProtectedCarriers":0}}]}
+        self.assertEqual(Status.FAIL,container_cleanup(recipe,sample).status)
+        clean_after={"ordinary":expected_ordinary,"protectedItems":0,"nestedProtectedCarriers":0,"cursorProtectedItems":0,"inventoryType":"CHEST"}
+        clean_top={"ordinary":expected_ordinary,"protectedItems":0,"nestedProtectedCarriers":0}
+        clean={"trigger":"open","before":before,"after":clean_after,"world":world,"graphs":[graph],"expectedGraphs":[graph],
+               "receipts":[{"event":"inventory-open","uuid":"owner-1","type":"CHEST","topItems":clean_top}]}
+        self.assertEqual(Status.PASS,container_cleanup(recipe,clean).status)
+        self.assertEqual(Status.FAIL,container_cleanup(recipe,{**clean,"graphs":[{**graph,"sha256":"lost-name-or-child"}]}).status)

@@ -40,3 +40,20 @@ fn physical_player_action_requires_known_operation_and_boolean_drop_mode() {
     assert!(player_action(&json!({"operation":"drop","all":1})).is_err());
     assert!(player_action(&json!({"operation":"other"})).is_err());
 }
+
+#[test]
+fn container_position_requires_explicit_block_coordinates() {
+    use sw_performance_bots::action_input::container_position;
+    assert_eq!(
+        container_position(&json!({"x": 300, "y": -61, "z": 297})).unwrap(),
+        (300, -61, 297)
+    );
+    for value in [
+        json!({"x": 300, "y": -61}),
+        json!({"x": 30_000_001, "y": -61, "z": 0}),
+        json!({"x": 0, "y": 320, "z": 0}),
+        json!({"x": 0.5, "y": -61, "z": 0}),
+    ] {
+        assert!(container_position(&value).is_err());
+    }
+}

@@ -1,4 +1,8 @@
-use azalea::{Client, WalkDirection, container::ContainerClientExt};
+use azalea::{
+    Client, WalkDirection,
+    container::{ContainerClientExt, ContainerHandle},
+    core::position::BlockPos,
+};
 use serde_json::{Value, json};
 use std::time::{Duration, Instant};
 
@@ -9,6 +13,7 @@ pub async fn perform(
         std::sync::Mutex<sw_performance_bots::command_ack::PendingAcks>,
     >,
     markers: &std::sync::Arc<std::sync::Mutex<sw_performance_bots::command_ack::PendingAcks>>,
+    open_container: &mut Option<ContainerHandle>,
 ) -> anyhow::Result<Value> {
     let mut started = Instant::now();
     let mut marker_elapsed = 0_u64;
@@ -147,6 +152,28 @@ pub async fn perform(
                 direction: azalea::core::direction::Direction::Down,
                 seq: 0,
             });
+            tokio::time::sleep(Duration::from_millis(150)).await;
+        }
+        "open-container" => {
+            let (x, y, z) = sw_performance_bots::action_input::container_position(data)
+                .map_err(anyhow::Error::msg)?;
+            anyhow::ensure!(open_container.is_none(), "another container already open");
+            let handle = bot
+                .open_container_at(BlockPos::new(x, y, z))
+                .await
+                .ok_or_else(|| anyhow::anyhow!("other container did not open"))?;
+            if data["hold"] == true {
+                *open_container = Some(handle);
+            } else {
+                handle.close();
+            }
+            tokio::time::sleep(Duration::from_millis(150)).await;
+        }
+        "close-container" => {
+            let handle = open_container
+                .take()
+                .ok_or_else(|| anyhow::anyhow!("no held other container"))?;
+            handle.close();
             tokio::time::sleep(Duration::from_millis(150)).await;
         }
         "disconnect" => bot.disconnect(),

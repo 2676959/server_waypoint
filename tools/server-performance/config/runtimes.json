@@ -530,7 +530,7 @@
                 "candidate": "0.15.1+mc1.21.11",
                 "verifiedNativeActions": true,
                 "path": "/Volumes/ssd/fabric_mods_repo/server_waypoint/tools/server-performance/bots/versions/mc1.21.11/target/release/sw-performance-bots",
-                "sha256": "f39dbf5ce6ce70557be3745ebb5fd75900cb6a21369379db49729c02fa843125",
+                "sha256": "4a9516eeff046ff5a1ec000e53e1d2dc8c3b860df47f491fa8e38014ba935513",
                 "toolchain": "nightly-2026-07-15",
                 "nativeModes": [
                     "vanilla",
@@ -554,7 +554,8 @@
                 "2026-10-25 /Volumes/ssd/sw-performance-m1-terrain-small and /Volumes/ssd/sw-performance-m1-terrain-medium-all: exact native cold/warm region pixels, saved terrain files, full client coverage/checksum, active-session save/restart/join restoration; ten owners restore all five methods and same map IDs; same-dimension functional evidence only",
                 "2026-10-25 /Volumes/ssd/sw-performance-m1-lifecycle-small-final and /Volumes/ssd/sw-performance-m1-lifecycle-medium-2: actual 1/10 deaths, automatic respawns, exact ordinary death-drop identities/counts and protected exclusion, all-method owner targets/map IDs/live effects through Nether/Overworld travel; native verified landing fixture; functional evidence only",
                 "2026-10-25 /Volumes/ssd/sw-performance-m1-protection-small-final and /Volumes/ssd/sw-performance-m1-protection-medium: nine physical drop/swap/player-menu cases, native cancellation/slot receipts, exact owner targets/items/map IDs, atomic ordinary conservation and correlated ordinary world entities; /Volumes/ssd/sw-performance-m1-physical-action-regression-peaceful: 1/10/50 native action regression; remaining protections pending; peaceful fifty-player action checks complete but retained watchdog log stability FAIL (3 reports), independent of physical case PASS; isolated /Volumes/ssd/sw-performance-m1-action-health-guard all action checks and native log health PASS, prior shared-host watchdog FAIL retained",
-                "2026-10-26 /Volumes/ssd/sw-performance-m1-nested-small and /Volumes/ssd/sw-performance-m1-nested-medium: all eight native spawn recipes per owner; retained depth-nine bundle escape FAIL (1/10), seven/70 direct-shallower-plain PASS, independent item graphs/exact carrier metadata, 800 medium owner checks, ordinary conservation/owned-entity cleanup/native log health PASS; physical nine-case independent-reader regression PASS at /Volumes/ssd/sw-performance-m1-independent-graph-regression; functional fixture evidence only"
+                "2026-10-26 /Volumes/ssd/sw-performance-m1-nested-small and /Volumes/ssd/sw-performance-m1-nested-medium: all eight native spawn recipes per owner; retained depth-nine bundle escape FAIL (1/10), seven/70 direct-shallower-plain PASS, independent item graphs/exact carrier metadata, 800 medium owner checks, ordinary conservation/owned-entity cleanup/native log health PASS; physical nine-case independent-reader regression PASS at /Volumes/ssd/sw-performance-m1-independent-graph-regression; functional fixture evidence only",
+                "2026-11-01 /Volumes/ssd/sw-performance-m1-container-small and /Volumes/ssd/sw-performance-m1-container-medium: five other-container chest cases per owner; real Azalea block-open/hold/close, InventoryOpen/Close receipts, independent graphs; direct protected and nested shulker/map cleaned on open, dirty top/cursor cleaned on close, ordinary chest control conserved; 5/50 PASS, native log health PASS; functional evidence only"
             ],
             "java": "/opt/homebrew/Cellar/openjdk@21/21.0.11/libexec/openjdk.jdk/Contents/Home/bin/java",
             "java_sha256": "04005388bac0c272ea914210ca519ce94b2f873ea3962b9874a6859f74d7f279",
@@ -578,7 +579,7 @@
             ],
             "probe": {
                 "path": "/Volumes/ssd/fabric_mods_repo/server_waypoint/paper/versions/1.21.11-paper/build/libs/server-waypoint-performance-paper-probe.jar",
-                "sha256": "588192cf705de2e10f722385759e4dd7593df016d608f6a5492573d11d7b337d"
+                "sha256": "2d9586bc198dfbb357252ed9ae396586289c247c4343e6c200ec3b02fb0a6eeb"
             }
         },
         {
