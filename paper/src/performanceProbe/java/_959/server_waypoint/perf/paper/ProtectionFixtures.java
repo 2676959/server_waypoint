@@ -227,6 +227,43 @@ final class ProtectionFixtures {
         return snapshotContainer(request);
     }
 
+    JsonObject setDragCursor(JsonObject request) throws Exception {
+        owner();
+        Player player = Bukkit.getPlayerExact(request.get("player").getAsString());
+        if (player == null) {
+            throw new IllegalStateException("Native drag cursor owner absent");
+        }
+        int amount = request.get("amount").getAsInt();
+        if (amount < 2 || amount > 64) {
+            throw new IllegalArgumentException("Stackable drag cursor amount required");
+        }
+        ItemStack stack = new ItemStack(Material.PAPER, amount);
+        var meta = stack.getItemMeta();
+        meta.getPersistentDataContainer().set(
+                new NamespacedKey("server_waypoint", "navigation_item"),
+                PersistentDataType.BOOLEAN,
+                true);
+        stack.setItemMeta(meta);
+        if (!ItemGraphAssertions.tagged(stack) || stack.getAmount() != amount) {
+            throw new IllegalStateException("Stackable tagged drag cursor was not constructed");
+        }
+        Object plugin = Bukkit.getPluginManager().getPlugin("ServerWaypoint");
+        Object manager = NavigationAssertions.field(plugin, "navigationItemManager");
+        boolean productTagged = (Boolean) manager.getClass()
+                .getMethod("isNavigationItem", ItemStack.class)
+                .invoke(manager, stack);
+        if (!productTagged) {
+            throw new IllegalStateException("Installed release does not treat the drag cursor as a navigation item");
+        }
+        player.setItemOnCursor(stack);
+        JsonObject result = new JsonObject();
+        result.addProperty("player", player.getName());
+        result.addProperty("amount", amount);
+        result.addProperty("material", stack.getType().getKey().toString());
+        result.add("cursor", lifecycle.classify(List.of(player.getItemOnCursor())));
+        return result;
+    }
+
     JsonObject removeContainer(JsonObject request) {
         owner();
         ContainerEntry entry = containers.remove(request.get("player").getAsString());

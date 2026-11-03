@@ -1,10 +1,19 @@
 use azalea::{
     Client, WalkDirection,
+    bot::BotClientExt,
     container::{ContainerClientExt, ContainerHandle},
     core::position::BlockPos,
+    inventory::operations::{ClickOperation, QuickCraftClick, QuickCraftKind, QuickCraftStatus},
 };
 use serde_json::{Value, json};
 use std::time::{Duration, Instant};
+
+async fn wait_game_ticks(bot: &Client, count: usize) {
+    let mut ticks = bot.get_tick_broadcaster();
+    for _ in 0..count {
+        let _ = ticks.recv().await;
+    }
+}
 
 pub async fn perform(
     bot: &Client,
@@ -175,6 +184,112 @@ pub async fn perform(
                 .ok_or_else(|| anyhow::anyhow!("no held other container"))?;
             handle.close();
             tokio::time::sleep(Duration::from_millis(150)).await;
+        }
+        "pickup" => {
+            let from = data["from"]
+                .as_u64()
+                .ok_or_else(|| anyhow::anyhow!("inventory pickup source slot required"))?;
+            anyhow::ensure!(from <= 62, "invalid inventory pickup source slot");
+            if open_container.is_none() {
+                if data.get("x").is_some() {
+                    let (x, y, z) = sw_performance_bots::action_input::container_position(data)
+                        .map_err(anyhow::Error::msg)?;
+                    *open_container = Some(
+                        bot.open_container_at(BlockPos::new(x, y, z))
+                            .await
+                            .ok_or_else(|| anyhow::anyhow!("other container did not open"))?,
+                    );
+                } else {
+                    *open_container = Some(
+                        bot.open_inventory()
+                            .ok_or_else(|| anyhow::anyhow!("another container open"))?,
+                    );
+                }
+            }
+            open_container
+                .as_ref()
+                .ok_or_else(|| anyhow::anyhow!("no open inventory"))?
+                .left_click(from as usize);
+            wait_game_ticks(bot, 2).await;
+        }
+        "drag" => {
+            let (slots, left) = if data.get("from").is_some() {
+                let (from, slots, left) = sw_performance_bots::action_input::inventory_drag(data)
+                    .map_err(anyhow::Error::msg)?;
+                if open_container.is_none() {
+                    if data.get("x").is_some() {
+                        let (x, y, z) = sw_performance_bots::action_input::container_position(data)
+                            .map_err(anyhow::Error::msg)?;
+                        *open_container = Some(
+                            bot.open_container_at(BlockPos::new(x, y, z))
+                                .await
+                                .ok_or_else(|| anyhow::anyhow!("other container did not open"))?,
+                        );
+                    } else {
+                        *open_container = Some(
+                            bot.open_inventory()
+                                .ok_or_else(|| anyhow::anyhow!("another container open"))?,
+                        );
+                    }
+                }
+                open_container
+                    .as_ref()
+                    .ok_or_else(|| anyhow::anyhow!("no open inventory"))?
+                    .left_click(from);
+                tokio::time::sleep(Duration::from_millis(150)).await;
+                (slots, left)
+            } else {
+                if open_container.is_none() {
+                    if data.get("x").is_some() {
+                        let (x, y, z) = sw_performance_bots::action_input::container_position(data)
+                            .map_err(anyhow::Error::msg)?;
+                        *open_container = Some(
+                            bot.open_container_at(BlockPos::new(x, y, z))
+                                .await
+                                .ok_or_else(|| anyhow::anyhow!("other container did not open"))?,
+                        );
+                    } else {
+                        *open_container = Some(
+                            bot.open_inventory()
+                                .ok_or_else(|| anyhow::anyhow!("another container open"))?,
+                        );
+                    }
+                }
+                sw_performance_bots::action_input::inventory_drag_slots(data)
+                    .map_err(anyhow::Error::msg)?
+            };
+            let handle = open_container
+                .as_ref()
+                .ok_or_else(|| anyhow::anyhow!("no open inventory"))?;
+            let kind = if left {
+                QuickCraftKind::Left
+            } else {
+                QuickCraftKind::Right
+            };
+            handle.click(ClickOperation::QuickCraft(QuickCraftClick {
+                kind: kind.clone(),
+                status: QuickCraftStatus::Start,
+            }));
+            wait_game_ticks(bot, 2).await;
+            for slot in slots {
+                handle.click(ClickOperation::QuickCraft(QuickCraftClick {
+                    kind: kind.clone(),
+                    status: QuickCraftStatus::Add { slot: slot as u16 },
+                }));
+                wait_game_ticks(bot, 2).await;
+            }
+            handle.click(ClickOperation::QuickCraft(QuickCraftClick {
+                kind,
+                status: QuickCraftStatus::End,
+            }));
+            wait_game_ticks(bot, 2).await;
+            if data["hold"] != true {
+                open_container
+                    .take()
+                    .ok_or_else(|| anyhow::anyhow!("no open inventory"))?
+                    .close();
+                tokio::time::sleep(Duration::from_millis(150)).await;
+            }
         }
         "disconnect" => bot.disconnect(),
         _ => anyhow::bail!("unsupported action"),

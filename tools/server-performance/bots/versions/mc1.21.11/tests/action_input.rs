@@ -57,3 +57,28 @@ fn container_position_requires_explicit_block_coordinates() {
         assert!(container_position(&value).is_err());
     }
 }
+
+#[test]
+fn inventory_drag_requires_explicit_source_slots_and_kind() {
+    use sw_performance_bots::action_input::inventory_drag;
+    assert_eq!(
+        inventory_drag(&json!({"from":36,"slots":[9],"kind":"left"})).unwrap(),
+        (36, vec![9], true)
+    );
+    assert_eq!(
+        inventory_drag(&json!({"from":54,"slots":[0,27],"kind":"right"})).unwrap(),
+        (54, vec![0, 27], false)
+    );
+    for value in [
+        json!({"slots":[9],"kind":"left"}),
+        json!({"from":36,"kind":"left"}),
+        json!({"from":36,"slots":[],"kind":"left"}),
+        json!({"from":36,"slots":[9,9],"kind":"left"}),
+        json!({"from":36,"slots":[63],"kind":"left"}),
+        json!({"from":36,"slots":[9]}),
+        json!({"from":36,"slots":[9],"kind":"middle"}),
+        json!({"from":36,"slots":[9],"kind":"left","x":300,"y":-61}),
+    ] {
+        assert!(inventory_drag(&value).is_err());
+    }
+}

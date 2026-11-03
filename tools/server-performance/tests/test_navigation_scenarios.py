@@ -250,3 +250,116 @@ class NavigationScenariosTest(unittest.TestCase):
                "receipts":[{"event":"inventory-open","uuid":"owner-1","type":"CHEST","topItems":clean_top}]}
         self.assertEqual(Status.PASS,container_cleanup(recipe,clean).status)
         self.assertEqual(Status.FAIL,container_cleanup(recipe,{**clean,"graphs":[{**graph,"sha256":"lost-name-or-child"}]}).status)
+
+    def test_drag_cases_cover_allowed_denied_and_ordinary(self):
+        from scenarios.navigation import drag_cases
+        labels={case["label"]:case for case in drag_cases()}
+        self.assertEqual({"protected-own-storage","protected-crafting-grid-denied","protected-chest-denied","protected-mixed-denied","ordinary-chest-control"},set(labels))
+        self.assertFalse(labels["protected-own-storage"]["cancelled"])
+        self.assertEqual("CRAFTING",labels["protected-own-storage"]["inventoryType"])
+        self.assertEqual((9,10),labels["protected-own-storage"]["slots"])
+        self.assertEqual(16,labels["protected-own-storage"]["expectedBeforeCursorProtected"])
+        self.assertTrue(labels["protected-crafting-grid-denied"]["cancelled"])
+        self.assertEqual((1,2),labels["protected-crafting-grid-denied"]["slots"])
+        self.assertEqual(16,labels["protected-crafting-grid-denied"]["expectedBeforeCursorProtected"])
+        self.assertTrue(labels["protected-chest-denied"]["cancelled"])
+        self.assertEqual("CHEST",labels["protected-chest-denied"]["inventoryType"])
+        self.assertEqual((3,4),labels["protected-chest-denied"]["slots"])
+        self.assertEqual(16,labels["protected-chest-denied"]["expectedBeforeCursorProtected"])
+        self.assertTrue(labels["protected-mixed-denied"]["cancelled"])
+        self.assertEqual((0,27),labels["protected-mixed-denied"]["slots"])
+        self.assertFalse(labels["ordinary-chest-control"]["cancelled"])
+        self.assertEqual((0,1),labels["ordinary-chest-control"]["slots"])
+        self.assertEqual(0,labels["ordinary-chest-control"]["expectedBeforeCursorProtected"])
+
+    def test_player_raw_slot_matches_open_view(self):
+        from scenarios.navigation import player_raw_slot
+        self.assertEqual(36,player_raw_slot(0,"CRAFTING"))
+        self.assertEqual(9,player_raw_slot(9,"CRAFTING"))
+        self.assertEqual(45,player_raw_slot(40,"CRAFTING"))
+        self.assertEqual(54,player_raw_slot(0,"CHEST"))
+        self.assertEqual(27,player_raw_slot(9,"CHEST"))
+        with self.assertRaises(ValueError):
+            player_raw_slot(40,"CHEST")
+        with self.assertRaises(ValueError):
+            player_raw_slot(0,"FURNACE")
+
+    def test_protected_drag_into_own_storage_is_allowed(self):
+        from scenarios.navigation import drag_outcome
+        ordinary={"stone-identity":64,"diamond-identity":3}
+        before={"ordinary":ordinary,"protectedItems":1,"nestedProtectedCarriers":0,"cursorProtectedItems":16,"inventoryType":"CRAFTING"}
+        after={"ordinary":ordinary,"protectedItems":1,"nestedProtectedCarriers":0,"cursorProtectedItems":0,"inventoryType":"CRAFTING","protectedInInvalidLocations":0}
+        recipe={"label":"protected-own-storage","inventoryType":"CRAFTING","slots":(9,10),"cancelled":False,
+                "expectedBeforeCursorProtected":16,"expectedAfterCursorProtected":0,"expectedAfterTopProtected":0,
+                "expectedAfterInvalidProtected":0,"ordinary":ordinary}
+        receipt={"event":"inventory-drag","uuid":"owner-1","type":"CRAFTING","cancelled":False,"rawSlots":[9,10],
+                 "items":{"ordinary":{},"protectedItems":16,"nestedProtectedCarriers":0}}
+        sample={"before":before,"after":after,"world":{"ordinary":{},"protectedItems":0,"nestedProtectedCarriers":0},"receipts":[receipt]}
+        self.assertEqual(Status.PASS,drag_outcome(recipe,sample).status)
+        self.assertEqual(Status.FAIL,drag_outcome(recipe,{**sample,"receipts":[{**receipt,"cancelled":True}]}).status)
+
+    def test_protected_drag_into_chest_or_crafting_grid_is_cancelled(self):
+        from scenarios.navigation import drag_outcome
+        ordinary={"stone-identity":16,"diamond-identity":3}
+        recipe={"label":"protected-chest-denied","inventoryType":"CHEST","slots":(0,1),"cancelled":True,
+                "expectedBeforeCursorProtected":16,"expectedAfterCursorProtected":0,"expectedAfterTopProtected":0,
+                "expectedAfterInvalidProtected":0,"ordinary":ordinary}
+        before={"ordinary":ordinary,"protectedItems":0,"nestedProtectedCarriers":0,"cursorProtectedItems":16,"inventoryType":"CHEST"}
+        after={"ordinary":ordinary,"protectedItems":0,"nestedProtectedCarriers":0,"cursorProtectedItems":0,"inventoryType":"CHEST","protectedInInvalidLocations":0}
+        receipt={"event":"inventory-drag","uuid":"owner-1","type":"CHEST","cancelled":True,"rawSlots":[0,1],
+                 "items":{"ordinary":{},"protectedItems":16,"nestedProtectedCarriers":0},"topItems":{"ordinary":ordinary,"protectedItems":0,"nestedProtectedCarriers":0}}
+        sample={"before":before,"after":after,"world":{"ordinary":{},"protectedItems":0,"nestedProtectedCarriers":0},"receipts":[receipt]}
+        self.assertEqual(Status.PASS,drag_outcome(recipe,sample).status)
+        self.assertEqual(Status.FAIL,drag_outcome(recipe,{**sample,"after":{**after,"protectedInInvalidLocations":1}}).status)
+        self.assertEqual(Status.FAIL,drag_outcome(recipe,{**sample,"receipts":[{**receipt,"topItems":{"ordinary":ordinary,"protectedItems":1,"nestedProtectedCarriers":0}}]}).status)
+
+    def test_ordinary_drag_is_not_cancelled(self):
+        from scenarios.navigation import drag_outcome
+        transferred={"stone-identity":64}
+        recipe={"label":"ordinary-chest-control","inventoryType":"CHEST","slots":(0,1),"cancelled":False,
+                "expectedBeforeCursorProtected":0,"expectedAfterCursorProtected":0,"expectedAfterTopProtected":0,
+                "expectedAfterInvalidProtected":0,"ordinary":transferred}
+        before={"ordinary":{},"protectedItems":0,"nestedProtectedCarriers":0,"cursorProtectedItems":0,"inventoryType":"CHEST"}
+        after={"ordinary":transferred,"protectedItems":0,"nestedProtectedCarriers":0,"cursorProtectedItems":0,"inventoryType":"CHEST","protectedInInvalidLocations":0}
+        receipt={"event":"inventory-drag","uuid":"owner-1","type":"CHEST","cancelled":False,"rawSlots":[0,1],
+                 "items":{"ordinary":transferred,"protectedItems":0,"nestedProtectedCarriers":0},
+                 "topItems":{"ordinary":{},"protectedItems":0,"nestedProtectedCarriers":0}}
+        sample={"before":before,"after":after,"world":{"ordinary":{},"protectedItems":0,"nestedProtectedCarriers":0},"receipts":[receipt]}
+        self.assertEqual(Status.PASS,drag_outcome(recipe,sample).status)
+        self.assertEqual(Status.FAIL,drag_outcome(recipe,{**sample,"receipts":[{**receipt,"cancelled":True}]}).status)
+        self.assertEqual(Status.FAIL,drag_outcome(recipe,{**sample,"after":{**after,"ordinary":{}}}).status)
+
+    def test_drag_requires_matching_native_receipt_and_intended_cursor(self):
+        from scenarios.navigation import drag_outcome
+        ordinary={"stone-identity":64}
+        recipe={"label":"protected-own-storage","inventoryType":"CRAFTING","slots":(9,10),"cancelled":False,
+                "expectedBeforeCursorProtected":16,"expectedAfterCursorProtected":0,"expectedAfterTopProtected":0,
+                "expectedAfterInvalidProtected":0,"ordinary":ordinary}
+        before={"ordinary":ordinary,"protectedItems":1,"nestedProtectedCarriers":0,"cursorProtectedItems":0,"inventoryType":"CRAFTING"}
+        after={"ordinary":ordinary,"protectedItems":1,"nestedProtectedCarriers":0,"cursorProtectedItems":0,"inventoryType":"CRAFTING","protectedInInvalidLocations":0}
+        receipt={"event":"inventory-drag","uuid":"owner-1","type":"CRAFTING","cancelled":False,"rawSlots":[9,10],
+                 "items":{"ordinary":{},"protectedItems":16,"nestedProtectedCarriers":0}}
+        sample={"before":before,"after":after,"world":{"ordinary":{},"protectedItems":0,"nestedProtectedCarriers":0},"receipts":[receipt]}
+        self.assertEqual(Status.FAIL,drag_outcome(recipe,sample).status)
+        sample["before"]={**before,"cursorProtectedItems":16}
+        sample["receipts"]=[]
+        self.assertEqual(Status.BLOCKED,drag_outcome(recipe,sample).status)
+        sample["receipts"]=[{**receipt,"rawSlots":[10]}]
+        self.assertEqual(Status.FAIL,drag_outcome(recipe,sample).status)
+
+    def test_drag_rejects_protected_items_that_escape_into_the_world(self):
+        from scenarios.navigation import drag_outcome
+        ordinary={"stone-identity":64}
+        recipe={"label":"protected-own-storage","inventoryType":"CRAFTING","slots":(9,10),"cancelled":False,
+                "expectedBeforeCursorProtected":16,"expectedAfterCursorProtected":0,"expectedAfterTopProtected":0,
+                "expectedAfterInvalidProtected":0,"ordinary":ordinary}
+        before={"ordinary":ordinary,"protectedItems":1,"nestedProtectedCarriers":0,"cursorProtectedItems":16,"inventoryType":"CRAFTING"}
+        after={"ordinary":ordinary,"protectedItems":1,"nestedProtectedCarriers":0,"cursorProtectedItems":0,"inventoryType":"CRAFTING","protectedInInvalidLocations":0}
+        receipt={"event":"inventory-drag","uuid":"owner-1","type":"CRAFTING","cancelled":False,"rawSlots":[9,10],
+                 "items":{"ordinary":{},"protectedItems":16,"nestedProtectedCarriers":0}}
+        sample={"before":before,"after":after,"world":{"ordinary":{},"protectedItems":1,"nestedProtectedCarriers":0},"receipts":[receipt]}
+        self.assertEqual(Status.FAIL,drag_outcome(recipe,sample).status)
+        sample["world"]={"ordinary":{},"protectedItems":0,"nestedProtectedCarriers":1}
+        self.assertEqual(Status.FAIL,drag_outcome(recipe,sample).status)
+        sample["world"]={"ordinary":{},"protectedItems":0,"nestedProtectedCarriers":0}
+        self.assertEqual(Status.PASS,drag_outcome(recipe,sample).status)

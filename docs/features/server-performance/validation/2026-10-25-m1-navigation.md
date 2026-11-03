@@ -361,6 +361,51 @@ build pass; probe/production archives have zero overlapping classes. Helper
 processes are stopped. Container assertions now require an independent expected
 carrier, open-receipt `topItems`, recipe-specific dirty before-counts, and zero
 protected world items; native one-/ten-owner container suites were not rerun
-against those tighter checks. Drag, craft/cartography, pickup,
+against those tighter checks.
+
+## Inventory drag
+
+`/Volumes/ssd/sw-performance-m1-drag-small-5/` and
+`/Volumes/ssd/sw-performance-m1-drag-medium/` pass five left-drag cases for one
+and ten real Azalea owners. These are functional observations, not timed
+acceptance. Published 4.0.0 `onInventoryDrag` is the handler under test.
+
+Vanilla 1.21.11 `AbstractContainerMenu.doClick` only keeps QuickCraft Add slots
+when the carried count is greater than the current slot set (except creative
+middle) and converts a one-slot End into `PICKUP`. Session compasses and maps
+are unstackable, so a real method-item "drag" becomes `InventoryClickEvent`
+`PLACE_ALL` and never reaches this hook. The protected cases therefore inject a
+stack of 16 paper tagged with `server_waypoint:navigation_item`; the installed
+`isNavigationItem` / `containsNavigationItem` path treats that cursor as
+protected. Armor dests reject non-armor `mayPlace`, so the invalid player-menu
+dest is the crafting grid (raw 1, 2). Occupied chest dests also drop out of the
+QuickCraft set; denied chest dests are empty raw 3 and 4 beside the ordinary
+diamond/stone fixture.
+
+1. Dragging the tagged stack into own storage (raw 9, 10) is not cancelled.
+2. Dragging it into the crafting grid (raw 1, 2) is cancelled.
+3. Dragging it into empty chest dests (raw 3, 4) is cancelled; ordinary chest
+   identities/counts stay exact.
+4. Dragging it into mixed chest/player dests (raw 0, 27) is cancelled.
+5. Dragging 64 ordinary stone into an empty chest (raw 0, 1) is not cancelled;
+   the stone identities appear in the after-state chest. `InventoryDragEvent`
+   MONITOR `topItems` is the pre-place snapshot and is not the ordinary oracle.
+
+Native `InventoryDragEvent` receipts record view type, `EVEN` drag, sorted raw
+slots, old-cursor classification and cancellation. Owner all-five method
+targets, map IDs and live client effects remain exact. One owner produces 5
+PASS decisions; ten owners produce 50. Native logger health PASSes. Owned
+chests are removed after each chest case.
+
+Retained fixture RED roots, not product findings: `drag-small` and
+`drag-small-2` used a count-1 compass and only saw `PLACE_ALL`;
+`drag-small-3` dragged before the player menu was open; `drag-small-4` aimed
+at chest slot 1 already holding diamonds and collapsed to one-slot
+`PLACE_ALL`. No production repair was made.
+
+Current verification: 173 Python tests, 30 Rust tests and the Paper 1.21.11
+probe build pass; probe/production archives have zero overlapping classes.
+Helper processes are stopped. Artifact `0a1d2ddc…fa8ad57`, probe
+`8c0b49ef…dc0866c`, bot `89eca814…d955631`. Craft/cartography, pickup,
 entity/frame/equipment, deletion, remaining terrain boundaries and timed CLI
 integration remain open.

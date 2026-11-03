@@ -581,3 +581,38 @@ GREEN: 166 Python tests and 29 Rust tests; Paper 1.21.11 probe rebuild
 `2d9586bc…fb0a6eeb`; probe/production class overlap 0. Native one-/ten-owner
 container suites were not rerun. No production/localization change, commit or
 push.
+
+## 2026-11-01 — Task 11 inventory drag
+
+Native one- and ten-owner drag cases pass at
+`/Volumes/ssd/sw-performance-m1-drag-small-5/` and
+`/Volumes/ssd/sw-performance-m1-drag-medium/`. Real Azalea QuickCraft
+Start/Add/End packets fire `InventoryDragEvent` on published 4.0.0
+`onInventoryDrag`. A stackable tagged paper cursor is allowed into own storage
+and cancelled on crafting-grid, empty chest and mixed chest/player dests.
+Ordinary stone into an empty chest is uncancelled and conserved in the after
+state. 5 / 50 decisions PASS. Native logger health PASSes.
+
+Ruling: vanilla 1.21.11 QuickCraft Add requires `carried.count > slots.size()`
+and a one-slot End becomes `PICKUP`. Session compass/map max stack 1 cannot
+produce this event. Cost if wrong: a later stackable session item would still
+need its own case.
+
+Ruling: MONITOR drag `topItems` is pre-place; ordinary conservation uses the
+after-state chest. Cost if wrong: a cancelled drag that mutated the chest
+after MONITOR would need a later snapshot hook.
+
+Ruling: occupied dests drop out of the QuickCraft set, so denied chest dests
+are empty raw 3, 4 beside the ordinary fixture. Armor dests reject non-armor
+`mayPlace`; the invalid player-menu dest is crafting-grid raw 1, 2. Cost if
+wrong: an armor-item drag case is still unproven.
+
+Retained fixture RED roots: `drag-small`, `drag-small-2` (count-1 compass
+`PLACE_ALL`), `drag-small-3` (no open inventory), `drag-small-4` (occupied
+chest slot 1). No production repair.
+
+Verification: 173 Python tests, 30 Rust tests, Paper 1.21.11 probe build
+`8c0b49ef…dc0866c`, bot `89eca814…d955631`, probe/production class overlap 0.
+No production/localization change, commit or push. Task 11 remains open for
+craft/cartography, pickup, entity/frame/equipment, deletion, remaining terrain
+boundaries and timed CLI integration.

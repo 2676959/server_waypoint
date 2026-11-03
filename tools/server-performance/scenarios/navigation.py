@@ -314,3 +314,104 @@ def container_cleanup(recipe,sample):
                     or actual.get("sha256")!=expected.get("sha256")):
                 return Decision(Status.FAIL,("nested protected item escaped or ordinary carrier metadata/contents changed",))
     return ordinary_conservation(recipe.get("ordinary"),after.get("ordinary"))
+
+
+def drag_cases():
+    return (
+        {"label":"protected-own-storage","inventoryType":"CRAFTING","slots":(9,10),"cancelled":False,
+         "expectedBeforeCursorProtected":16,"expectedAfterCursorProtected":0,"expectedAfterTopProtected":0,
+         "expectedAfterInvalidProtected":0},
+        {"label":"protected-crafting-grid-denied","inventoryType":"CRAFTING","slots":(1,2),"cancelled":True,
+         "expectedBeforeCursorProtected":16,"expectedAfterCursorProtected":0,"expectedAfterTopProtected":0,
+         "expectedAfterInvalidProtected":0},
+        {"label":"protected-chest-denied","inventoryType":"CHEST","slots":(3,4),"cancelled":True,
+         "expectedBeforeCursorProtected":16,"expectedAfterCursorProtected":0,"expectedAfterTopProtected":0,
+         "expectedAfterInvalidProtected":0},
+        {"label":"protected-mixed-denied","inventoryType":"CHEST","slots":(0,27),"cancelled":True,
+         "expectedBeforeCursorProtected":16,"expectedAfterCursorProtected":0,"expectedAfterTopProtected":0,
+         "expectedAfterInvalidProtected":0},
+        {"label":"ordinary-chest-control","inventoryType":"CHEST","slots":(0,1),"cancelled":False,
+         "expectedBeforeCursorProtected":0,"expectedAfterCursorProtected":0,"expectedAfterTopProtected":0,
+         "expectedAfterInvalidProtected":0},
+    )
+
+
+def player_raw_slot(slot,inventory_type):
+    if inventory_type=="CRAFTING":
+        if slot==40:
+            return 45
+        if 0<=slot<=8:
+            return slot+36
+        if 9<=slot<=35:
+            return slot
+    elif inventory_type=="CHEST":
+        if 0<=slot<=8:
+            return slot+54
+        if 9<=slot<=35:
+            return slot+18
+    raise ValueError("player slot is not visible in the open inventory view")
+
+
+def drag_recipe(case,snapshot):
+    expected=snapshot.get("expectedTop") if case["inventoryType"]=="CHEST" else snapshot.get("ordinary")
+    if case["inventoryType"]=="CHEST":
+        if not isinstance(expected,dict) or not isinstance(expected.get("ordinary"),dict):
+            raise ValueError("independent expected chest contents missing")
+        ordinary=dict(expected["ordinary"])
+    else:
+        if not isinstance(expected,dict):
+            raise ValueError("independent player ordinary identities missing")
+        ordinary=dict(expected)
+    return {**{key:case[key] for key in ("label","inventoryType","slots","cancelled",
+                                         "expectedBeforeCursorProtected","expectedAfterCursorProtected",
+                                         "expectedAfterTopProtected","expectedAfterInvalidProtected")},
+            "ordinary":ordinary}
+
+
+def drag_outcome(recipe,sample):
+    inventory_type=recipe.get("inventoryType")
+    slots=tuple(recipe.get("slots") or ())
+    if inventory_type not in {"CRAFTING","CHEST"} or not slots:
+        return Decision(Status.BLOCKED,("inventory-drag recipe missing view type or destination slots",))
+    before=sample.get("before",{})
+    after=sample.get("after",{})
+    keys=("ordinary","protectedItems","nestedProtectedCarriers","inventoryType")
+    if any(key not in before or key not in after for key in keys) or "cursorProtectedItems" not in before or "cursorProtectedItems" not in after:
+        return Decision(Status.BLOCKED,("inventory-drag before/after inventory evidence missing",))
+    if before.get("inventoryType")!=inventory_type or after.get("inventoryType")!=inventory_type:
+        return Decision(Status.FAIL,("inventory-drag view type differs",))
+    if before.get("cursorProtectedItems")!=recipe.get("expectedBeforeCursorProtected"):
+        return Decision(Status.FAIL,("inventory-drag did not start from the intended cursor fixture",))
+    if after.get("cursorProtectedItems")!=recipe.get("expectedAfterCursorProtected"):
+        return Decision(Status.FAIL,("protected cursor survived inventory-drag close",))
+    if type(after.get("protectedInInvalidLocations")) is not int:
+        return Decision(Status.BLOCKED,("inventory-drag invalid-location evidence missing",))
+    if after.get("protectedInInvalidLocations")!=recipe.get("expectedAfterInvalidProtected"):
+        return Decision(Status.FAIL,("protected item remained in an invalid drag destination",))
+    world=sample.get("world")
+    if not isinstance(world,dict) or any(key not in world for key in ("protectedItems","nestedProtectedCarriers")):
+        return Decision(Status.BLOCKED,("inventory-drag world item evidence missing",))
+    if world.get("protectedItems")!=0 or world.get("nestedProtectedCarriers")!=0:
+        return Decision(Status.FAIL,("protected item escaped into the world",))
+    receipts=[receipt for receipt in sample.get("receipts",[]) if receipt.get("event")=="inventory-drag" and receipt.get("type")==inventory_type]
+    if not receipts:
+        return Decision(Status.BLOCKED,("matching native inventory-drag receipt missing",))
+    if len(receipts)!=1:
+        return Decision(Status.FAIL,("native inventory-drag receipt duplicated",))
+    receipt=receipts[0]
+    if receipt.get("cancelled") is not recipe.get("cancelled"):
+        return Decision(Status.FAIL,("native inventory-drag cancellation differs",))
+    if tuple(sorted(receipt.get("rawSlots") or ()))!=tuple(sorted(slots)):
+        return Decision(Status.FAIL,("native inventory-drag raw slots differ",))
+    items=receipt.get("items")
+    if not isinstance(items,dict) or "protectedItems" not in items:
+        return Decision(Status.BLOCKED,("inventory-drag receipt cursor item missing",))
+    if items.get("protectedItems")!=recipe.get("expectedBeforeCursorProtected"):
+        return Decision(Status.FAIL,("inventory-drag old cursor was not the intended item",))
+    if inventory_type=="CHEST":
+        top=receipt.get("topItems")
+        if not isinstance(top,dict) or any(key not in top for key in ("ordinary","protectedItems","nestedProtectedCarriers")):
+            return Decision(Status.BLOCKED,("inventory-drag receipt top inventory missing",))
+        if top.get("protectedItems")!=recipe.get("expectedAfterTopProtected") or top.get("nestedProtectedCarriers")!=0:
+            return Decision(Status.FAIL,("protected item remained in the other container after drag",))
+    return ordinary_conservation(recipe.get("ordinary"),after.get("ordinary"))

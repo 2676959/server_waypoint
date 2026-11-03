@@ -237,7 +237,13 @@ one and ten owners. Real Azalea block-open receipts clean direct and nested
 protected items and dirty top/cursor state; ordinary contents are conserved. See
 [navigation evidence](../validation/2026-10-25-m1-navigation.md). Review follow-up
 tightens nested expected carriers, open-receipt contents, dirty before-counts and
-world-item rejection; native suites were not rerun. Drag, craft/cartography,
+world-item rejection; native suites were not rerun.
+
+Task 11 checkpoint (2026-11-01): inventory-drag own-storage/chest/crafting-grid
+passes for one and ten owners. Real Azalea QuickCraft Start/Add/End receipts
+exercise published `onInventoryDrag` with a stackable tagged cursor; session
+compass/map count-1 "drags" remain clicks. See
+[navigation evidence](../validation/2026-10-25-m1-navigation.md). Craft/cartography,
 pickup, entity/frame/equipment, deletion, remaining terrain boundaries and timed
 CLI integration stay open.
 

@@ -18,6 +18,7 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.security.MessageDigest;
@@ -164,6 +165,23 @@ final class LifecycleAssertions implements Listener {
         }
     }
 
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
+    public void onDrag(InventoryDragEvent event) throws Exception {
+        if (armed && event.getWhoClicked() instanceof Player player) {
+            JsonObject value = playerEvent("inventory-drag", player);
+            value.addProperty("cancelled", event.isCancelled());
+            value.addProperty("type", event.getView().getType().name());
+            value.addProperty("dragType", event.getType().name());
+            JsonArray rawSlots = new JsonArray();
+            event.getRawSlots().stream().sorted().forEach(rawSlots::add);
+            value.add("rawSlots", rawSlots);
+            value.add("items", classify(List.of(event.getOldCursor())));
+            value.add("topItems", classify(Arrays.asList(event.getView().getTopInventory().getContents())));
+            value.add("cursorItems", classify(List.of(player.getItemOnCursor())));
+            retain(value);
+        }
+    }
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void onOpen(org.bukkit.event.inventory.InventoryOpenEvent event) throws Exception {
         if (armed && event.getPlayer() instanceof Player player) {
@@ -241,6 +259,20 @@ final class LifecycleAssertions implements Listener {
         for (Player player : Bukkit.getOnlinePlayers()) {
             JsonObject inventory = classify(Arrays.asList(player.getInventory().getContents()));
             inventory.add("cursor", classify(List.of(player.getItemOnCursor())));
+            JsonArray slots = new JsonArray();
+            ItemStack[] contents = player.getInventory().getContents();
+            for (int slot = 0; slot < contents.length; slot++) {
+                ItemStack stack = contents[slot];
+                if (stack == null || stack.getType().isAir()) {
+                    continue;
+                }
+                JsonObject entry = new JsonObject();
+                entry.addProperty("slot", slot);
+                entry.addProperty("material", stack.getType().getKey().toString());
+                entry.addProperty("amount", stack.getAmount());
+                slots.add(entry);
+            }
+            inventory.add("slots", slots);
             inventories.add(player.getName(), inventory);
         }
         result.add("inventories", inventories);

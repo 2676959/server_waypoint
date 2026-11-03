@@ -14,7 +14,7 @@ from controller import create_root
 from models import Status
 from processes import stop_owned
 from server_health import native_log_health
-from scenarios.navigation import METHODS, physical_receipts, physical_drop_spawned, restored_session, ordinary_conservation, nested_recipes, nested_item_outcome, container_cleanup, container_cases, container_recipe
+from scenarios.navigation import METHODS, physical_receipts, physical_drop_spawned, restored_session, ordinary_conservation, nested_recipes, nested_item_outcome, container_cleanup, container_cases, container_recipe, drag_cases, drag_outcome, player_raw_slot
 from worlds import install_server, boot
 from navigation_smoke import execute, snapshot
 
@@ -50,6 +50,8 @@ def run(root, count, case_set="physical", candidate=None):
         evidence["scope"] = "native-world-spawn-independent-nested-graph"
     if case_set == "container":
         evidence["scope"] = "other-container-open-dirty-close"
+    if case_set == "drag":
+        evidence["scope"] = "inventory-drag-own-storage-chest-crafting-grid"
     paths = (Path(__file__).resolve(), tools / "bots/navigation_smoke.py", tools / "scenarios/navigation.py", tools / "bot_driver.py", tools / "worlds.py", tools / "server_health.py")
     atomic_write(root / "inputs.json", {"schemaVersion": 1, "files": {str(path.relative_to(tools)): sha256(path) for path in paths}})
     for path in paths:
@@ -283,6 +285,113 @@ def run(root, count, case_set="physical", candidate=None):
             print(f"native {count}-owner other-container open/dirty-close verified")
             return
 
+        if case_set == "drag":
+            chests = {name: {"x": 300 + index * 3, "y": -61, "z": 297} for index, name in enumerate(names)}
+
+            def invalid_protected(native_players, chest_top=None):
+                count_invalid = 0
+                for player in native_players:
+                    count_invalid += sum(1 for item in player["items"] if item["slot"] >= 36 and item["slot"] != 40)
+                if chest_top is not None:
+                    count_invalid += chest_top.get("protectedItems", 0) + chest_top.get("nestedProtectedCarriers", 0)
+                return count_invalid
+
+            def ordinary_slot(observed, name, material):
+                for entry in observed.get("inventories", {}).get(name, {}).get("slots", []):
+                    if entry.get("material") == material:
+                        return entry["slot"]
+                raise ValueError("ordinary source slot missing: " + material)
+
+            for case in drag_cases():
+                probe.send("lifecycle.arm")
+                probe.wait("lifecycle.armed")
+                start = 0
+                chest = case["inventoryType"] == "CHEST"
+                if chest:
+                    kind = "empty" if case["label"] == "ordinary-chest-control" else "ordinary"
+                    for name in names:
+                        probe.send("protection.container.place", {"player": name, "kind": kind, "method": "compass", **chests[name]})
+                        placed = probe.wait("protection.container.placed")["data"]
+                        if placed.get("inventoryType") != "CHEST":
+                            raise ValueError("native drag chest fixture is not a chest")
+                    actions({name: {"operation": "open-container", "hold": True, **chests[name]} for name in names})
+                if case["expectedBeforeCursorProtected"]:
+                    for name in names:
+                        probe.send("protection.drag.cursor", {"player": name, "amount": case["expectedBeforeCursorProtected"]})
+                        cursor = probe.wait("protection.drag.cursor-set")["data"]
+                        if cursor.get("cursor", {}).get("protectedItems") != case["expectedBeforeCursorProtected"]:
+                            raise ValueError("stackable tagged drag cursor missing")
+                else:
+                    observed = monitor()
+                    sources = {name: player_raw_slot(ordinary_slot(observed, name, "minecraft:stone"), case["inventoryType"]) for name in names}
+                    actions({name: {"operation": "pickup", "from": sources[name]} for name in names})
+                before_monitor = monitor()
+                placed = {name: probe_container(probe, name) for name in names} if chest else {}
+                before = {}
+                for name in names:
+                    cursor = before_monitor.get("inventories", {}).get(name, {}).get("cursor", {})
+                    if chest:
+                        top = placed[name]["top"]
+                        before[name] = {"ordinary": dict(placed[name]["expectedTop"]["ordinary"]), "protectedItems": top.get("protectedItems", 0),
+                                        "nestedProtectedCarriers": top.get("nestedProtectedCarriers", 0), "cursorProtectedItems": cursor.get("protectedItems", 0),
+                                        "inventoryType": "CHEST"}
+                    else:
+                        before[name] = {"ordinary": dict(ordinary_by_owner[name]), "protectedItems": 1, "nestedProtectedCarriers": 0,
+                                        "cursorProtectedItems": cursor.get("protectedItems", 0), "inventoryType": "CRAFTING"}
+                actions({name: {"operation": "drag", "slots": list(case["slots"]), "kind": "left", "hold": True} for name in names})
+                after_native = snapshot(probe)
+                after_monitor = monitor()
+                after_placed = {name: probe_container(probe, name) for name in names} if chest else {}
+                if after_monitor["droppedObservations"]:
+                    raise ValueError("native inventory-drag receipts overflowed")
+                client = packets()
+                owners = {player["name"]: restored_session({"uuid": identities[player["name"]], "mapId": ids[player["name"]], "methods": METHODS, "target": expected_target}, player, client[player["name"]]) for player in after_native["players"]}
+                if len(owners) != count or any(value.status != Status.PASS for value in owners.values()):
+                    raise ValueError("inventory-drag case changed owner navigation state")
+                decisions = {}
+                for name in names:
+                    player = next(value for value in after_native["players"] if value["name"] == name)
+                    if case["label"] == "ordinary-chest-control":
+                        ordinary = {key: value for key, value in ordinary_by_owner[name].items() if key.startswith("minecraft:stone:")}
+                    elif chest:
+                        ordinary = dict(before[name]["ordinary"])
+                    else:
+                        ordinary = dict(ordinary_by_owner[name])
+                    recipe = {**{key: case[key] for key in ("label", "inventoryType", "slots", "cancelled",
+                                                            "expectedBeforeCursorProtected", "expectedAfterCursorProtected",
+                                                            "expectedAfterTopProtected", "expectedAfterInvalidProtected")},
+                              "ordinary": ordinary}
+                    top = after_placed[name]["top"] if chest else {}
+                    after = {"ordinary": top.get("ordinary", player["ordinary"]), "protectedItems": top.get("protectedItems", sum(item["amount"] for item in player["items"])),
+                             "nestedProtectedCarriers": top.get("nestedProtectedCarriers", 0), "inventoryType": case["inventoryType"],
+                             "cursorProtectedItems": after_monitor.get("inventories", {}).get(name, {}).get("cursor", {}).get("protectedItems", 0),
+                             "protectedInInvalidLocations": invalid_protected([player], top if chest else None)}
+                    sample = {"before": before[name], "after": after, "world": after_monitor["worldItems"],
+                              "receipts": [event for event in after_monitor["events"][start:] if event.get("uuid") == identities[name]]}
+                    decisions[name] = drag_outcome(recipe, sample)
+                step = {"recipe": case, "before": before, "after": after_placed if chest else after_native, "monitor": after_monitor, "ownerDecisions": owners, "decisions": decisions}
+                evidence["steps"].append(step)
+                atomic_write(root / "protection.json", evidence)
+                actions({name: {"operation": "close-container"} for name in names})
+                if chest:
+                    for name in names:
+                        probe.send("protection.container.remove", {"player": name})
+                        removed = probe.wait("protection.container.removed")["data"]
+                        if removed.get("present") is not False:
+                            raise ValueError("owned drag chest cleanup incomplete")
+            evidence["allCasesExecuted"] = True
+            evidence["dragOutcomes"] = dict(Counter(step["decisions"][name].status.value for step in evidence["steps"] for name in names))
+            evidence["serverHealth"] = native_log_health(server / "logs/latest.log")
+            if evidence["serverHealth"].status != Status.PASS:
+                raise ValueError("native inventory-drag server log health failed")
+            if any(step["decisions"][name].status != Status.PASS for step in evidence["steps"] for name in names):
+                raise ValueError("native inventory-drag assertions failed or incomplete")
+            evidence["completed"] = True
+            driver.close()
+            driver = None
+            print(f"native {count}-owner inventory-drag own-storage/chest/crafting-grid verified")
+            return
+
         for method in ("compass", "map"):
             select(slot(method))
             start = len(monitor()["events"])
@@ -337,7 +446,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--count", type=int, choices=(1, 10), default=1)
-    parser.add_argument("--case-set", choices=("physical", "nested", "container"), default="physical")
+    parser.add_argument("--case-set", choices=("physical", "nested", "container", "drag"), default="physical")
     parser.add_argument("--candidate", type=Path, help="Explicit development candidate JAR; retain its own hash and provenance")
     args = parser.parse_args()
     run(args.root, args.count, args.case_set, args.candidate)

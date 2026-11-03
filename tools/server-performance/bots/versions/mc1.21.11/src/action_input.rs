@@ -49,3 +49,46 @@ pub fn container_position(data: &Value) -> Result<(i32, i32, i32), &'static str>
     }
     Ok((x as i32, y as i32, z as i32))
 }
+
+pub fn inventory_drag(data: &Value) -> Result<(usize, Vec<usize>, bool), &'static str> {
+    let from = data["from"]
+        .as_u64()
+        .ok_or("inventory drag source slot required")?;
+    if from > 62 {
+        return Err("invalid inventory drag source slot");
+    }
+    let (slots, left) = inventory_drag_slots(data)?;
+    if data.get("x").is_some() || data.get("y").is_some() || data.get("z").is_some() {
+        container_position(data)?;
+    }
+    Ok((from as usize, slots, left))
+}
+
+pub fn inventory_drag_slots(data: &Value) -> Result<(Vec<usize>, bool), &'static str> {
+    let values = data["slots"]
+        .as_array()
+        .ok_or("inventory drag destination slots required")?;
+    if values.is_empty() {
+        return Err("inventory drag destination slots required");
+    }
+    let mut slots = Vec::new();
+    for value in values {
+        let slot = value
+            .as_u64()
+            .ok_or("invalid inventory drag destination slot")?;
+        if slot > 62 {
+            return Err("invalid inventory drag destination slot");
+        }
+        let slot = slot as usize;
+        if slots.contains(&slot) {
+            return Err("duplicate inventory drag destination slot");
+        }
+        slots.push(slot);
+    }
+    let left = match data["kind"].as_str() {
+        Some("left") => true,
+        Some("right") => false,
+        _ => Err("inventory drag kind must be left or right")?,
+    };
+    Ok((slots, left))
+}
