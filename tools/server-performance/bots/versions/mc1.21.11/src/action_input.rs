@@ -92,3 +92,60 @@ pub fn inventory_drag_slots(data: &Value) -> Result<(Vec<usize>, bool), &'static
     };
     Ok((slots, left))
 }
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct WaypointAction {
+    pub operation: &'static str,
+    pub forced: bool,
+    pub compression: bool,
+    pub waypoints: u32,
+    pub text: String,
+}
+
+pub fn waypoint_action(data: &Value) -> Result<WaypointAction, &'static str> {
+    match data["operation"].as_str() {
+        Some("refresh") => {
+            let forced = data["forced"].as_bool().ok_or("forced refresh flag required")?;
+            if !forced {
+                return Err("refresh must be forced");
+            }
+            Ok(WaypointAction {
+                operation: "refresh",
+                forced,
+                compression: false,
+                waypoints: 0,
+                text: String::new(),
+            })
+        }
+        Some("chat") => {
+            let text = data["text"].as_str().ok_or("chat text required")?;
+            if text.is_empty() || text.len() > 256 || text.starts_with('/') {
+                return Err("chat text out of bounds");
+            }
+            Ok(WaypointAction {
+                operation: "chat",
+                forced: false,
+                compression: false,
+                waypoints: 0,
+                text: text.to_owned(),
+            })
+        }
+        Some("upload") => {
+            let compression = data["compression"]
+                .as_bool()
+                .ok_or("compression flag required")?;
+            let waypoints = data["waypoints"].as_u64().ok_or("waypoint count required")?;
+            if !(1..=4096).contains(&waypoints) {
+                return Err("upload exceeds the per-request limit");
+            }
+            Ok(WaypointAction {
+                operation: "upload",
+                forced: false,
+                compression,
+                waypoints: waypoints as u32,
+                text: String::new(),
+            })
+        }
+        _ => Err("unsupported waypoint action"),
+    }
+}

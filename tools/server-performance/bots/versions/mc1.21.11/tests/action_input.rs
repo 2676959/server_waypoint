@@ -59,6 +59,26 @@ fn container_position_requires_explicit_block_coordinates() {
 }
 
 #[test]
+fn waypoint_protocol_actions_bound_refresh_chat_and_upload() {
+    use sw_performance_bots::action_input::waypoint_action;
+    let refresh = waypoint_action(&json!({"operation":"refresh","forced":true})).unwrap();
+    assert_eq!(refresh.operation, "refresh");
+    assert!(refresh.forced);
+    assert!(waypoint_action(&json!({"operation":"refresh"})).is_err());
+    let chat = waypoint_action(&json!({"operation":"chat","text":"hello"})).unwrap();
+    assert_eq!(chat.text, "hello");
+    assert!(waypoint_action(&json!({"operation":"chat","text":""})).is_err());
+    assert!(waypoint_action(&json!({"operation":"chat","text":"y".repeat(257)})).is_err());
+    assert!(waypoint_action(&json!({"operation":"chat","text":"/wp list"})).is_err());
+    let upload = waypoint_action(&json!({"operation":"upload","compression":true,"waypoints":4096})).unwrap();
+    assert!(upload.compression);
+    assert_eq!(upload.waypoints, 4096);
+    assert!(waypoint_action(&json!({"operation":"upload","compression":false,"waypoints":4097})).is_err());
+    assert!(waypoint_action(&json!({"operation":"upload","compression":false,"waypoints":0})).is_err());
+    assert!(waypoint_action(&json!({"operation":"other"})).is_err());
+}
+
+#[test]
 fn inventory_drag_requires_explicit_source_slots_and_kind() {
     use sw_performance_bots::action_input::inventory_drag;
     assert_eq!(

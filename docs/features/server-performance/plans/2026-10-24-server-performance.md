@@ -258,6 +258,15 @@ CLI integration stay open.
 - [ ] Implement compression on/off, concurrent 1/2/8 clients and valid 1,000/4,096/16,384 fixtures within target limits, merge/conflict/delete policies, malformed/oversize/timeout/cancel cases, broadcast fan-out and channel/world identity reconnects. Add valid/invalid/long/duplicate sharing messages, denied permissions and icon registration checks.
 - [ ] Run original Paper small/medium cases with exact persisted contents and empty lease/buffer queues after recovery. Profile compression/encoding/merge and unrelated-chat paths; keep correct rejection outcomes separate from fulfilled valid-upload throughput.
 
+Task 12 checkpoint (2026-11-03): decision contracts for exact revision, forced
+refresh, invalid upload, lease release, backpressure, chat, compression flags,
+merge/delete, broadcast, reconnect, sharing and icons are in
+`scenarios/sync_upload.py`. Refresh and chat actions are wired. Upload counts
+above 4,096 are rejected, and no upload body is sent until a published
+waypoint-data vector exists. Live cases are explicitly blocked. Original Paper
+small/medium runs remain open. See
+[progress](../validation/progress.md).
+
 ### Task 13: Native Fabric, Forge and NeoForge coverage
 
 **Files:** Modify `mods/{fabric.gradle.kts,fabric-unobfuscated.gradle.kts,forge.gradle.kts,neoforge.gradle.kts,neogradle.gradle.kts}` as needed only for test source sets; create `mods/src/performanceProbe/java/_959/server_waypoint/perf/mods/{ModPerformanceProbe.java,ModFixtureAdapter.java,ModTickProbe.java}`, per-loader entry points/metadata, `tools/server-performance/tests/test_runtime_matrix.py`; extend pinned Azalea builds.

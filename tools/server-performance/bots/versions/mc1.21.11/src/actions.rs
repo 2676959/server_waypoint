@@ -292,6 +292,38 @@ pub async fn perform(
             }
         }
         "disconnect" => bot.disconnect(),
+        "refresh" => {
+            use azalea::protocol::packets::game::ServerboundCustomPayload;
+            use sw_performance_bots::waypoint_protocol::request_snapshot;
+            let action = sw_performance_bots::action_input::waypoint_action(data)
+                .map_err(anyhow::Error::msg)?;
+            anyhow::ensure!(action.operation == "refresh" && action.forced, "forced refresh required");
+            let frame = request_snapshot(*bot.profile().uuid.as_bytes());
+            bot.write_packet(ServerboundCustomPayload {
+                identifier: "server_waypoint:message_chunk".parse().unwrap(),
+                data: azalea::buf::UnsizedByteArray::from(frame),
+            });
+            tokio::time::sleep(Duration::from_millis(150)).await;
+        }
+        "chat" => {
+            let action = sw_performance_bots::action_input::waypoint_action(data)
+                .map_err(anyhow::Error::msg)?;
+            anyhow::ensure!(action.operation == "chat", "chat action required");
+            bot.chat(&action.text);
+            tokio::time::sleep(Duration::from_millis(150)).await;
+        }
+        "upload" => {
+            let action = sw_performance_bots::action_input::waypoint_action(data)
+                .map_err(anyhow::Error::msg)?;
+            anyhow::ensure!(
+                action.waypoints >= 1 && action.waypoints <= 4096,
+                "upload request out of bounds"
+            );
+            anyhow::bail!(
+                "published waypoint-data upload body is not in the vector set (compression={})",
+                action.compression
+            );
+        }
         _ => anyhow::bail!("unsupported action"),
     }
     let after = bot.position();

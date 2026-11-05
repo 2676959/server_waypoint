@@ -616,3 +616,30 @@ Verification: 173 Python tests, 30 Rust tests, Paper 1.21.11 probe build
 No production/localization change, commit or push. Task 11 remains open for
 craft/cartography, pickup, entity/frame/equipment, deletion, remaining terrain
 boundaries and timed CLI integration.
+
+## 2026-11-03 — Task 12 decision contracts started
+
+The five named sync/upload/sharing tests failed on the missing scenario module,
+then passed with server-owned revision, rejection, lease, backpressure and chat
+decisions. Schedule, compression-flag, merge/delete, broadcast, reconnect,
+Xaero sharing and icon checks were added the same way. Live `sync`,
+`upload-edit` and `sharing-icons` cases now return an explicit blocked result
+instead of the inventory adapter.
+
+Azalea gained bounded `refresh`, `chat` and `upload` action parsing. Refresh
+sends the existing snapshot request. Chat sends a normal chat message. Upload
+rejects counts outside 1..=4096 and does not send a body: the published vector
+set has no waypoint-data upload payload to encode against.
+
+Ruling: a valid 16,384-waypoint stress fixture is four 4,096-waypoint requests.
+One larger request is an oversize rejection. Cost if wrong: a release that
+accepts 16,384 waypoints in one request would be classified as a rejection.
+
+Ruling: work stayed on `codex/experimental-world-marker` beside uncommitted
+world-marker edits. `.worktrees` is not gitignored, and a new worktree would
+need a gitignore commit. Cost if wrong: Task 12 files sit next to those edits
+until they are split.
+
+Verification: 185 Python tests and 31 Rust tests. No native Paper small/medium
+run, profile, persisted-content check or commit. Task 12's original-Paper
+checkbox remains open.
