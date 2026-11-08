@@ -15,5 +15,6 @@
 - [Waypoint form](waypoint-form/) — add and edit screens: layout, checks, feedback and keyboard use.
 - [Waypoint icons](waypoint-icons/) — item and VoxelMap icon selection and display plan.
 - [Waypoint manager](waypoint-manager/) — manager screen states, layout and empty states.
+- [World marker experiment](world-marker/) — server-only private text displays projected toward navigation targets, packet counters and short native checks.
 
 Each feature owns `plans/`, `specs/` and `validation/`, indexed by its README.

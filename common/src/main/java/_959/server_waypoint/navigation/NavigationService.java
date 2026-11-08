@@ -427,9 +427,34 @@ public final class NavigationService<P> {
                 this.platform.playerUuid(player),
                 target.get(),
                 storedSession.get().enabledMethods(),
-                true,
-                storedSession.get().textDisplayTransformation()
+                storedSession.get()
         );
+    }
+
+    public NavigationResult updateWorldMarkerSize(P player, float size) {
+        return this.updateWorldMarker(player, session -> session.withWorldMarkerSize(size));
+    }
+
+    public NavigationResult updateWorldMarkerDistance(P player, float distance) {
+        return this.updateWorldMarker(player, session -> session.withWorldMarkerDistance(distance));
+    }
+
+    private NavigationResult updateWorldMarker(P player, UnaryOperator<NavigationSession> update) {
+        Objects.requireNonNull(player, "player");
+        this.platform.assertPlayerThread(player);
+        NavigationMethod method = NavigationMethod.WORLD_MARKER;
+        NavigationSession session = this.sessions.get(this.platform.playerUuid(player));
+        if (session == null) {
+            return NavigationResult.result(NavigationResult.Code.NO_ACTIVE_SESSION, null, method);
+        }
+        if (!this.handlers.containsKey(method)) {
+            return NavigationResult.result(NavigationResult.Code.METHOD_UNAVAILABLE, session, method);
+        }
+
+        NavigationSession updatedSession = update.apply(session);
+        this.putSession(updatedSession);
+        this.persistSession(player, updatedSession);
+        return NavigationResult.result(NavigationResult.Code.SUCCESS, updatedSession, method);
     }
 
     public NavigationResult updateTextDisplayTranslation(P player, Vector3f translation) {
@@ -558,6 +583,16 @@ public final class NavigationService<P> {
         return Optional.ofNullable(this.sessions.get(Objects.requireNonNull(playerUuid, "playerUuid")));
     }
 
+    /** Returns diagnostics for the independent world marker handler. */
+    public Optional<WorldMarkerStatistics> worldMarkerStatistics(P player) {
+        this.platform.assertPlayerThread(player);
+        NavigationMethodHandler<P> handler = this.handlers.get(NavigationMethod.WORLD_MARKER);
+        if (handler instanceof AbstractWorldMarkerNavigationHandler<?, ?> displayHandler) {
+            return displayHandler.markerStatistics(this.platform.playerUuid(player));
+        }
+        return Optional.empty();
+    }
+
     /** Ticks the live displays owned by one player. */
     public void tickPlayer(P player) {
         Objects.requireNonNull(player, "player");
@@ -579,14 +614,17 @@ public final class NavigationService<P> {
         }
 
         int tickCounter = this.tickCounters.merge(playerUuid, 1, Integer::sum);
-        if (tickCounter < this.updateIntervalTicks) {
+        boolean updateOtherDisplays = tickCounter >= this.updateIntervalTicks;
+        if (updateOtherDisplays) {
+            this.tickCounters.remove(playerUuid);
+        } else if (!session.isEnabled(NavigationMethod.WORLD_MARKER)) {
             return;
         }
-        this.tickCounters.remove(playerUuid);
 
         NavigationSnapshot snapshot = this.platform.snapshot(player, session.target());
         for (NavigationMethod method : session.enabledMethods()) {
-            if (!method.isLiveDisplay()) {
+            if (!method.isLiveDisplay()
+                    || (!updateOtherDisplays && method != NavigationMethod.WORLD_MARKER)) {
                 continue;
             }
             NavigationMethodHandler<P> handler = this.handlers.get(method);
@@ -718,7 +756,7 @@ public final class NavigationService<P> {
             NavigationTarget target,
             Set<NavigationMethod> selection
     ) {
-        return this.replaceSelection(player, playerUuid, target, selection, false, null);
+        return this.replaceSelection(player, playerUuid, target, selection, null);
     }
 
     private NavigationResult replaceSelection(
@@ -726,14 +764,13 @@ public final class NavigationService<P> {
             UUID playerUuid,
             NavigationTarget target,
             Set<NavigationMethod> selection,
-            boolean allowEmptySelection,
-            @Nullable TextDisplayTransformation restoredTransformation
+            @Nullable StoredNavigationSession storedSession
     ) {
         NavigationSession currentSession = this.sessions.get(playerUuid);
         if (!target.collectionKey().accessibleBy(playerUuid)) {
             return NavigationResult.failure(NavigationResult.Code.TARGET_UNAVAILABLE).withSession(currentSession);
         }
-        if (selection.isEmpty() && !allowEmptySelection) {
+        if (selection.isEmpty() && storedSession == null) {
             return NavigationResult.result(
                     NavigationResult.Code.INVALID_SELECTION,
                     currentSession,
@@ -751,16 +788,28 @@ public final class NavigationService<P> {
             }
         }
 
-        TextDisplayTransformation transformation = restoredTransformation != null
-                ? restoredTransformation
+        TextDisplayTransformation transformation = storedSession != null
+                ? storedSession.textDisplayTransformation()
                 : currentSession == null
                         ? TextDisplayTransformation.defaultValue()
                         : currentSession.textDisplayTransformation();
+        float worldMarkerSize = storedSession != null
+                ? storedSession.worldMarkerSize()
+                : currentSession == null
+                        ? NavigationSession.DEFAULT_WORLD_MARKER_SIZE
+                        : currentSession.worldMarkerSize();
+        float worldMarkerDistance = storedSession != null
+                ? storedSession.worldMarkerDistance()
+                : currentSession == null
+                        ? NavigationSession.DEFAULT_WORLD_MARKER_DISTANCE
+                        : currentSession.worldMarkerDistance();
         NavigationSession proposedSession = new NavigationSession(
                 playerUuid,
                 target,
                 selection,
-                transformation
+                transformation,
+                worldMarkerSize,
+                worldMarkerDistance
         );
         NavigationResult preflight = this.preflight(player, currentSession, proposedSession);
         if (!preflight.successful()) {

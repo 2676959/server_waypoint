@@ -33,15 +33,16 @@ class NavigationSessionCodecTest {
                         "",
                         List.of(),
                         new WaypointPos(10, 64, -20),
-                        0x123456
+                        0x123456, _959.server_waypoint.util.WaypointInitials.getDefaultInitials("Hub"), null
                 ),
                 Set.of(NavigationMethod.COMPASS, NavigationMethod.ACTIONBAR),
-                transformation
+                transformation,
+                1.75F,
+                8.5F
         );
 
-        StoredNavigationSession decoded = NavigationSessionCodec.decode(
-                NavigationSessionCodec.encode(session)
-        ).orElseThrow();
+        String encoded = NavigationSessionCodec.encode(session);
+        StoredNavigationSession decoded = NavigationSessionCodec.decode(encoded).orElseThrow();
 
         assertEquals("minecraft:the_nether", decoded.dimensionName());
         assertEquals("portals", decoded.listName());
@@ -51,6 +52,16 @@ class NavigationSessionCodecTest {
                 decoded.enabledMethods()
         );
         assertEquals(transformation, decoded.textDisplayTransformation());
+        assertEquals(1.75F, decoded.worldMarkerSize());
+        assertEquals(8.5F, decoded.worldMarkerDistance());
+        assertEquals(12.0F, NavigationSessionCodec.decode(encoded.replace(",\"worldMarkerDistance\":8.5", ""))
+                .orElseThrow().worldMarkerDistance());
+        assertTrue(NavigationSessionCodec.decode(encoded.replace("\"worldMarkerDistance\":8.5", "\"worldMarkerDistance\":0"))
+                .isEmpty());
+        assertEquals(1.0F, NavigationSessionCodec.decode(encoded.replace(",\"worldMarkerSize\":1.75", ""))
+                .orElseThrow().worldMarkerSize());
+        assertTrue(NavigationSessionCodec.decode(encoded.replace("\"worldMarkerSize\":1.75", "\"worldMarkerSize\":0"))
+                .isEmpty());
     }
 
     @Test
@@ -67,10 +78,12 @@ class NavigationSessionCodecTest {
                         "",
                         List.of(),
                         new WaypointPos(1, 2, 3),
-                        0x39C5BB
+                        0x39C5BB, _959.server_waypoint.util.WaypointInitials.getDefaultInitials("Village"), null
                 ),
                 Set.of(),
-                TextDisplayTransformation.defaultValue()
+                TextDisplayTransformation.defaultValue(),
+                NavigationSession.DEFAULT_WORLD_MARKER_SIZE,
+                NavigationSession.DEFAULT_WORLD_MARKER_DISTANCE
         );
 
         StoredNavigationSession decoded = NavigationSessionCodec.decode(
@@ -85,8 +98,9 @@ class NavigationSessionCodecTest {
         UUID owner = UUID.randomUUID();
         NavigationSession session = new NavigationSession(owner,
                 new NavigationTarget(WaypointCollectionKey.privateFor(owner), "minecraft:overworld", "Homes", "Homes",
-                        "Base", "Base", "", List.of(), new WaypointPos(1, 64, 2), 0x123456),
-                Set.of(NavigationMethod.ACTIONBAR), TextDisplayTransformation.defaultValue());
+                        "Base", "Base", "", List.of(), new WaypointPos(1, 64, 2), 0x123456, _959.server_waypoint.util.WaypointInitials.getDefaultInitials("Base"), null),
+                Set.of(NavigationMethod.ACTIONBAR), TextDisplayTransformation.defaultValue(),
+                NavigationSession.DEFAULT_WORLD_MARKER_SIZE, NavigationSession.DEFAULT_WORLD_MARKER_DISTANCE);
         String encoded = NavigationSessionCodec.encode(session);
         assertEquals(WaypointCollectionKey.privateFor(owner), NavigationSessionCodec.decode(encoded).orElseThrow().collectionKey());
         assertTrue(NavigationSessionCodec.decode(encoded.replace("\"version\":3", "\"version\":2")).isEmpty());

@@ -35,7 +35,8 @@ public final class ModNavigationRuntime {
                     this.mapHandler,
                     this.bossbarHandler,
                     this.actionbarHandler,
-                    this.textDisplayHandler
+                    this.textDisplayHandler,
+                    new ModWorldMarkerNavigationHandler()
             )
     );
 

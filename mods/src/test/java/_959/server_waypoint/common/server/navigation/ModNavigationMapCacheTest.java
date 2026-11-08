@@ -145,6 +145,6 @@ class ModNavigationMapCacheTest {
 
     private static NavigationTarget target(int x, int z) {
         return new NavigationTarget(WaypointCollectionKey.shared(), "minecraft:overworld", "places", "Places", "target", "Target", "",
-                List.of(), new WaypointPos(x, 64, z), 0x447FFF);
+                List.of(), new WaypointPos(x, 64, z), 0x447FFF, _959.server_waypoint.util.WaypointInitials.getDefaultInitials("target"), null);
     }
 }

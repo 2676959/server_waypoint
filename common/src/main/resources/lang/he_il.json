@@ -440,6 +440,7 @@
   "wp.navigation.method.bossbar": "פס בוס",
   "wp.navigation.method.actionbar": "פס פעולות",
   "wp.navigation.method.text_display": "תצוגת טקסט",
+  "wp.navigation.method.world_marker": "סמן בעולם",
   "wp.navigation.method.on": "{0} מופעל",
   "wp.navigation.method.off": "{0} כבוי",
   "wp.hint.turn_on": "לחצו להפעלה",
@@ -579,5 +580,9 @@
     "wp.error.private.command": "לא ניתן לבצע את הפקודה הפרטית.",
     "wp.help.topic.private": "פרטיים",
     "wp.help.private.run": "ניהול נקודות הציון הפרטיות שלך",
-    "wp.help.private.note": "אותן פקודות כמו במשותפים; שיגור דורש הרשאה נפרדת"
+    "wp.help.private.note": "אותן פקודות כמו במשותפים; שיגור דורש הרשאה נפרדת",
+  "wp.world_marker.stats": "סמן: {0} עדכונים, {1} יצירות\nחבילות: {2} תנועות, {3} מטא־נתונים, {4} הסרות\nזמן ממוצע: {5} µs לעדכון",
+  "wp.world_marker.inactive": "הסמן בעולם אינו פעיל",
+  "wp.world_marker.size": "גודל הסמן בעולם ×{0}",
+  "wp.world_marker.distance": "מרחק הסמן בעולם: {0} בלוקים"
 }

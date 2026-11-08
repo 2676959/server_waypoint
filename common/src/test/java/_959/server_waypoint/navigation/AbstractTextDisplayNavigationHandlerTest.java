@@ -79,10 +79,12 @@ final class AbstractTextDisplayNavigationHandlerTest {
                         "",
                         List.of(),
                         new WaypointPos(1, 2, 3),
-                        0x123456
+                        0x123456, _959.server_waypoint.util.WaypointInitials.getDefaultInitials("Village"), null
                 ),
                 Set.of(NavigationMethod.TEXT_DISPLAY),
-                TextDisplayTransformation.defaultValue()
+                TextDisplayTransformation.defaultValue(),
+                NavigationSession.DEFAULT_WORLD_MARKER_SIZE,
+                NavigationSession.DEFAULT_WORLD_MARKER_DISTANCE
         );
     }
 

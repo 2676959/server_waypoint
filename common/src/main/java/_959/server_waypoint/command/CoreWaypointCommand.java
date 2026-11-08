@@ -2187,6 +2187,38 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         sendTextDisplayTransformation(source, result, translatable("wp.text_display.updated"));
     }
 
+    private int executeWorldMarkerSize(S source, @Nullable Float size) {
+        P player = getNavigationPlayer(source);
+        if (player == null) {
+            return Command.SINGLE_SUCCESS;
+        }
+        NavigationResult result = size == null ? this.navigationService.status(player)
+                : this.navigationService.updateWorldMarkerSize(player, size);
+        if (result.successful() && result.session() != null) {
+            sendMessage(source, translatable("wp.world_marker.size",
+                    text(Float.toString(result.session().worldMarkerSize()))));
+        } else {
+            sendNavigationResult(source, result);
+        }
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private int executeWorldMarkerDistance(S source, @Nullable Float distance) {
+        P player = getNavigationPlayer(source);
+        if (player == null) {
+            return Command.SINGLE_SUCCESS;
+        }
+        NavigationResult result = distance == null ? this.navigationService.status(player)
+                : this.navigationService.updateWorldMarkerDistance(player, distance);
+        if (result.successful() && result.session() != null) {
+            sendMessage(source, translatable("wp.world_marker.distance",
+                    text(Float.toString(result.session().worldMarkerDistance()))));
+        } else {
+            sendNavigationResult(source, result);
+        }
+        return Command.SINGLE_SUCCESS;
+    }
+
     /** The text display panel with the change on top, or why the change failed. */
     private void sendTextDisplayTransformation(S source, NavigationResult result, Component updated) {
         if (result.code() != NavigationResult.Code.TEXT_DISPLAY_TRANSFORMATION_UPDATED || result.session() == null) {
@@ -2461,6 +2493,38 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
 
         if (this.isNavigationMethodSupported(NavigationMethod.TEXT_DISPLAY)) {
             configNode.then(this.textDisplayTransformationCommandNode());
+        }
+        if (this.isNavigationMethodSupported(NavigationMethod.WORLD_MARKER)) {
+            LiteralArgumentBuilder<S> markerNode = literal(NavigationMethod.WORLD_MARKER.id());
+            markerNode.executes(context -> {
+                S source = context.getSource();
+                P player = getNavigationPlayer(source);
+                if (player != null) {
+                    this.navigationService.worldMarkerStatistics(player).ifPresentOrElse(stats -> {
+                        sendMessage(source, translatable("wp.world_marker.stats",
+                                text(stats.updates()), text(stats.spawns()), text(stats.moves()),
+                                text(stats.metadata()), text(stats.removals()),
+                                text(stats.updates() == 0 ? 0 : stats.updateNanos() / stats.updates() / 1000)));
+                    }, () -> sendMessage(source, translatable("wp.world_marker.inactive")));
+                }
+                return Command.SINGLE_SUCCESS;
+            });
+            LiteralArgumentBuilder<S> sizeNode = literal("size");
+            sizeNode.executes(context -> executeWorldMarkerSize(context.getSource(), null));
+            RequiredArgumentBuilder<S, Float> multiplierNode = argument("multiplier",
+                    floatArg(NavigationSession.MIN_WORLD_MARKER_SIZE, NavigationSession.MAX_WORLD_MARKER_SIZE));
+            multiplierNode.executes(context -> executeWorldMarkerSize(
+                    context.getSource(), getFloat(context, "multiplier")));
+            sizeNode.then(multiplierNode);
+            markerNode.then(sizeNode);
+            LiteralArgumentBuilder<S> distanceNode = literal("distance");
+            distanceNode.executes(context -> executeWorldMarkerDistance(context.getSource(), null));
+            RequiredArgumentBuilder<S, Float> blocksNode = argument("blocks",
+                    floatArg(NavigationSession.MIN_WORLD_MARKER_DISTANCE, NavigationSession.MAX_WORLD_MARKER_DISTANCE));
+            blocksNode.executes(context -> executeWorldMarkerDistance(context.getSource(), getFloat(context, "blocks")));
+            distanceNode.then(blocksNode);
+            markerNode.then(distanceNode);
+            configNode.then(markerNode);
         }
         navigateNode.then(configNode);
 

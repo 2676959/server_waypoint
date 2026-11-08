@@ -450,6 +450,7 @@
   "wp.navigation.method.bossbar": "Boss 栏",
   "wp.navigation.method.actionbar": "动作栏",
   "wp.navigation.method.text_display": "文本展示",
+  "wp.navigation.method.world_marker": "世界标记",
   "wp.navigation.method.on": "{0}已开启",
   "wp.navigation.method.off": "{0}已关闭",
   "wp.hint.turn_on": "点击开启",
@@ -589,5 +590,9 @@
     "wp.error.private.command": "无法执行私人路径点命令。",
     "wp.help.topic.private": "私人",
     "wp.help.private.run": "管理你自己的私人路径点",
-    "wp.help.private.note": "用法与共享路径点相同；传送需要单独授权"
+    "wp.help.private.note": "用法与共享路径点相同；传送需要单独授权",
+  "wp.world_marker.stats": "标记：{0} 次更新，{1} 次生成\n数据包：{2} 次移动，{3} 次元数据，{4} 次移除\n平均耗时：{5} µs/次更新",
+  "wp.world_marker.inactive": "世界标记未启用",
+  "wp.world_marker.size": "世界标记大小 ×{0}",
+  "wp.world_marker.distance": "世界标记距离：{0} 格"
 }

@@ -124,7 +124,7 @@ class NavigationMathTest {
                 "",
                 List.of(),
                 new WaypointPos(x, y, z),
-                0x39C5BB
+                0x39C5BB, _959.server_waypoint.util.WaypointInitials.getDefaultInitials("test-waypoint"), null
         );
     }
 }

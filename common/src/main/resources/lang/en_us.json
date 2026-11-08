@@ -205,7 +205,7 @@
   "wp.help.navigate.start": "Navigate to a waypoint",
   "wp.help.navigate.start.note": "Without methods, a new session uses the defaults and a new target keeps yours",
   "wp.help.navigate.methods": "{0}: compass, map, bossbar or actionbar",
-  "wp.help.navigate.methods.text_display": "{0}: compass, map, bossbar, actionbar or text_display",
+  "wp.help.navigate.methods.text_display": "{0}: compass, map, bossbar, actionbar, text_display or world_marker",
   "wp.help.navigate.use": "Turn a method on",
   "wp.help.navigate.disable": "Turn a method off, or stop navigating",
   "wp.help.navigate.text_display": "Move, turn or resize the floating label",
@@ -450,6 +450,7 @@
   "wp.navigation.method.bossbar": "Bossbar",
   "wp.navigation.method.actionbar": "Actionbar",
   "wp.navigation.method.text_display": "Text display",
+  "wp.navigation.method.world_marker": "World marker",
   "wp.navigation.method.on": "{0} is on",
   "wp.navigation.method.off": "{0} is off",
   "wp.hint.turn_on": "Click to turn it on",
@@ -589,5 +590,9 @@
     "wp.error.private.command": "Could not execute the private command.",
     "wp.help.topic.private": "Private",
     "wp.help.private.run": "Manage your own private waypoints",
-    "wp.help.private.note": "Uses the same commands as Shared; teleport needs separate permission"
+    "wp.help.private.note": "Uses the same commands as Shared; teleport needs separate permission",
+  "wp.world_marker.stats": "Marker: {0} updates, {1} spawns\nPackets: {2} moves, {3} metadata, {4} removals\nMean handler time: {5} µs/update",
+  "wp.world_marker.inactive": "World marker is inactive",
+  "wp.world_marker.size": "World marker size ×{0}",
+  "wp.world_marker.distance": "World marker distance: {0} blocks"
 }

@@ -62,6 +62,10 @@ public final class NavigationScreens {
                 continue;
             }
             Component name = methodName(method);
+            if (method == NavigationMethod.WORLD_MARKER && !methods.isEmpty()) {
+                lines.add(Chat.join(methods));
+                methods.clear();
+            }
             methods.add(enabled.contains(method)
                     ? Chat.link(viewer, Chat.concat(text(Chat.CHECK + " "), name), GREEN,
                     Click.run(prefix + " navigate disable " + method.id()),

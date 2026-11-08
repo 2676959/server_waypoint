@@ -1,0 +1,104 @@
+{
+    "scope": "native-attachment-geometry-no-client-rendering",
+    "gameTime": 84,
+    "scale": 12.0,
+    "happyGhastRequestedScale": 12.0,
+    "happyGhastEffectiveScale": 1.0,
+    "linkLength": 6.0,
+    "verticalLinks": 48.0,
+    "tipHeight": 64.0,
+    "entityCount": 5,
+    "cases": 1920,
+    "maximumPositionError": 0.0009297786533969418,
+    "bodyEyeIntersections": 0,
+    "rootFollowError": 0.0,
+    "jointInterpolation": [
+        {
+            "tick": 1,
+            "firstYaw": 30.0,
+            "secondYaw": 30.0,
+            "textOffset": "(-5.999667763710022, 12.0, 10.391921281814575)"
+        },
+        {
+            "tick": 2,
+            "firstYaw": 60.0,
+            "secondYaw": 60.0,
+            "textOffset": "(-10.391921281814575, 12.0, 5.999667763710022)"
+        },
+        {
+            "tick": 3,
+            "firstYaw": 90.0,
+            "secondYaw": 90.0,
+            "textOffset": "(-12.0, 12.0, 0.0)"
+        }
+    ],
+    "textBillboard": "CENTER",
+    "textTranslation": "( 0.000E+0  0.000E+0  0.000E+0)",
+    "worldInsertion": false,
+    "samples": [
+        {
+            "interactionHeight": -124.0,
+            "expected": "(0.5, 53.8, 0.5)",
+            "actual": "(0.5, 53.8, 0.5000000000000008)",
+            "error": 7.771561172376096e-16
+        },
+        {
+            "interactionHeight": -113.0,
+            "expected": "(0.5, 64.8, 0.5)",
+            "actual": "(0.5, 64.8, 0.5000000000000008)",
+            "error": 7.771561172376096e-16
+        },
+        {
+            "interactionHeight": -112.0,
+            "expected": "(0.5, 65.8, 0.5)",
+            "actual": "(0.5, 65.8, 0.5000000000000008)",
+            "error": 7.771561172376096e-16
+        },
+        {
+            "interactionHeight": -111.0,
+            "expected": "(0.5, 66.8, 0.5)",
+            "actual": "(0.5, 66.8, 0.5000000000000008)",
+            "error": 7.771561172376096e-16
+        },
+        {
+            "interactionHeight": -100.0,
+            "expected": "(0.5, 77.8, 0.5)",
+            "actual": "(0.5, 77.8, 0.5000000000000008)",
+            "error": 7.771561172376096e-16
+        },
+        {
+            "interactionHeight": -124.0,
+            "expected": "(2.999900025E7, 53.8, -2.999900075E7)",
+            "actual": "(2.999900025E7, 53.8, -2.999900075E7)",
+            "error": 0.0
+        },
+        {
+            "interactionHeight": -113.0,
+            "expected": "(2.999900025E7, 64.8, -2.999900075E7)",
+            "actual": "(2.999900025E7, 64.8, -2.999900075E7)",
+            "error": 0.0
+        },
+        {
+            "interactionHeight": -112.0,
+            "expected": "(2.999900025E7, 65.8, -2.999900075E7)",
+            "actual": "(2.999900025E7, 65.8, -2.999900075E7)",
+            "error": 0.0
+        },
+        {
+            "interactionHeight": -111.0,
+            "expected": "(2.999900025E7, 66.8, -2.999900075E7)",
+            "actual": "(2.999900025E7, 66.8, -2.999900075E7)",
+            "error": 0.0
+        },
+        {
+            "interactionHeight": -100.0,
+            "expected": "(2.999900025E7, 77.8, -2.999900075E7)",
+            "actual": "(2.999900025E7, 77.8, -2.999900075E7)",
+            "error": 0.0
+        }
+    ],
+    "verified": true,
+    "schemaVersion": 1,
+    "serverSha256": "82a487ab8c2d0f6f072b8dbaedc9218c85ae3a7d167808124462b248955beec3",
+    "probeSha256": "69816080e3b93b9b00efeb7b0f9d185658ced72e7ccb7f0d8857ea3f8ec9f047"
+}

@@ -42,6 +42,7 @@ class NavigationScreensTest {
         assertEquals(List.of(
                 "Navigating to [MH] Main Home · 25 m",
                 "✔ Compass · Map · ✔ Bossbar · Actionbar · Text display",
+                "World marker",
                 "Stop · Change target"), lines(panel));
         assertEquals(NamedTextColor.GREEN, colorOf(panel, "✔ Compass"));
         assertEquals("/wp navigate disable compass", clickOf(panel, "✔ Compass"));
@@ -60,7 +61,7 @@ class NavigationScreensTest {
                 translatable("wp.navigation.turned_on", NavigationScreens.methodName(NavigationMethod.TEXT_DISPLAY)));
 
         assertEquals("✔ Text display on", lines(panel).get(0));
-        assertEquals("Stop · Change target · Adjust text display", lines(panel).get(3));
+        assertEquals("Stop · Change target · Adjust text display", lines(panel).get(4));
         assertEquals(NamedTextColor.YELLOW, colorOf(panel, "Adjust text display"));
         assertEquals("/wp navigate config text_display", clickOf(panel, "Adjust text display"));
     }

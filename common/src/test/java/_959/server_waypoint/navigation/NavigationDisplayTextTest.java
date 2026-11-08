@@ -36,10 +36,12 @@ class NavigationDisplayTextTest {
                     "{\"text\":\"A nearby village\",\"italic\":false}",
                     List.of(),
                     new WaypointPos(10, 64, 20),
-                    0x55FF55
+                    0x55FF55, _959.server_waypoint.util.WaypointInitials.getDefaultInitials("Village"), null
             ),
             Set.of(NavigationMethod.ACTIONBAR),
-            TextDisplayTransformation.defaultValue()
+            TextDisplayTransformation.defaultValue(),
+            NavigationSession.DEFAULT_WORLD_MARKER_SIZE,
+            NavigationSession.DEFAULT_WORLD_MARKER_DISTANCE
     );
 
     @Test
@@ -182,7 +184,8 @@ class NavigationDisplayTextTest {
                 new SimpleWaypoint("Village", "Village", "V", new WaypointPos(10, 64, 20),
                         0x55FF55, 0, true, List.of(), ""));
         NavigationSession session = new NavigationSession(UUID.randomUUID(), target,
-                Set.of(NavigationMethod.ACTIONBAR), TextDisplayTransformation.defaultValue());
+                Set.of(NavigationMethod.ACTIONBAR), TextDisplayTransformation.defaultValue(),
+                NavigationSession.DEFAULT_WORLD_MARKER_SIZE, NavigationSession.DEFAULT_WORLD_MARKER_DISTANCE);
 
         Component actionBar = NavigationDisplayText.build(session, NavigationSnapshot.wrongDimension());
         Component textDisplay = NavigationDisplayText.buildTextDisplay(session, NavigationSnapshot.wrongDimension());

@@ -34,7 +34,9 @@ public final class NavigationSessionCodec {
                 session.target().listName(),
                 session.target().waypointName(),
                 methodIds,
-                TransformationPayload.from(session.textDisplayTransformation())
+                TransformationPayload.from(session.textDisplayTransformation()),
+                session.worldMarkerSize(),
+                session.worldMarkerDistance()
         );
         return GSON.toJson(payload);
     }
@@ -69,7 +71,13 @@ public final class NavigationSessionCodec {
                     payload.list(),
                     payload.waypoint(),
                     methods,
-                    payload.transformation().toTransformation()
+                    payload.transformation().toTransformation(),
+                    payload.worldMarkerSize() == null
+                            ? NavigationSession.DEFAULT_WORLD_MARKER_SIZE
+                            : payload.worldMarkerSize(),
+                    payload.worldMarkerDistance() == null
+                            ? NavigationSession.DEFAULT_WORLD_MARKER_DISTANCE
+                            : payload.worldMarkerDistance()
             ));
         } catch (RuntimeException exception) {
             return Optional.empty();
@@ -94,7 +102,9 @@ public final class NavigationSessionCodec {
             String list,
             String waypoint,
             List<String> methods,
-            TransformationPayload transformation
+            TransformationPayload transformation,
+            Float worldMarkerSize,
+            Float worldMarkerDistance
     ) {
         private Payload {
             methods = methods == null ? null : new ArrayList<>(methods);

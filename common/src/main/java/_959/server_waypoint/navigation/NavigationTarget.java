@@ -4,6 +4,8 @@ import _959.server_waypoint.core.collection.WaypointCollectionKey;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.util.NamespacedId;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Objects;
@@ -21,7 +23,9 @@ public record NavigationTarget(
         String waypointDescription,
         List<String> waypointKeywords,
         WaypointPos position,
-        int rgb
+        int rgb,
+        String waypointInitials,
+        @Nullable NamespacedId waypointIcon
 ) {
     public NavigationTarget {
         Objects.requireNonNull(collectionKey, "collectionKey");
@@ -33,6 +37,7 @@ public record NavigationTarget(
         Objects.requireNonNull(waypointDescription, "waypointDescription");
         waypointKeywords = List.copyOf(waypointKeywords);
         Objects.requireNonNull(position, "position");
+        Objects.requireNonNull(waypointInitials, "waypointInitials");
     }
 
     public NavigationTarget(
@@ -55,7 +60,9 @@ public record NavigationTarget(
                 this.waypointDescription,
                 this.waypointKeywords,
                 this.position,
-                this.rgb
+                this.rgb,
+                this.waypointInitials,
+                this.waypointIcon
         );
     }
 
@@ -76,7 +83,9 @@ public record NavigationTarget(
                 waypointSnapshot.description(),
                 waypointSnapshot.keywords(),
                 waypointSnapshot.position(),
-                waypointSnapshot.rgb()
+                waypointSnapshot.rgb(),
+                waypointSnapshot.initials(),
+                waypointSnapshot.icon()
         );
     }
 
@@ -88,7 +97,9 @@ public record NavigationTarget(
                 snapshot.description(),
                 snapshot.keywords(),
                 snapshot.pos(),
-                snapshot.rgb()
+                snapshot.rgb(),
+                snapshot.initials(),
+                snapshot.icon()
         );
     }
 
@@ -98,7 +109,9 @@ public record NavigationTarget(
             String description,
             List<String> keywords,
             WaypointPos position,
-            int rgb
+            int rgb,
+            String initials,
+            @Nullable NamespacedId icon
     ) {
     }
 }

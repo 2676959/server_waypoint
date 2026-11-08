@@ -147,7 +147,7 @@ class NavigationServiceTest {
                 "Updated description",
                 List.of(),
                 new WaypointPos(80, 75, -40),
-                0xABCDEF
+                0xABCDEF, _959.server_waypoint.util.WaypointInitials.getDefaultInitials("Renamed"), null
         );
 
         this.service.refreshTarget(oldTarget, updatedTarget);
@@ -205,7 +205,7 @@ class NavigationServiceTest {
                 updatedTarget.waypointDescription(),
                 updatedTarget.waypointKeywords(),
                 updatedTarget.position(),
-                updatedTarget.rgb()
+                updatedTarget.rgb(), _959.server_waypoint.util.WaypointInitials.getDefaultInitials("Renamed Again"), null
         );
         this.service.refreshTarget(updatedTarget, renamedAgain);
         assertEquals(List.of(this.secondPlayer.uuid()), this.platform.findPlayerRequests);
@@ -592,6 +592,8 @@ class NavigationServiceTest {
                 target("Target", 10, 64, 0),
                 Set.of(NavigationMethod.COMPASS, NavigationMethod.BOSSBAR)
         );
+        this.service.updateWorldMarkerSize(this.firstPlayer, 1.75F);
+        this.service.updateWorldMarkerDistance(this.firstPlayer, 8.5F);
         this.service.updateTextDisplayTranslation(
                 this.firstPlayer,
                 new Vector3f(1.0F, 2.0F, 3.0F)
@@ -628,6 +630,8 @@ class NavigationServiceTest {
                 restored.enabledMethods()
         );
         assertEquals(storedTransformation, restored.textDisplayTransformation());
+        assertEquals(1.75F, restored.worldMarkerSize());
+        assertEquals(8.5F, restored.worldMarkerDistance());
         assertEquals(2, this.handlers.get(NavigationMethod.COMPASS).enableCount);
         assertEquals(2, this.handlers.get(NavigationMethod.BOSSBAR).enableCount);
     }
@@ -705,7 +709,7 @@ class NavigationServiceTest {
     }
 
     @Test
-    void tickSharesOneSnapshotAcrossLiveDisplayHandlersEveryFiveTicks() {
+    void worldMarkerTicksEveryTickWhileOtherLiveDisplaysShareTheFifthSnapshot() {
         this.service.navigate(
                 this.firstPlayer,
                 target("Target", 10, 64, 0),
@@ -720,17 +724,21 @@ class NavigationServiceTest {
         for (int i = 0; i < 4; i++) {
             this.service.tickPlayer(this.firstPlayer);
         }
-        assertEquals(0, this.platform.snapshotCount);
+        assertEquals(4, this.platform.snapshotCount);
+        assertEquals(4, this.handlers.get(NavigationMethod.WORLD_MARKER).updateCount);
+        assertEquals(0, this.handlers.get(NavigationMethod.ACTIONBAR).updateCount);
 
         this.service.tickPlayer(this.firstPlayer);
 
-        assertEquals(1, this.platform.snapshotCount);
+        assertEquals(5, this.platform.snapshotCount);
+        assertEquals(5, this.handlers.get(NavigationMethod.WORLD_MARKER).updateCount);
         NavigationSnapshot sharedSnapshot = this.handlers.get(NavigationMethod.ACTIONBAR).lastSnapshot;
         assertEquals(0, this.handlers.get(NavigationMethod.COMPASS).updateCount);
         assertEquals(0, this.handlers.get(NavigationMethod.MAP).updateCount);
         assertEquals(1, this.handlers.get(NavigationMethod.BOSSBAR).updateCount);
         assertEquals(1, this.handlers.get(NavigationMethod.ACTIONBAR).updateCount);
         assertSame(sharedSnapshot, this.handlers.get(NavigationMethod.BOSSBAR).lastSnapshot);
+        assertSame(sharedSnapshot, this.handlers.get(NavigationMethod.WORLD_MARKER).lastSnapshot);
     }
 
     @Test
@@ -976,7 +984,7 @@ class NavigationServiceTest {
 
     private static NavigationTarget scopedTarget(WaypointCollectionKey key, String name, int x) {
         return new NavigationTarget(key, "minecraft:overworld", "Homes", "Homes", name, name, "", List.of(),
-                new WaypointPos(x, 64, 0), 0x123456);
+                new WaypointPos(x, 64, 0), 0x123456, _959.server_waypoint.util.WaypointInitials.getDefaultInitials(name), null);
     }
 
     private static NavigationTarget target(String name, int x, int y, int z) {
@@ -990,7 +998,7 @@ class NavigationServiceTest {
                 "",
                 List.of(),
                 new WaypointPos(x, y, z),
-                0x39C5BB
+                0x39C5BB, _959.server_waypoint.util.WaypointInitials.getDefaultInitials(name), null
         );
     }
 

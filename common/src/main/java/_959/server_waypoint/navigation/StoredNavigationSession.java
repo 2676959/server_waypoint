@@ -22,7 +22,9 @@ public record StoredNavigationSession(
         String listName,
         String waypointName,
         Set<NavigationMethod> enabledMethods,
-        TextDisplayTransformation textDisplayTransformation
+        TextDisplayTransformation textDisplayTransformation,
+        float worldMarkerSize,
+        float worldMarkerDistance
 ) {
     public StoredNavigationSession {
         Objects.requireNonNull(collectionKey, "collectionKey");
@@ -33,6 +35,8 @@ public record StoredNavigationSession(
                 Objects.requireNonNull(enabledMethods, "enabledMethods")
         );
         Objects.requireNonNull(textDisplayTransformation, "textDisplayTransformation");
+        NavigationSession.validateWorldMarkerSize(worldMarkerSize);
+        NavigationSession.validateWorldMarkerDistance(worldMarkerDistance);
     }
 
     public Optional<NavigationTarget> resolve(

@@ -440,6 +440,7 @@
   "wp.navigation.method.bossbar": "Boss 欄",
   "wp.navigation.method.actionbar": "動作列",
   "wp.navigation.method.text_display": "文字展示",
+  "wp.navigation.method.world_marker": "世界標記",
   "wp.navigation.method.on": "{0}已開啟",
   "wp.navigation.method.off": "{0}已關閉",
   "wp.hint.turn_on": "點擊開啟",
@@ -579,5 +580,9 @@
     "wp.error.private.command": "無法執行私人路標指令。",
     "wp.help.topic.private": "私人",
     "wp.help.private.run": "管理你自己的私人路標",
-    "wp.help.private.note": "用法與共享路標相同；傳送需要獨立授權"
+    "wp.help.private.note": "用法與共享路標相同；傳送需要獨立授權",
+  "wp.world_marker.stats": "標記：{0} 次更新，{1} 次生成\n資料封包：{2} 次移動，{3} 次中繼資料，{4} 次移除\n平均耗時：{5} µs/次更新",
+  "wp.world_marker.inactive": "世界標記未啟用",
+  "wp.world_marker.size": "世界標記大小 ×{0}",
+  "wp.world_marker.distance": "世界標記距離：{0} 格"
 }

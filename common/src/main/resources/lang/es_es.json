@@ -440,6 +440,7 @@
   "wp.navigation.method.bossbar": "Barra de jefe",
   "wp.navigation.method.actionbar": "Barra de acción",
   "wp.navigation.method.text_display": "Texto flotante",
+  "wp.navigation.method.world_marker": "Marcador en el mundo",
   "wp.navigation.method.on": "{0} está activado",
   "wp.navigation.method.off": "{0} está desactivado",
   "wp.hint.turn_on": "Haz clic para activarlo",
@@ -579,5 +580,9 @@
     "wp.error.private.command": "No se pudo ejecutar el comando privado.",
     "wp.help.topic.private": "Privados",
     "wp.help.private.run": "Gestiona tus propios puntos de ruta privados",
-    "wp.help.private.note": "Usa los mismos comandos que los compartidos; el teletransporte requiere otro permiso"
+    "wp.help.private.note": "Usa los mismos comandos que los compartidos; el teletransporte requiere otro permiso",
+  "wp.world_marker.stats": "Marcador: {0} actualizaciones, {1} apariciones\nPaquetes: {2} movimientos, {3} metadatos, {4} eliminaciones\nTiempo medio: {5} µs/actualización",
+  "wp.world_marker.inactive": "El marcador del mundo está inactivo",
+  "wp.world_marker.size": "Tamaño del marcador en el mundo ×{0}",
+  "wp.world_marker.distance": "Distancia del marcador en el mundo: {0} bloques"
 }
