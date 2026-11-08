@@ -267,6 +267,14 @@ result is retained as FAIL for one and ten owners. See
 [navigation evidence](../validation/2026-10-25-m1-navigation.md). Cross-dimension
 terrain, separate map viewers, and timed CLI integration stay open.
 
+Task 11 checkpoint (2026-11-07): one- and ten-owner cross-dimension terrain
+passes. Navigating from an overworld map to an unexplored nether waypoint keeps
+the owner map ID and replaces the region with 16,384 blank pixels at center
+0,0 scale 2. Ten owners have ten distinct map IDs. See
+[navigation evidence](../validation/2026-10-25-m1-navigation.md). Timed CLI
+integration stays open. Task 11's two checkboxes stay open until that gate
+runs.
+
 ### Task 12: Synchronization, upload/edit traffic and chat sharing
 
 **Files:** Create `tools/server-performance/scenarios/sync_upload.py`, `tests/test_sync_upload.py`; extend Azalea protocol actions and production-codec vectors.

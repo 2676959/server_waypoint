@@ -750,3 +750,20 @@ Verification: 41 navigation scenario tests. Probe
 `987f0f0d…905d0c9`; bot `3d33e868…050478`. No production or localization
 change. Task 11 remains open for cross-dimension terrain, separate map
 viewers, and timed CLI integration. Tasks 12 and 13 native runs stay blocked.
+
+## 2026-11-07 — Task 11 cross-dimension terrain
+
+Native one- and ten-owner dimension switches pass at
+`/Volumes/ssd/sw-performance-m1-dimension-small/` and
+`/Volumes/ssd/sw-performance-m1-dimension-ten/`. Each owner starts on an
+overworld map, then navigates to an unexplored nether waypoint at `[0, 80, 0]`.
+The map ID does not change. The destination region is
+`minecraft:the_nether` center 0,0 scale 2, and both the saved colors and the
+client checksum are 16,384 zero bytes. Ten owners have ten distinct map IDs.
+The nether landing pad verifies before the bots connect. Players remain in
+the overworld, so the destination is never explored.
+
+Timed CLI integration remains the open Task 11 gate: navigation, map-terrain,
+and protection still fall through to the inventory adapter and return
+`BLOCKED` for player cases. Functional smokes are not the 30s/60s three-repeat
+window. Task 11 checkboxes stay open. Tasks 12 and 13 native runs stay blocked.

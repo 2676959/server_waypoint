@@ -490,3 +490,22 @@ production repair.
 
 Probe `987f0f0d…905d0c9`, bot `3d33e868…050478`. Cross-dimension terrain,
 separate map viewers, and timed CLI integration remain open.
+
+## Cross-dimension terrain and separate viewers
+
+One- and ten-owner runs pass at
+`/Volumes/ssd/sw-performance-m1-dimension-small/` and
+`/Volumes/ssd/sw-performance-m1-dimension-ten/`. Nether generation is enabled
+and the probe builds the bedrock landing pad before any bot connects. Each
+owner navigates to overworld waypoint `dimension_fixture/overworld` with a
+map, then to nether waypoint `dimension_fixture/nether` at `[0, 80, 0]`.
+
+The map item ID is unchanged. The region becomes `minecraft:the_nether`,
+center 0,0, scale 2. The 16,384 pixels are blank because that region has not
+been explored, and the client map checksum matches those blanks. Ten owners
+receive ten different map IDs. Same-dimension save/restart coverage from the
+earlier terrain smoke is unchanged.
+
+Probe `987f0f0d…905d0c9`, bot `3d33e868…050478`. Timed CLI integration remains
+open: the prepared runner still has no navigation, map-terrain, or protection
+adapter for the 30s/60s three-repeat gate.
