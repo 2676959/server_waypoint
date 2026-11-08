@@ -93,6 +93,27 @@ pub fn inventory_drag_slots(data: &Value) -> Result<(Vec<usize>, bool), &'static
     Ok((slots, left))
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum MenuButton {
+    Left,
+    Right,
+    Shift,
+}
+
+pub fn menu_click(data: &Value) -> Result<(usize, MenuButton), &'static str> {
+    let slot = data["slot"].as_u64().ok_or("menu click slot required")?;
+    if slot > 45 {
+        return Err("invalid menu click slot");
+    }
+    let button = match data["button"].as_str() {
+        Some("left") => MenuButton::Left,
+        Some("right") => MenuButton::Right,
+        Some("shift") => MenuButton::Shift,
+        _ => return Err("menu click button must be left, right, or shift"),
+    };
+    Ok((slot as usize, button))
+}
+
 #[derive(Debug, PartialEq, Eq)]
 pub struct WaypointAction {
     pub operation: &'static str,

@@ -279,8 +279,16 @@ class NavigationScenariosTest(unittest.TestCase):
         self.assertEqual(45,player_raw_slot(40,"CRAFTING"))
         self.assertEqual(54,player_raw_slot(0,"CHEST"))
         self.assertEqual(27,player_raw_slot(9,"CHEST"))
+        self.assertEqual(37,player_raw_slot(0,"WORKBENCH"))
+        self.assertEqual(10,player_raw_slot(9,"WORKBENCH"))
+        self.assertEqual(36,player_raw_slot(35,"WORKBENCH"))
+        self.assertEqual(30,player_raw_slot(0,"CARTOGRAPHY"))
+        self.assertEqual(3,player_raw_slot(9,"CARTOGRAPHY"))
+        self.assertEqual(29,player_raw_slot(35,"CARTOGRAPHY"))
         with self.assertRaises(ValueError):
             player_raw_slot(40,"CHEST")
+        with self.assertRaises(ValueError):
+            player_raw_slot(40,"WORKBENCH")
         with self.assertRaises(ValueError):
             player_raw_slot(0,"FURNACE")
 
@@ -363,3 +371,107 @@ class NavigationScenariosTest(unittest.TestCase):
         self.assertEqual(Status.FAIL,drag_outcome(recipe,sample).status)
         sample["world"]={"ordinary":{},"protectedItems":0,"nestedProtectedCarriers":0}
         self.assertEqual(Status.PASS,drag_outcome(recipe,sample).status)
+
+    def test_station_cases_cover_craft_and_cartography(self):
+        from scenarios.navigation import station_cases
+        labels={case["label"]:case for case in station_cases()}
+        self.assertEqual({"protected-workbench-map-denied","ordinary-workbench-map","protected-cartography-scale-denied","ordinary-cartography-scale"},set(labels))
+        self.assertEqual("WORKBENCH",labels["protected-workbench-map-denied"]["inventoryType"])
+        self.assertTrue(labels["protected-workbench-map-denied"]["protected"])
+        self.assertEqual("minecraft:map",labels["protected-workbench-map-denied"]["recipe"])
+        self.assertFalse(labels["ordinary-workbench-map"]["protected"])
+        self.assertEqual("CARTOGRAPHY",labels["protected-cartography-scale-denied"]["inventoryType"])
+        self.assertTrue(labels["protected-cartography-scale-denied"]["protected"])
+        self.assertEqual("minecraft:filled_map",labels["ordinary-cartography-scale"]["resultMaterial"])
+        self.assertFalse(labels["ordinary-cartography-scale"]["protected"])
+
+    def test_protected_workbench_recipe_result_is_cleared(self):
+        from scenarios.navigation import station_outcome
+        recipe=self.station_recipe("protected-workbench-map-denied")
+        counts={"paper":8,"plainCompass":0,"emptyMaps":0,"plainFilledMaps":0,"sessionCompass":1,"sessionMap":1}
+        receipt={"event":"prepare-craft","uuid":"owner-1","type":"WORKBENCH","recipe":"minecraft:map",
+                 "matrix":{"ordinary":{"minecraft:paper:paper":8},"protectedItems":1,"nestedProtectedCarriers":0},
+                 "result":{"material":"minecraft:air","amount":0,"protected":False}}
+        denied={"event":"inventory-click","uuid":"owner-1","type":"WORKBENCH","cancelled":True,"rawSlot":5,
+                "items":{"ordinary":{},"protectedItems":1,"nestedProtectedCarriers":0}}
+        sample={"before":counts,"after":dict(counts),"world":self.clean_world(),"receipts":[denied,receipt]}
+        self.assertEqual(Status.BLOCKED,station_outcome(recipe,{"before":counts,"after":dict(counts),"world":self.clean_world(),"receipts":[receipt]}).status)
+        self.assertEqual(Status.FAIL,station_outcome(recipe,{**sample,"receipts":[{**denied,"cancelled":False},receipt]}).status)
+        self.assertEqual(Status.PASS,station_outcome(recipe,sample).status)
+        produced={**receipt,"result":{"material":"minecraft:map","amount":1,"protected":False}}
+        self.assertEqual(Status.FAIL,station_outcome(recipe,{**sample,"receipts":[denied,produced]}).status)
+        self.assertEqual(Status.FAIL,station_outcome(recipe,{**sample,"after":{**counts,"emptyMaps":1}}).status)
+        self.assertEqual(Status.FAIL,station_outcome(recipe,{**sample,"after":{**counts,"sessionCompass":0}}).status)
+        self.assertEqual(Status.FAIL,station_outcome(recipe,{**sample,"receipts":[denied,receipt,{"event":"craft-item","type":"WORKBENCH","cancelled":False,"rawSlot":0,"recipe":"minecraft:map"}]}).status)
+
+    def test_ordinary_workbench_result_can_be_taken(self):
+        from scenarios.navigation import station_outcome
+        recipe=self.station_recipe("ordinary-workbench-map")
+        before={"paper":8,"plainCompass":1,"emptyMaps":0,"plainFilledMaps":0,"sessionCompass":1,"sessionMap":1}
+        after={"paper":0,"plainCompass":0,"emptyMaps":1,"plainFilledMaps":0,"sessionCompass":1,"sessionMap":1}
+        prepare={"event":"prepare-craft","uuid":"owner-1","type":"WORKBENCH","recipe":"minecraft:map",
+                 "matrix":{"ordinary":{"minecraft:paper:paper":8,"minecraft:compass:plain":1},"protectedItems":0,"nestedProtectedCarriers":0},
+                 "result":{"material":"minecraft:map","amount":1,"protected":False}}
+        take={"event":"craft-item","uuid":"owner-1","type":"WORKBENCH","cancelled":False,"rawSlot":0,"recipe":"minecraft:map"}
+        sample={"before":before,"after":after,"world":self.clean_world(),"receipts":[prepare,take]}
+        self.assertEqual(Status.PASS,station_outcome(recipe,sample).status)
+        self.assertEqual(Status.FAIL,station_outcome(recipe,{**sample,"receipts":[{**prepare,"result":{"material":"minecraft:air","amount":0,"protected":False}},take]}).status)
+        self.assertEqual(Status.FAIL,station_outcome(recipe,{**sample,"receipts":[prepare,{**take,"cancelled":True}]}).status)
+        self.assertEqual(Status.FAIL,station_outcome(recipe,{**sample,"after":before}).status)
+
+    def test_protected_cartography_result_is_cleared_and_take_does_not_succeed(self):
+        from scenarios.navigation import station_outcome
+        recipe=self.station_recipe("protected-cartography-scale-denied")
+        counts={"paper":1,"plainCompass":0,"emptyMaps":0,"plainFilledMaps":0,"sessionCompass":1,"sessionMap":1}
+        receipt={"event":"prepare-result","uuid":"owner-1","type":"CARTOGRAPHY",
+                 "top":{"ordinary":{"minecraft:paper:paper":1},"protectedItems":1,"nestedProtectedCarriers":0},
+                 "result":{"material":"minecraft:air","amount":0,"protected":False}}
+        denied={"event":"inventory-click","uuid":"owner-1","type":"CARTOGRAPHY","cancelled":True,"rawSlot":0,
+                "items":{"ordinary":{},"protectedItems":1,"nestedProtectedCarriers":0}}
+        sample={"before":counts,"after":dict(counts),"world":self.clean_world(),"receipts":[denied,receipt]}
+        self.assertEqual(Status.BLOCKED,station_outcome(recipe,{"before":counts,"after":dict(counts),"world":self.clean_world(),"receipts":[receipt]}).status)
+        self.assertEqual(Status.FAIL,station_outcome(recipe,{**sample,"receipts":[{**denied,"cancelled":False},receipt]}).status)
+        self.assertEqual(Status.PASS,station_outcome(recipe,sample).status)
+        produced={**receipt,"result":{"material":"minecraft:filled_map","amount":1,"protected":True}}
+        self.assertEqual(Status.FAIL,station_outcome(recipe,{**sample,"receipts":[denied,produced]}).status)
+        taken={"event":"cartography-item","uuid":"owner-1","type":"CARTOGRAPHY","cancelled":False,"rawSlot":2}
+        self.assertEqual(Status.FAIL,station_outcome(recipe,{**sample,"receipts":[denied,receipt,taken]}).status)
+        self.assertEqual(Status.FAIL,station_outcome(recipe,{**sample,"after":{**counts,"paper":0}}).status)
+        self.assertEqual(Status.FAIL,station_outcome(recipe,{**sample,"world":{"ordinary":{},"protectedItems":1,"nestedProtectedCarriers":0}}).status)
+        map_only={**receipt,"top":{"ordinary":{},"protectedItems":1,"nestedProtectedCarriers":0}}
+        self.assertEqual(Status.PASS,station_outcome(recipe,{**sample,"receipts":[denied,map_only,receipt]}).status)
+
+    def test_ordinary_cartography_take_is_not_cancelled(self):
+        from scenarios.navigation import station_outcome
+        recipe=self.station_recipe("ordinary-cartography-scale")
+        before={"paper":1,"plainCompass":0,"emptyMaps":0,"plainFilledMaps":1,"sessionCompass":1,"sessionMap":1}
+        after={"paper":0,"plainCompass":0,"emptyMaps":0,"plainFilledMaps":1,"sessionCompass":1,"sessionMap":1}
+        prepare={"event":"prepare-result","uuid":"owner-1","type":"CARTOGRAPHY",
+                 "top":{"ordinary":{"minecraft:paper:paper":1,"minecraft:filled_map:plain":1},"protectedItems":0,"nestedProtectedCarriers":0},
+                 "result":{"material":"minecraft:filled_map","amount":1,"protected":False}}
+        take={"event":"cartography-item","uuid":"owner-1","type":"CARTOGRAPHY","cancelled":False,"rawSlot":2}
+        sample={"before":before,"after":after,"world":self.clean_world(),"receipts":[prepare,take]}
+        self.assertEqual(Status.PASS,station_outcome(recipe,sample).status)
+        self.assertEqual(Status.FAIL,station_outcome(recipe,{**sample,"receipts":[{**prepare,"result":{"material":"minecraft:air","amount":0,"protected":False}},take]}).status)
+        self.assertEqual(Status.FAIL,station_outcome(recipe,{**sample,"receipts":[prepare,{**take,"cancelled":True}]}).status)
+        self.assertEqual(Status.FAIL,station_outcome(recipe,{**sample,"after":{**after,"sessionMap":0}}).status)
+        self.assertEqual(Status.FAIL,station_outcome(recipe,{**sample,"after":{**after,"plainFilledMaps":2}}).status)
+
+    def test_station_requires_matching_native_receipt_and_counts(self):
+        from scenarios.navigation import station_outcome
+        recipe=self.station_recipe("protected-workbench-map-denied")
+        counts={"paper":8,"plainCompass":0,"emptyMaps":0,"plainFilledMaps":0,"sessionCompass":1,"sessionMap":1}
+        sample={"before":counts,"after":dict(counts),"world":self.clean_world(),"receipts":[]}
+        self.assertEqual(Status.BLOCKED,station_outcome(recipe,sample).status)
+        self.assertEqual(Status.BLOCKED,station_outcome(recipe,{"before":counts,"after":dict(counts),"receipts":[]}).status)
+        partial={"event":"prepare-craft","type":"WORKBENCH","recipe":"minecraft:map","matrix":{"protectedItems":1},"result":{"material":"minecraft:air"}}
+        self.assertEqual(Status.BLOCKED,station_outcome(recipe,{**sample,"receipts":[partial]}).status)
+
+    @staticmethod
+    def station_recipe(label):
+        from scenarios.navigation import station_cases
+        return next(case for case in station_cases() if case["label"]==label)
+
+    @staticmethod
+    def clean_world():
+        return {"ordinary":{},"protectedItems":0,"nestedProtectedCarriers":0}

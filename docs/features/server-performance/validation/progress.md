@@ -643,3 +643,38 @@ until they are split.
 Verification: 185 Python tests and 31 Rust tests. No native Paper small/medium
 run, profile, persisted-content check or commit. Task 12's original-Paper
 checkbox remains open.
+
+## 2026-11-05 — Task 11 crafting result and cartography
+
+Native one- and ten-owner station cases pass at
+`/Volumes/ssd/sw-performance-m1-station-small-3/` and
+`/Volumes/ssd/sw-performance-m1-station-ten/`. Real Azalea menu clicks open a
+crafting table or cartography table. Published 4.0.0 `onInventoryClick`
+cancels moving a session compass into workbench raw slot 5 and a session map
+into cartography raw slot 0. The probe then places that same session item into
+the open matrix so `PrepareItemCraftEvent` and `PrepareResultEvent` run.
+Protected results stay empty, paper and session counts stay exact, and no
+uncancelled craft-item or cartography-item receipt appears. Ordinary
+`minecraft:map` crafting and cartography scaling take their results and
+conserve the session compass and map. 4 / 40 decisions PASS. Native logger
+health PASSes.
+
+Ruling: a cleared cartography result means `CartographyItemEvent` is not
+constructed. The protected case requires the empty prepare result. Cost if
+wrong: a release that leaves a result and cancels only the take would need a
+cancelled cartography-item receipt before it could pass.
+
+Ruling: the client click cannot reach the prepare handlers, so the probe
+injection is the native trigger for those handlers. Cost if wrong: a later
+client that places the item without a cancelled click fails the denied-click
+check.
+
+Retained fixture RED roots: `station-small` sent `menu-click` to a bot binary
+that rejected it; `station-small-2` recorded the cancelled click and then
+blocked because the prepare receipt was absent. No production repair.
+
+Verification: 195 Python tests and Paper 1.21.11 probe build
+`a0b57606…b4160854`; bot `b31f632c…5eddcf5c`; probe/production class overlap 0.
+No production/localization change, commit or push. Task 11 remains open for
+pickup, entity/frame/equipment, deletion, remaining terrain boundaries and
+timed CLI integration.

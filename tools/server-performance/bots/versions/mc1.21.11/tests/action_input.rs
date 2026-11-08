@@ -102,3 +102,28 @@ fn inventory_drag_requires_explicit_source_slots_and_kind() {
         assert!(inventory_drag(&value).is_err());
     }
 }
+
+#[test]
+fn menu_click_requires_slot_and_button() {
+    use sw_performance_bots::action_input::{menu_click, MenuButton};
+    assert_eq!(
+        menu_click(&json!({"slot":5,"button":"left"})).unwrap(),
+        (5, MenuButton::Left)
+    );
+    assert_eq!(
+        menu_click(&json!({"slot":2,"button":"shift"})).unwrap(),
+        (2, MenuButton::Shift)
+    );
+    assert_eq!(
+        menu_click(&json!({"slot":1,"button":"right"})).unwrap(),
+        (1, MenuButton::Right)
+    );
+    for value in [
+        json!({"button":"left"}),
+        json!({"slot":5}),
+        json!({"slot":46,"button":"left"}),
+        json!({"slot":5,"button":"middle"}),
+    ] {
+        assert!(menu_click(&value).is_err());
+    }
+}

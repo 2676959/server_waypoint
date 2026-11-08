@@ -409,3 +409,53 @@ Helper processes are stopped. Artifact `0a1d2ddc…fa8ad57`, probe
 `8c0b49ef…dc0866c`, bot `89eca814…d955631`. Craft/cartography, pickup,
 entity/frame/equipment, deletion, remaining terrain boundaries and timed CLI
 integration remain open.
+
+## Crafting result and cartography
+
+`/Volumes/ssd/sw-performance-m1-station-small-3/` and
+`/Volumes/ssd/sw-performance-m1-station-ten/` pass four station cases for one
+and ten real Azalea owners. These are functional observations, not timed
+acceptance. Published 4.0.0 `onPrepareCraft`, `onPrepareResult`,
+`onCartographyItem` and the inventory-click slot filter are the handlers
+under test.
+
+A client click that moves a navigation item into a workbench or cartography
+slot is cancelled before the prepare handlers see it. Each protected case
+records that cancelled click, then the probe places the same session item
+into the open matrix: workbench center (matrix index 4, eight paper already
+in the ring) or cartography map slot 0 (paper already in slot 1).
+
+1. `protected-workbench-map-denied`: the click on raw slot 5 is cancelled
+   with a protected cursor. `PrepareItemCraftEvent` then reports recipe
+   `minecraft:map`, one protected matrix item and an empty result. Paper,
+   the session compass and empty-map counts stay unchanged.
+2. `ordinary-workbench-map`: a plain compass and eight paper craft
+   `minecraft:map`. The result shift-click is taken. Paper drops by eight,
+   the plain compass is consumed, and one empty map is gained. The session
+   compass and map stay at one.
+3. `protected-cartography-scale-denied`: the click on raw slot 0 is
+   cancelled with a protected cursor. A later `PrepareResultEvent` reports
+   the protected map and ordinary paper with an empty result. An uncancelled
+   `CartographyItemEvent` fails the case. `CartographyItemEvent` is
+   constructed only when that result slot is nonempty, so a cleared result
+   has no take receipt.
+4. `ordinary-cartography-scale`: a plain filled map and one paper scale.
+   The result shift-click is not cancelled. Paper drops by one and the plain
+   filled-map count stays unchanged because the input is consumed and the
+   scaled result is gained.
+
+Owner method targets, map IDs and live client effects remain exact after
+each case. One owner produces 4 PASS decisions; ten owners produce 40.
+Native logger health PASSes. Stations are removed after each case.
+
+Retained fixture RED roots, not product findings: `station-small` rejected
+`menu-click` because the linked bot binary predated that action;
+`station-small-2` cancelled the protected click and then blocked on a missing
+prepare receipt before the probe placed the session item. No production
+repair was made.
+
+Current verification: 195 Python tests and the Paper 1.21.11 probe build
+pass; probe/production archives have zero overlapping classes. Helper
+processes are stopped. Artifact `0a1d2ddc…fa8ad57`, probe
+`a0b57606…b4160854`, bot `b31f632c…5eddcf5c`. Pickup, entity/frame/equipment,
+deletion, remaining terrain boundaries and timed CLI integration remain open.

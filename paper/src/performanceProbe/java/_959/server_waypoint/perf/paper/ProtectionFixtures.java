@@ -11,10 +11,14 @@ import org.bukkit.block.Chest;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.BundleMeta;
+import org.bukkit.inventory.meta.MapMeta;
+import org.bukkit.map.MapView;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
@@ -32,8 +36,11 @@ final class ProtectionFixtures {
     private static final Set<String> KINDS = Set.of("direct", "shulker", "bundle-1", "mixed", "bundle-8", "bundle-9", "plain-shulker", "plain-bundle-9");
     private static final Set<String> CONTAINER_KINDS = Set.of("direct", "nested", "ordinary", "empty");
     private final LifecycleAssertions lifecycle;
+    private static final Set<String> STATION_KINDS = Set.of("workbench", "cartography");
+    private static final Set<String> SEED_MATERIALS = Set.of("paper", "compass", "filled_map");
     private final Map<UUID, Entry> owned = new HashMap<>();
     private final Map<String, ContainerEntry> containers = new HashMap<>();
+    private final Map<String, StationEntry> stations = new HashMap<>();
 
     ProtectionFixtures(LifecycleAssertions lifecycle) {
         this.lifecycle = lifecycle;
@@ -278,6 +285,170 @@ final class ProtectionFixtures {
         return result;
     }
 
+    JsonObject placeStation(JsonObject request) {
+        owner();
+        if (stations.size() >= 64) {
+            throw new IllegalStateException("Owned station fixture limit");
+        }
+        String kind = request.get("kind").getAsString();
+        if (!STATION_KINDS.contains(kind)) {
+            throw new IllegalArgumentException("Unknown station fixture kind");
+        }
+        Player player = Bukkit.getPlayerExact(request.get("player").getAsString());
+        if (player == null) {
+            throw new IllegalStateException("Native station owner absent");
+        }
+        if (stations.containsKey(player.getName())) {
+            throw new IllegalStateException("Owner already has a station fixture");
+        }
+        int x = request.get("x").getAsInt();
+        int y = request.get("y").getAsInt();
+        int z = request.get("z").getAsInt();
+        Block block = player.getWorld().getBlockAt(x, y, z);
+        block.getChunk().load();
+        Material material = "workbench".equals(kind) ? Material.CRAFTING_TABLE : Material.CARTOGRAPHY_TABLE;
+        block.setType(material, false);
+        if (block.getType() != material) {
+            throw new IllegalStateException("Native station fixture missing");
+        }
+        stations.put(player.getName(), new StationEntry(block, kind));
+        JsonObject result = new JsonObject();
+        result.addProperty("player", player.getName());
+        result.addProperty("kind", kind);
+        result.addProperty("inventoryType", "workbench".equals(kind) ? "WORKBENCH" : "CARTOGRAPHY");
+        result.addProperty("x", x);
+        result.addProperty("y", y);
+        result.addProperty("z", z);
+        result.addProperty("present", true);
+        return result;
+    }
+
+    JsonObject seedStation(JsonObject request) throws Exception {
+        owner();
+        Player player = Bukkit.getPlayerExact(request.get("player").getAsString());
+        if (player == null) {
+            throw new IllegalStateException("Native station owner absent");
+        }
+        String materialName = request.get("material").getAsString();
+        if (!SEED_MATERIALS.contains(materialName)) {
+            throw new IllegalArgumentException("Unknown station seed material");
+        }
+        int amount = request.get("amount").getAsInt();
+        if (amount < 1 || amount > 64 || (!"paper".equals(materialName) && amount != 1)) {
+            throw new IllegalArgumentException("Station seed amount is outside the recipe");
+        }
+        ItemStack stack = switch (materialName) {
+            case "paper" -> new ItemStack(Material.PAPER, amount);
+            case "compass" -> new ItemStack(Material.COMPASS, 1);
+            case "filled_map" -> plainFilledMap(player);
+            default -> throw new IllegalArgumentException("Unknown station seed material");
+        };
+        if (ItemGraphAssertions.tagged(stack) || stack.getAmount() != amount) {
+            throw new IllegalStateException("Station seed was tagged or the wrong size");
+        }
+        Object plugin = Bukkit.getPluginManager().getPlugin("ServerWaypoint");
+        Object manager = NavigationAssertions.field(plugin, "navigationItemManager");
+        boolean productTagged = (Boolean) manager.getClass()
+                .getMethod("isNavigationItem", ItemStack.class)
+                .invoke(manager, stack);
+        if (productTagged) {
+            throw new IllegalStateException("Installed release treats the station seed as a navigation item");
+        }
+        int slot = -1;
+        for (int index = 9; index <= 35; index++) {
+            ItemStack current = player.getInventory().getItem(index);
+            if (current == null || current.getType().isAir()) {
+                slot = index;
+                break;
+            }
+        }
+        if (slot < 0) {
+            throw new IllegalStateException("No empty storage slot for the station seed");
+        }
+        player.getInventory().setItem(slot, stack);
+        JsonObject result = new JsonObject();
+        result.addProperty("player", player.getName());
+        result.addProperty("slot", slot);
+        result.addProperty("amount", amount);
+        result.addProperty("material", stack.getType().getKey().toString());
+        return result;
+    }
+
+    JsonObject injectProtected(JsonObject request) throws Exception {
+        owner();
+        Player player = Bukkit.getPlayerExact(request.get("player").getAsString());
+        if (player == null) {
+            throw new IllegalStateException("Native station owner absent");
+        }
+        String kind = request.get("kind").getAsString();
+        if ("workbench".equals(kind)) {
+            if (player.getOpenInventory().getType() != InventoryType.WORKBENCH
+                    || !(player.getOpenInventory().getTopInventory() instanceof CraftingInventory crafting)
+                    || crafting.getMatrix().length != 9) {
+                throw new IllegalStateException("Workbench matrix is not open");
+            }
+            ItemStack[] matrix = crafting.getMatrix();
+            matrix[4] = takeNavigation(player, Material.COMPASS);
+            crafting.setMatrix(matrix);
+        } else if ("cartography".equals(kind)) {
+            if (player.getOpenInventory().getType() != InventoryType.CARTOGRAPHY) {
+                throw new IllegalStateException("Cartography table is not open");
+            }
+            player.getOpenInventory().getTopInventory().setItem(0, takeNavigation(player, Material.FILLED_MAP));
+        } else {
+            throw new IllegalArgumentException("Unknown station injection");
+        }
+        JsonObject result = new JsonObject();
+        result.addProperty("player", player.getName());
+        result.addProperty("kind", kind);
+        result.addProperty("cursorProtected", ItemGraphAssertions.tagged(player.getItemOnCursor()));
+        return result;
+    }
+
+    private static ItemStack takeNavigation(Player player, Material material) {
+        ItemStack cursor = player.getItemOnCursor();
+        if (cursor != null && cursor.getType() == material && ItemGraphAssertions.tagged(cursor) && cursor.getAmount() == 1) {
+            ItemStack taken = cursor.clone();
+            player.setItemOnCursor(null);
+            return taken;
+        }
+        var inventory = player.getInventory();
+        for (int slot = 0; slot < inventory.getSize(); slot++) {
+            ItemStack item = inventory.getItem(slot);
+            if (item != null && item.getType() == material && ItemGraphAssertions.tagged(item) && item.getAmount() == 1) {
+                inventory.setItem(slot, null);
+                return item.clone();
+            }
+        }
+        throw new IllegalStateException("Navigation item was not awaiting station injection");
+    }
+
+    JsonObject removeStation(JsonObject request) {
+        owner();
+        StationEntry entry = stations.remove(request.get("player").getAsString());
+        if (entry == null) {
+            throw new IllegalArgumentException("Unowned station fixture");
+        }
+        entry.block().setType(Material.AIR, false);
+        JsonObject result = new JsonObject();
+        result.addProperty("player", request.get("player").getAsString());
+        result.addProperty("present", entry.block().getType() != Material.AIR);
+        result.addProperty("ownedRemaining", stations.size());
+        return result;
+    }
+
+    private static ItemStack plainFilledMap(Player player) {
+        MapView view = Bukkit.createMap(player.getWorld());
+        ItemStack map = new ItemStack(Material.FILLED_MAP, 1);
+        MapMeta meta = (MapMeta) map.getItemMeta();
+        meta.setMapView(view);
+        map.setItemMeta(meta);
+        if (!meta.hasMapView() || view.isLocked() || view.getScale().getValue() >= 4) {
+            throw new IllegalStateException("Plain cartography map cannot be scaled");
+        }
+        return map;
+    }
+
     private ContainerEntry container(JsonObject request) {
         ContainerEntry entry = containers.get(request.get("player").getAsString());
         if (entry == null) {
@@ -380,5 +551,8 @@ final class ProtectionFixtures {
     }
 
     private record ContainerEntry(Block block, UUID owner, JsonObject expectedTop, JsonArray expectedGraphs) {
+    }
+
+    private record StationEntry(Block block, String kind) {
     }
 }

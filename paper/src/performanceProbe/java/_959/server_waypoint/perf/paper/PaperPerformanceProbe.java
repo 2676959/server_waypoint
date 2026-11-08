@@ -123,6 +123,10 @@ public final class PaperPerformanceProbe extends JavaPlugin {
                 case "protection.container.dirty" -> emit("protection.container.dirtied", protection.dirtyContainer(data));
                 case "protection.container.remove" -> emit("protection.container.removed", protection.removeContainer(data));
                 case "protection.drag.cursor" -> emit("protection.drag.cursor-set", protection.setDragCursor(data));
+                case "protection.station.place" -> emit("protection.station.placed", protection.placeStation(data));
+                case "protection.station.seed" -> emit("protection.station.seeded", protection.seedStation(data));
+                case "protection.station.remove" -> emit("protection.station.removed", protection.removeStation(data));
+                case "protection.station.inject" -> emit("protection.station.injected", protection.injectProtected(data));
                 case "commands.feedback-barrier" -> Bukkit.getGlobalRegionScheduler().execute(this, () -> emit("commands.feedback.completed", new JsonObject()));
                 case "commands.restore-tokens" -> emit("commands.restore-tokens", commands.restoreTokens());
                 case "commands.tree" -> emit("commands.tree", commands.tree());

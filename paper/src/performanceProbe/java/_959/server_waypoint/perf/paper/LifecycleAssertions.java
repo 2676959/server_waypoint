@@ -16,10 +16,14 @@ import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
+import org.bukkit.Keyed;
+import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.Recipe;
 
 import java.security.MessageDigest;
 import java.util.Collection;
@@ -156,6 +160,7 @@ final class LifecycleAssertions implements Listener {
         if (armed && event.getWhoClicked() instanceof Player player) {
             JsonObject value = playerEvent("inventory-click", player);
             value.addProperty("cancelled", event.isCancelled());
+            value.addProperty("type", event.getView().getType().name());
             value.addProperty("rawSlot", event.getRawSlot());
             value.addProperty("slot", event.getSlot());
             value.addProperty("action", event.getAction().name());
@@ -178,6 +183,53 @@ final class LifecycleAssertions implements Listener {
             value.add("items", classify(List.of(event.getOldCursor())));
             value.add("topItems", classify(Arrays.asList(event.getView().getTopInventory().getContents())));
             value.add("cursorItems", classify(List.of(player.getItemOnCursor())));
+            retain(value);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPrepareCraft(PrepareItemCraftEvent event) throws Exception {
+        if (armed && event.getView().getPlayer() instanceof Player player) {
+            JsonObject value = playerEvent("prepare-craft", player);
+            value.addProperty("type", event.getView().getType().name());
+            value.add("recipe", recipeKey(event.getRecipe()));
+            value.add("matrix", classify(Arrays.asList(event.getInventory().getMatrix())));
+            value.add("result", resultView(event.getInventory().getResult()));
+            retain(value);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPrepareResult(com.destroystokyo.paper.event.inventory.PrepareResultEvent event) throws Exception {
+        if (armed && event.getView().getPlayer() instanceof Player player) {
+            JsonObject value = playerEvent("prepare-result", player);
+            value.addProperty("type", event.getView().getType().name());
+            value.add("top", classify(Arrays.asList(event.getView().getTopInventory().getContents())));
+            value.add("result", resultView(event.getResult()));
+            retain(value);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
+    public void onCraftItem(CraftItemEvent event) throws Exception {
+        if (armed && event.getWhoClicked() instanceof Player player) {
+            JsonObject value = playerEvent("craft-item", player);
+            value.addProperty("type", event.getView().getType().name());
+            value.addProperty("cancelled", event.isCancelled());
+            value.addProperty("rawSlot", event.getRawSlot());
+            value.add("recipe", recipeKey(event.getRecipe()));
+            retain(value);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
+    public void onCartographyItem(io.papermc.paper.event.player.CartographyItemEvent event) throws Exception {
+        if (armed && event.getWhoClicked() instanceof Player player) {
+            JsonObject value = playerEvent("cartography-item", player);
+            value.addProperty("type", event.getView().getType().name());
+            value.addProperty("cancelled", event.isCancelled());
+            value.addProperty("rawSlot", event.getRawSlot());
+            value.add("result", resultView(event.getCurrentItem()));
             retain(value);
         }
     }
@@ -328,6 +380,27 @@ final class LifecycleAssertions implements Listener {
         result.addProperty("protectedItems", protectedItems);
         result.addProperty("nestedProtectedCarriers", nestedCarriers);
         return result;
+    }
+
+    private JsonObject resultView(ItemStack stack) {
+        JsonObject value = new JsonObject();
+        if (stack == null || stack.getType().isAir() || stack.getAmount() <= 0) {
+            value.addProperty("material", "minecraft:air");
+            value.addProperty("amount", 0);
+            value.addProperty("protected", false);
+            return value;
+        }
+        value.addProperty("material", stack.getType().getKey().toString());
+        value.addProperty("amount", stack.getAmount());
+        value.addProperty("protected", ItemGraphAssertions.tagged(stack));
+        return value;
+    }
+
+    private static com.google.gson.JsonElement recipeKey(Recipe recipe) {
+        if (recipe instanceof Keyed keyed) {
+            return new com.google.gson.JsonPrimitive(keyed.getKey().toString());
+        }
+        return com.google.gson.JsonNull.INSTANCE;
     }
 
     private JsonObject playerEvent(String event, Player player) {

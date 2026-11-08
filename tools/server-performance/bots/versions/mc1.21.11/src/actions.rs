@@ -291,6 +291,19 @@ pub async fn perform(
                 tokio::time::sleep(Duration::from_millis(150)).await;
             }
         }
+        "menu-click" => {
+            let (slot, button) = sw_performance_bots::action_input::menu_click(data)
+                .map_err(anyhow::Error::msg)?;
+            let handle = open_container
+                .as_ref()
+                .ok_or_else(|| anyhow::anyhow!("no open inventory"))?;
+            match button {
+                sw_performance_bots::action_input::MenuButton::Left => handle.left_click(slot),
+                sw_performance_bots::action_input::MenuButton::Right => handle.right_click(slot),
+                sw_performance_bots::action_input::MenuButton::Shift => handle.shift_click(slot),
+            }
+            wait_game_ticks(bot, 2).await;
+        }
         "disconnect" => bot.disconnect(),
         "refresh" => {
             use azalea::protocol::packets::game::ServerboundCustomPayload;

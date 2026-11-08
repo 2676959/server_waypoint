@@ -14,7 +14,7 @@ from controller import create_root
 from models import Status
 from processes import stop_owned
 from server_health import native_log_health
-from scenarios.navigation import METHODS, physical_receipts, physical_drop_spawned, restored_session, ordinary_conservation, nested_recipes, nested_item_outcome, container_cleanup, container_cases, container_recipe, drag_cases, drag_outcome, player_raw_slot
+from scenarios.navigation import METHODS, physical_receipts, physical_drop_spawned, restored_session, ordinary_conservation, nested_recipes, nested_item_outcome, container_cleanup, container_cases, container_recipe, drag_cases, drag_outcome, player_raw_slot, station_cases, station_outcome
 from worlds import install_server, boot
 from navigation_smoke import execute, snapshot
 
@@ -52,6 +52,8 @@ def run(root, count, case_set="physical", candidate=None):
         evidence["scope"] = "other-container-open-dirty-close"
     if case_set == "drag":
         evidence["scope"] = "inventory-drag-own-storage-chest-crafting-grid"
+    if case_set == "station":
+        evidence["scope"] = "crafting-result-and-cartography"
     paths = (Path(__file__).resolve(), tools / "bots/navigation_smoke.py", tools / "scenarios/navigation.py", tools / "bot_driver.py", tools / "worlds.py", tools / "server_health.py")
     atomic_write(root / "inputs.json", {"schemaVersion": 1, "files": {str(path.relative_to(tools)): sha256(path) for path in paths}})
     for path in paths:
@@ -392,6 +394,129 @@ def run(root, count, case_set="physical", candidate=None):
             print(f"native {count}-owner inventory-drag own-storage/chest/crafting-grid verified")
             return
 
+        if case_set == "station":
+            def material_amount(observed, name, material):
+                return sum(entry.get("amount", 0) for entry in observed.get("inventories", {}).get(name, {}).get("slots", []) if entry.get("material") == material)
+
+            def station_counts(observed, native_players, name):
+                player = next(value for value in native_players if value["name"] == name)
+                session_compass = sum(item["amount"] for item in player["items"] if item.get("method") == "compass")
+                session_map = sum(item["amount"] for item in player["items"] if item.get("method") == "map")
+                return {"paper": material_amount(observed, name, "minecraft:paper"),
+                        "plainCompass": material_amount(observed, name, "minecraft:compass") - session_compass,
+                        "emptyMaps": material_amount(observed, name, "minecraft:map"),
+                        "plainFilledMaps": material_amount(observed, name, "minecraft:filled_map") - session_map,
+                        "sessionCompass": session_compass, "sessionMap": session_map}
+
+            def session_slot(native_players, name, method):
+                player = next(value for value in native_players if value["name"] == name)
+                matches = [item["slot"] for item in player["items"] if item.get("method") == method and item.get("amount") == 1]
+                if len(matches) != 1:
+                    raise ValueError("session " + method + " slot missing")
+                return matches[0]
+
+            for case in station_cases():
+                probe.send("lifecycle.arm")
+                probe.wait("lifecycle.armed")
+                kind = "workbench" if case["inventoryType"] == "WORKBENCH" else "cartography"
+                placed = {}
+                for index, name in enumerate(names):
+                    probe.send("protection.station.place", {"player": name, "kind": kind, "x": 300 + index * 3, "y": -61, "z": 297})
+                    station = probe.wait("protection.station.placed")["data"]
+                    if station.get("inventoryType") != case["inventoryType"] or station.get("present") is not True:
+                        raise ValueError("native station fixture missing")
+                    placed[name] = {"x": station["x"], "y": station["y"], "z": station["z"]}
+                seeds = {name: {} for name in names}
+                paper_amount = 8 if case["kind"] == "craft" else 1
+                for name in names:
+                    probe.send("protection.station.seed", {"player": name, "material": "paper", "amount": paper_amount})
+                    seeds[name]["paper"] = probe.wait("protection.station.seeded")["data"]["slot"]
+                    if not case["protected"] and case["kind"] == "craft":
+                        probe.send("protection.station.seed", {"player": name, "material": "compass", "amount": 1})
+                        seeds[name]["compass"] = probe.wait("protection.station.seeded")["data"]["slot"]
+                    if not case["protected"] and case["kind"] == "cartography":
+                        probe.send("protection.station.seed", {"player": name, "material": "filled_map", "amount": 1})
+                        seeds[name]["map"] = probe.wait("protection.station.seeded")["data"]["slot"]
+                actions({name: {"operation": "open-container", "hold": True, **placed[name]} for name in names})
+                before_native = snapshot(probe)
+                before_monitor = monitor()
+                start = len(before_monitor["events"])
+                view = case["inventoryType"]
+
+                def click(slot_for_name, button):
+                    actions({name: {"operation": "menu-click", "slot": slot_for_name(name), "button": button} for name in names})
+
+                if case["kind"] == "craft":
+                    click(lambda name: player_raw_slot(seeds[name]["paper"], view), "left")
+                    for grid in (1, 2, 3, 4, 6, 7, 8, 9):
+                        click(lambda name, grid=grid: grid, "right")
+                    if case["protected"]:
+                        click(lambda name: player_raw_slot(session_slot(before_native["players"], name, "compass"), view), "left")
+                        click(lambda name: 5, "left")
+                        for name in names:
+                            probe.send("protection.station.inject", {"player": name, "kind": "workbench"})
+                            injected = probe.wait("protection.station.injected")["data"]
+                            if injected.get("cursorProtected") is not False:
+                                raise ValueError("protected compass remained on the cursor")
+                        click(lambda name: 0, "left")
+                    else:
+                        click(lambda name: player_raw_slot(seeds[name]["compass"], view), "left")
+                        click(lambda name: 5, "left")
+                        click(lambda name: 0, "shift")
+                elif case["protected"]:
+                    click(lambda name: player_raw_slot(seeds[name]["paper"], view), "left")
+                    click(lambda name: 1, "left")
+                    click(lambda name: player_raw_slot(session_slot(before_native["players"], name, "map"), view), "left")
+                    click(lambda name: 0, "left")
+                    for name in names:
+                        probe.send("protection.station.inject", {"player": name, "kind": "cartography"})
+                        injected = probe.wait("protection.station.injected")["data"]
+                        if injected.get("cursorProtected") is not False:
+                            raise ValueError("protected map remained on the cursor")
+                    click(lambda name: 2, "left")
+                else:
+                    click(lambda name: player_raw_slot(seeds[name]["map"], view), "left")
+                    click(lambda name: 0, "left")
+                    click(lambda name: player_raw_slot(seeds[name]["paper"], view), "left")
+                    click(lambda name: 1, "left")
+                    click(lambda name: 2, "shift")
+                actions({name: {"operation": "close-container"} for name in names})
+                for name in names:
+                    probe.send("protection.station.remove", {"player": name})
+                    removed = probe.wait("protection.station.removed")["data"]
+                    if removed.get("present") is not False:
+                        raise ValueError("owned station cleanup incomplete")
+                after_native = snapshot(probe)
+                after_monitor = monitor()
+                if after_monitor["droppedObservations"]:
+                    raise ValueError("native station receipts overflowed")
+                client = packets()
+                owners = {player["name"]: restored_session({"uuid": identities[player["name"]], "mapId": ids[player["name"]], "methods": METHODS, "target": expected_target}, player, client[player["name"]]) for player in after_native["players"]}
+                if len(owners) != count or any(value.status != Status.PASS for value in owners.values()):
+                    raise ValueError("station case changed owner navigation state")
+                decisions = {}
+                for name in names:
+                    sample = {"before": station_counts(before_monitor, before_native["players"], name),
+                              "after": station_counts(after_monitor, after_native["players"], name),
+                              "world": after_monitor["worldItems"],
+                              "receipts": [event for event in after_monitor["events"][start:] if event.get("uuid") == identities[name]]}
+                    decisions[name] = station_outcome(case, sample)
+                step = {"recipe": case, "decisions": decisions, "ownerDecisions": owners}
+                evidence["steps"].append(step)
+                atomic_write(root / "protection.json", evidence)
+            evidence["allCasesExecuted"] = True
+            evidence["stationOutcomes"] = dict(Counter(step["decisions"][name].status.value for step in evidence["steps"] for name in names))
+            evidence["serverHealth"] = native_log_health(server / "logs/latest.log")
+            if evidence["serverHealth"].status != Status.PASS:
+                raise ValueError("native station server log health failed")
+            if any(step["decisions"][name].status != Status.PASS for step in evidence["steps"] for name in names):
+                raise ValueError("native crafting/cartography assertions failed or incomplete")
+            evidence["completed"] = True
+            driver.close()
+            driver = None
+            print(f"native {count}-owner crafting/cartography protection verified")
+            return
+
         for method in ("compass", "map"):
             select(slot(method))
             start = len(monitor()["events"])
@@ -446,7 +571,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--count", type=int, choices=(1, 10), default=1)
-    parser.add_argument("--case-set", choices=("physical", "nested", "container", "drag"), default="physical")
+    parser.add_argument("--case-set", choices=("physical", "nested", "container", "drag", "station"), default="physical")
     parser.add_argument("--candidate", type=Path, help="Explicit development candidate JAR; retain its own hash and provenance")
     args = parser.parse_args()
     run(args.root, args.count, args.case_set, args.candidate)

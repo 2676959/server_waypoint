@@ -349,7 +349,146 @@ def player_raw_slot(slot,inventory_type):
             return slot+54
         if 9<=slot<=35:
             return slot+18
+    elif inventory_type=="WORKBENCH":
+        if 0<=slot<=8:
+            return slot+37
+        if 9<=slot<=35:
+            return slot+1
+    elif inventory_type=="CARTOGRAPHY":
+        if 0<=slot<=8:
+            return slot+30
+        if 9<=slot<=35:
+            return slot-6
     raise ValueError("player slot is not visible in the open inventory view")
+
+
+STATION_COUNTS=("paper","plainCompass","emptyMaps","plainFilledMaps","sessionCompass","sessionMap")
+
+
+def station_cases():
+    return (
+        {"label":"protected-workbench-map-denied","inventoryType":"WORKBENCH","kind":"craft","protected":True,
+         "recipe":"minecraft:map","resultMaterial":"minecraft:map"},
+        {"label":"ordinary-workbench-map","inventoryType":"WORKBENCH","kind":"craft","protected":False,
+         "recipe":"minecraft:map","resultMaterial":"minecraft:map"},
+        {"label":"protected-cartography-scale-denied","inventoryType":"CARTOGRAPHY","kind":"cartography","protected":True,
+         "recipe":None,"resultMaterial":"minecraft:filled_map"},
+        {"label":"ordinary-cartography-scale","inventoryType":"CARTOGRAPHY","kind":"cartography","protected":False,
+         "recipe":None,"resultMaterial":"minecraft:filled_map"},
+    )
+
+
+def station_outcome(recipe,sample):
+    kind=recipe.get("kind")
+    inventory_type=recipe.get("inventoryType")
+    if kind not in {"craft","cartography"} or inventory_type not in {"WORKBENCH","CARTOGRAPHY"}:
+        return Decision(Status.BLOCKED,("station recipe missing kind or view",))
+    before=sample.get("before")
+    after=sample.get("after")
+    if (not isinstance(before,dict) or not isinstance(after,dict)
+            or any(type(before.get(key)) is not int or type(after.get(key)) is not int for key in STATION_COUNTS)):
+        return Decision(Status.BLOCKED,("station before/after counts missing",))
+    world=sample.get("world")
+    if not isinstance(world,dict) or any(key not in world for key in ("ordinary","protectedItems","nestedProtectedCarriers")):
+        return Decision(Status.BLOCKED,("station world item evidence missing",))
+    if world.get("protectedItems")!=0 or world.get("nestedProtectedCarriers")!=0 or world.get("ordinary"):
+        return Decision(Status.FAIL,("protected item escaped into the world",))
+    if before["sessionCompass"]!=1 or before["sessionMap"]!=1:
+        return Decision(Status.FAIL,("station did not start with the owner session items",))
+    if after["sessionCompass"]!=1 or after["sessionMap"]!=1:
+        return Decision(Status.FAIL,("station cleanup removed or duplicated a session item",))
+    receipts=[value for value in sample.get("receipts",[]) if isinstance(value,dict)]
+    if kind=="craft":
+        return _craft_station_outcome(recipe,before,after,receipts,inventory_type)
+    return _cartography_station_outcome(recipe,before,after,receipts,inventory_type)
+
+
+def _craft_station_outcome(recipe,before,after,receipts,inventory_type):
+    prepares=[value for value in receipts if value.get("event")=="prepare-craft" and value.get("type")==inventory_type and value.get("recipe")==recipe.get("recipe")]
+    if not prepares:
+        return Decision(Status.BLOCKED,("matching prepare-craft receipt missing",))
+    for value in prepares:
+        if _station_result(value) is None or not isinstance(value.get("matrix"),dict) or type(value["matrix"].get("protectedItems")) is not int:
+            return Decision(Status.BLOCKED,("prepare-craft matrix or result missing",))
+    takes=[value for value in receipts if value.get("event")=="craft-item" and value.get("type")==inventory_type]
+    if recipe.get("protected") is True:
+        denied=_denied_station_click(receipts,inventory_type,5)
+        if denied is not None:
+            return denied
+        if any(_station_result(value)["amount"]>0 for value in prepares):
+            return Decision(Status.FAIL,("protected crafting recipe produced a result",))
+        if any(value["matrix"].get("protectedItems")!=1 for value in prepares):
+            return Decision(Status.FAIL,("protected crafting recipe did not contain the navigation item",))
+        if takes:
+            return Decision(Status.FAIL,("protected crafting result was taken",))
+        if after["emptyMaps"]!=0 or after["paper"]!=before["paper"] or after["plainCompass"]!=before["plainCompass"] or after["plainFilledMaps"]!=before["plainFilledMaps"]:
+            return Decision(Status.FAIL,("protected crafting consumed ingredients or created an empty map",))
+        return Decision(Status.PASS,())
+    if not any(_station_result(value)["amount"]==1 and _station_result(value)["material"]==recipe.get("resultMaterial")
+               and _station_result(value)["protected"] is False and value["matrix"].get("protectedItems")==0 for value in prepares):
+        return Decision(Status.FAIL,("ordinary crafting result was cleared",))
+    if len(takes)!=1 or takes[0].get("cancelled") is not False or takes[0].get("rawSlot")!=0 or takes[0].get("recipe")!=recipe.get("recipe"):
+        return Decision(Status.FAIL,("ordinary crafting result take was cancelled or missing",))
+    if after["emptyMaps"]!=before["emptyMaps"]+1 or after["paper"]!=before["paper"]-8 or after["plainCompass"]!=before["plainCompass"]-1 or after["plainFilledMaps"]!=before["plainFilledMaps"]:
+        return Decision(Status.FAIL,("ordinary crafting did not consume the compass and eight paper or did not yield one empty map",))
+    return Decision(Status.PASS,())
+
+
+def _cartography_station_outcome(recipe,before,after,receipts,inventory_type):
+    prepares=[value for value in receipts if value.get("event")=="prepare-result" and value.get("type")==inventory_type]
+    if not prepares:
+        return Decision(Status.BLOCKED,("matching prepare-result receipt missing",))
+    for value in prepares:
+        if _station_result(value) is None or not isinstance(value.get("top"),dict) or type(value["top"].get("protectedItems")) is not int:
+            return Decision(Status.BLOCKED,("prepare-result top inventory or result missing",))
+    takes=[value for value in receipts if value.get("event")=="cartography-item" and value.get("type")==inventory_type and value.get("cancelled") is False]
+    if recipe.get("protected") is True:
+        denied=_denied_station_click(receipts,inventory_type,0)
+        if denied is not None:
+            return denied
+        carrying=[value for value in prepares if value["top"].get("protectedItems")>=1]
+        if not carrying:
+            return Decision(Status.BLOCKED,("protected cartography prepare receipt missing",))
+        if any(_station_result(value)["amount"]>0 for value in carrying):
+            return Decision(Status.FAIL,("protected cartography recipe produced a result",))
+        if not any(_ordinary_units(value["top"].get("ordinary"))>=1 for value in carrying):
+            return Decision(Status.BLOCKED,("protected cartography inputs were not both present",))
+        if takes:
+            return Decision(Status.FAIL,("protected cartography result was taken",))
+        if after["paper"]!=before["paper"] or after["plainFilledMaps"]!=before["plainFilledMaps"] or after["emptyMaps"]!=before["emptyMaps"] or after["plainCompass"]!=before["plainCompass"]:
+            return Decision(Status.FAIL,("protected cartography consumed ingredients or created a map",))
+        return Decision(Status.PASS,())
+    ready=[value for value in prepares if _station_result(value)["material"]==recipe.get("resultMaterial") and _station_result(value)["amount"]>=1
+           and _station_result(value)["protected"] is False and value["top"].get("protectedItems")==0]
+    if not ready:
+        return Decision(Status.FAIL,("ordinary cartography result was cleared",))
+    if len(takes)!=1 or takes[0].get("rawSlot")!=2:
+        return Decision(Status.FAIL,("ordinary cartography result take was cancelled or missing",))
+    if after["paper"]!=before["paper"]-1 or after["plainFilledMaps"]!=before["plainFilledMaps"] or after["emptyMaps"]!=before["emptyMaps"] or after["plainCompass"]!=before["plainCompass"]:
+        return Decision(Status.FAIL,("ordinary cartography did not replace the plain map after consuming one paper",))
+    return Decision(Status.PASS,())
+
+
+def _denied_station_click(receipts,inventory_type,raw_slot):
+    clicks=[value for value in receipts if value.get("event")=="inventory-click" and value.get("type")==inventory_type and value.get("rawSlot")==raw_slot]
+    if not clicks:
+        return Decision(Status.BLOCKED,("protected station click receipt missing",))
+    if any(value.get("cancelled") is not True or type((value.get("items") or {}).get("protectedItems")) is not int or value["items"]["protectedItems"]<1 for value in clicks):
+        return Decision(Status.FAIL,("protected item was placed by the client click",))
+    return None
+
+
+def _station_result(receipt):
+    result=receipt.get("result")
+    if not isinstance(result,dict) or type(result.get("amount")) is not int or not isinstance(result.get("material"),str) or type(result.get("protected")) is not bool:
+        return None
+    return result
+
+
+def _ordinary_units(ordinary):
+    if not isinstance(ordinary,dict) or any(type(value) is not int for value in ordinary.values()):
+        return 0
+    return sum(ordinary.values())
 
 
 def drag_recipe(case,snapshot):

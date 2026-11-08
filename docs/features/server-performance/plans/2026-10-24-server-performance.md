@@ -247,6 +247,15 @@ compass/map count-1 "drags" remain clicks. See
 pickup, entity/frame/equipment, deletion, remaining terrain boundaries and timed
 CLI integration stay open.
 
+Task 11 checkpoint (2026-11-05): crafting-result and cartography pass for one
+and ten owners. A client click that would move a session compass or map into
+the workbench center or cartography map slot is cancelled; the probe then
+places that session item so the published prepare handlers run. Ordinary map
+crafting and cartography scaling still take their results. See
+[navigation evidence](../validation/2026-10-25-m1-navigation.md). Pickup,
+entity/frame/equipment, deletion, remaining terrain boundaries and timed CLI
+integration stay open.
+
 ### Task 12: Synchronization, upload/edit traffic and chat sharing
 
 **Files:** Create `tools/server-performance/scenarios/sync_upload.py`, `tests/test_sync_upload.py`; extend Azalea protocol actions and production-codec vectors.
