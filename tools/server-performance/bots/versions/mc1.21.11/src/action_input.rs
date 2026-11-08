@@ -32,6 +32,14 @@ pub fn player_action(data: &Value) -> Result<Action, &'static str> {
     }
 }
 
+pub fn entity_interact(data: &Value) -> Result<i32, &'static str> {
+    let id = data["entityId"].as_i64().ok_or("entity id required")?;
+    if !(0..=i32::MAX as i64).contains(&id) {
+        return Err("entity id out of range");
+    }
+    Ok(id as i32)
+}
+
 pub fn container_position(data: &Value) -> Result<(i32, i32, i32), &'static str> {
     let coordinate = |key| {
         data[key]

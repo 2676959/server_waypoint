@@ -467,6 +467,127 @@ class NavigationScenariosTest(unittest.TestCase):
         partial={"event":"prepare-craft","type":"WORKBENCH","recipe":"minecraft:map","matrix":{"protectedItems":1},"result":{"material":"minecraft:air"}}
         self.assertEqual(Status.BLOCKED,station_outcome(recipe,{**sample,"receipts":[partial]}).status)
 
+    def test_entity_cases_cover_pickup_frame_and_equipment(self):
+        from scenarios.navigation import entity_cases
+        labels={case["label"]:case for case in entity_cases()}
+        self.assertEqual({
+            "entity-pickup-protected","entity-pickup-ordinary","hopper-pickup-protected","hopper-pickup-ordinary",
+            "item-frame-place-denied","item-frame-ordinary","item-frame-remove-protected",
+            "armor-stand-place-denied","armor-stand-sanitize","armor-stand-ordinary",
+            "allay-held-denied","allay-sanitize"},set(labels))
+        self.assertEqual("entity-pickup",labels["entity-pickup-protected"]["event"])
+        self.assertTrue(labels["entity-pickup-protected"]["cancelled"])
+        self.assertFalse(labels["entity-pickup-ordinary"]["cancelled"])
+        self.assertEqual("PLACE",labels["item-frame-place-denied"]["action"])
+        self.assertEqual("ROTATE",labels["item-frame-remove-protected"]["action"])
+        self.assertTrue(labels["armor-stand-sanitize"]["injected"])
+        self.assertTrue(labels["allay-sanitize"]["injected"])
+        self.assertFalse(labels["armor-stand-ordinary"]["cancelled"])
+
+    def test_protected_pickup_removes_the_world_item_and_keeps_the_session(self):
+        from scenarios.navigation import entity_outcome
+        recipe=self.entity_recipe("entity-pickup-protected")
+        ordinary={"minecraft:stone:stone":64}
+        receipt={"event":"entity-pickup","cancelled":True,"items":{"protectedItems":1,"ordinary":{}}}
+        sample=self.entity_sample(ordinary,ordinary,{},receipt)
+        self.assertEqual(Status.PASS,entity_outcome(recipe,sample).status)
+        self.assertEqual(Status.FAIL,entity_outcome(recipe,{**sample,"receipts":[{**receipt,"cancelled":False}]}).status)
+        self.assertEqual(Status.FAIL,entity_outcome(recipe,{**sample,"after":{**sample["after"],"sessionCompass":0}}).status)
+        self.assertEqual(Status.FAIL,entity_outcome(recipe,{**sample,"world":{"protectedItems":1,"nestedProtectedCarriers":0}}).status)
+        self.assertEqual(Status.FAIL,entity_outcome(recipe,{**sample,"carrier":{"ordinary":{},"protectedItems":1,"nestedProtectedCarriers":0}}).status)
+        self.assertEqual(Status.BLOCKED,entity_outcome(recipe,{**sample,"receipts":[]}).status)
+        self.assertEqual(Status.FAIL,entity_outcome(recipe,{**sample,"playerOrdinary":{"minecraft:stone:stone":63}}).status)
+
+    def test_ordinary_pickup_reaches_the_player_and_hopper_pickup_does_not(self):
+        from scenarios.navigation import entity_outcome
+        stone={"minecraft:stone:stone":64}
+        gained={"minecraft:stone:stone":64,"minecraft:emerald:gem":1}
+        player=self.entity_recipe("entity-pickup-ordinary")
+        player={**player,"playerOrdinary":gained,"carrierOrdinary":{}}
+        hopper=self.entity_recipe("hopper-pickup-ordinary")
+        hopper={**hopper,"playerOrdinary":stone,"carrierOrdinary":{"minecraft:emerald:gem":1}}
+        receipt={"event":"entity-pickup","cancelled":False,"items":{"protectedItems":0,"ordinary":{"minecraft:emerald:gem":1}}}
+        self.assertEqual(Status.PASS,entity_outcome(player,self.entity_sample(stone,gained,{},receipt)).status)
+        self.assertEqual(Status.FAIL,entity_outcome(player,self.entity_sample(stone,stone,{},receipt)).status)
+        hopper_receipt={**receipt,"event":"inventory-pickup"}
+        self.assertEqual(Status.PASS,entity_outcome(hopper,self.entity_sample(stone,stone,{"minecraft:emerald:gem":1},hopper_receipt)).status)
+        self.assertEqual(Status.FAIL,entity_outcome(hopper,self.entity_sample(gained,gained,{"minecraft:emerald:gem":1},hopper_receipt)).status)
+        self.assertEqual(Status.FAIL,entity_outcome(hopper,{**self.entity_sample(stone,stone,{"minecraft:emerald:gem":1},hopper_receipt),"carrier":{"ordinary":{},"protectedItems":0,"nestedProtectedCarriers":0}}).status)
+
+    def test_frame_and_equipment_keep_protected_items_off_the_carrier(self):
+        from scenarios.navigation import entity_outcome
+        ordinary={"minecraft:stone:stone":64}
+        placed={"minecraft:stone:stone":63}
+        denied=self.entity_recipe("item-frame-place-denied")
+        denied={**denied,"playerOrdinary":ordinary,"carrierOrdinary":{}}
+        receipt={"event":"item-frame","cancelled":True,"action":"PLACE","items":{"protectedItems":1,"ordinary":{}}}
+        sample=self.entity_sample(ordinary,ordinary,{},receipt)
+        self.assertEqual(Status.PASS,entity_outcome(denied,sample).status)
+        self.assertEqual(Status.FAIL,entity_outcome(denied,{**sample,"receipts":[{**receipt,"action":"REMOVE"}]}).status)
+        self.assertEqual(Status.FAIL,entity_outcome(denied,{**sample,"receipts":[{**receipt,"items":{"protectedItems":0,"ordinary":ordinary}}]}).status)
+        removed=self.entity_recipe("item-frame-remove-protected")
+        removed={**removed,"playerOrdinary":ordinary,"carrierOrdinary":{}}
+        injected={**receipt,"action":"ROTATE","injected":{"protectedItems":1}}
+        self.assertEqual(Status.BLOCKED,entity_outcome(removed,self.entity_sample(ordinary,ordinary,{},{**receipt,"action":"ROTATE"})).status)
+        self.assertEqual(Status.PASS,entity_outcome(removed,self.entity_sample(ordinary,ordinary,{},injected)).status)
+        stand=self.entity_recipe("armor-stand-ordinary")
+        stand={**stand,"playerOrdinary":placed,"carrierOrdinary":{"minecraft:stone:stone":1}}
+        stand_receipt={"event":"armor-stand","cancelled":False,"items":{"protectedItems":0,"ordinary":{"minecraft:stone:stone":1}}}
+        self.assertEqual(Status.PASS,entity_outcome(stand,self.entity_sample(ordinary,placed,{"minecraft:stone:stone":1},stand_receipt)).status)
+        self.assertEqual(Status.FAIL,entity_outcome(stand,self.entity_sample(ordinary,placed,{"minecraft:stone:stone":1},{**stand_receipt,"cancelled":True})).status)
+        sanitize=self.entity_recipe("allay-sanitize")
+        sanitize={**sanitize,"playerOrdinary":ordinary,"carrierOrdinary":{}}
+        allay={"event":"allay-interact","cancelled":True,"items":{"protectedItems":0,"ordinary":{}},"injected":{"protectedItems":1}}
+        self.assertEqual(Status.PASS,entity_outcome(sanitize,self.entity_sample(ordinary,ordinary,{},allay)).status)
+        self.assertEqual(Status.FAIL,entity_outcome(sanitize,{**self.entity_sample(ordinary,ordinary,{},allay),"carrier":{"ordinary":{},"protectedItems":1,"nestedProtectedCarriers":0}}).status)
+
+    def test_deleted_waypoint_stops_only_its_sessions(self):
+        from scenarios.navigation import deleted_navigation
+        removed={"dimension":"minecraft:overworld","list":"protection_fixture","waypoint":"target"}
+        other={"dimension":"minecraft:overworld","list":"protection_fixture","waypoint":"other"}
+        ordinary={"minecraft:stone:stone":64}
+        affected={"before":{"target":removed,"ordinary":ordinary,"protectedItems":2,"persisted":True},"after":{"target":None,"ordinary":ordinary,"protectedItems":0,"persisted":False}}
+        untouched={"before":{"target":other,"ordinary":ordinary,"protectedItems":2,"persisted":True},"after":{"target":other,"ordinary":ordinary,"protectedItems":2,"persisted":True}}
+        self.assertEqual(Status.PASS,deleted_navigation(removed,[affected,untouched]).status)
+        self.assertEqual(Status.FAIL,deleted_navigation(removed,[{**affected,"after":{**affected["after"],"target":removed}}]).status)
+        self.assertEqual(Status.FAIL,deleted_navigation(removed,[{**affected,"after":{**affected["after"],"protectedItems":1}}]).status)
+        self.assertEqual(Status.FAIL,deleted_navigation(removed,[{**affected,"after":{**affected["after"],"persisted":True}}]).status)
+        self.assertEqual(Status.FAIL,deleted_navigation(removed,[{**affected,"before":{**affected["before"],"persisted":False}}]).status)
+        self.assertEqual(Status.FAIL,deleted_navigation(removed,[{**affected,"after":{**affected["after"],"ordinary":{}}},untouched]).status)
+        self.assertEqual(Status.FAIL,deleted_navigation(removed,[affected,{**untouched,"after":{**untouched["after"],"target":None,"persisted":False,"protectedItems":0}}]).status)
+        self.assertEqual(Status.BLOCKED,deleted_navigation(removed,[{"before":affected["before"],"after":{"target":None,"ordinary":ordinary,"protectedItems":0}}]).status)
+        self.assertEqual(Status.BLOCKED,deleted_navigation(removed,[untouched]).status)
+
+    def test_dimension_switch_keeps_the_owner_map_and_separate_viewers(self):
+        import base64
+        import zlib
+        from scenarios.navigation import switched_dimension,separate_map_viewers
+        origin={"dimension":"minecraft:overworld","centerX":512,"centerZ":512,"scale":2}
+        destination={"dimension":"minecraft:the_nether","centerX":0,"centerZ":0,"scale":2}
+        colors=bytes(16384)
+        native={**destination,"colorsBase64":base64.b64encode(colors).decode()}
+        client={"scale":2,"knownPixels":16384,"colorsCrc32":zlib.crc32(colors)}
+        self.assertEqual(Status.PASS,switched_dimension(origin,destination,7,7,colors,native,client).status)
+        self.assertEqual(Status.FAIL,switched_dimension(origin,origin,7,7,colors,native,client).status)
+        self.assertEqual(Status.FAIL,switched_dimension(origin,destination,7,8,colors,native,client).status)
+        self.assertEqual(Status.FAIL,switched_dimension(origin,destination,7,7,bytes([1])*16384,native,client).status)
+        viewers=({"uuid":"a","mapId":7,"dimension":"minecraft:overworld"},{"uuid":"b","mapId":8,"dimension":"minecraft:the_nether"})
+        self.assertEqual(Status.PASS,separate_map_viewers(viewers).status)
+        self.assertEqual(Status.FAIL,separate_map_viewers((viewers[0],{**viewers[1],"mapId":7})).status)
+        self.assertEqual(Status.BLOCKED,separate_map_viewers((viewers[0],)).status)
+        self.assertEqual(Status.BLOCKED,separate_map_viewers((viewers[0],{**viewers[1],"dimension":None})).status)
+
+    @staticmethod
+    def entity_recipe(label):
+        from scenarios.navigation import entity_cases
+        recipe=next(case for case in entity_cases() if case["label"]==label)
+        return {**recipe,"playerOrdinary":{"minecraft:stone:stone":64},"carrierOrdinary":{}}
+
+    def entity_sample(self,before,after,carrier,receipt):
+        return {"before":{"sessionCompass":1,"sessionMap":1},"after":{"sessionCompass":1,"sessionMap":1},
+                "world":self.clean_world(),"carrier":{"ordinary":carrier,"protectedItems":0,"nestedProtectedCarriers":0},
+                "playerOrdinary":after,"receipts":[receipt],"startedOrdinary":before}
+
     @staticmethod
     def station_recipe(label):
         from scenarios.navigation import station_cases

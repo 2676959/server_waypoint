@@ -4,17 +4,26 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Allay;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.block.Chest;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.CraftingInventory;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.Vector;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.BundleMeta;
 import org.bukkit.inventory.meta.MapMeta;
@@ -41,6 +50,7 @@ final class ProtectionFixtures {
     private final Map<UUID, Entry> owned = new HashMap<>();
     private final Map<String, ContainerEntry> containers = new HashMap<>();
     private final Map<String, StationEntry> stations = new HashMap<>();
+    private final Map<String, EntityFixture> entityFixtures = new HashMap<>();
 
     ProtectionFixtures(LifecycleAssertions lifecycle) {
         this.lifecycle = lifecycle;
@@ -437,6 +447,221 @@ final class ProtectionFixtures {
         return result;
     }
 
+    JsonObject prepareEntity(JsonObject request) throws Exception {
+        owner();
+        if (entityFixtures.size() >= 64) {
+            throw new IllegalStateException("Owned entity fixture limit");
+        }
+        String name = request.get("player").getAsString();
+        String kind = request.get("kind").getAsString();
+        String mode = request.get("mode").getAsString();
+        if (!Set.of("pickup", "hopper", "frame", "armor-stand", "allay").contains(kind)) {
+            throw new IllegalArgumentException("Unknown entity fixture kind");
+        }
+        if (!Set.of("protected", "ordinary", "sanitize").contains(mode)) {
+            throw new IllegalArgumentException("Unknown entity fixture mode");
+        }
+        Player player = Bukkit.getPlayerExact(name);
+        if (player == null) {
+            throw new IllegalStateException("Native entity fixture owner absent");
+        }
+        if (entityFixtures.containsKey(name)) {
+            throw new IllegalStateException("Owner already has an entity fixture");
+        }
+        World world = player.getWorld();
+        int x = player.getLocation().getBlockX() + 2;
+        int y = player.getLocation().getBlockY();
+        int z = player.getLocation().getBlockZ();
+        world.getChunkAt(x >> 4, z >> 4);
+        Block support = null;
+        Block hopper = null;
+        Item dropped = null;
+        Entity interact = null;
+        ItemStack moving = switch (mode) {
+            case "protected", "sanitize" -> navigationItem(player, "compass");
+            case "ordinary" -> kind.equals("frame") || kind.equals("armor-stand")
+                    ? one(playerStone(player))
+                    : ordinary(Material.EMERALD, 1, "entity-emerald-" + name);
+            default -> throw new IllegalArgumentException("Unknown entity fixture mode");
+        };
+        switch (kind) {
+            case "pickup" -> dropped = delayedDrop(world, player.getLocation(), moving);
+            case "hopper" -> {
+                hopper = world.getBlockAt(x, y, z);
+                if (!hopper.getType().isAir()) {
+                    throw new IllegalStateException("Entity fixture hopper occupied");
+                }
+                hopper.setType(Material.HOPPER);
+                dropped = delayedDrop(world, new Location(world, x + 0.5, y, z + 4.5), moving);
+            }
+            case "frame" -> {
+                support = world.getBlockAt(x, y, z);
+                Block space = world.getBlockAt(x - 1, y, z);
+                if (!support.getType().isAir() || !space.getType().isAir()) {
+                    throw new IllegalStateException("Entity fixture frame space occupied");
+                }
+                support.setType(Material.STONE);
+                ItemFrame frame = world.spawn(space.getLocation(), ItemFrame.class, entity -> entity.setFacingDirection(BlockFace.WEST, true));
+                if (frame == null) {
+                    throw new IllegalStateException("Native item frame did not spawn");
+                }
+                if (mode.equals("sanitize")) {
+                    frame.setItem(moving.clone(), false);
+                }
+                interact = frame;
+            }
+            case "armor-stand" -> {
+                ArmorStand stand = world.spawn(new Location(world, x + 0.5, y, z + 0.5), ArmorStand.class, entity -> {
+                    entity.setGravity(false);
+                    entity.setArms(true);
+                });
+                if (stand == null) {
+                    throw new IllegalStateException("Native armor stand did not spawn");
+                }
+                if (mode.equals("sanitize")) {
+                    stand.getEquipment().setItem(EquipmentSlot.HAND, moving.clone());
+                }
+                interact = stand;
+            }
+            case "allay" -> {
+                Allay allay = world.spawn(new Location(world, x + 0.5, y, z + 0.5), Allay.class, entity -> entity.setAI(false));
+                if (allay == null) {
+                    throw new IllegalStateException("Native allay did not spawn");
+                }
+                if (mode.equals("sanitize")) {
+                    allay.getEquipment().setItemInMainHand(moving.clone());
+                }
+                interact = allay;
+            }
+            default -> throw new IllegalArgumentException("Unknown entity fixture kind");
+        }
+        entityFixtures.put(name, new EntityFixture(kind, interact, support, hopper, dropped));
+        JsonObject result = new JsonObject();
+        result.addProperty("player", name);
+        result.addProperty("kind", kind);
+        result.addProperty("mode", mode);
+        Entity reported = interact != null ? interact : dropped;
+        result.addProperty("entityId", reported == null ? -1 : reported.getEntityId());
+        result.addProperty("x", hopper == null ? x : hopper.getX());
+        result.addProperty("y", hopper == null ? y : hopper.getY());
+        result.addProperty("z", hopper == null ? z : hopper.getZ());
+        result.add("moving", lifecycle.classify(List.of(moving)));
+        result.add("carrier", carrierContents(entityFixtures.get(name)));
+        return result;
+    }
+
+    JsonObject enableEntity(JsonObject request) {
+        owner();
+        EntityFixture fixture = entityFixture(request);
+        if (fixture.dropped() == null || !fixture.dropped().isValid()) {
+            throw new IllegalStateException("Entity fixture has no delayed item");
+        }
+        if (fixture.hopper() != null) {
+            fixture.dropped().teleport(fixture.hopper().getLocation().add(0.5, 1.05, 0.5));
+            fixture.dropped().setVelocity(new Vector(0, 0, 0));
+        }
+        fixture.dropped().setPickupDelay(0);
+        JsonObject result = new JsonObject();
+        result.addProperty("player", request.get("player").getAsString());
+        result.addProperty("pickupDelay", fixture.dropped().getPickupDelay());
+        return result;
+    }
+
+    JsonObject snapshotEntity(JsonObject request) throws Exception {
+        owner();
+        EntityFixture fixture = entityFixture(request);
+        JsonObject result = new JsonObject();
+        result.addProperty("player", request.get("player").getAsString());
+        result.addProperty("kind", fixture.kind());
+        result.add("carrier", carrierContents(fixture));
+        return result;
+    }
+
+    JsonObject removeEntity(JsonObject request) {
+        owner();
+        EntityFixture fixture = entityFixtures.remove(request.get("player").getAsString());
+        if (fixture == null) {
+            throw new IllegalArgumentException("Unowned entity fixture");
+        }
+        if (fixture.dropped() != null && fixture.dropped().isValid()) {
+            fixture.dropped().remove();
+        }
+        if (fixture.interact() != null && fixture.interact().isValid()) {
+            fixture.interact().remove();
+        }
+        if (fixture.support() != null) {
+            fixture.support().setType(Material.AIR, false);
+        }
+        if (fixture.hopper() != null) {
+            fixture.hopper().setType(Material.AIR, false);
+        }
+        JsonObject result = new JsonObject();
+        result.addProperty("player", request.get("player").getAsString());
+        result.addProperty("ownedRemaining", entityFixtures.size());
+        return result;
+    }
+
+    JsonObject persistedSessions() {
+        owner();
+        NamespacedKey key = NamespacedKey.fromString("server_waypoint:navigation_session");
+        if (key == null) {
+            throw new IllegalStateException("Navigation session key invalid");
+        }
+        JsonObject result = new JsonObject();
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            String stored = player.getPersistentDataContainer().get(key, PersistentDataType.STRING);
+            result.addProperty(player.getName(), stored != null && !stored.isBlank());
+        }
+        return result;
+    }
+
+    private Item delayedDrop(World world, Location location, ItemStack moving) {
+        Item dropped = world.dropItem(location, new ItemStack(Material.STONE));
+        dropped.setItemStack(moving.clone());
+        dropped.setPickupDelay(32767);
+        dropped.setUnlimitedLifetime(true);
+        return dropped;
+    }
+
+    private static ItemStack playerStone(Player player) {
+        for (ItemStack item : player.getInventory().getContents()) {
+            if (item != null && item.getType() == Material.STONE && !ItemGraphAssertions.tagged(item)) {
+                return item;
+            }
+        }
+        throw new IllegalStateException("Native owner stone absent");
+    }
+
+    private static ItemStack one(ItemStack stack) {
+        ItemStack copy = stack.clone();
+        copy.setAmount(1);
+        return copy;
+    }
+
+    private EntityFixture entityFixture(JsonObject request) {
+        EntityFixture fixture = entityFixtures.get(request.get("player").getAsString());
+        if (fixture == null) {
+            throw new IllegalArgumentException("Unowned entity fixture");
+        }
+        return fixture;
+    }
+
+    private JsonObject carrierContents(EntityFixture fixture) throws Exception {
+        List<ItemStack> stacks = switch (fixture.kind()) {
+            case "hopper" -> fixture.hopper() == null
+                    ? List.of()
+                    : Arrays.asList(((org.bukkit.block.Hopper) fixture.hopper().getState()).getInventory().getContents());
+            case "pickup" -> fixture.dropped() != null && fixture.dropped().isValid()
+                    ? List.of(fixture.dropped().getItemStack())
+                    : List.of();
+            case "frame" -> List.of(((ItemFrame) fixture.interact()).getItem());
+            case "armor-stand" -> List.of(((ArmorStand) fixture.interact()).getEquipment().getItem(EquipmentSlot.HAND));
+            case "allay" -> List.of(((Allay) fixture.interact()).getEquipment().getItemInMainHand());
+            default -> throw new IllegalArgumentException("Unknown entity fixture kind");
+        };
+        return lifecycle.classify(stacks);
+    }
+
     private static ItemStack plainFilledMap(Player player) {
         MapView view = Bukkit.createMap(player.getWorld());
         ItemStack map = new ItemStack(Material.FILLED_MAP, 1);
@@ -554,5 +779,8 @@ final class ProtectionFixtures {
     }
 
     private record StationEntry(Block block, String kind) {
+    }
+
+    private record EntityFixture(String kind, Entity interact, Block support, Block hopper, Item dropped) {
     }
 }

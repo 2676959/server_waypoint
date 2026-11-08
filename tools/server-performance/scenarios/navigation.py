@@ -554,3 +554,159 @@ def drag_outcome(recipe,sample):
         if top.get("protectedItems")!=recipe.get("expectedAfterTopProtected") or top.get("nestedProtectedCarriers")!=0:
             return Decision(Status.FAIL,("protected item remained in the other container after drag",))
     return ordinary_conservation(recipe.get("ordinary"),after.get("ordinary"))
+
+
+_ENTITY_CASES=(
+    ("entity-pickup-protected","entity-pickup",True,None,False),
+    ("entity-pickup-ordinary","entity-pickup",False,None,False),
+    ("hopper-pickup-protected","inventory-pickup",True,None,False),
+    ("hopper-pickup-ordinary","inventory-pickup",False,None,False),
+    ("item-frame-place-denied","item-frame",True,"PLACE",False),
+    ("item-frame-ordinary","item-frame",False,"PLACE",False),
+    ("item-frame-remove-protected","item-frame",True,"ROTATE",True),
+    ("armor-stand-place-denied","armor-stand",True,None,False),
+    ("armor-stand-sanitize","armor-stand",True,None,True),
+    ("armor-stand-ordinary","armor-stand",False,None,False),
+    ("allay-held-denied","allay-interact",True,None,False),
+    ("allay-sanitize","allay-interact",True,None,True),
+)
+
+
+def entity_cases():
+    return tuple({"label":label,"event":event,"cancelled":cancelled,"action":action,"injected":injected}
+                 for label,event,cancelled,action,injected in _ENTITY_CASES)
+
+
+def entity_outcome(recipe,sample):
+    event=recipe.get("event")
+    if event not in {value[1] for value in _ENTITY_CASES}:
+        return Decision(Status.BLOCKED,("entity protection recipe missing event",))
+    before=sample.get("before")
+    after=sample.get("after")
+    if not _session_counts(before) or not _session_counts(after):
+        return Decision(Status.BLOCKED,("entity protection session counts missing",))
+    if before["sessionCompass"]!=1 or before["sessionMap"]!=1:
+        return Decision(Status.FAIL,("entity protection did not start with the owner session items",))
+    if after["sessionCompass"]!=1 or after["sessionMap"]!=1:
+        return Decision(Status.FAIL,("entity protection removed or duplicated a session item",))
+    world=sample.get("world")
+    if not isinstance(world,dict) or type(world.get("protectedItems")) is not int or type(world.get("nestedProtectedCarriers")) is not int:
+        return Decision(Status.BLOCKED,("entity protection world evidence missing",))
+    if world.get("protectedItems")!=0 or world.get("nestedProtectedCarriers")!=0:
+        return Decision(Status.FAIL,("protected item escaped into the world",))
+    receipts=[value for value in sample.get("receipts",[]) if isinstance(value,dict) and value.get("event")==event]
+    if not receipts:
+        return Decision(Status.BLOCKED,("matching native entity protection receipt missing",))
+    if len(receipts)!=1:
+        return Decision(Status.FAIL,("native entity protection receipt duplicated",))
+    receipt=receipts[0]
+    if receipt.get("cancelled") is not recipe.get("cancelled"):
+        return Decision(Status.FAIL,("native entity protection cancellation differs",))
+    if recipe.get("action") is not None and receipt.get("action")!=recipe.get("action"):
+        return Decision(Status.FAIL,("native item-frame action differs",))
+    carrier=sample.get("carrier")
+    if not isinstance(carrier,dict) or type(carrier.get("protectedItems")) is not int or type(carrier.get("nestedProtectedCarriers")) is not int:
+        return Decision(Status.BLOCKED,("entity protection carrier evidence missing",))
+    if carrier.get("protectedItems")!=0 or carrier.get("nestedProtectedCarriers")!=0:
+        return Decision(Status.FAIL,("protected item remained on the carrier",))
+    items=receipt.get("items")
+    if recipe.get("injected") is True:
+        injected=receipt.get("injected")
+        if not isinstance(injected,dict) or type(injected.get("protectedItems")) is not int or injected.get("protectedItems")<1:
+            return Decision(Status.BLOCKED,("injected carrier was not protected before the event",))
+    elif recipe.get("cancelled") is True:
+        if not isinstance(items,dict) or type(items.get("protectedItems")) is not int or items.get("protectedItems")<1:
+            return Decision(Status.FAIL,("cancelled interaction did not involve a protected item",))
+    elif not isinstance(items,dict) or items.get("protectedItems")!=0:
+        return Decision(Status.FAIL,("ordinary interaction involved a protected item",))
+    expected=recipe.get("playerOrdinary")
+    actual=sample.get("playerOrdinary")
+    if not isinstance(expected,dict) or not isinstance(actual,dict):
+        return Decision(Status.BLOCKED,("entity protection ordinary evidence missing",))
+    decision=ordinary_conservation(expected,actual)
+    if decision.status!=Status.PASS:
+        return decision
+    expected_carrier=recipe.get("carrierOrdinary")
+    if not isinstance(expected_carrier,dict):
+        return Decision(Status.BLOCKED,("entity protection expected carrier ordinary missing",))
+    return ordinary_conservation(expected_carrier,carrier.get("ordinary"))
+
+
+def deleted_navigation(removed,owners):
+    if not _target_identity(removed) or not isinstance(owners,list) or not owners:
+        return Decision(Status.BLOCKED,("deleted navigation evidence missing",))
+    matched=False
+    for owner in owners:
+        before=owner.get("before") if isinstance(owner,dict) else None
+        after=owner.get("after") if isinstance(owner,dict) else None
+        if not isinstance(before,dict) or not isinstance(after,dict):
+            return Decision(Status.BLOCKED,("deleted navigation owner evidence missing",))
+        if type(before.get("persisted")) is not bool or type(after.get("persisted")) is not bool or type(before.get("protectedItems")) is not int or type(after.get("protectedItems")) is not int:
+            return Decision(Status.BLOCKED,("deleted navigation persistence or item evidence missing",))
+        if not _target_identity(before.get("target")) and before.get("target") is not None:
+            return Decision(Status.BLOCKED,("deleted navigation target evidence missing",))
+        decision=ordinary_conservation(before.get("ordinary"),after.get("ordinary"))
+        if decision.status!=Status.PASS:
+            return decision
+        if _same_target(before.get("target"),removed):
+            matched=True
+            if before.get("persisted") is not True:
+                return Decision(Status.FAIL,("removed waypoint had no persisted resume to clear",))
+            if after.get("target") is not None:
+                return Decision(Status.FAIL,("removed waypoint left its navigation session active",))
+            if after.get("protectedItems")!=0:
+                return Decision(Status.FAIL,("removed waypoint left a protected item",))
+            if after.get("persisted") is not False:
+                return Decision(Status.FAIL,("removed waypoint left a persisted resume",))
+        else:
+            if not _same_target(before.get("target"),after.get("target")):
+                return Decision(Status.FAIL,("unrelated navigation session changed",))
+            if after.get("protectedItems")!=before.get("protectedItems"):
+                return Decision(Status.FAIL,("unrelated protected items changed",))
+    if not matched:
+        return Decision(Status.BLOCKED,("deleted navigation did not observe the removed target",))
+    return Decision(Status.PASS,())
+
+
+def switched_dimension(origin,destination,before_map,after_map,colors,native,client):
+    if not isinstance(origin,dict) or not isinstance(destination,dict) or not origin.get("dimension") or not destination.get("dimension"):
+        return Decision(Status.BLOCKED,("terrain dimension evidence missing",))
+    if origin.get("dimension")==destination.get("dimension"):
+        return Decision(Status.FAIL,("terrain switch stayed in the same dimension",))
+    if type(before_map) is not int or type(after_map) is not int:
+        return Decision(Status.BLOCKED,("owner map identity missing",))
+    if before_map!=after_map:
+        return Decision(Status.FAIL,("dimension switch replaced the owner map",))
+    return terrain_roundtrip(destination,colors,native,client)
+
+
+def separate_map_viewers(viewers):
+    rows=tuple(viewers or ())
+    if len(rows)<2:
+        return Decision(Status.BLOCKED,("separate map viewers require two owners",))
+    identities=[]
+    maps=[]
+    for viewer in rows:
+        if not isinstance(viewer,dict) or not isinstance(viewer.get("uuid"),str) or type(viewer.get("mapId")) is not int or not isinstance(viewer.get("dimension"),str):
+            return Decision(Status.BLOCKED,("map viewer identity missing",))
+        identities.append(viewer["uuid"])
+        maps.append(viewer["mapId"])
+    if len(set(identities))!=len(identities) or len(set(maps))!=len(maps):
+        return Decision(Status.FAIL,("owners share one navigation map",))
+    return Decision(Status.PASS,())
+
+
+def _session_counts(value):
+    return isinstance(value,dict) and type(value.get("sessionCompass")) is int and type(value.get("sessionMap")) is int
+
+
+def _target_identity(value):
+    return isinstance(value,dict) and all(isinstance(value.get(key),str) and value.get(key) for key in ("dimension","list","waypoint"))
+
+
+def _same_target(left,right):
+    if left is None or right is None:
+        return left is right
+    if not _target_identity(left) or not _target_identity(right):
+        return False
+    return all(left.get(key)==right.get(key) for key in ("dimension","list","waypoint"))

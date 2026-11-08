@@ -644,6 +644,41 @@ Verification: 185 Python tests and 31 Rust tests. No native Paper small/medium
 run, profile, persisted-content check or commit. Task 12's original-Paper
 checkbox remains open.
 
+## 2026-11-05 — Task 13 mod probe anchors started
+
+The four matrix tests first failed because a missing loader setup was
+`NOT_APPLICABLE`. They now require a same-platform runtime for every published
+Fabric, Forge, and NeoForge artifact, a Forge/NeoForge `channel-envelope`
+capability, and the one connection-verified Azalea identity:
+`0.15.1+mc1.21.11` revision `675e56fd9d9da084b8f923fdab6feda3ebd19568`.
+The documented 26.2 revision `0d38e0dcf47eb258c41b1b09ebc2bcde7253e185` stays
+blocked. A production jar that contains `_959/server_waypoint/perf/` fails;
+a missing probe jar is blocked.
+
+Build-only, fully qualified:
+
+- `:mods:1.21.11-fabric:remapPerformanceProbeJar` → `server-waypoint-performance-fabric-probe.jar`, SHA-256 `31529a9b081ed7d6349413a0c982bb2b10fab40f492762aaef7be94a6801030e`
+- `:mods:1.21.11-forge:performanceProbeJar` → `server-waypoint-performance-forge-probe.jar`, SHA-256 `9675fb2316a673ed0728a3eea81ba14a9b61cd722aafa0ec1e414ee6cb0b2cc9`
+- `:mods:1.21.11-neoforge:performanceProbeJar` → `server-waypoint-performance-neoforge-probe.jar`, SHA-256 `3193c772a1206a42fc18dcea09e1ac12094354057dbcc43ef81bab6da7e3a243`
+
+Each probe jar contains that loader's entry point and metadata, the shared
+probe classes, and the platform-free command contract. It does not contain the
+other loaders' entry points. Existing local production archives
+`server_waypoint-4.0.0-*-mc1.21.11.jar` contain zero probe classes. Probe
+sources add no Stonecutter markers. `fabric-unobfuscated.gradle.kts` and
+`neogradle.gradle.kts` are unchanged because 1.21.11 does not use them.
+
+The probes call the target loader's pre/post tick hooks, place and restore a
+chest item with `DataComponents.CUSTOM_DATA`, and report the production mod's
+channel object by reflection. `handshakeAccepted` stays false until a real
+client negotiates that production channel. No local 1.21.11 Fabric, Forge, or
+NeoForge server is installed, so readiness, placement, codec, action, and
+cleanup were not run. The pinned Azalea build is still the Paper-verified
+vanilla-protocol bot; it is not a Forge or NeoForge envelope client. Those
+targets remain `BLOCKED` rather than being replaced by another version or loader.
+
+Verification: 189 Python tests. No native mod-server run and no commit.
+
 ## 2026-11-05 — Task 11 crafting result and cartography
 
 Native one- and ten-owner station cases pass at
@@ -678,3 +713,40 @@ Verification: 195 Python tests and Paper 1.21.11 probe build
 No production/localization change, commit or push. Task 11 remains open for
 pickup, entity/frame/equipment, deletion, remaining terrain boundaries and
 timed CLI integration.
+
+## 2026-11-07 — Task 11 entity protection and waypoint deletion
+
+Native pickup, hopper, item-frame, armor-stand, and allay cases pass for one
+and ten owners at `/Volumes/ssd/sw-performance-m1-entity-small-3/` and
+`/Volumes/ssd/sw-performance-m1-entity-ten/`. Each owner keeps one session
+compass and one session map. Protected items do not remain in the world or on
+the carrier. Ordinary emerald pickup reaches the player; ordinary hopper
+pickup reaches the hopper. Ordinary stone placement on a frame or armor stand
+moves one stone. Native logger health PASSes. 12 / 120 decisions PASS.
+
+Waypoint deletion is a retained original-release FAIL at
+`/Volumes/ssd/sw-performance-m1-delete-small-2/` and
+`/Volumes/ssd/sw-performance-m1-delete-ten/`. `/wp remove` deletes
+`protection_fixture/target` and reports success, but the targeting session,
+its two protected items, and `server_waypoint:navigation_session` remain.
+Nine unaffected owners in the ten-owner run stay on `other`. Server health
+PASSes. Current source `removeTarget` would stop that session; published
+4.0.0 does not, and production was not patched.
+
+Ruling: a navigation item cannot be dropped through `ItemSpawnEvent`, so the
+probe drops stone and then replaces the stack. Cost if wrong: a later client
+that creates the world item without that replacement needs its own case.
+
+Ruling: hoppers collect an item parked above them before the armed window,
+and `Inventory.getHolder()` is not required to identify the hopper block.
+The item is held beside the hopper until enable, and the receipt uses the
+inventory location. Cost if wrong: a hopper that only pulls from a different
+column would not be observed.
+
+Ruling: empty-hand use of a filled frame rotates it. The published non-place
+branch then clears the frame. The expected action is `ROTATE`.
+
+Verification: 41 navigation scenario tests. Probe
+`987f0f0d…905d0c9`; bot `3d33e868…050478`. No production or localization
+change. Task 11 remains open for cross-dimension terrain, separate map
+viewers, and timed CLI integration. Tasks 12 and 13 native runs stay blocked.

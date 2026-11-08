@@ -132,6 +132,15 @@ pub async fn perform(
             tokio::time::sleep(Duration::from_millis(millis)).await;
             bot.walk(WalkDirection::None);
         }
+        "entity-interact" => {
+            let id = sw_performance_bots::action_input::entity_interact(data)
+                .map_err(anyhow::Error::msg)?;
+            let entity = bot
+                .ecs_entity_by_minecraft_entity(azalea::world::MinecraftEntityId(id))
+                .ok_or_else(|| anyhow::anyhow!("entity is not loaded"))?;
+            bot.entity_interact(entity);
+            wait_game_ticks(bot, 5).await;
+        }
         "select" => {
             let slot = data["slot"]
                 .as_u64()

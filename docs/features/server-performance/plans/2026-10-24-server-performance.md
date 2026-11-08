@@ -256,15 +256,26 @@ crafting and cartography scaling still take their results. See
 entity/frame/equipment, deletion, remaining terrain boundaries and timed CLI
 integration stay open.
 
+Task 11 checkpoint (2026-11-07): one- and ten-owner pickup, hopper, item-frame,
+armor-stand, and allay protection pass. A protected world item is a stone drop
+whose stack is then replaced, because a real navigation drop is cancelled at
+spawn. Hopper items wait off the hopper column until the observation window.
+An empty-hand interact on a filled frame is `ROTATE`; the published handler
+clears that non-place change. `/wp remove` deletes the waypoint and leaves the
+active session, its items, and the persisted resume. That original-release
+result is retained as FAIL for one and ten owners. See
+[navigation evidence](../validation/2026-10-25-m1-navigation.md). Cross-dimension
+terrain, separate map viewers, and timed CLI integration stay open.
+
 ### Task 12: Synchronization, upload/edit traffic and chat sharing
 
 **Files:** Create `tools/server-performance/scenarios/sync_upload.py`, `tests/test_sync_upload.py`; extend Azalea protocol actions and production-codec vectors.
 
 **Interfaces:** Produces `sync`, `upload-edit`, `sharing-icons` cases with full/incremental revisions, expected acknowledgements, transfer-resource snapshots and save assertions.
 
-- [ ] Write `test_download_matches_exact_revision`, `test_invalid_upload_never_commits`, `test_partial_disconnect_releases_lease`, `test_backpressure_recovers`, `test_unrelated_chat_does_not_mutate`. Check client/server ownership and that forced refresh still delivers unchanged revisions.
-- [ ] Run focused Python/Rust codec/action tests before implementing scenario execution.
-- [ ] Implement compression on/off, concurrent 1/2/8 clients and valid 1,000/4,096/16,384 fixtures within target limits, merge/conflict/delete policies, malformed/oversize/timeout/cancel cases, broadcast fan-out and channel/world identity reconnects. Add valid/invalid/long/duplicate sharing messages, denied permissions and icon registration checks.
+- [x] Write `test_download_matches_exact_revision`, `test_invalid_upload_never_commits`, `test_partial_disconnect_releases_lease`, `test_backpressure_recovers`, `test_unrelated_chat_does_not_mutate`. Check client/server ownership and that forced refresh still delivers unchanged revisions.
+- [x] Run focused Python/Rust codec/action tests before implementing scenario execution.
+- [x] Implement compression on/off, concurrent 1/2/8 clients and valid 1,000/4,096/16,384 fixtures within target limits, merge/conflict/delete policies, malformed/oversize/timeout/cancel cases, broadcast fan-out and channel/world identity reconnects. Add valid/invalid/long/duplicate sharing messages, denied permissions and icon registration checks.
 - [ ] Run original Paper small/medium cases with exact persisted contents and empty lease/buffer queues after recovery. Profile compression/encoding/merge and unrelated-chat paths; keep correct rejection outcomes separate from fulfilled valid-upload throughput.
 
 Task 12 checkpoint (2026-11-03): decision contracts for exact revision, forced
@@ -282,10 +293,22 @@ small/medium runs remain open. See
 
 **Interfaces:** Produces Fabric `remapPerformanceProbeJar`, other loader `performanceProbeJar`, verified native runtime/channel mappings and the same probe contract/feature registry as Paper.
 
-- [ ] Write `test_all_published_mod_artifacts_have_native_anchors`, `test_channel_envelope_capability_required`, `test_unverified_azalea_version_blocks`, `test_probe_classes_absent_from_production_jars`. Missing setup cannot produce `NOT_APPLICABLE` for a supported feature.
-- [ ] Run matrix tests before adapter/config implementation. Verify native Minecraft/loader placement, tick, item component and channel APIs from target sources; read applicable Stonecutter skills and preserve alternate branches.
+- [x] Write `test_all_published_mod_artifacts_have_native_anchors`, `test_channel_envelope_capability_required`, `test_unverified_azalea_version_blocks`, `test_probe_classes_absent_from_production_jars`. Missing setup cannot produce `NOT_APPLICABLE` for a supported feature.
+- [x] Run matrix tests before adapter/config implementation. Verify native Minecraft/loader placement, tick, item component and channel APIs from target sources; read applicable Stonecutter skills and preserve alternate branches.
 - [ ] Implement one native Fabric, Forge and NeoForge anchor first, including configuration/channel handshake acceptance; expand to every release artifact's required anchors. Use exact Azalea revisions/builds per native protocol and ledger every unresolved mapping. Trigger production loader hooks/mixins, not copied server logic.
 - [ ] Build fully qualified probe tasks and run native readiness/placement/codec/action/cleanup checks for each anchor. Check balanced Stonecutter markers and compare production archive contents; record build-only and runtime results separately. Preserve blocked targets rather than substituting another loader.
+
+Task 13 checkpoint (2026-11-05): matrix decisions block missing Java/server/probe
+hashes, Forge/NeoForge channel envelopes, and any Azalea identity other than
+the connection-verified 1.21.11 pin. Missing setup is `BLOCKED`, never
+`NOT_APPLICABLE`. The 1.21.11 Fabric, Forge, and NeoForge probe jars build.
+Probe sources have no Stonecutter markers. Local production archives for those
+three versions contain no probe classes. Native readiness, placement, item
+component, handshake, action, and cleanup runs are blocked: this machine has
+no 1.21.11 Fabric, Forge, or NeoForge server, and the pinned Azalea build does
+not speak a Forge/NeoForge channel envelope. Other published mod versions stay
+explicit anchors with unverified capabilities. See
+[progress](../validation/progress.md).
 
 ### Task 14: Folia region timing and unattended activity
 

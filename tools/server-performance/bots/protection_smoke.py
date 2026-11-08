@@ -14,7 +14,7 @@ from controller import create_root
 from models import Status
 from processes import stop_owned
 from server_health import native_log_health
-from scenarios.navigation import METHODS, physical_receipts, physical_drop_spawned, restored_session, ordinary_conservation, nested_recipes, nested_item_outcome, container_cleanup, container_cases, container_recipe, drag_cases, drag_outcome, player_raw_slot, station_cases, station_outcome
+from scenarios.navigation import METHODS, physical_receipts, physical_drop_spawned, restored_session, ordinary_conservation, nested_recipes, nested_item_outcome, container_cleanup, container_cases, container_recipe, drag_cases, drag_outcome, player_raw_slot, station_cases, station_outcome, entity_cases, entity_outcome, deleted_navigation
 from worlds import install_server, boot
 from navigation_smoke import execute, snapshot
 
@@ -43,7 +43,10 @@ def run(root, count, case_set="physical", candidate=None):
     directory = server / "plugins/ServerWaypoint/waypoints"
     directory.mkdir(parents=True)
     point = {"name": "target", "display_name": "Protected", "initials": "P", "pos": [320, -61, 320], "color": "#112233", "yaw": 0, "global": True, "keywords": [], "description": "Physical protection fixture"}
-    (directory / "minecraft$overworld.json").write_text(json.dumps([{"list_name": "protection_fixture", "n": 7, "waypoints": [point]}], indent=4) + "\n")
+    points = [point]
+    if case_set == "delete":
+        points.append({"name": "other", "display_name": "Other", "initials": "O", "pos": [64, -61, 64], "color": "#332211", "yaw": 0, "global": True, "keywords": [], "description": "Unaffected navigation target"})
+    (directory / "minecraft$overworld.json").write_text(json.dumps([{"list_name": "protection_fixture", "n": 7, "waypoints": points}], indent=4) + "\n")
     evidence = {"schemaVersion": 1, "artifactSha256": artifact.sha256, "probeSha256": runtime.probe["sha256"], "botSha256": runtime.bot["sha256"], "count": count, "scope": "physical-drop-swap-inventory", "steps": []}
     evidence["artifactProvenance"] = artifact.provenance
     if case_set == "nested":
@@ -54,6 +57,10 @@ def run(root, count, case_set="physical", candidate=None):
         evidence["scope"] = "inventory-drag-own-storage-chest-crafting-grid"
     if case_set == "station":
         evidence["scope"] = "crafting-result-and-cartography"
+    if case_set == "entity":
+        evidence["scope"] = "pickup-frame-equipment"
+    if case_set == "delete":
+        evidence["scope"] = "waypoint-deletion"
     paths = (Path(__file__).resolve(), tools / "bots/navigation_smoke.py", tools / "scenarios/navigation.py", tools / "bot_driver.py", tools / "worlds.py", tools / "server_health.py")
     atomic_write(root / "inputs.json", {"schemaVersion": 1, "files": {str(path.relative_to(tools)): sha256(path) for path in paths}})
     for path in paths:
@@ -84,6 +91,12 @@ def run(root, count, case_set="physical", candidate=None):
                 serial += 1
                 driver.send("action", {"actionId": f"protection-{serial}", "bot": name, **values[name]})
             return [driver.wait("action_result", 30) for _ in names]
+
+        def one(name, values):
+            nonlocal serial
+            serial += 1
+            driver.send("action", {"actionId": f"protection-{serial}", "bot": name, **values})
+            return driver.wait("action_result", 30)
 
         def command(text):
             return actions({name: {"operation": "command", "command": text, "acknowledged": True} for name in names})
@@ -173,6 +186,167 @@ def run(root, count, case_set="physical", candidate=None):
                     evidence["steps"].append(value)
                     raise ValueError("native protection receipts/state/conservation deadline: " + label)
                 time.sleep(0.1)
+
+        if case_set == "entity":
+            kinds = {"entity-pickup": "pickup", "inventory-pickup": "hopper", "item-frame": "frame", "armor-stand": "armor-stand", "allay-interact": "allay"}
+
+            def hotbar(owner, material):
+                for entry in monitor()["inventories"][owner]["slots"]:
+                    if entry["material"] == material and entry["slot"] <= 8:
+                        return entry["slot"]
+                raise ValueError("hotbar material missing: " + material)
+
+            def empty_hotbar(owner):
+                occupied = {entry["slot"] for entry in monitor()["inventories"][owner]["slots"] if entry["slot"] <= 8}
+                for slot_index in range(9):
+                    if slot_index not in occupied:
+                        return slot_index
+                raise ValueError("no empty hotbar slot")
+
+            def session_counts(player):
+                counts = {"sessionCompass": 0, "sessionMap": 0}
+                for item in player["items"]:
+                    if item["method"] == "compass":
+                        counts["sessionCompass"] += item["amount"]
+                    elif item["method"] == "map":
+                        counts["sessionMap"] += item["amount"]
+                return counts
+
+            def expected_ordinary(case, before_ordinary, moving):
+                player = Counter(before_ordinary)
+                carrier = {}
+                moved = dict(moving.get("ordinary") or {})
+                if case["label"] == "entity-pickup-ordinary":
+                    player.update(moved)
+                elif case["label"] == "hopper-pickup-ordinary":
+                    carrier = moved
+                elif case["label"] in ("item-frame-ordinary", "armor-stand-ordinary"):
+                    for key, amount in moved.items():
+                        player[key] -= amount
+                        if player[key] == 0:
+                            del player[key]
+                    carrier = moved
+                return dict(player), carrier
+
+            for case in entity_cases():
+                kind = kinds[case["event"]]
+                mode = "sanitize" if case["injected"] else ("protected" if case["cancelled"] else "ordinary")
+                for name in names:
+                    probe.send("lifecycle.arm")
+                    probe.wait("lifecycle.armed")
+                    if mode == "protected":
+                        select(slot("compass"))
+                    elif mode == "ordinary" and kind in ("frame", "armor-stand"):
+                        select({owner: hotbar(owner, "minecraft:stone") for owner in names})
+                    elif mode == "sanitize":
+                        select({owner: empty_hotbar(owner) for owner in names})
+                    probe.send("protection.entity.prepare", {"player": name, "kind": kind, "mode": mode})
+                    prepared = probe.wait("protection.entity.prepared")["data"]
+                    probe.send("lifecycle.arm")
+                    probe.wait("lifecycle.armed")
+                    before = {player["name"]: player for player in snapshot(probe)["players"]}
+                    time.sleep(0.5)
+                    if kind in ("pickup", "hopper"):
+                        probe.send("protection.entity.enable", {"player": name})
+                        probe.wait("protection.entity.enabled")
+                    else:
+                        one(name, {"operation": "entity-interact", "entityId": prepared["entityId"]})
+                    deadline = time.monotonic() + 8
+                    step = {"recipe": case, "player": name, "prepared": prepared}
+                    while True:
+                        observed = monitor()
+                        native = {player["name"]: player for player in snapshot(probe)["players"]}
+                        probe.send("protection.entity.snapshot", {"player": name})
+                        carrier = probe.wait("protection.entity.snapshot")["data"]["carrier"]
+                        receipts = [event for event in observed["events"] if event.get("event") == case["event"] and (
+                            event.get("name") == name or event.get("uuid") == identities[name]
+                            or (kind == "hopper" and (event.get("x"), event.get("y"), event.get("z")) == (prepared["x"], prepared["y"], prepared["z"])))]
+                        expected_player, expected_carrier = expected_ordinary(case, before[name]["ordinary"], prepared["moving"])
+                        recipe = {**case, "playerOrdinary": expected_player, "carrierOrdinary": expected_carrier}
+                        sample = {"before": session_counts(before[name]), "after": session_counts(native[name]),
+                                  "world": observed["worldItems"], "carrier": carrier, "playerOrdinary": native[name]["ordinary"], "receipts": receipts}
+                        decision = entity_outcome(recipe, sample)
+                        client = packets()
+                        owners = {player["name"]: restored_session({"uuid": identities[player["name"]], "mapId": ids[player["name"]], "methods": METHODS, "target": expected_target}, player, client[player["name"]]) for player in native.values()}
+                        step.update(decision=decision, sample=sample, ownerDecisions=owners)
+                        if decision.status == Status.PASS and len(owners) == count and all(value.status == Status.PASS for value in owners.values()):
+                            evidence["steps"].append(step)
+                            atomic_write(root / "protection.json", evidence)
+                            break
+                        if time.monotonic() >= deadline:
+                            evidence["steps"].append(step)
+                            atomic_write(root / "protection.json", evidence)
+                            raise ValueError("native entity protection deadline: " + case["label"] + " " + name + " " + "; ".join(decision.reasons))
+                        time.sleep(0.1)
+                    probe.send("protection.entity.remove", {"player": name})
+                    removed = probe.wait("protection.entity.removed")["data"]
+                    if removed.get("ownedRemaining") != 0:
+                        raise ValueError("owned entity fixture cleanup incomplete")
+            evidence["allCasesExecuted"] = True
+            evidence["entityOutcomes"] = dict(Counter(step["decision"].status.value for step in evidence["steps"]))
+            evidence["serverHealth"] = native_log_health(server / "logs/latest.log")
+            if evidence["serverHealth"].status != Status.PASS:
+                raise ValueError("native entity protection server log health failed")
+            if any(step["decision"].status != Status.PASS for step in evidence["steps"]):
+                raise ValueError("native entity protection assertions failed")
+            print(f"native {count}-owner pickup, frame and equipment protection verified")
+            return
+
+        if case_set == "delete":
+            removed_target = {"dimension": "minecraft:overworld", "list": "protection_fixture", "waypoint": "target"}
+            if count > 1:
+                for name in names[1:]:
+                    one(name, {"operation": "command", "command": "/wp navigate minecraft:overworld protection_fixture other all", "acknowledged": True})
+                deadline = time.monotonic() + 8
+                while True:
+                    native = {player["name"]: player for player in snapshot(probe)["players"]}
+                    if all(native[name].get("target", {}).get("waypoint") == "other" for name in names[1:]):
+                        break
+                    if time.monotonic() >= deadline:
+                        raise ValueError("unaffected owners did not retarget before deletion")
+                    time.sleep(0.1)
+            before = {player["name"]: player for player in snapshot(probe)["players"]}
+            probe.send("navigation.persisted")
+            before_persisted = probe.wait("navigation.persisted")["data"]
+            one(names[0], {"operation": "command", "command": "/wp remove minecraft:overworld protection_fixture target", "acknowledged": True})
+            deadline = time.monotonic() + 8
+            step = {"removed": removed_target}
+            while True:
+                after = {player["name"]: player for player in snapshot(probe)["players"]}
+                probe.send("navigation.persisted")
+                persisted = probe.wait("navigation.persisted")["data"]
+                owners = []
+                for name in names:
+                    owners.append({
+                        "before": {"target": {key: before[name]["target"][key] for key in ("dimension", "list", "waypoint")},
+                                   "ordinary": before[name]["ordinary"],
+                                   "protectedItems": sum(item["amount"] for item in before[name]["items"]),
+                                   "persisted": before_persisted[name]},
+                        "after": {"target": None if not after[name].get("target") else {key: after[name]["target"][key] for key in ("dimension", "list", "waypoint")},
+                                  "ordinary": after[name]["ordinary"],
+                                  "protectedItems": sum(item["amount"] for item in after[name]["items"]),
+                                  "persisted": persisted[name]},
+                    })
+                decision = deleted_navigation(removed_target, owners)
+                step.update(decision=decision, owners=owners, beforePersisted=before_persisted)
+                if decision.status == Status.PASS:
+                    evidence["steps"].append(step)
+                    atomic_write(root / "protection.json", evidence)
+                    break
+                if time.monotonic() >= deadline:
+                    evidence["steps"].append(step)
+                    evidence["deletionOutcome"] = decision.status.value
+                    evidence["serverHealth"] = native_log_health(server / "logs/latest.log")
+                    atomic_write(root / "protection.json", evidence)
+                    if evidence["serverHealth"].status != Status.PASS:
+                        raise ValueError("native deletion server log health failed")
+                    raise ValueError("native waypoint deletion retained " + decision.status.value + ": " + "; ".join(decision.reasons))
+                time.sleep(0.1)
+            evidence["serverHealth"] = native_log_health(server / "logs/latest.log")
+            if evidence["serverHealth"].status != Status.PASS:
+                raise ValueError("native deletion server log health failed")
+            print(f"native {count}-owner waypoint deletion verified")
+            return
 
         if case_set == "nested":
             for recipe in nested_recipes():
@@ -571,7 +745,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--count", type=int, choices=(1, 10), default=1)
-    parser.add_argument("--case-set", choices=("physical", "nested", "container", "drag", "station"), default="physical")
+    parser.add_argument("--case-set", choices=("physical", "nested", "container", "drag", "station", "entity", "delete"), default="physical")
     parser.add_argument("--candidate", type=Path, help="Explicit development candidate JAR; retain its own hash and provenance")
     args = parser.parse_args()
     run(args.root, args.count, args.case_set, args.candidate)

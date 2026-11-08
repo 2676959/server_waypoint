@@ -459,3 +459,34 @@ pass; probe/production archives have zero overlapping classes. Helper
 processes are stopped. Artifact `0a1d2ddc…fa8ad57`, probe
 `a0b57606…b4160854`, bot `b31f632c…5eddcf5c`. Pickup, entity/frame/equipment,
 deletion, remaining terrain boundaries and timed CLI integration remain open.
+
+## Entity protection and waypoint deletion
+
+One- and ten-owner entity cases pass at
+`/Volumes/ssd/sw-performance-m1-entity-small-3/` and
+`/Volumes/ssd/sw-performance-m1-entity-ten/`. The twelve cases are protected
+and ordinary entity pickup, protected and ordinary hopper pickup, denied and
+ordinary item-frame placement, rotation that clears a protected frame item,
+denied and ordinary armor-stand placement, armor-stand sanitizing, denied
+allay holding, and allay sanitizing.
+
+A protected world item starts as a stone drop. The probe then replaces the
+stack, because published `onItemSpawn` cancels a navigation item before an
+entity can exist. Hopper items are held off the hopper column until the
+lifecycle monitor is armed, then moved above the hopper with pickup delay 0.
+An empty hand on a filled frame produces `PlayerItemFrameChangeEvent` action
+`ROTATE`. The published handler cancels every non-place change and clears the
+frame. Session compass and map counts stay at one. Ordinary items are
+conserved. 12 decisions PASS for one owner and 120 for ten. Logger health
+PASSes.
+
+Waypoint deletion fails on published 4.0.0 at
+`/Volumes/ssd/sw-performance-m1-delete-small-2/` and
+`/Volumes/ssd/sw-performance-m1-delete-ten/`. The remove command deletes the
+waypoint and logs success. The owner who was navigating to it still has that
+target, both protected items, and a persisted `navigation_session`. The other
+nine owners remain on a different waypoint. This is retained as FAIL. No
+production repair.
+
+Probe `987f0f0d…905d0c9`, bot `3d33e868…050478`. Cross-dimension terrain,
+separate map viewers, and timed CLI integration remain open.

@@ -1,6 +1,6 @@
 use azalea::protocol::packets::game::s_player_action::Action;
 use serde_json::json;
-use sw_performance_bots::action_input::{inventory_slots, player_action};
+use sw_performance_bots::action_input::{entity_interact, inventory_slots, player_action};
 
 #[test]
 fn inventory_accepts_actual_player_menu_bounds_without_silent_fallbacks() {
@@ -21,6 +21,18 @@ fn inventory_accepts_actual_player_menu_bounds_without_silent_fallbacks() {
     ] {
         assert!(inventory_slots(&value).is_err());
     }
+}
+
+#[test]
+fn entity_interact_requires_a_loaded_entity_id() {
+    assert_eq!(entity_interact(&json!({"entityId": 12})).unwrap(), 12);
+    assert_eq!(
+        entity_interact(&json!({"entityId": i32::MAX as i64})).unwrap(),
+        i32::MAX
+    );
+    assert!(entity_interact(&json!({"entityId": -1})).is_err());
+    assert!(entity_interact(&json!({"entityId": i32::MAX as i64 + 1})).is_err());
+    assert!(entity_interact(&json!({})).is_err());
 }
 
 #[test]

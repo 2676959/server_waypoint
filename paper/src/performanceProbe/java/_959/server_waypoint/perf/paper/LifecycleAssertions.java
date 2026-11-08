@@ -4,18 +4,27 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.papermc.paper.event.player.PlayerInventorySlotChangeEvent;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.entity.Allay;
 import org.bukkit.entity.Item;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.inventory.InventoryPickupItemEvent;
+import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
+import io.papermc.paper.event.player.PlayerItemFrameChangeEvent;
 import org.bukkit.Keyed;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -28,21 +37,25 @@ import org.bukkit.inventory.Recipe;
 import java.security.MessageDigest;
 import java.util.Collection;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.UUID;
 
 /** Passive receipts from actual native events, armed only by the lifecycle fixture. */
 final class LifecycleAssertions implements Listener {
     private boolean armed;
     private final JsonArray events = new JsonArray();
     private int dropped;
+    private final Map<UUID, JsonObject> allayHands = new HashMap<>();
 
     JsonObject arm() {
         owner();
         armed = true;
         events.asList().clear();
+        allayHands.clear();
         dropped = 0;
         JsonObject result = new JsonObject();
         result.addProperty("origin", "native-lifecycle-monitor");
@@ -262,6 +275,98 @@ final class LifecycleAssertions implements Listener {
             value.addProperty("slot", event.getSlot());
             value.add("previous", classify(List.of(event.getOldItemStack())));
             value.add("current", classify(List.of(event.getNewItemStack())));
+            retain(value);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
+    public void onEntityPickup(EntityPickupItemEvent event) throws Exception {
+        if (armed && event.getEntity() instanceof Player player) {
+            JsonObject value = playerEvent("entity-pickup", player);
+            value.addProperty("cancelled", event.isCancelled());
+            value.add("items", classify(List.of(event.getItem().getItemStack())));
+            retain(value);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
+    public void onInventoryPickup(InventoryPickupItemEvent event) throws Exception {
+        if (!armed) {
+            return;
+        }
+        Location location = event.getInventory().getLocation();
+        if (location == null) {
+            return;
+        }
+        Block hopper = location.getBlock();
+        if (hopper.getType() != Material.HOPPER) {
+            return;
+        }
+        JsonObject value = new JsonObject();
+        value.addProperty("event", "inventory-pickup");
+        value.addProperty("tick", Bukkit.getCurrentTick());
+        value.addProperty("cancelled", event.isCancelled());
+        value.addProperty("x", hopper.getX());
+        value.addProperty("y", hopper.getY());
+        value.addProperty("z", hopper.getZ());
+        value.add("items", classify(List.of(event.getItem().getItemStack())));
+        retain(value);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
+    public void onCancelledFrameInteract(PlayerInteractEntityEvent event) throws Exception {
+        if (!armed || !event.isCancelled() || !(event.getRightClicked() instanceof ItemFrame frame)) {
+            return;
+        }
+        ItemStack held = event.getPlayer().getInventory().getItem(event.getHand());
+        JsonObject value = playerEvent("item-frame", event.getPlayer());
+        value.addProperty("cancelled", true);
+        value.addProperty("action", frame.getItem().getType().isAir() ? "PLACE" : "REMOVE");
+        value.add("items", classify(List.of(held)));
+        value.add("injected", classify(List.of(frame.getItem())));
+        retain(value);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
+    public void onItemFrame(PlayerItemFrameChangeEvent event) throws Exception {
+        if (armed) {
+            JsonObject value = playerEvent("item-frame", event.getPlayer());
+            value.addProperty("cancelled", event.isCancelled());
+            value.addProperty("action", event.getAction().name());
+            JsonObject items = classify(List.of(event.getItemStack()));
+            value.add("items", items);
+            value.add("injected", items.deepCopy());
+            retain(value);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
+    public void onArmorStand(PlayerArmorStandManipulateEvent event) throws Exception {
+        if (armed) {
+            JsonObject value = playerEvent("armor-stand", event.getPlayer());
+            value.addProperty("cancelled", event.isCancelled());
+            value.addProperty("slot", event.getSlot().name());
+            value.add("items", classify(List.of(event.getPlayerItem())));
+            value.add("injected", classify(List.of(event.getArmorStandItem())));
+            retain(value);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = false)
+    public void beforeAllay(PlayerInteractEntityEvent event) throws Exception {
+        if (armed && event.getRightClicked() instanceof Allay allay) {
+            allayHands.put(allay.getUniqueId(), classify(List.of(allay.getEquipment().getItemInMainHand())));
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
+    public void onAllay(PlayerInteractEntityEvent event) throws Exception {
+        if (armed && event.getRightClicked() instanceof Allay allay) {
+            JsonObject value = playerEvent("allay-interact", event.getPlayer());
+            value.addProperty("cancelled", event.isCancelled());
+            value.add("items", classify(List.of(event.getPlayer().getInventory().getItem(event.getHand()))));
+            JsonObject injected = allayHands.remove(allay.getUniqueId());
+            value.add("injected", injected == null ? classify(List.of()) : injected);
             retain(value);
         }
     }
