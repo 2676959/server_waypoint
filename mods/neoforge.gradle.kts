@@ -127,6 +127,38 @@ repositories {
     }
 }
 
+if (minecraft == "1.21.11") {
+    val performanceProbe = sourceSets.create("performanceProbe") {
+        java.setSrcDirs(listOf(rootProject.file("mods/src/performanceProbe/java")))
+        resources.setSrcDirs(listOf(rootProject.file("mods/src/performanceProbe/resources/neoforge")))
+        java.exclude("_959/server_waypoint/perf/mods/fabric")
+        java.exclude("_959/server_waypoint/perf/mods/forge")
+        compileClasspath += sourceSets.main.get().compileClasspath
+        runtimeClasspath += output + compileClasspath
+    }
+    evaluationDependsOn(":cross-server")
+    val probeContractTask = project(":cross-server").tasks.named("performanceProbeContractJar")
+    val probeContract = configurations.create("performanceProbeContract")
+    dependencies {
+        add(performanceProbe.compileOnlyConfigurationName, files(probeContractTask))
+        add(probeContract.name, files(probeContractTask))
+    }
+    tasks.named("compilePerformanceProbeJava") {
+        dependsOn("stonecutterGenerate")
+    }
+    tasks.register<Jar>("performanceProbeJar") {
+        group = "verification"
+        description = "Builds the test-only NeoForge performance probe."
+        archiveBaseName.set("server-waypoint-performance-neoforge")
+        archiveVersion.set("")
+        archiveClassifier.set("probe")
+        from(performanceProbe.output)
+        from(probeContract.map { zipTree(it) })
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        dependsOn(tasks.named("performanceProbeClasses"))
+    }
+}
+
 neoForge {
     val neoforge_loader: String by project
     version = neoforge_loader
@@ -135,6 +167,9 @@ neoForge {
     // Resolve the test classpath together with Minecraft's libraries, so the older Gson, SLF4J, Netty and
     // Brigadier that :common brings in are upgraded instead of shadowing Minecraft's on the test classpath.
     addModdingDependenciesTo(sourceSets.test.get())
+    if (minecraft == "1.21.11") {
+        addModdingDependenciesTo(sourceSets.getByName("performanceProbe"))
+    }
 
     runs {
         configureEach {

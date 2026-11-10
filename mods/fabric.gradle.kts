@@ -154,6 +154,50 @@ if (minecraft == "1.21.11") {
     tasks.named("compileProxyLifecycleTestJava") {
         dependsOn("stonecutterGenerate")
     }
+
+    val performanceProbe = sourceSets.create("performanceProbe") {
+        java.setSrcDirs(listOf(rootProject.file("mods/src/performanceProbe/java")))
+        resources.setSrcDirs(listOf(rootProject.file("mods/src/performanceProbe/resources/fabric")))
+        java.exclude("_959/server_waypoint/perf/mods/forge")
+        java.exclude("_959/server_waypoint/perf/mods/neoforge")
+        compileClasspath += sourceSets.main.get().compileClasspath
+        runtimeClasspath += output + compileClasspath
+    }
+    evaluationDependsOn(":cross-server")
+    val probeContractTask = project(":cross-server").tasks.named("performanceProbeContractJar")
+    val probeContract = configurations.create("performanceProbeContract")
+    dependencies {
+        add(performanceProbe.compileOnlyConfigurationName, files(probeContractTask))
+        add(probeContract.name, files(probeContractTask))
+    }
+    tasks.named("compilePerformanceProbeJava") {
+        dependsOn("stonecutterGenerate")
+    }
+    val performanceProbeJar = tasks.register<Jar>("performanceProbeJar") {
+        group = "verification"
+        description = "Builds the named development Fabric performance probe before remapping."
+        archiveBaseName.set("server-waypoint-performance-fabric")
+        archiveVersion.set("")
+        archiveClassifier.set("dev")
+        from(performanceProbe.output)
+        from(probeContract.map { zipTree(it) })
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        dependsOn(tasks.named("performanceProbeClasses"))
+    }
+    tasks.register<net.fabricmc.loom.task.RemapJarTask>("remapPerformanceProbeJar") {
+        group = "verification"
+        description = "Remaps the test-only Fabric performance probe."
+        inputFile.set(performanceProbeJar.flatMap { it.archiveFile })
+        archiveBaseName.set("server-waypoint-performance-fabric")
+        archiveVersion.set("")
+        archiveClassifier.set("probe")
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        sourceNamespace.set("named")
+        targetNamespace.set("intermediary")
+        classpath.from(performanceProbe.compileClasspath)
+        addNestedDependencies.set(false)
+        dependsOn(performanceProbeJar)
+    }
 }
 
 if (minecraft == "1.21.2") {

@@ -73,10 +73,16 @@
             "minecraft": "1.21.11",
             "bot": {
                 "candidate": "0.15.1+mc1.21.11",
+                "revision": "675e56fd9d9da084b8f923fdab6feda3ebd19568",
                 "verifiedNativeActions": false
             },
+            "probe": {
+                "path": "/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/1.21.11-fabric/build/libs/server-waypoint-performance-fabric-probe.jar",
+                "sha256": "31529a9b081ed7d6349413a0c982bb2b10fab40f492762aaef7be94a6801030e"
+            },
             "evidence": [
-                "release revision d9f532f8 metadata; native capability not yet verified"
+                "release revision d9f532f8 metadata; native capability not yet verified",
+                "2026-11-05 build-only remapPerformanceProbeJar; no local 1.21.11 Fabric server, so readiness/placement/handshake stay blocked"
             ]
         },
         {
@@ -242,10 +248,16 @@
             "minecraft": "1.21.11",
             "bot": {
                 "candidate": "0.15.1+mc1.21.11",
+                "revision": "675e56fd9d9da084b8f923fdab6feda3ebd19568",
                 "verifiedNativeActions": false
             },
+            "probe": {
+                "path": "/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/1.21.11-forge/build/libs/server-waypoint-performance-forge-probe.jar",
+                "sha256": "9675fb2316a673ed0728a3eea81ba14a9b61cd722aafa0ec1e414ee6cb0b2cc9"
+            },
             "evidence": [
-                "release revision d9f532f8 metadata; native capability not yet verified"
+                "release revision d9f532f8 metadata; native capability not yet verified",
+                "2026-11-05 build-only performanceProbeJar; no local Forge server, and the pinned Azalea build has no Forge channel envelope"
             ]
         },
         {
@@ -398,10 +410,16 @@
             "minecraft": "1.21.11",
             "bot": {
                 "candidate": "0.15.1+mc1.21.11",
+                "revision": "675e56fd9d9da084b8f923fdab6feda3ebd19568",
                 "verifiedNativeActions": false
             },
+            "probe": {
+                "path": "/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/1.21.11-neoforge/build/libs/server-waypoint-performance-neoforge-probe.jar",
+                "sha256": "3193c772a1206a42fc18dcea09e1ac12094354057dbcc43ef81bab6da7e3a243"
+            },
             "evidence": [
-                "release revision d9f532f8 metadata; native capability not yet verified"
+                "release revision d9f532f8 metadata; native capability not yet verified",
+                "2026-11-05 build-only performanceProbeJar; no local 1.21.11 NeoForge server, and the pinned Azalea build has no NeoForge channel envelope"
             ]
         },
         {

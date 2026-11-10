@@ -175,6 +175,38 @@ sourceSets.configureEach {
     java.destinationDirectory.set(outputDir)
 }
 
+if (minecraftVersion == "1.21.11") {
+    val performanceProbe = sourceSets.create("performanceProbe") {
+        java.setSrcDirs(listOf(rootProject.file("mods/src/performanceProbe/java")))
+        resources.setSrcDirs(listOf(rootProject.file("mods/src/performanceProbe/resources/forge")))
+        java.exclude("_959/server_waypoint/perf/mods/fabric")
+        java.exclude("_959/server_waypoint/perf/mods/neoforge")
+        compileClasspath += sourceSets.main.get().compileClasspath
+        runtimeClasspath += output + compileClasspath
+    }
+    evaluationDependsOn(":cross-server")
+    val probeContractTask = project(":cross-server").tasks.named("performanceProbeContractJar")
+    val probeContract = configurations.create("performanceProbeContract")
+    dependencies {
+        add(performanceProbe.compileOnlyConfigurationName, files(probeContractTask))
+        add(probeContract.name, files(probeContractTask))
+    }
+    tasks.named("compilePerformanceProbeJava") {
+        dependsOn("stonecutterGenerate")
+    }
+    tasks.register<Jar>("performanceProbeJar") {
+        group = "verification"
+        description = "Builds the test-only Forge performance probe."
+        archiveBaseName.set("server-waypoint-performance-forge")
+        archiveVersion.set("")
+        archiveClassifier.set("probe")
+        from(performanceProbe.output)
+        from(probeContract.map { zipTree(it) })
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        dependsOn(tasks.named("performanceProbeClasses"))
+    }
+}
+
 repositories {
     clear()
     maven("https://libraries.minecraft.net") {
