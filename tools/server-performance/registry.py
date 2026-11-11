@@ -38,12 +38,15 @@ def expand_cases(features, scenarios, runtimes, mode, tiers):
                         offered_rate = {"small": 16, "medium": 128, "stress": 512}[tier]
                     elif scenario["feature"] == "idle":
                         offered_rate = 0
+                    tier_owners = {"small": 1, "medium": 10, "stress": 50}[tier]
+                    owner_scaled = scenario["feature"] in ("commands", "navigation", "map-terrain", "protection") or (
+                        scenario["feature"] == "storage" and variant in ("concurrent", "skewed-list"))
                     result.append(CaseSpec(
                         f"{runtime_id}:{scenario['feature']}:{variant}:{tier}", runtime_id,
                         scenario["feature"], variant, tier, mode,
                         variant if scenario["feature"] == "world-container" else scenario["fixture"],
                         tuple(scenario["metrics"]), tuple(scenario["budgets"]),
-                        clients=1 if variant == "navigation-100" else ({"small":1,"medium":10,"stress":50}[tier] if scenario["feature"] == "commands" or (scenario["feature"] == "storage" and variant in ("concurrent", "skewed-list")) else scenario["clients"]), offered_rate=offered_rate,
+                        clients=1 if variant == "navigation-100" else (tier_owners if owner_scaled else scenario["clients"]), offered_rate=offered_rate,
                         applicability_reason=reason))
     return tuple(sorted(result, key=lambda case: case.id))
 

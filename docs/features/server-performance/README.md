@@ -2,7 +2,8 @@
 
 Status: M1 is in progress. M0 and Tasks 8–9 are implemented and validated on the
 first Paper 1.21.11 anchor; Task 10 has native command, permission and persistence
-checkpoints. Task 11 has native method/terrain/session-restoration checkpoints
+checkpoints. Task 11 has native method/terrain/session-restoration checkpoints,
+a 2026-11-10 Paper small/medium timed run (3 FAIL, 25 BLOCKED, no PASS),
 and retained stop-then-quit cleanup and depth-nine nested-item escape failures. Real 1/10/50-player actions and
 protocol rejection have functional evidence; a retained 50-player run emits
 watchdog nonresponse reports. Remaining feature/platform workloads, complete
@@ -41,6 +42,8 @@ continue running throughout the sample.
 
 ## Documents
 
+- [Next steps: Task 11 timed execution, then protocol and loader coverage](plans/2026-11-09-server-performance-next-steps.md)
+- [Task 11 tool lock, behavior contracts, and timed Paper run](validation/2026-11-09-task11-continuation.md)
 - [Published 4.0.1 Task 10 remasurement with patched decoder](validation/2026-11-01-4.0.1-task10-decoder.md)
 - [Published 4.0.1 Task 10 revalidation](validation/2026-11-01-4.0.1-task10.md)
 - [Task 10 storage/command validation and proof boundaries](validation/2026-10-31-task10-storage-commands.md)

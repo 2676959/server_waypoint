@@ -577,6 +577,74 @@ class NavigationScenariosTest(unittest.TestCase):
         self.assertEqual(Status.BLOCKED,separate_map_viewers((viewers[0],)).status)
         self.assertEqual(Status.BLOCKED,separate_map_viewers((viewers[0],{**viewers[1],"dimension":None})).status)
 
+    def test_distinct_map_ids_do_not_prove_same_region_viewers(self):
+        from scenarios.navigation_behavior import same_region_viewers
+        separated=({"uuid":"a","mapId":7,"target":"a","pixelsCrc32":1,"region":{"dimension":"minecraft:overworld","centerX":512,"centerZ":512,"scale":2}},
+                   {"uuid":"b","mapId":8,"target":"b","pixelsCrc32":2,"region":{"dimension":"minecraft:the_nether","centerX":0,"centerZ":0,"scale":2}})
+        self.assertNotEqual(Status.PASS,same_region_viewers(separated,separated).status)
+        region={"dimension":"minecraft:overworld","centerX":512,"centerZ":512,"scale":2}
+        before=({"uuid":"a","mapId":7,"target":"a","pixelsCrc32":11,"region":region},
+                {"uuid":"b","mapId":8,"target":"a","pixelsCrc32":11,"region":region})
+        retargeted=({"uuid":"a","mapId":7,"target":"b","pixelsCrc32":11,"region":region},
+                    {"uuid":"b","mapId":8,"target":"a","pixelsCrc32":11,"region":region})
+        self.assertEqual(Status.PASS,same_region_viewers(before,retargeted).status)
+        changed_other=({"uuid":"a","mapId":7,"target":"b","pixelsCrc32":11,"region":region},
+                       {"uuid":"b","mapId":9,"target":"a","pixelsCrc32":99,"region":region})
+        self.assertEqual(Status.FAIL,same_region_viewers(before,changed_other).status)
+        self.assertEqual(Status.BLOCKED,same_region_viewers(before,None).status)
+
+    def test_persist_requires_forced_eviction_and_exact_reopen(self):
+        from scenarios.navigation_behavior import persisted_evicted_terrain
+        region={"dimension":"minecraft:overworld","centerX":512,"centerZ":512,"scale":2}
+        saved={"mapId":7,"region":region,"pixelsCrc32":11,"evicted":True}
+        self.assertEqual(Status.PASS,persisted_evicted_terrain(saved,True,dict(saved)).status)
+        self.assertEqual(Status.BLOCKED,persisted_evicted_terrain({**saved,"evicted":False},False,dict(saved)).status)
+        self.assertEqual(Status.FAIL,persisted_evicted_terrain(saved,True,{**saved,"pixelsCrc32":12}).status)
+        self.assertEqual(Status.FAIL,persisted_evicted_terrain(saved,True,{**saved,"mapId":8}).status)
+        from scenarios.navigation_behavior import _judge_persist
+        missing=dict(saved)
+        self.assertEqual(Status.BLOCKED,_judge_persist({"saved":missing,"evicted":True}).status)
+
+    def test_chunk_and_region_boundaries_are_not_dimension_switches(self):
+        from scenarios.navigation_behavior import boundary_transition
+        origin={"dimension":"minecraft:overworld","x":300,"z":300}
+        self.assertEqual(Status.PASS,boundary_transition(origin,{"dimension":"minecraft:overworld","x":-300,"z":-300}).status)
+        self.assertEqual(Status.PASS,boundary_transition(origin,{"dimension":"minecraft:overworld","x":320,"z":300}).status)
+        self.assertEqual(Status.FAIL,boundary_transition(origin,{"dimension":"minecraft:the_nether","x":0,"z":0}).status)
+        self.assertEqual(Status.FAIL,boundary_transition(origin,{"dimension":"minecraft:overworld","x":301,"z":300}).status)
+        self.assertEqual(Status.BLOCKED,boundary_transition(origin,{"dimension":"minecraft:overworld"}).status)
+
+    def test_stale_receipt_and_unmapped_variant_do_not_pass(self):
+        from models import CaseSpec
+        from scenarios.navigation_behavior import accepted_receipt, exercise_variant
+        self.assertEqual(Status.FAIL,accepted_receipt("nav-2",{"actionId":"nav-1"}).status)
+        self.assertEqual(Status.PASS,accepted_receipt("nav-2",{"actionId":"nav-2"}).status)
+        self.assertEqual(Status.BLOCKED,accepted_receipt("nav-2",{}).status)
+        case=CaseSpec("id","paper-1.21.11","navigation","not-a-variant","small","audit","navigation-terrain",(),())
+        blocked=exercise_variant(case,None,None,Path("unused"))
+        self.assertEqual(Status.BLOCKED,blocked["decisions"][0].status)
+        self.assertEqual({},blocked["assertions"])
+        self.assertEqual({},blocked["paths"])
+
+    def test_each_task11_variant_has_a_native_contract(self):
+        from models import CaseSpec
+        from scenarios.navigation_behavior import VARIANT_CATALOG, exercise_variant
+        expected={
+            "navigation":("methods","lifecycle","retarget-edit-delete","death-respawn-world-change","rejoin-restore"),
+            "map-terrain":("warm-cold","multiple-viewers","boundary-dimension","persist-evict-restart"),
+            "protection":("inventory-click-drag-open-close","craft-result-cartography","drop-pickup-spawn-move","entity-frame-equipment","death-reconcile"),
+        }
+        for feature,variants in expected.items():
+            for variant in variants:
+                spec=VARIANT_CATALOG[(feature,variant)]
+                for key in ("operation","receipt","before","after","handler"):
+                    self.assertTrue(spec[key],(feature,variant,key))
+                case=CaseSpec("id","paper-1.21.11",feature,variant,"medium","audit","navigation-terrain",(),(),clients=10)
+                result=exercise_variant(case,None,None,Path("unused"))
+                self.assertEqual(("decisions","assertions","paths"),tuple(result))
+                self.assertEqual(Status.BLOCKED,result["decisions"][0].status)
+                self.assertIn(spec["operation"],result["decisions"][0].reasons[0])
+
     @staticmethod
     def entity_recipe(label):
         from scenarios.navigation import entity_cases

@@ -767,3 +767,45 @@ Timed CLI integration remains the open Task 11 gate: navigation, map-terrain,
 and protection still fall through to the inventory adapter and return
 `BLOCKED` for player cases. Functional smokes are not the 30s/60s three-repeat
 window. Task 11 checkboxes stay open. Tasks 12 and 13 native runs stay blocked.
+
+## 2026-11-10 — Task 11 timed Paper small/medium run
+
+The prepared runner now owns navigation, map-terrain, and protection. The
+audit root is `/Volumes/ssd/sw-performance-task11-20261109-5`, run
+`37a240b4-b53e-4969-81a7-7c71c0b099e1`, from `2026-11-10T05:30:29Z` to
+`2026-11-10T08:17:29Z` on Mac16,10 (Apple M4, 10 cores, 16 GiB, macOS 26.5).
+Published 4.0.0 Paper bytes, probe
+`987f0f0d827a3ee6b126db430c6b087d54cc967523256389fddc42366905d0c9`, bot
+`5fe1bc3dad91a07b6605397c9be6b8fe59b8373c167fa9902a546b445ef10ce1`.
+Twenty-eight small/medium cases, three repetitions, 30/60 second windows.
+Report decision FAIL, exit 1: 3 FAIL and 25 BLOCKED. No PASS.
+
+FAIL: medium `boundary-dimension` watchdog and multi-second ticks under
+`/tp` at 50/s; medium `death-respawn-world-change` and `death-reconcile`
+complete every `/kill` and miss the 40 ms tick budget. BLOCKED cases either
+deliver the offered commands without a judged native observation, or the bot
+does not finish the offered walks, container opens, station clicks, or
+entity interactions. Details are in
+[Task 11 continuation](2026-11-09-task11-continuation.md).
+
+Ruling: a BLOCKED behavior observation must not be stored as a failed
+correctness assertion. Otherwise `budgets.evaluate` turns missing evidence
+into FAIL. Cost if wrong: an unjudged variant hides a real tick-budget FAIL
+when both are present. The three FAIL cases still fail on their tick and
+watchdog evidence.
+
+Ruling: saturation FAIL requires the driver queue to be empty. A still-queued
+action stays a deficient bot even when a tick is slow. Cost if wrong: a
+server that missed work already accepted by the bot is labeled INCONCLUSIVE
+while one later action remains queued.
+
+Ruling: connected owners are operators for this workload so vanilla command
+spam does not reject the declared rate. The op commands are fixture setup.
+Cost if wrong: the measured rate includes operator exemption that a
+non-operator player would not have. Permission denial stays a separate
+fixture and was not what this run measured.
+
+No production change, localization change, commit, or profiled diagnostic.
+Save/reopen and post-quiescence counts were not recorded. Task 11's two
+checkboxes stay open. The earlier cleanup, depth-nine, and deletion failures
+remain. Tasks 12 and 13 were not started.

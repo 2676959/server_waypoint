@@ -14,6 +14,7 @@ from controller import create_root
 from models import Status
 from processes import stop_owned
 from scenarios.navigation import switched_dimension, separate_map_viewers
+from scenarios.navigation_behavior import same_region_viewers, viewer_from_player
 from worlds import install_server, boot
 from navigation_smoke import execute, snapshot
 
@@ -39,9 +40,11 @@ def run(root, count):
     directory.mkdir(parents=True)
     overworld = {"name": "overworld", "display_name": "Overworld", "initials": "O", "pos": [320, -61, 320],
                  "color": "#112233", "yaw": 0, "global": True, "keywords": [], "description": "Dimension fixture"}
+    nearby = {"name": "overworld_b", "display_name": "Overworld B", "initials": "B", "pos": [360, -61, 360],
+              "color": "#224466", "yaw": 0, "global": True, "keywords": [], "description": "Same-region retarget fixture"}
     nether = {"name": "nether", "display_name": "Nether", "initials": "N", "pos": [0, 80, 0],
               "color": "#332211", "yaw": 0, "global": True, "keywords": [], "description": "Unexplored nether fixture"}
-    (directory / "minecraft$overworld.json").write_text(json.dumps([{"list_name": "dimension_fixture", "n": 7, "waypoints": [overworld]}], indent=4) + "\n")
+    (directory / "minecraft$overworld.json").write_text(json.dumps([{"list_name": "dimension_fixture", "n": 7, "waypoints": [overworld, nearby]}], indent=4) + "\n")
     (directory / "minecraft$the_nether.json").write_text(json.dumps([{"list_name": "dimension_fixture", "n": 7, "waypoints": [nether]}], indent=4) + "\n")
     evidence = {"schemaVersion": 1, "artifactSha256": artifact.sha256, "probeSha256": runtime.probe["sha256"],
                 "botSha256": runtime.bot["sha256"], "count": count, "scope": "cross-dimension-terrain-and-separate-viewers", "steps": []}
@@ -70,14 +73,15 @@ def run(root, count):
             execute(probe, "op " + name)
             execute(probe, f"tp {name} 300 -61 300")
 
-        def actions(command=None, slots=None):
+        def actions(command=None, slots=None, only=None):
             nonlocal serial
-            for name in names:
+            selected = names if only is None else only
+            for name in selected:
                 serial += 1
                 action = {"actionId": f"dimension-{serial}", "bot": name}
                 action.update({"operation": "command", "command": command, "acknowledged": True} if command is not None else {"operation": "select", "slot": slots[name]})
                 driver.send("action", action)
-            return [driver.wait("action_result", 30) for _ in names]
+            return [driver.wait("action_result", 30) for _ in selected]
 
         def packets():
             driver.send("barrier")
@@ -105,6 +109,23 @@ def run(root, count):
             time.sleep(0.2)
         evidence["overworldMapIds"] = ids
         if count >= 2:
+            before_native = snapshot(probe)
+            before = tuple(viewer_from_player(player) for player in before_native["players"])
+            if any(viewer is None for viewer in before):
+                raise ValueError("same-region viewer map evidence missing")
+            actions("/wp navigate minecraft:overworld dimension_fixture overworld_b map", only=names[:1])
+            deadline = time.monotonic() + 20
+            while True:
+                after_native = snapshot(probe)
+                after = tuple(viewer_from_player(player) for player in after_native["players"])
+                decision = same_region_viewers(before, None if any(viewer is None for viewer in after) else after)
+                if decision.status == Status.PASS:
+                    evidence["sameRegionViewers"] = decision
+                    break
+                if time.monotonic() >= deadline:
+                    evidence["sameRegionViewers"] = decision
+                    raise ValueError("same-region viewers did not retarget independently: " + "; ".join(decision.reasons))
+                time.sleep(0.2)
             viewers = tuple({"uuid": identities[name], "mapId": ids[name], "dimension": "minecraft:overworld"} for name in names)
             viewers_decision = separate_map_viewers(viewers)
             evidence["separateViewers"] = viewers_decision

@@ -14,6 +14,7 @@ from controller import create_root
 from models import Status
 from processes import stop_owned
 from scenarios.navigation import METHODS, terrain_roundtrip, cleanup_counts, restored_session
+from scenarios.navigation_behavior import boundary_transition
 from worlds import install_server, boot
 from navigation_smoke import execute, snapshot
 
@@ -177,6 +178,7 @@ def run(root, count):
         value = snapshot(probe)
         actions(slots={player["name"]: next(item["slot"] for item in player["items"] if item["method"] == "map") for player in value["players"]})
         value, a = observe("a", warm=True, stable=True)
+        origin_native = value["native"]
         record("initial-warm-a", value)
         actions("/wp navigate minecraft:overworld terrain_fixture b")
         value, _ = observe("b", expected={name: bytes(16384) for name in names})
@@ -190,6 +192,14 @@ def run(root, count):
         actions("/wp navigate minecraft:overworld terrain_fixture b")
         value, b = observe("b", warm=True, stable=True)
         record("explored-b", value)
+        origin = next(player for player in origin_native["players"] if player["name"] == names[0])
+        destination = next(player for player in value["native"]["players"] if player["name"] == names[0])
+        boundary = boundary_transition(
+            {"dimension": origin["dimension"], "x": int(origin["position"][0]), "z": int(origin["position"][2])},
+            {"dimension": destination["dimension"], "x": int(destination["position"][0]), "z": int(destination["position"][2])})
+        evidence["boundary"] = boundary
+        if boundary.status != Status.PASS:
+            raise ValueError("chunk/region boundary was not observed: " + "; ".join(boundary.reasons))
         for name in names:
             execute(probe, f"tp {name} 300 -61 300")
         actions("/wp navigate minecraft:overworld terrain_fixture a")

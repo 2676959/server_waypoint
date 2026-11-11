@@ -18,6 +18,12 @@ leaf with a native callback and still fail delivered player feedback; repeat 3
 is ENOSPC. This command-layer coverage does not mark those feature rows,
 other runtimes, stress tiers or the complete release matrix as passing.
 
+The 2026-11-10 Paper Task 11 run executed the 28 small/medium navigation,
+map-terrain, and protection cases at
+`/Volumes/ssd/sw-performance-task11-20261109-5`. Three cases FAIL and 25 are
+BLOCKED. That run does not mark the feature rows below as passing, and it
+does not cover stress, other runtimes, or the protocol and soak families.
+
 Current-development changes on 2026-10-26 remove the Paper inventory-transfer
 handler and the mod backend's allay/item-entity tick injections at the user's
 request. Their rows below remain records of the published release. See

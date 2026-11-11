@@ -84,6 +84,10 @@ The native probe contract is spec section 7; the Azalea driver contract is secti
 
 ## Milestones and ordering
 
+Continuation priority and concrete Task 11 work are in
+[the November 9 next-steps plan](2026-11-09-server-performance-next-steps.md).
+It preserves this plan's original-release scope and later milestone gates.
+
 - **M0, Tasks 1–7:** measurable Paper 1.21.11 reproduction and real zero-player worlds;
   this milestone needs no bots and must not wait for a 50-player swarm.
 - **M1, Tasks 8–16:** remaining feature families, Azalea traffic and platform adapters.
@@ -275,6 +279,21 @@ the owner map ID and replaces the region with 16,384 blank pixels at center
 integration stays open. Task 11's two checkboxes stay open until that gate
 runs.
 
+Task 11 checkpoint (2026-11-10): the prepared Paper 1.21.11 audit ran all 28
+small/medium cases, three repetitions each, at
+`/Volumes/ssd/sw-performance-task11-20261109-5`. Elapsed time was 2 hours 47
+minutes on an Apple M4 with 16 GiB. The report exits 1: 3 FAIL and 25 BLOCKED.
+Medium `boundary-dimension` records Paper watchdog nonresponse and multi-second
+ticks while teleporting at 50 actions/second. Medium `death-respawn-world-change`
+and `death-reconcile` complete 3000/3000 `/kill` actions and miss the 40 ms
+tick budget. The other cases stay BLOCKED because the native before/after
+observation is unjudged, the probe operation is absent, or the bot does not
+deliver the offered rate. No case PASSes. Forced eviction, save/reopen,
+post-quiescence counts, and profiled diagnostics were not produced. See
+[Task 11 continuation](../validation/2026-11-09-task11-continuation.md).
+The two checkboxes stay open. Earlier cleanup, depth-nine, deletion, and
+watchdog findings remain.
+
 ### Task 12: Synchronization, upload/edit traffic and chat sharing
 
 **Files:** Create `tools/server-performance/scenarios/sync_upload.py`, `tests/test_sync_upload.py`; extend Azalea protocol actions and production-codec vectors.
@@ -283,7 +302,7 @@ runs.
 
 - [x] Write `test_download_matches_exact_revision`, `test_invalid_upload_never_commits`, `test_partial_disconnect_releases_lease`, `test_backpressure_recovers`, `test_unrelated_chat_does_not_mutate`. Check client/server ownership and that forced refresh still delivers unchanged revisions.
 - [x] Run focused Python/Rust codec/action tests before implementing scenario execution.
-- [x] Implement compression on/off, concurrent 1/2/8 clients and valid 1,000/4,096/16,384 fixtures within target limits, merge/conflict/delete policies, malformed/oversize/timeout/cancel cases, broadcast fan-out and channel/world identity reconnects. Add valid/invalid/long/duplicate sharing messages, denied permissions and icon registration checks.
+- [ ] Implement compression on/off, concurrent 1/2/8 clients and valid 1,000/4,096/16,384 fixtures within target limits, merge/conflict/delete policies, malformed/oversize/timeout/cancel cases, broadcast fan-out and channel/world identity reconnects. Add valid/invalid/long/duplicate sharing messages, denied permissions and icon registration checks.
 - [ ] Run original Paper small/medium cases with exact persisted contents and empty lease/buffer queues after recovery. Profile compression/encoding/merge and unrelated-chat paths; keep correct rejection outcomes separate from fulfilled valid-upload throughput.
 
 Task 12 checkpoint (2026-11-03): decision contracts for exact revision, forced
@@ -294,6 +313,11 @@ above 4,096 are rejected, and no upload body is sent until a published
 waypoint-data vector exists. Live cases are explicitly blocked. Original Paper
 small/medium runs remain open. See
 [progress](../validation/progress.md).
+
+Planning correction (2026-11-09): the implementation checkbox above remains open
+because only decision contracts and partial bot actions exist. `run_case` still
+returns `BLOCKED`, and a valid upload body is not transmitted. The completed
+contract tests do not establish native scenario implementation.
 
 ### Task 13: Native Fabric, Forge and NeoForge coverage
 

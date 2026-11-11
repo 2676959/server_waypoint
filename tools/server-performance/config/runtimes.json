@@ -548,7 +548,7 @@
                 "candidate": "0.15.1+mc1.21.11",
                 "verifiedNativeActions": true,
                 "path": "/Volumes/ssd/fabric_mods_repo/server_waypoint/tools/server-performance/bots/versions/mc1.21.11/target/release/sw-performance-bots",
-                "sha256": "b31f632c69b2137b91d53b2356f39b3bb15395dd99ae0f575d98e6565eddcf5c",
+                "sha256": "5fe1bc3dad91a07b6605397c9be6b8fe59b8373c167fa9902a546b445ef10ce1",
                 "toolchain": "nightly-2026-07-15",
                 "nativeModes": [
                     "vanilla",
@@ -574,7 +574,8 @@
                 "2026-10-25 /Volumes/ssd/sw-performance-m1-protection-small-final and /Volumes/ssd/sw-performance-m1-protection-medium: nine physical drop/swap/player-menu cases, native cancellation/slot receipts, exact owner targets/items/map IDs, atomic ordinary conservation and correlated ordinary world entities; /Volumes/ssd/sw-performance-m1-physical-action-regression-peaceful: 1/10/50 native action regression; remaining protections pending; peaceful fifty-player action checks complete but retained watchdog log stability FAIL (3 reports), independent of physical case PASS; isolated /Volumes/ssd/sw-performance-m1-action-health-guard all action checks and native log health PASS, prior shared-host watchdog FAIL retained",
                 "2026-10-26 /Volumes/ssd/sw-performance-m1-nested-small and /Volumes/ssd/sw-performance-m1-nested-medium: all eight native spawn recipes per owner; retained depth-nine bundle escape FAIL (1/10), seven/70 direct-shallower-plain PASS, independent item graphs/exact carrier metadata, 800 medium owner checks, ordinary conservation/owned-entity cleanup/native log health PASS; physical nine-case independent-reader regression PASS at /Volumes/ssd/sw-performance-m1-independent-graph-regression; functional fixture evidence only",
                 "2026-11-01 /Volumes/ssd/sw-performance-m1-container-small and /Volumes/ssd/sw-performance-m1-container-medium: five other-container chest cases per owner; real Azalea block-open/hold/close, InventoryOpen/Close receipts, independent graphs; direct protected and nested shulker/map cleaned on open, dirty top/cursor cleaned on close, ordinary chest control conserved; 5/50 PASS, native log health PASS; functional evidence only",
-                "2026-11-05 /Volumes/ssd/sw-performance-m1-station-small-3 and /Volumes/ssd/sw-performance-m1-station-ten: four crafting/cartography cases per owner; cancelled client clicks on workbench raw 5 and cartography raw 0, probe-placed session items, empty protected prepare results, ordinary map craft and cartography scale takes; 4/40 PASS, native log health PASS; retained station-small and station-small-2 fixture RED; functional evidence only"
+                "2026-11-05 /Volumes/ssd/sw-performance-m1-station-small-3 and /Volumes/ssd/sw-performance-m1-station-ten: four crafting/cartography cases per owner; cancelled client clicks on workbench raw 5 and cartography raw 0, probe-placed session items, empty protected prepare results, ordinary map craft and cartography scale takes; 4/40 PASS, native log health PASS; retained station-small and station-small-2 fixture RED; functional evidence only",
+                "2026-11-09 /Volumes/ssd/sw-performance-taskA-readiness-20261109-3: rebuilt Paper probe 987f0f0d827a3ee6b126db430c6b087d54cc967523256389fddc42366905d0c9 and release bot 5fe1bc3dad91a07b6605397c9be6b8fe59b8373c167fa9902a546b445ef10ce1; hello accepted published 4.0.0 paper artifact 0a1d2ddc07dff13dee1af78c8e1f3b0a50024f5d3b8686f733a512db0fa8ad57; one vanilla player swp_reader_00 was server-observed; walk lock-walk-1 completed on the client clock and players.snapshot recorded 11 native movement events"
             ],
             "java": "/opt/homebrew/Cellar/openjdk@21/21.0.11/libexec/openjdk.jdk/Contents/Home/bin/java",
             "java_sha256": "04005388bac0c272ea914210ca519ce94b2f873ea3962b9874a6859f74d7f279",
@@ -598,7 +599,7 @@
             ],
             "probe": {
                 "path": "/Volumes/ssd/fabric_mods_repo/server_waypoint/paper/versions/1.21.11-paper/build/libs/server-waypoint-performance-paper-probe.jar",
-                "sha256": "a0b5760661a52d403da9a3562cde7d2c973f6ed99dc31499d339d107b4160854"
+                "sha256": "987f0f0d827a3ee6b126db430c6b087d54cc967523256389fddc42366905d0c9"
             }
         },
         {

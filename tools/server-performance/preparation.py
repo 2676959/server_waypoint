@@ -54,6 +54,8 @@ def input_hashes():
 
 
 def requires_world(case):
+    if case.feature in ("navigation", "map-terrain", "protection"):
+        return True
     return case.feature in ("idle", "world-container", "inventory-regression", "storage", "commands") and (case.clients == 0 or case.feature in ("storage", "commands"))
 
 
