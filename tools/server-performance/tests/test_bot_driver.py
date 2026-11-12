@@ -55,6 +55,15 @@ class BotDriverTest(unittest.TestCase):
     def test_stalled_driver_cannot_pass(self):
         self.assertEqual(Status.INCONCLUSIVE, validate_rates({"offered": 50, "completed": 0, "pending": 50, "elapsedSeconds": 1, "maxLagSeconds": 60}, 5).status)
 
+    def test_action_error_releases_the_offered_slot(self):
+        stream = BotStream("run", "attempt")
+        stream.offer("open-1")
+        stream.parse({"schemaVersion": 1, "runId": "run", "attemptId": "attempt", "sequence": 1, "type": "error",
+            "data": {"reason": "other container did not open", "actionId": "open-1", "bot": "swp_reader_00"}})
+        self.assertNotIn("open-1", stream.pending)
+        stream.offer("open-2")
+        self.assertIn("open-2", stream.pending)
+
     def test_reconnect_does_not_hide_disconnect(self):
         stream = BotStream("run", "attempt")
         stream.parse({"schemaVersion": 1, "runId": "run", "attemptId": "attempt", "sequence": 1, "type": "error", "data": {"reason": "disconnected"}})

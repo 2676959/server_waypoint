@@ -13,6 +13,7 @@ from preparation import verify_evidence
 from processes import stop_owned
 from reporting import combine_decisions, exit_code
 from scenarios.inventory import retain_partial
+from scenarios.inventory_container import exercise_inventory_container, finish_container_cleanup
 from scenarios.navigation_behavior import VARIANT_CATALOG, exercise_variant
 from scenarios.navigation_workload import collect_window, delivery_status, reject_stale_bytes, repetition_record, tick_p95_ns
 from server_health import native_log_health
@@ -125,7 +126,7 @@ def execute_case(case, root, partial):
         return result
 
     try:
-        return _run_repetitions(case, root, partial, current, repetitions, outcomes, evidence, behavior_paths, runtime, release, prepared, artifact)
+        return _run_repetitions(case, root, partial, current, repetitions, outcomes, evidence, behavior_paths, assertions, runtime, release, prepared, artifact)
     except (OSError, RuntimeError, TimeoutError, ValueError) as error:
         decision = retained_after_error(outcomes, error)
         decided = _with_decision(current(), decision)
@@ -133,7 +134,7 @@ def execute_case(case, root, partial):
         return decided
 
 
-def _run_repetitions(case, root, partial, current, repetitions, outcomes, evidence, behavior_paths, runtime, release, prepared, artifact):
+def _run_repetitions(case, root, partial, current, repetitions, outcomes, evidence, behavior_paths, assertions, runtime, release, prepared, artifact):
     for index in range(case.repeats):
         plan = prepare_repetition(case, root / "attempts", index)
         with Attempt(root, case.id + f":repeat-{index + 1}") as attempt:
@@ -163,7 +164,10 @@ def _run_repetitions(case, root, partial, current, repetitions, outcomes, eviden
                 probe.wait("commands.executed")
                 attempt.transition("READY")
                 try:
-                    behavior = exercise_variant(case, probe, driver, attempt.directory / "behavior", names)
+                    if (case.feature, case.variant) == ("protection", "inventory-click-drag-open-close"):
+                        behavior = exercise_inventory_container(probe, driver, native["players"], attempt.directory / "behavior")
+                    else:
+                        behavior = exercise_variant(case, probe, driver, attempt.directory / "behavior", names)
                 except (OSError, RuntimeError, TimeoutError, ValueError) as error:
                     behavior = {
                         "decisions": (Decision(Status.BLOCKED, (f"native behavior observation unavailable: {error}",)),),
@@ -187,6 +191,8 @@ def _run_repetitions(case, root, partial, current, repetitions, outcomes, eviden
                 repetitions.append(repetition_record(
                     case, warmup["seconds"], measured["seconds"], ticks, measured["offeredActions"],
                     measured["completedActions"], measured["actionLatencyNs"], "client-monotonic"))
+                if behavior.get("chestsArmed"):
+                    outcomes.extend(finish_container_cleanup(probe, names))
                 attempt.transition("QUIESCING")
                 probe.send("fixture.quiesce")
                 probe.wait("fixture.quiesced")

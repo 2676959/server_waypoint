@@ -548,7 +548,7 @@
                 "candidate": "0.15.1+mc1.21.11",
                 "verifiedNativeActions": true,
                 "path": "/Volumes/ssd/fabric_mods_repo/server_waypoint/tools/server-performance/bots/versions/mc1.21.11/target/release/sw-performance-bots",
-                "sha256": "5fe1bc3dad91a07b6605397c9be6b8fe59b8373c167fa9902a546b445ef10ce1",
+                "sha256": "95f5bb03dde1b4b6efe7c6275572be0d1f47c25398e4c4a4b97c62bfc41bf887",
                 "toolchain": "nightly-2026-07-15",
                 "nativeModes": [
                     "vanilla",

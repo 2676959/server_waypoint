@@ -248,4 +248,35 @@ plan checkboxes stay open: the timed selection ran, and the behavior,
 eviction, save/reopen, quiescence-count, and profile evidence it asks for did
 not.
 
+## Container case follow-up
+
+Root: `/Volumes/ssd/sw-performance-container-timed-4`. Published 4.0.0 Paper,
+same probe, bot `95f5bb03dde1b4b6efe7c6275572be0d1f47c25398e4c4a4b97c62bfc41bf887`.
+This root replaces the 0/600 and 0/3000 container rows above for the container
+case only. The other 26 cases were not rerun.
+
+A one-owner functional session, before the timed windows, recorded 28 PASS
+container and drag decisions and a cleanup removal with `present: false`.
+
+| Case | Decision | Measurement completed/offered | Behavior | Tick p95 |
+| --- | --- | --- | --- | --- |
+| `protection:inventory-click-drag-open-close:small` | INCONCLUSIVE | 104/600, 76/600, 52/600 | PASS, PASS, PASS | 4.10 ms, 3.39 ms, 3.58 ms |
+| `protection:inventory-click-drag-open-close:medium` | BLOCKED | 0/3000, 47/3000, 0/3000 | BLOCKED, PASS, BLOCKED | 7.22 ms, 5.89 ms, 6.51 ms |
+
+Each small repetition removed its containers with `present: false` and no
+`present: true`. Successful open-close receipts take about 240 ms. One client
+therefore cannot sustain the declared 10 opens per second, and ten clients
+cannot sustain 50 per second. The driver kept one open in flight per bot.
+Tick samples stay under the medium budget, with the driver queue still holding
+unsent work, so the short delivery stays a deficient bot rather than server
+saturation.
+
+Medium repeats 1 and 3 stopped during fixture setup because one open returned
+`other container did not open`. Those repetitions did not arm the timing chest.
+Repeat 2 passed all 280 native container and drag decisions, then its
+measurement window completed 47 actions and recorded 243 `other container did
+not open` errors. The original audit's "container did not open" at coordinates
+`0, -60, 0` is not the result here: timed actions address the placed chest at
+`300, -61, 297` and the neighboring owner chests.
+
 

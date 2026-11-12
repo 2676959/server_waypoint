@@ -5,6 +5,7 @@ from pathlib import Path
 
 from metrics import summarize
 from models import Decision, Status
+from scenarios.inventory_container import chest_position
 from scenarios.navigation_behavior import VARIANT_CATALOG, accepted_receipt
 
 
@@ -20,7 +21,16 @@ def action_schedule(case, seconds, owners=(), phase=""):
     names = tuple(owners) or ("owner",)
     prefix = f"{phase.lower()}-" if phase else ""
     count = int(case.offered_rate * seconds)
-    return [{"actionId": f"{prefix}workload-{index}", "bot": names[index % len(names)], **operation} for index in range(count)]
+    timed_container = (case.feature, case.variant) == ("protection", "inventory-click-drag-open-close")
+    actions = []
+    for index in range(count):
+        bot = names[index % len(names)]
+        action = {"actionId": f"{prefix}workload-{index}", "bot": bot, **operation}
+        if timed_container:
+            action.update(chest_position(names.index(bot)))
+            action["hold"] = False
+        actions.append(action)
+    return actions
 
 
 def repetition_record(case, warmup_seconds, measurement_seconds, tick_ns, offered, completed, latencies, clock):
@@ -36,6 +46,16 @@ def repetition_record(case, warmup_seconds, measurement_seconds, tick_ns, offere
         "actionLatencyClock": clock,
         "actionLatencyScope": "client-roundtrip",
     }
+
+
+def inflight_limit(owners):
+    """One open action per bot. A deeper queue wedges container menus."""
+    return max(1, len(tuple(owners)))
+
+
+def drain_allowance(pending):
+    """Finish actions already offered by this phase. One second each, bounded."""
+    return max(5.0, min(120.0, pending * 1.0))
 
 
 def tick_p95_ns(samples):
@@ -76,18 +96,20 @@ def collect_window(case, probe, driver, phase, output, owners=()):
                 if type(duration) is int and duration >= 0:
                     ticks.append(duration)
         for event in driver.poll():
-            if event.get("type") == "action_result":
-                receipts.append(event.get("data") or {})
-        while cursor < len(actions) and len(driver.stream.pending) < 256 and elapsed >= (cursor / case.offered_rate if case.offered_rate else seconds):
+            data = event.get("data") or {}
+            if event.get("type") == "action_result" or (event.get("type") == "error" and data.get("actionId")):
+                receipts.append(data)
+        while cursor < len(actions) and len(driver.stream.pending) < inflight_limit(owners) and elapsed >= (cursor / case.offered_rate if case.offered_rate else seconds):
             driver.send("action", actions[cursor])
             cursor += 1
             elapsed = time.monotonic() - started
         time.sleep(0.01)
-    drain_deadline = time.monotonic() + 5
+    drain_deadline = time.monotonic() + drain_allowance(len(driver.stream.pending))
     while driver.stream.pending and time.monotonic() < drain_deadline:
         for event in driver.poll():
-            if event.get("type") == "action_result":
-                receipts.append(event.get("data") or {})
+            data = event.get("data") or {}
+            if event.get("type") == "action_result" or (event.get("type") == "error" and data.get("actionId")):
+                receipts.append(data)
         time.sleep(0.01)
     probe.send("scenario.stop")
     stopped = probe.wait("scenario.stopped")["data"]

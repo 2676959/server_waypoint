@@ -8,6 +8,14 @@ use azalea::{
 use serde_json::{Value, json};
 use std::time::{Duration, Instant};
 
+async fn open_other_container(bot: &Client, position: BlockPos) -> anyhow::Result<ContainerHandle> {
+    // Azalea can wait forever after a rapid open/close misses the server menu.
+    match tokio::time::timeout(Duration::from_secs(2), bot.open_container_at(position)).await {
+        Ok(Some(handle)) => Ok(handle),
+        Ok(None) | Err(_) => anyhow::bail!("other container did not open"),
+    }
+}
+
 async fn wait_game_ticks(bot: &Client, count: usize) {
     let mut ticks = bot.get_tick_broadcaster();
     for _ in 0..count {
@@ -176,10 +184,7 @@ pub async fn perform(
             let (x, y, z) = sw_performance_bots::action_input::container_position(data)
                 .map_err(anyhow::Error::msg)?;
             anyhow::ensure!(open_container.is_none(), "another container already open");
-            let handle = bot
-                .open_container_at(BlockPos::new(x, y, z))
-                .await
-                .ok_or_else(|| anyhow::anyhow!("other container did not open"))?;
+            let handle = open_other_container(bot, BlockPos::new(x, y, z)).await?;
             if data["hold"] == true {
                 *open_container = Some(handle);
             } else {
@@ -203,11 +208,7 @@ pub async fn perform(
                 if data.get("x").is_some() {
                     let (x, y, z) = sw_performance_bots::action_input::container_position(data)
                         .map_err(anyhow::Error::msg)?;
-                    *open_container = Some(
-                        bot.open_container_at(BlockPos::new(x, y, z))
-                            .await
-                            .ok_or_else(|| anyhow::anyhow!("other container did not open"))?,
-                    );
+                    *open_container = Some(open_other_container(bot, BlockPos::new(x, y, z)).await?);
                 } else {
                     *open_container = Some(
                         bot.open_inventory()
@@ -229,11 +230,7 @@ pub async fn perform(
                     if data.get("x").is_some() {
                         let (x, y, z) = sw_performance_bots::action_input::container_position(data)
                             .map_err(anyhow::Error::msg)?;
-                        *open_container = Some(
-                            bot.open_container_at(BlockPos::new(x, y, z))
-                                .await
-                                .ok_or_else(|| anyhow::anyhow!("other container did not open"))?,
-                        );
+                        *open_container = Some(open_other_container(bot, BlockPos::new(x, y, z)).await?);
                     } else {
                         *open_container = Some(
                             bot.open_inventory()
@@ -252,11 +249,7 @@ pub async fn perform(
                     if data.get("x").is_some() {
                         let (x, y, z) = sw_performance_bots::action_input::container_position(data)
                             .map_err(anyhow::Error::msg)?;
-                        *open_container = Some(
-                            bot.open_container_at(BlockPos::new(x, y, z))
-                                .await
-                                .ok_or_else(|| anyhow::anyhow!("other container did not open"))?,
-                        );
+                        *open_container = Some(open_other_container(bot, BlockPos::new(x, y, z)).await?);
                     } else {
                         *open_container = Some(
                             bot.open_inventory()

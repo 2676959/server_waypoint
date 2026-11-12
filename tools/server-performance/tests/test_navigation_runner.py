@@ -128,6 +128,99 @@ class NavigationRunnerTest(unittest.TestCase):
         samples = list(range(100))
         self.assertEqual(summarize(samples, "ns")["p95"], tick_p95_ns(samples))
         self.assertEqual(0, tick_p95_ns([]))
+        from scenarios.navigation_workload import drain_allowance
+        self.assertEqual(5.0, drain_allowance(0))
+        self.assertEqual(30.0, drain_allowance(30))
+        self.assertEqual(120.0, drain_allowance(256))
+        from scenarios.navigation_workload import inflight_limit
+        self.assertEqual(1, inflight_limit(()))
+        self.assertEqual(10, inflight_limit(tuple(f"swp_reader_{index:02}" for index in range(10))))
+
+    def test_container_timing_targets_the_placed_chest_and_records_cleanup(self):
+        from scenarios.inventory_container import chest_position, removal_decision
+        from scenarios.navigation_workload import action_schedule
+        selected = case(feature="protection", variant="inventory-click-drag-open-close", tier="small", clients=1)
+        actions = action_schedule(selected, 1, ("swp_reader_00", "swp_reader_01"), "MEASURING")
+        self.assertEqual(selected.offered_rate, len(actions))
+        self.assertEqual(chest_position(0), {key: actions[0][key] for key in ("x", "y", "z")})
+        self.assertEqual(chest_position(1), {key: actions[1][key] for key in ("x", "y", "z")})
+        self.assertTrue(all(action.get("hold") is False and action["operation"] == "open-container" for action in actions))
+        self.assertEqual(Status.PASS, removal_decision({"present": False, "player": "swp_reader_00"}).status)
+        self.assertEqual(Status.BLOCKED, removal_decision({}).status)
+        self.assertEqual(Status.FAIL, removal_decision({"present": True, "player": "swp_reader_00"}).status)
+
+    def test_passing_container_behavior_is_recorded_before_timing(self):
+        import tempfile
+        from contextlib import ExitStack
+        from types import SimpleNamespace
+        from artifacts import sha256
+        from contracts import atomic_write
+        from controller import create_root
+        from scenarios.navigation_runner import run_case
+
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory).resolve()
+            root = create_root(base / "run")
+            prepared = base / "prepared"
+            (prepared / "frozen").mkdir(parents=True)
+            atomic_write(prepared / "baseline.json", {"schemaVersion": 1, "recipeSha256": "a" * 64})
+            atomic_write(root / "prepared.json", {"schemaVersion": 1, "profile": False,
+                "worlds": {"navigation-terrain-small": str(prepared)}})
+            atomic_write(root / "budgets.json", {"schemaVersion": 1, "budgets": {"backend-medium": {"p95MsExclusive": 40, "p99MsExclusive": 50}}})
+            binary = base / "bot"
+            binary.write_bytes(b"locked bot")
+            runtime = SimpleNamespace(id="paper-1.21.11", artifact="release.jar", bot={"path": str(binary), "sha256": sha256(binary)},
+                probe={"path": "unused", "sha256": "b" * 64}, server_sha256="c" * 64, java_sha256="d" * 64)
+            artifact = SimpleNamespace(name="release.jar", sha256="e" * 64, revision="original", provenance="published")
+            cleaned = []
+
+            class Probe:
+                def send(self, operation, payload=None):
+                    pass
+                def wait(self, kind, timeout=60):
+                    if kind == "players.snapshot":
+                        return {"data": {"players": [{"name": "swp_reader_00"}]}}
+                    return {"data": {}}
+
+            class Driver:
+                def __init__(self, *args):
+                    pass
+                def send(self, *args):
+                    pass
+                def wait(self, kind, timeout=60):
+                    return {"bots": [{"name": "swp_reader_00"}]}
+                def abort(self):
+                    pass
+
+            def boot(runtime, server, *args):
+                log = Path(server) / "native.log"
+                log.write_text("[00:00:00 INFO]: native server ready\n")
+                return SimpleNamespace(log=log), Probe()
+
+            def exercise(*args):
+                return {"decisions": (Decision(Status.PASS),), "paths": {}, "chestsArmed": True}
+
+            def window(*args, **kwargs):
+                return {"seconds": 60, "tickNs": [1_000_000] * 100, "offeredActions": 10,
+                    "completedActions": 10, "driverPending": 0, "actionLatencyNs": [1_000] * 10}
+
+            replacements = {
+                "load_runtimes": lambda *args: [runtime], "load_release": lambda *args: [artifact],
+                "verify_evidence": lambda *args: None, "verify_artifact": lambda *args: None,
+                "_matches": lambda *args: True, "install_server": lambda *args: 25565,
+                "clone_baseline": lambda *args: None, "boot": boot, "BotDriver": Driver,
+                "validate_ready": lambda *args: Decision(Status.PASS), "stop_owned": lambda *args: None,
+                "exercise_inventory_container": exercise, "finish_container_cleanup": lambda *args: cleaned.append("removed") or (Decision(Status.PASS),),
+                "collect_window": window,
+            }
+            selected = case(feature="protection", variant="inventory-click-drag-open-close", tier="small", clients=1, repeats=1)
+            with ExitStack() as stack:
+                for name, replacement in replacements.items():
+                    stack.enter_context(patch("scenarios.navigation_runner." + name, replacement))
+                result = run_case(selected, root)
+            self.assertTrue(result.assertions["repeat-1-behavior"])
+            self.assertEqual(["removed"], cleaned)
+            self.assertNotIn("assertions", " ".join(result.decision.reasons))
 
     def test_navigation_families_require_prepared_worlds(self):
         from preparation import requires_world

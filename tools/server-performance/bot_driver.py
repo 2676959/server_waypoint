@@ -54,6 +54,10 @@ class BotStream:
             self.pending.remove(action_id)
             self.completed.add(action_id)
         if value["type"] == "error":
+            action_id = data.get("actionId")
+            if action_id in self.pending:
+                self.pending.remove(action_id)
+                self.completed.add(action_id)
             self.failures.append(data.get("reason", "bot error"))
         self.sequence = sequence
         return value
