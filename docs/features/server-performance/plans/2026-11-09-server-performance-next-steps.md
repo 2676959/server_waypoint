@@ -104,11 +104,18 @@ Expected: every Task 11 variant has a concrete native behavior path or an explic
 - [x] Write failing tests for routing all three families, unknown variants, wrong runtime, stale bot/probe/artifact bytes, 10-owner readiness, independent world copies, and exactly three fresh process repetitions.
 - [x] Add tests that 29-second warm-up, 59-second measurement, missing samples, missing acknowledgements and mismatched latency clocks cannot pass. Offered/completed accounting must exclude fixture setup and count the declared operation; distinguish a deficient bot from actual server saturation.
 - [x] Implement a bounded deterministic action schedule for each variant using its existing offered rate. Correlate actions with native receipts, use client-monotonic roundtrip latency, and collect actual native tick processing through the whole measured window. Do not replace expensive lifecycle operations with unrelated cheap movement while labeling them equivalent.
-- [x] Implement prepare/verify/readiness, Task C behavior checks, warm-up, measurement, quiescence, save/reopen where required, and cleanup using the existing owned-process lifecycle. Behavior checks can precede/follow timing; the measured workload must still exercise its named feature. Retain raw bot/probe streams, resource counts, host/load-generator health and all identities.
+- [ ] Implement prepare/verify/readiness, Task C behavior checks, warm-up, measurement, quiescence, save/reopen where required, and cleanup using the existing owned-process lifecycle. Behavior checks can precede/follow timing; the measured workload must still exercise its named feature. Retain raw bot/probe streams, resource counts, host/load-generator health and all identities.
 - [x] Add tests proving a fast tick window plus failed deletion/cleanup is `FAIL`, a watchdog fails independently, known failures do not skip later variants, and interruption retains prior defects and stops owned processes. Missing timing must not overwrite an observed correctness failure.
 - [x] Run `rtk proxy python3 -m unittest discover -s tools/server-performance/tests -p 'test_navigation_runner.py' -v`, then the complete Python suite. Run a short native adapter check first, explicitly labeled smoke. Preserve unsupported runtimes as `BLOCKED` until their native adapters are verified.
 
 Expected: the CLI executes real navigation/terrain/protection cases instead of the inventory fallback, while incomplete or incorrect evidence still fails closed. Do not add an alternate result schema or relax budgets.
+
+November 12 correction: the lifecycle implementation checkbox stays open because
+the prepared runner still lacks the required terrain save/reopen comparisons
+and disconnected-inventory/world-item observations. It now records actual JFR
+and ten-tick post-disconnect navigation counters. The online-only item counter
+does not establish item cleanup. See
+[the diagnostic continuation](../validation/2026-11-12-task11-diagnostics.md).
 
 ## Task E: Run and report original Paper Task 11
 

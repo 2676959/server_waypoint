@@ -294,6 +294,19 @@ post-quiescence counts, and profiled diagnostics were not produced. See
 The two checkboxes stay open. Earlier cleanup, depth-nine, deletion, and
 watchdog findings remain.
 
+Task 11 checkpoint (2026-11-12): six separate medium profiled diagnostics ran
+at `/Volumes/ssd/sw-performance-task11-profiles-20261112-2`, one repetition
+each: 3 FAIL, 3 BLOCKED, six readable JFRs. Native quit-time counter leaks and
+the two `/kill` tick-budget failures remain. The runner now captures JFR,
+retains shutdown-dumped recordings, and records ten-tick post-disconnect
+snapshots without double-stopping the bot. A later receipt correction rejects
+client-issued elapsed times as native roundtrip latency; three fresh-process
+short adapter checks each retain 2/2 acknowledged waypoint commands and no JFR
+when profiling is disabled. This is not three-repeat performance acceptance.
+Offline inventory/world-item cleanup, required terrain save/reopen and the
+remaining behavior/delivery adapters stay open. See
+[diagnostics and receipt correction](../validation/2026-11-12-task11-diagnostics.md).
+
 ### Task 12: Synchronization, upload/edit traffic and chat sharing
 
 **Files:** Create `tools/server-performance/scenarios/sync_upload.py`, `tests/test_sync_upload.py`; extend Azalea protocol actions and production-codec vectors.

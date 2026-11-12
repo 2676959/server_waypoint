@@ -59,6 +59,66 @@ class NavigationRunnerTest(unittest.TestCase):
         measured = {action["actionId"] for action in action_schedule(selected, 1, phase="MEASURING")}
         self.assertTrue(warm.isdisjoint(measured))
 
+    def test_waypoint_commands_request_native_completion_before_counting_latency(self):
+        from scenarios.navigation_workload import action_schedule, native_command_latency
+        action = action_schedule(case(), 1, ("swp_reader_00",))[0]
+        self.assertIs(True, action.get("acknowledged"))
+        issued = {"actionId": action["actionId"], "clock": "client-monotonic",
+            "completionScope": "client-issued", "clientElapsedNs": 50_000_000, "nativeAck": None}
+        self.assertIsNone(native_command_latency(action, issued))
+        ack = {"actionId": action["actionId"], "command": action["command"].lstrip("/"),
+            "actor": action["bot"], "serverObserved": True, "stage": "command-completed"}
+        receipt = {**issued, "completionScope": "client-roundtrip", "nativeAck": ack}
+        self.assertEqual(50_000_000, native_command_latency(action, receipt))
+        for key, value in (("stage", "marker-registered"), ("actor", "other-owner"),
+                ("command", "wp help"), ("actionId", "unrelated"), ("serverObserved", False),
+                ("exception", "command failed")):
+            self.assertIsNone(native_command_latency(action, {**receipt, "nativeAck": {**ack, key: value}}), key)
+        self.assertIsNone(native_command_latency(action, {**receipt, "success": False}))
+        self.assertIsNone(native_command_latency(action, {**receipt, "error": "callback timed out"}))
+        self.assertIsNone(native_command_latency(action, {**receipt, "clock": "server-monotonic"}))
+        self.assertIsNone(native_command_latency({**action, "operation": "walk"}, receipt))
+
+    def test_client_issued_receipt_does_not_count_as_completed_roundtrip_in_window(self):
+        from types import SimpleNamespace
+        from dataclasses import replace
+        from scenarios.navigation_workload import collect_window
+        class Clock:
+            elapsed = 0
+            def monotonic(self):
+                return self.elapsed
+            def sleep(self, seconds):
+                self.elapsed += seconds
+        clock = Clock()
+        pending = set()
+        issued = []
+        class Driver:
+            stream = SimpleNamespace(pending=pending)
+            def send(self, kind, data):
+                pending.add(data["actionId"])
+                issued.append(data)
+            def poll(self):
+                if not issued:
+                    return []
+                action = issued.pop(0)
+                pending.remove(action["actionId"])
+                return [{"type": "action_result", "data": {"actionId": action["actionId"],
+                    "clock": "client-monotonic", "completionScope": "client-issued", "clientElapsedNs": 1_000}}]
+        class Probe:
+            def send(self, *args):
+                pass
+            def wait(self, *args):
+                return {"data": {"phaseElapsedSeconds": 1}}
+            def poll(self):
+                return []
+        selected = replace(case(clients=1), measurement_seconds=1, offered_rate=1)
+        with tempfile.TemporaryDirectory() as directory, patch("scenarios.navigation_workload.time", clock):
+            window = collect_window(selected, Probe(), Driver(), "MEASURING", Path(directory), ("swp_reader_00",))
+        self.assertEqual(1, window["offeredActions"])
+        self.assertEqual(0, window["completedActions"])
+        self.assertEqual([], window["actionLatencyNs"])
+        self.assertEqual(1, window["unacknowledgedActions"])
+
     def test_short_or_incomplete_windows_cannot_pass(self):
         from scenarios.navigation_workload import repetition_record
         selected = case(repeats=1)
@@ -150,6 +210,58 @@ class NavigationRunnerTest(unittest.TestCase):
         self.assertEqual(Status.FAIL, removal_decision({"present": True, "player": "swp_reader_00"}).status)
 
     def test_passing_container_behavior_is_recorded_before_timing(self):
+        result, events = self._run_container_fixture()
+        self.assertTrue(result.assertions["repeat-1-behavior"])
+        self.assertEqual(1, events.count("removed"))
+        self.assertNotIn("assertions", " ".join(result.decision.reasons))
+
+    def test_profiled_runner_keeps_jfr_and_native_quiescence_failure(self):
+        result, events = self._run_container_fixture(profile=True)
+        self.assertEqual(Status.FAIL, result.decision.status)
+        self.assertIn("retained tick counter", result.decision.reasons)
+        self.assertEqual(1, events.count("profile-start"))
+        self.assertEqual(1, events.count("profile-stop"))
+        self.assertLess(events.index("profile-start"), events.index("window"))
+        self.assertLess(events.index("profile-stop"), events.index("server-stop"))
+        self.assertLess(events.index("quiescence"), events.index("server-stop"))
+        self.assertFalse(result.assertions["repeat-1-quiescence"])
+        self.assertEqual(1, len(result.paths["profiles"]))
+        self.assertEqual(1, len(result.paths["quiescence"]))
+        self.assertEqual(1, events.count("bot-close"))
+        self.assertNotIn("bot-abort", events)
+
+    def test_profiled_runner_stops_capture_and_processes_after_window_error(self):
+        result, events = self._run_container_fixture(profile=True, window_error=RuntimeError("window crashed"))
+        self.assertEqual(Status.BLOCKED, result.decision.status)
+        self.assertIn("window crashed", result.decision.reasons)
+        self.assertEqual(1, events.count("profile-stop"))
+        self.assertLess(events.index("profile-stop"), events.index("server-stop"))
+        self.assertIn("bot-abort", events)
+
+    def test_interrupted_profiled_runner_keeps_observed_defect_in_partial_result(self):
+        result, events = self._run_container_fixture(profile=True, window_error=KeyboardInterrupt(), behavior_failure=True)
+        self.assertEqual(Status.FAIL, result.decision.status)
+        self.assertIn("observed protection defect", result.decision.reasons)
+        self.assertIn("profile-stop", events)
+        self.assertIn("server-stop", events)
+
+    def test_completed_slow_measurement_survives_interrupted_disconnect(self):
+        result, _ = self._run_container_fixture(tick_ns=50_000_000, disconnect_error=KeyboardInterrupt(), tier="medium")
+        self.assertEqual(Status.FAIL, result.decision.status)
+        self.assertIn("repeat 1: native tick budget exceeded", result.decision.reasons)
+
+    def test_completed_slow_measurement_survives_failed_disconnect(self):
+        result, _ = self._run_container_fixture(tick_ns=50_000_000, disconnect_error=RuntimeError("disconnect failed"), tier="medium")
+        self.assertEqual(Status.FAIL, result.decision.status)
+        self.assertIn("repeat 1: native tick budget exceeded", result.decision.reasons)
+        self.assertIn("disconnect failed", result.decision.reasons)
+
+    def test_profile_dumped_only_on_server_exit_is_in_result_paths(self):
+        result, _ = self._run_container_fixture(profile=True, dump_on_exit=True)
+        self.assertEqual(1, len(result.paths["profiles"]))
+
+    def _run_container_fixture(self, profile=False, window_error=None, behavior_failure=False,
+            tick_ns=1_000_000, disconnect_error=None, tier="small", dump_on_exit=False):
         import tempfile
         from contextlib import ExitStack
         from types import SimpleNamespace
@@ -164,13 +276,13 @@ class NavigationRunnerTest(unittest.TestCase):
             prepared = base / "prepared"
             (prepared / "frozen").mkdir(parents=True)
             atomic_write(prepared / "baseline.json", {"schemaVersion": 1, "recipeSha256": "a" * 64})
-            atomic_write(root / "prepared.json", {"schemaVersion": 1, "profile": False,
-                "worlds": {"navigation-terrain-small": str(prepared)}})
+            atomic_write(root / "prepared.json", {"schemaVersion": 1, "profile": profile,
+                "worlds": {f"navigation-terrain-{tier}": str(prepared)}})
             atomic_write(root / "budgets.json", {"schemaVersion": 1, "budgets": {"backend-medium": {"p95MsExclusive": 40, "p99MsExclusive": 50}}})
             binary = base / "bot"
             binary.write_bytes(b"locked bot")
             runtime = SimpleNamespace(id="paper-1.21.11", artifact="release.jar", bot={"path": str(binary), "sha256": sha256(binary)},
-                probe={"path": "unused", "sha256": "b" * 64}, server_sha256="c" * 64, java_sha256="d" * 64)
+                probe={"path": "unused", "sha256": "b" * 64}, server_sha256="c" * 64, java_sha256="d" * 64, java="/java")
             artifact = SimpleNamespace(name="release.jar", sha256="e" * 64, revision="original", provenance="published")
             cleaned = []
 
@@ -184,13 +296,21 @@ class NavigationRunnerTest(unittest.TestCase):
 
             class Driver:
                 def __init__(self, *args):
-                    pass
+                    self.closed = False
                 def send(self, *args):
                     pass
                 def wait(self, kind, timeout=60):
                     return {"bots": [{"name": "swp_reader_00"}]}
                 def abort(self):
-                    pass
+                    if self.closed:
+                        raise ValueError("refusing to stop an unowned process")
+                    cleaned.append("bot-abort")
+                    self.closed = True
+                def close(self):
+                    if self.closed:
+                        raise ValueError("refusing to stop an unowned process")
+                    cleaned.append("bot-close")
+                    self.closed = True
 
             def boot(runtime, server, *args):
                 log = Path(server) / "native.log"
@@ -198,29 +318,64 @@ class NavigationRunnerTest(unittest.TestCase):
                 return SimpleNamespace(log=log), Probe()
 
             def exercise(*args):
-                return {"decisions": (Decision(Status.PASS),), "paths": {}, "chestsArmed": True}
+                decision = Decision(Status.FAIL, ("observed protection defect",)) if behavior_failure else Decision(Status.PASS)
+                return {"decisions": (decision,), "paths": {}, "chestsArmed": True}
 
             def window(*args, **kwargs):
-                return {"seconds": 60, "tickNs": [1_000_000] * 100, "offeredActions": 10,
+                cleaned.append("window")
+                if window_error:
+                    raise window_error
+                return {"seconds": 60, "tickNs": [tick_ns] * 100, "offeredActions": 10, "unacknowledgedActions": 0,
                     "completedActions": 10, "driverPending": 0, "actionLatencyNs": [1_000] * 10}
+
+            def stop_server(*args):
+                cleaned.append("server-stop")
+                if dump_on_exit:
+                    output = next((root / "attempts").glob("*/profiles")) / "server.jfr"
+                    output.write_bytes(b"dump on exit")
 
             replacements = {
                 "load_runtimes": lambda *args: [runtime], "load_release": lambda *args: [artifact],
                 "verify_evidence": lambda *args: None, "verify_artifact": lambda *args: None,
                 "_matches": lambda *args: True, "install_server": lambda *args: 25565,
                 "clone_baseline": lambda *args: None, "boot": boot, "BotDriver": Driver,
-                "validate_ready": lambda *args: Decision(Status.PASS), "stop_owned": lambda *args: None,
+                "validate_ready": lambda *args: Decision(Status.PASS), "stop_owned": stop_server,
                 "exercise_inventory_container": exercise, "finish_container_cleanup": lambda *args: cleaned.append("removed") or (Decision(Status.PASS),),
                 "collect_window": window,
             }
-            selected = case(feature="protection", variant="inventory-click-drag-open-close", tier="small", clients=1, repeats=1)
+            selected = case(feature="protection", variant="inventory-click-drag-open-close", tier=tier, clients=1, repeats=1)
             with ExitStack() as stack:
                 for name, replacement in replacements.items():
                     stack.enter_context(patch("scenarios.navigation_runner." + name, replacement))
-                result = run_case(selected, root)
-            self.assertTrue(result.assertions["repeat-1-behavior"])
-            self.assertEqual(["removed"], cleaned)
-            self.assertNotIn("assertions", " ".join(result.decision.reasons))
+                if profile:
+                    def start(*args):
+                        cleaned.append("profile-start")
+                        return Decision(Status.PASS)
+                    def stop(process, java, output):
+                        cleaned.append("profile-stop")
+                        output.parent.mkdir(parents=True, exist_ok=True)
+                        if dump_on_exit:
+                            return Decision(Status.BLOCKED, ("profile stop timeout",))
+                        output.write_bytes(b"native profile")
+                        return Decision(Status.PASS)
+                    stack.enter_context(patch("scenarios.navigation_diagnostics.start_jfr", start))
+                    stack.enter_context(patch("scenarios.navigation_diagnostics.stop_jfr", stop))
+                def disconnect(probe, close, output):
+                    cleaned.append("quiescence")
+                    if disconnect_error:
+                        raise disconnect_error
+                    close()
+                    return {"decisions": (Decision(Status.FAIL, ("retained tick counter",)),),
+                        "paths": {"quiescence": str(base / "quiescence.json")}}
+                stack.enter_context(patch("scenarios.navigation_runner.disconnect_and_observe", disconnect, create=True))
+                if isinstance(window_error, KeyboardInterrupt) or isinstance(disconnect_error, KeyboardInterrupt):
+                    from contracts import load_result
+                    with self.assertRaises(KeyboardInterrupt):
+                        run_case(selected, root)
+                    result = load_result(next((root / "results").glob("interrupted-*.json")))
+                else:
+                    result = run_case(selected, root)
+            return result, cleaned
 
     def test_navigation_families_require_prepared_worlds(self):
         from preparation import requires_world

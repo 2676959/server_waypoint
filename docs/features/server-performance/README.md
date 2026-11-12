@@ -44,6 +44,7 @@ continue running throughout the sample.
 
 - [Next steps: Task 11 timed execution, then protocol and loader coverage](plans/2026-11-09-server-performance-next-steps.md)
 - [Task 11 tool lock, behavior contracts, and timed Paper run](validation/2026-11-09-task11-continuation.md)
+- [Task 11 local profiles and post-disconnect observations](validation/2026-11-12-task11-diagnostics.md)
 - [Published 4.0.1 Task 10 remasurement with patched decoder](validation/2026-11-01-4.0.1-task10-decoder.md)
 - [Published 4.0.1 Task 10 revalidation](validation/2026-11-01-4.0.1-task10.md)
 - [Task 10 storage/command validation and proof boundaries](validation/2026-10-31-task10-storage-commands.md)

@@ -18,6 +18,11 @@ def reject_stale_bytes(matches):
 
 def action_schedule(case, seconds, owners=(), phase=""):
     operation = dict(VARIANT_CATALOG[(case.feature, case.variant)]["action"])
+    # The existing probe instruments published waypoint leaves, not vanilla
+    # /kill or /tp. Other operations remain unacknowledged until their own
+    # native completion adapters exist.
+    if operation.get("operation") == "command" and operation.get("command", "").startswith("/wp "):
+        operation["acknowledged"] = True
     names = tuple(owners) or ("owner",)
     prefix = f"{phase.lower()}-" if phase else ""
     count = int(case.offered_rate * seconds)
@@ -75,6 +80,23 @@ def delivery_status(offered, completed, driver_pending, tick_p95_ns):
     return Decision(Status.INCONCLUSIVE, ("workload delivery unclassified",))
 
 
+def native_command_latency(action, receipt):
+    """A client clock and issued packet alone are not a native roundtrip."""
+    if not isinstance(receipt, dict) or action.get("operation") != "command":
+        return None
+    if accepted_receipt(action["actionId"], receipt).status != Status.PASS:
+        return None
+    if receipt.get("clock") != "client-monotonic" or receipt.get("completionScope") != "client-roundtrip" or receipt.get("success") is False or receipt.get("error"):
+        return None
+    ack = receipt.get("nativeAck")
+    if not isinstance(ack, dict) or ack.get("stage") != "command-completed" or ack.get("serverObserved") is not True:
+        return None
+    if ack.get("actionId") != action["actionId"] or ack.get("actor") != action["bot"] or ack.get("command") != action["command"].lstrip("/") or ack.get("exception"):
+        return None
+    latency = receipt.get("clientElapsedNs")
+    return latency if type(latency) is int and latency >= 0 else None
+
+
 def collect_window(case, probe, driver, phase, output, owners=()):
     """Pace the variant's own operation and retain native tick samples for the whole phase."""
     seconds = case.warmup_seconds if phase == "WARMUP" else case.measurement_seconds
@@ -117,11 +139,13 @@ def collect_window(case, probe, driver, phase, output, owners=()):
     latencies = []
     for action in actions:
         receipt = next((item for item in receipts if item.get("actionId") == action["actionId"]), None)
-        if receipt and accepted_receipt(action["actionId"], receipt).status == Status.PASS and receipt.get("clock") == "client-monotonic":
-            latency = receipt.get("clientElapsedNs")
-            if type(latency) is int and latency >= 0:
-                matched.append(receipt)
-                latencies.append(latency)
+        latency = native_command_latency(action, receipt)
+        if latency is not None:
+            matched.append(receipt)
+            latencies.append(latency)
+    terminal_ids = {receipt.get("actionId") for receipt in receipts}
+    completed_ids = {receipt["actionId"] for receipt in matched}
+    unacknowledged = sum(action["actionId"] in terminal_ids and action["actionId"] not in completed_ids for action in actions[:cursor])
     path = output / f"{phase.lower()}-receipts.json"
     path.write_text(json.dumps({"schemaVersion": 1, "receipts": receipts}, indent=2) + "\n")
     return {
@@ -129,6 +153,7 @@ def collect_window(case, probe, driver, phase, output, owners=()):
         "tickNs": ticks,
         "offeredActions": len(actions),
         "completedActions": len(matched),
+        "unacknowledgedActions": unacknowledged,
         "driverPending": (len(actions) - cursor) + len(driver.stream.pending),
         "actionLatencyNs": latencies,
         "paths": {"receipts": str(path)},

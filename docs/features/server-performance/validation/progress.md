@@ -809,3 +809,39 @@ No production change, localization change, commit, or profiled diagnostic.
 Save/reopen and post-quiescence counts were not recorded. Task 11's two
 checkboxes stay open. The earlier cleanup, depth-nine, and deletion failures
 remain. Tasks 12 and 13 were not started.
+
+## 2026-11-12 — Task 11 profiles, quiescence and receipt correction
+
+The runner now actually starts/stops JFR for a profiled selection, retains
+recordings produced during shutdown, and finalizes them on errors/interruption.
+It closes the bot once, then observes native resources after at least ten
+disconnected ticks. Interrupted partials retain measured tick-budget failures.
+Zero online items does not prove offline inventory or world-item cleanup;
+those observations remain explicitly blocked.
+
+Six serial medium diagnostics at
+`/Volumes/ssd/sw-performance-task11-profiles-20261112-2` retained six readable
+JFRs: **3 FAIL, 3 BLOCKED**, exit 1, 13m48s excluding preparation/analysis on
+an Apple M4 with 16 GiB. Boundary/dimension retained eight tick counters after
+quit. Navigation/protection `/kill` diagnostics retained nine/seven counters
+and tick p95 4372.51/5147.36 ms. Terrain warm/cold and method selection cleared
+observed counters and remain behavior/item-coverage blocked. Container opens
+remain deficient; bot action errors also prevent the post-disconnect snapshot.
+All raw attempts, preliminary failures and profiles are retained.
+
+After profiling, the command schedule/collector was corrected: a
+`client-monotonic` issued-only receipt cannot establish roundtrip latency or
+fulfilled work. Waypoint commands request actual native completion; identity,
+actor, command, callback stage, scope and clock must match. Vanilla and physical
+operations still need their own completion adapters. Historical Task 11 raw
+completed-action/latency fields are not acknowledged native-work acceptance.
+
+Fresh three-process short native adapter verification at
+`/Volumes/ssd/sw-performance-task11-repetition-smoke-20261112` retained 2/2
+matched command roundtrips and latency samples per measured repetition, no
+double-stop error, and no JFR with profiling disabled. Its one-second phases
+are smoke evidence only. All owned processes stopped. **237 Python tests pass**.
+No production/localization change, commit or push. Task 11 remains open for
+behavior/delivery adapters, terrain eviction/save/reopen, offline-item/world-item
+observations and full acknowledged timed coverage. See
+[the diagnostic report](2026-11-12-task11-diagnostics.md).

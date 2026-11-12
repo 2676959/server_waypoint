@@ -2,6 +2,7 @@
 import json
 from pathlib import Path
 import uuid
+from dataclasses import replace
 
 from artifacts import sha256, verify_artifact
 from bot_driver import BotDriver, validate_ready
@@ -15,6 +16,7 @@ from reporting import combine_decisions, exit_code
 from scenarios.inventory import retain_partial
 from scenarios.inventory_container import exercise_inventory_container, finish_container_cleanup
 from scenarios.navigation_behavior import VARIANT_CATALOG, exercise_variant
+from scenarios.navigation_diagnostics import capture_profile, disconnect_and_observe
 from scenarios.navigation_workload import collect_window, delivery_status, reject_stale_bytes, repetition_record, tick_p95_ns
 from server_health import native_log_health
 from worlds import boot, clone_baseline, install_server
@@ -110,11 +112,12 @@ def execute_case(case, root, partial):
         return CaseResult(case, stale)
     verify_artifact(artifact, release)
     repetitions, outcomes, evidence, behavior_paths = [], [], [], []
+    diagnostics = {"profiles": [], "quiescence": []}
     assertions = {}
 
     def current():
         result = CaseResult(
-            case, Decision(Status.INCONCLUSIVE), owned_root(root)["runId"],
+            case, combine_decisions((Decision(Status.INCONCLUSIVE), *outcomes)), owned_root(root)["runId"],
             artifact={"name": artifact.name, "sha256": artifact.sha256, "revision": artifact.revision, "provenance": artifact.provenance},
             identities={
                 "runtime": runtime.id, "serverSha256": runtime.server_sha256, "javaSha256": runtime.java_sha256,
@@ -122,19 +125,21 @@ def execute_case(case, root, partial):
                 "fixtureSha256": read_document(prepared / "baseline.json")["recipeSha256"],
             },
             observations={"repetitions": list(repetitions), "profiledDiagnostic": settings.get("profile", False)},
-            assertions=dict(assertions), paths={"attempts": list(evidence), "behavior": list(behavior_paths)}, cleanup="see owned attempt records")
-        return result
+            assertions=dict(assertions), paths={"attempts": list(evidence), "behavior": list(behavior_paths),
+                **{key: list(paths) for key, paths in diagnostics.items()}}, cleanup="see owned attempt records")
+        return replace(result, decision=combine_decisions((result.decision, evaluate(result, root / "budgets.json"))))
 
     try:
-        return _run_repetitions(case, root, partial, current, repetitions, outcomes, evidence, behavior_paths, assertions, runtime, release, prepared, artifact)
+        return _run_repetitions(case, root, partial, current, repetitions, outcomes, evidence, behavior_paths, assertions, diagnostics, runtime, release, prepared, artifact)
     except (OSError, RuntimeError, TimeoutError, ValueError) as error:
         decision = retained_after_error(outcomes, error)
-        decided = _with_decision(current(), decision)
+        latest = current()
+        decided = _with_decision(latest, combine_decisions((latest.decision, decision)))
         atomic_write(partial, decided)
         return decided
 
 
-def _run_repetitions(case, root, partial, current, repetitions, outcomes, evidence, behavior_paths, assertions, runtime, release, prepared, artifact):
+def _run_repetitions(case, root, partial, current, repetitions, outcomes, evidence, behavior_paths, assertions, diagnostics, runtime, release, prepared, artifact):
     for index in range(case.repeats):
         plan = prepare_repetition(case, root / "attempts", index)
         with Attempt(root, case.id + f":repeat-{index + 1}") as attempt:
@@ -147,6 +152,7 @@ def _run_repetitions(case, root, partial, current, repetitions, outcomes, eviden
             attempt.transition("STARTING")
             process, probe = boot(runtime, server, False, artifact.sha256, attempt.record.attempt_id)
             driver = None
+            profile_path = attempt.directory / "profiles/server.jfr"
             try:
                 driver = BotDriver(runtime.bot["path"], create_root(attempt.directory / "bots"), attempt.record.run_id, attempt.record.attempt_id)
                 driver.send("start", {"address": f"127.0.0.1:{port}", "count": plan["clients"], "mode": "vanilla"})
@@ -162,48 +168,74 @@ def _run_repetitions(case, root, partial, current, repetitions, outcomes, eviden
                 # setup, matching the command throughput runner, and is not offered work.
                 probe.send("commands.execute", {"commands": [f"op {name}" for name in names]})
                 probe.wait("commands.executed")
+                action = VARIANT_CATALOG[(case.feature, case.variant)]["action"]
+                if action.get("operation") == "command" and action.get("command", "").startswith("/wp "):
+                    probe.send("commands.tree")
+                    probe.wait("commands.tree")
                 attempt.transition("READY")
-                try:
-                    if (case.feature, case.variant) == ("protection", "inventory-click-drag-open-close"):
-                        behavior = exercise_inventory_container(probe, driver, native["players"], attempt.directory / "behavior")
-                    else:
-                        behavior = exercise_variant(case, probe, driver, attempt.directory / "behavior", names)
-                except (OSError, RuntimeError, TimeoutError, ValueError) as error:
-                    behavior = {
-                        "decisions": (Decision(Status.BLOCKED, (f"native behavior observation unavailable: {error}",)),),
-                        "assertions": {},
-                        "paths": {},
-                    }
-                outcomes.extend(behavior["decisions"])
-                if behavior["paths"].get("observation"):
-                    behavior_paths.append(behavior["paths"]["observation"])
-                statuses = [decision.status for decision in behavior["decisions"]]
-                if Status.FAIL in statuses:
-                    assertions[f"repeat-{index + 1}-behavior"] = False
-                elif statuses and all(status == Status.PASS for status in statuses):
-                    assertions[f"repeat-{index + 1}-behavior"] = True
-                attempt.transition("WARMUP")
-                warmup = collect_window(case, probe, driver, "WARMUP", attempt.directory / "warmup", names)
-                attempt.transition("MEASURING")
-                measured = collect_window(case, probe, driver, "MEASURING", attempt.directory / "measurement", names)
-                ticks = measured["tickNs"]
-                outcomes.append(delivery_status(measured["offeredActions"], measured["completedActions"], measured["driverPending"], tick_p95_ns(ticks)))
-                repetitions.append(repetition_record(
-                    case, warmup["seconds"], measured["seconds"], ticks, measured["offeredActions"],
-                    measured["completedActions"], measured["actionLatencyNs"], "client-monotonic"))
-                if behavior.get("chestsArmed"):
-                    outcomes.extend(finish_container_cleanup(probe, names))
-                attempt.transition("QUIESCING")
-                probe.send("fixture.quiesce")
-                probe.wait("fixture.quiesced")
+                with capture_profile(process, runtime.java, profile_path, read_document(root / "prepared.json").get("profile", False), outcomes):
+                    try:
+                        if (case.feature, case.variant) == ("protection", "inventory-click-drag-open-close"):
+                            behavior = exercise_inventory_container(probe, driver, native["players"], attempt.directory / "behavior")
+                        else:
+                            behavior = exercise_variant(case, probe, driver, attempt.directory / "behavior", names)
+                    except (OSError, RuntimeError, TimeoutError, ValueError) as error:
+                        behavior = {
+                            "decisions": (Decision(Status.BLOCKED, (f"native behavior observation unavailable: {error}",)),),
+                            "assertions": {},
+                            "paths": {},
+                        }
+                    outcomes.extend(behavior["decisions"])
+                    if behavior["paths"].get("observation"):
+                        behavior_paths.append(behavior["paths"]["observation"])
+                    statuses = [decision.status for decision in behavior["decisions"]]
+                    if Status.FAIL in statuses:
+                        assertions[f"repeat-{index + 1}-behavior"] = False
+                    elif statuses and all(status == Status.PASS for status in statuses):
+                        assertions[f"repeat-{index + 1}-behavior"] = True
+                    attempt.transition("WARMUP")
+                    warmup = collect_window(case, probe, driver, "WARMUP", attempt.directory / "warmup", names)
+                    attempt.transition("MEASURING")
+                    measured = collect_window(case, probe, driver, "MEASURING", attempt.directory / "measurement", names)
+                    ticks = measured["tickNs"]
+                    outcomes.append(delivery_status(measured["offeredActions"], measured["completedActions"], measured["driverPending"] + measured["unacknowledgedActions"], tick_p95_ns(ticks)))
+                    repetitions.append(repetition_record(
+                        case, warmup["seconds"], measured["seconds"], ticks, measured["offeredActions"],
+                        measured["completedActions"], measured["actionLatencyNs"], "client-monotonic"))
+                    if behavior.get("chestsArmed"):
+                        outcomes.extend(finish_container_cleanup(probe, names))
+                    attempt.transition("QUIESCING")
+                    probe.send("fixture.quiesce")
+                    probe.wait("fixture.quiesced")
+                    def disconnect():
+                        nonlocal driver
+                        try:
+                            driver.close()
+                        finally:
+                            driver = None
+
+                    quiescence = disconnect_and_observe(probe, disconnect, attempt.directory)
+                    outcomes.extend(quiescence["decisions"])
+                    diagnostics["quiescence"].append(quiescence["paths"]["quiescence"])
+                    status = combine_decisions(quiescence["decisions"]).status
+                    if status in (Status.PASS, Status.FAIL):
+                        assertions[f"repeat-{index + 1}-quiescence"] = status == Status.PASS
+                    atomic_write(partial, current())
                 attempt.transition("STOPPED")
             finally:
-                if driver is not None:
-                    driver.abort()
-                if process is not None:
-                    stop_owned(process, 30)
-                    outcomes.append(native_log_health(process.log))
-                    process = None
+                try:
+                    if driver is not None:
+                        driver.abort()
+                finally:
+                    if process is not None:
+                        try:
+                            stop_owned(process, 30)
+                        finally:
+                            if profile_path.is_file():
+                                diagnostics["profiles"].append(str(profile_path))
+                            outcomes.append(native_log_health(process.log))
+                            atomic_write(partial, current())
+                        process = None
             attempt.finish(exit_code(combine_decisions(outcomes)), "navigation repetition retained")
             atomic_write(partial, current())
     result = current()

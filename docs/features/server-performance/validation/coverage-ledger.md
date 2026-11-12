@@ -24,6 +24,15 @@ map-terrain, and protection cases at
 BLOCKED. That run does not mark the feature rows below as passing, and it
 does not cover stress, other runtimes, or the protocol and soak families.
 
+The [November 12 continuation](2026-11-12-task11-diagnostics.md) retains six
+separate medium diagnostic JFRs (3 FAIL, 3 BLOCKED) and post-disconnect native
+resource snapshots. Client-issued elapsed times in historical Task 11 results
+are not acknowledged roundtrip latency or fulfilled-work proof. The corrected
+waypoint callback path has three fresh-process short native checks; terrain
+save/reopen, disconnected inventory/world-item observations and remaining
+behavior/completion adapters remain open. No additional feature row is marked
+passing.
+
 Current-development changes on 2026-10-26 remove the Paper inventory-transfer
 handler and the mod backend's allay/item-entity tick injections at the user's
 request. Their rows below remain records of the published release. See
