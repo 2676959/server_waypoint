@@ -2,7 +2,13 @@
 
 ## Server Waypoint 4.0.1
 
-A patch update focused on smoother server performance and more reliable waypoint syncing with Xaero's Minimap and VoxelMap.
+A maintenance update with in-world navigation markers, smoother server performance and more reliable waypoint syncing with Xaero's Minimap and VoxelMap.
+
+### In-world navigation
+
+- Find your selected waypoint with a marker visible only to you, showing its initials, distance and optional item icon. No client mod or resource pack is required.
+- Start with `/wp navigate <dimension> <list> <waypoint> world_marker`, or add it to your current navigation with `/wp navigate use world_marker`. Private waypoints support it through `/wp private navigate` too.
+- Adjust size with `/wp navigate config world_marker size 1.5` and projection distance with `/wp navigate config world_marker distance 8`. Your settings follow the navigation session across target changes and reconnects.
 
 ### Improvements
 

@@ -90,7 +90,9 @@ On Minecraft 1.21.9 and later, player chat can show supported vanilla item icons
     - Pages hold whole lists: the tree view and the one-line-per-list view hold the page limit plus five lines; flat views and single lists hold the page limit in rows.
     - `/wp list dimensions [page <number>]` lists every dimension with its waypoint count.
 - `/wp navigate` shows the navigation panel. `/wp navigate <dimension> <list> <waypoint> [<method>|default|all]` starts navigating, `/wp navigate use|disable <method>` turns one method on or off, `/wp navigate disable` stops, and `/wp navigate config text_display` adjusts the floating text.
-    - Method IDs are `compass`, `map`, `bossbar`, `actionbar` and `text_display`. Use `default` to select the server's `defaultNavigationMethods`, or `all` for every supported method.
+    - Method IDs are `compass`, `map`, `bossbar`, `actionbar`, `text_display` and `world_marker`. Use `default` to select the server's `defaultNavigationMethods`, or `all` for every supported method.
+    - In 4.0.1, `world_marker` shows a private in-world marker pointing toward your selected waypoint, without a client mod or resource pack. It has an initials badge, a distance line and an optional item icon. Use `/wp navigate use world_marker` to enable it for your current target, or select it with `/wp navigate <dimension> <list> <waypoint> world_marker`. It can run alongside the separate `text_display` floating HUD.
+    - `/wp navigate config world_marker size [<multiplier>]` reads or sets size (`0.25`–`4`, default `1`). `distance [<blocks>]` reads or sets the projection radius (`1`–`32`, default `12`): farther targets project toward you; nearer targets remain at their waypoint block centre. Settings follow the navigation session across target changes and reconnects; stopping navigation clears them. A target must be selected, but `world_marker` need not be enabled to change settings. `/wp navigate config world_marker` reports marker diagnostics. The [world marker guide](../features/world-marker/README.md) covers visibility, icon limitations and packet costs. `/wp private navigate` provides the same method and settings for Private targets.
     - Navigation maps retain explored terrain for each region and dimension. Returning to a previously mapped region restores its terrain even when you are elsewhere; new regions stay blank until explored. Terrain history survives server restarts.
 - `/wp remote` shows the remote servers and their state; `/wp remote page <number>` pages it.
 - `/wp remote list [<server> [<dimension> [<list>]]]` browses cached remote waypoints with the same options as `/wp list`. Quote exact identities, including names matching option words. Distance sorting reports that cross-server distances are unavailable.
@@ -358,7 +360,7 @@ Sets the page limit `L` that `/wp list` and `/wp remote list` use when the comma
 }
 ```
 ### Default Navigation Methods
-Sets one or more methods enabled when `/wp navigate <dimension> <list> <waypoint>` starts a new session without a method argument, or when you explicitly select `default`. The value must be a non-empty array containing `compass`, `map`, `bossbar`, `actionbar`, or `text_display`. The default is `actionbar`.
+Sets one or more methods enabled when `/wp navigate <dimension> <list> <waypoint>` starts a new session without a method argument, or when you explicitly select `default`. The value must be a non-empty array containing `compass`, `map`, `bossbar`, `actionbar`, `text_display`, or `world_marker` (4.0.1). The default is `actionbar`.
 
 ```json5
 {

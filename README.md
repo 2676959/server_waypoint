@@ -23,6 +23,8 @@ Save useful places, share them with other players and find your way back. Server
 
 This guide covers **4.0.0**. Read the [changelog](CHANGELOG.md) for new features and upgrade notes.
 
+**New in 4.0.1:** use `/wp navigate <dimension> <list> <waypoint> world_marker` for an in-world marker without the client mod or a resource pack. It shows your target's initials, distance and optional item icon, visible only to you. Set its size with `/wp navigate config world_marker size 1.5` or its projection distance with `/wp navigate config world_marker distance 8`. See the [server-side world marker guide](docs/features/world-marker/README.md) for defaults, limits and how it differs from client markers.
+
 ## What you can do
 
 - Keep shared waypoints in named lists, with colours, icons and descriptions.

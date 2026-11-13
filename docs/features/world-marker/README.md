@@ -1,8 +1,17 @@
-# Experimental world marker navigation
+# Server-side world marker navigation
 
 Server-only navigation using a private, unmounted marker made from two text displays and an optional item display per player. A vanilla client needs no mod or resource pack. The display is sent only to its owner, never inserted into the server world, and never loads the destination chunk.
 
-## Try it
+`world_marker` is a regular navigation method in 4.0.1. It points toward the selected Shared or Private waypoint. The client mod's independently rendered waypoint markers remain a separate feature.
+
+## Feature documents
+
+- [Feature contract](specs/2026-11-12-server-world-marker-design.md): commands, settings, presentation, lifecycle, ownership and platform boundaries.
+- [Formalization validation](validation/2026-11-12-formalization.md): current checks, historical native evidence and remaining acceptance work.
+- [Promotion implementation plan](plans/2026-11-12-world-marker-promotion.md): repeatable setting/lifecycle checks, fresh native evidence, platform boundaries and rendered acceptance.
+- [Current Paper native acceptance](validation/2026-11-12-promotion-native.md) and [platform/API checks](validation/2026-11-12-platform-checks.md): final layout/settings packet evidence and selected compilation boundaries.
+
+## Use it
 
 ```text
 /wp navigate minecraft:overworld <list> <waypoint> world_marker
@@ -15,11 +24,13 @@ Server-only navigation using a private, unmounted marker made from two text disp
 /wp navigate disable world_marker
 ```
 
-The first command selects a target; `use` adds the marker to an existing session. `/wp private navigate` supports server-private targets too. The navigation panel has a World marker toggle. Built-in defaults remain actionbar; `all` includes the experimental marker. The separate `text_display` HUD can run alongside it and retains its own riding implementation.
+The first command selects a target; `use` adds the marker to an existing session. `/wp private navigate` supports server-private targets too. The navigation panel has a World marker toggle. Built-in defaults remain `actionbar`; `all` includes `world_marker`. Administrators can include `world_marker` in `defaultNavigationMethods`. The separate `text_display` HUD can run alongside it and retains its own riding implementation.
 
 With a target selected, use `size` to see your current multiplier or `size <multiplier>` to set it from `0.25` to `4`. Use `size 1` to restore the default. Your size is saved with the navigation session and follows it when you switch targets or reconnect.
 
 Use `distance` to see your current projection radius or `distance <blocks>` to set it from `1` to `32` blocks. Use `distance 12` to restore the default. Your distance is saved with the navigation session too.
+
+These settings require a selected navigation target, but the marker itself can be disabled while you configure it. They belong to the session: stopping navigation clears the session and its saved settings, so a new session starts with size `1` and distance `12`. Shared commands use the server's `navigate` permission; Private commands use `privateNavigate` and the Private collection's access rules.
 
 The marker follows the client mod's row order, from top to bottom:
 
@@ -43,7 +54,9 @@ At 20 TPS, the two text rows submit 40 position packets per second per player; w
 
 `/wp navigate config world_marker` reports group updates and aggregate spawns and position/metadata/removal packets across the active parts, and mean handler time since enabling. Timing includes creation, text conversion and packet submission, excludes client rendering, socket delivery and the rest of the tick, and adds two `nanoTime` calls per update. Disable, disconnect and shutdown release all marker parts and their state.
 
-## Experiment history
+## Historical experiments
+
+These reports retain the experiment terminology and tested layouts of their original revisions. The feature contract above describes the current behavior; the historical reports do not certify later layout, anchor or setting changes.
 
 1. **Entity-position packets:** [initial experiment](validation/2026-11-02-experiment.md), then [independent handlers](validation/2026-11-03-independent-handlers.md). This is the retained approach, now sending every tick instead of every five ticks with a one-centimetre threshold.
 2. **Direct riding with display transformation:** [comparison and native evidence](validation/2026-11-03-riding-comparison.md). It followed player motion locally but relied on server-updated offsets/orientation and lacked the position interpolation path. Removed from source.
@@ -66,3 +79,5 @@ rtk proxy python3 tools/server-performance/bots/world_marker_smoke.py \
 ```
 
 The candidate-only runner uses the existing pinned local Paper 1.21.11 runtime and Azalea vanilla protocol bots. It checks owner isolation, two text rows and an optional item row per owner, all with duration 1 and one-tick updates, center billboarding, badge colour/contrast, default distance background, GUI item identity and transforms, VoxelMap/no-icon suppression and item removal, absence from the server world, per-display packet cadence while stationary, head turns, walking, a bounded target lead during movement, retarget isolation, simultaneous HUD use, independent disable and cleanup including motion-history state. It retains hashes, snapshots and client label observations in `world-marker.json`, plus logs. It does not render a client, establish a capacity limit or measure server tick percentiles. Its isolated server binds only to localhost and stops after the run.
+
+The promotion checks also exercise minimum/maximum and fractional size/radius settings, stable row IDs during setting changes, near block-centre anchoring, preservation across retargets and reconnects, configuration while disabled, defaults after stopping, and Private owner isolation with fresh client error feedback. A stationary native oracle checks every row against the requested settings and an independent block-centre projection. Protocol observations establish delivery and identity; the runner does not render those rows. See the [execution record](validation/2026-11-12-execution.md) for actual run status.

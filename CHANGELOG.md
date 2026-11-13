@@ -2,7 +2,7 @@
 
 ## Server Waypoint 4.0.1
 
-A patch release: less server lag when players join or change dimension, cheaper navigation-item checks, and map-mod waypoints that reappear after you reconnect.
+A maintenance release: server-side in-world navigation markers, less server lag when players join or change dimension, cheaper navigation-item checks, and map-mod waypoints that reappear after you reconnect.
 
 ### Before you update
 
@@ -18,6 +18,9 @@ A patch release: less server lag when players join or change dimension, cheaper 
 
 ### Navigation
 
+- New `world_marker` navigation method: a private in-world marker pointing toward the selected Shared or Private waypoint, without a client mod or resource pack. It shows a coloured initials badge, distance and an optional registered item icon. VoxelMap images are omitted. It can run alongside the separate `text_display` HUD.
+- Use `/wp navigate <dimension> <list> <waypoint> world_marker` or `/wp navigate use world_marker`. The navigation panel includes a World marker toggle, `all` includes it, and administrators can add it to `defaultNavigationMethods`; the built-in default remains `actionbar`.
+- `/wp navigate config world_marker size [<multiplier>]` reads or sets size (`0.25`–`4`, default `1`); `distance [<blocks>]` reads or sets the projection radius (`1`–`32`, default `12`). Both settings persist with the session across target changes and reconnects. Near targets stay at the waypoint block centre; markers hide outside the target dimension. See the [feature guide](docs/features/world-marker/README.md) for rendering limits, diagnostics, packet costs and validation status.
 - Item protection now checks only the navigation compass or map itself. Bundles, shulker boxes and other containers are no longer searched for them, and anything already inside stays. Putting a navigation item into a bundle or an open shulker box is still blocked.
 - On Paper and Folia, items that hoppers and other blocks move between containers are no longer checked for navigation items.
 - On Fabric, Forge and NeoForge, allays and dropped items are no longer scanned every tick. Giving a navigation item to an allay is still blocked, and dropped navigation items are still removed.
