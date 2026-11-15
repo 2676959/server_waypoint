@@ -1,5 +1,13 @@
 # Published 4.0.0 coverage ledger
 
+> **Current delivery scope (November 15):** The [minimal critical Paper plan](../plans/2026-10-24-server-performance.md) supersedes the broader requirements and earlier Task 11 amendment below. Full-matrix, stress and later milestone work is optional future work. Historical requirements/results remain preserved; exclusions are not passing evidence.
+
+**November 15 milestone scope:** [Task 11 now has a reduced gate](../plans/2026-11-15-task11-simplified.md).
+Its representative lower-rate cases do not replace the full requirements below.
+Deferred per-variant timing belongs to Task 17; cache/viewer stress and
+offline-inventory/world-item leak checks belong to Task 16 before Task 17.
+No coverage row becomes PASS or NOT_APPLICABLE through this planning change.
+
 Source revision: `d9f532f8b5a14c9be4bc47531b05b44fd1dc5773`. The table below
 records static requirements. Selected Task 10 execution is recorded in the
 [storage/command audit](2026-10-31-task10-storage-commands.md); all other rows

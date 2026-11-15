@@ -1,5 +1,8 @@
 # Server performance
 
+> **Current required scope (November 15):** [Minimal critical Paper suite](plans/2026-11-15-minimal-critical-scope.md) supersedes the comprehensive delivery and earlier Task 11 gate. Broader unfinished tasks are optional future work; historical results remain unchanged.
+
+
 Status: M1 is in progress. M0 and Tasks 8–9 are implemented and validated on the
 first Paper 1.21.11 anchor; Task 10 has native command, permission and persistence
 checkpoints. Task 11 has native method/terrain/session-restoration checkpoints,
@@ -25,10 +28,10 @@ Recursive detection and cleanup have since been removed from both backends at th
 user's request. Validation checks direct slot/cursor tags only; existing nested
 contents are preserved. Normal bundle/shulker insertion guards remain enabled.
 
-The first delivery is a comprehensive audit of the published 4.0.0 release across
-different load tiers, followed by repairs and repeated measurements. Future PRs can
-select relevant scenarios from the resulting suite. Release enforcement follows the
-initial audit rather than replacing it.
+The required delivery is now the [minimal critical Paper 1.21.11 suite](plans/2026-10-24-server-performance.md): storage/permissions, navigation lifecycle,
+terrain maps, direct item protection and command-tree delivery timing. It uses a
+current development candidate, six idle/retarget runs and three command-tree
+sessions. The broader original-release/platform audit is optional future work.
 
 Test bots will use [Azalea](https://github.com/azalea-rs/azalea), as selected by the user,
 with real protocol connections and verified version-specific dependency pins. The design
@@ -42,6 +45,8 @@ continue running throughout the sample.
 
 ## Documents
 
+- [Superseded Task 11 gate: focused correctness and three representative workloads](plans/2026-11-15-task11-simplified.md)
+
 - [Next steps: Task 11 timed execution, then protocol and loader coverage](plans/2026-11-09-server-performance-next-steps.md)
 - [Task 11 tool lock, behavior contracts, and timed Paper run](validation/2026-11-09-task11-continuation.md)
 - [Task 11 local profiles and post-disconnect observations](validation/2026-11-12-task11-diagnostics.md)
@@ -53,7 +58,8 @@ continue running throughout the sample.
 - [Issue #35 command-tree reduction and native 26.3 measurements](validation/2026-10-27-command-tree.md)
 - [Approved design](specs/2026-10-24-server-performance-design.md)
 - [Implementation specification](specs/2026-10-24-server-performance-spec.md)
-- [Implementation plan](plans/2026-10-24-server-performance.md)
+- [Current minimal implementation plan](plans/2026-10-24-server-performance.md)
+- [Historical comprehensive plan](plans/2026-10-24-server-performance-comprehensive-historical.md)
 - [Acceptance checklist — not execution evidence](validation/2026-10-24-acceptance-checklist.md)
 - [Verified current-release scope](validation/2026-10-24-release-scope.md)
 - [Published artifact inventory and hashes](validation/2026-10-24-release-assets.json)
@@ -77,9 +83,9 @@ continue running throughout the sample.
 - [M1 navigation method observations and retained cleanup failure](validation/2026-10-25-m1-navigation.md)
 - [Tool commands](../../../tools/server-performance/README.md)
 
-The plan first delivers a Paper zero-player reproduction, then covers remaining features
-and platforms and freezes the original-release audit before repairs. Component benchmarks,
-targeted future PR checks, and release gates follow the audit/repair cycle.
+The original harness and audit results remain reusable evidence with their original
+identities. Follow the revised master plan for the remaining required work; no
+full-matrix audit, soak, JMH suite or publishing gate is required for this delivery.
 
 Implementation plans belong in `plans/`; execution reports and reviewed performance
 budgets belong in `validation/`. Scope metadata and unchecked checklists are not passing

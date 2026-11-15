@@ -845,3 +845,48 @@ No production/localization change, commit or push. Task 11 remains open for
 behavior/delivery adapters, terrain eviction/save/reopen, offline-item/world-item
 observations and full acknowledged timed coverage. See
 [the diagnostic report](2026-11-12-task11-diagnostics.md).
+
+## 2026-11-15 — Task 11 completion scope simplified
+
+The user requested simplification. The [revised gate](../plans/2026-11-15-task11-simplified.md)
+separates reusable functional checks from three representative timed workloads.
+Six small/medium cases with three repetitions have 27 minutes of measurement
+windows, versus 126 minutes for the full catalog; other runtime overhead remains.
+The new selection uses one operation per owner per second and must have distinct
+identities. It does not certify the old 10/50/s workloads.
+
+Functional evidence is reused only after checking its raw assertions/identities.
+Essential gaps still block this milestone. Exhaustive timing, cache/viewer stress
+and offline/world-item leak coverage have explicit Task 16/17 ownership and stay
+required before a comprehensive audit. Historical FAIL/BLOCKED records remain.
+This change updates planning only; no adapter was implemented, native workload
+run, completion checkbox checked, or commit made.
+
+## 2026-11-15 — Minimal critical delivery
+
+The user requested only a minimal scope covering critical cases. The
+[minimal scope](../plans/2026-11-15-minimal-critical-scope.md) replaces the
+comprehensive delivery with four Paper 1.21.11 functional groups and an idle /
+ten-owner retarget performance pair, three repetitions each. Current candidate
+checks follow current intended protection semantics. Broader unfinished tasks,
+including previously deferred Task 16/17 requirements, are optional future work.
+This is a documentation change only: no checks ran, no case passed, and no
+implementation completion or healthy baseline is claimed.
+
+### Minimal scope addition — command-tree sending time
+
+At the user's request, the minimal scope also requires native Paper 1.21.11
+command-tree timing on login and permission refresh for ordinary/operator roles.
+Three fresh-process sessions record server preparation/send duration separately
+from client receipt/refresh latency, with packet size and permission assertions.
+No latency threshold is invented and no live run or implementation is claimed.
+See the minimal scope for exact timing boundaries and completion requirements.
+
+### Minimal scope incorporated into the master plan
+
+The October 24 plan now directly contains the minimal scope and five remaining
+implementation steps, including command-tree timing. The previous full plan is
+preserved as `2026-10-24-server-performance-comprehensive-historical.md`; the
+November 15 scope note redirects to the master plan to avoid duplicate checklists.
+The feature README now describes the minimal delivery. Documentation only; no
+new native results, implementation completion or product repairs are claimed.

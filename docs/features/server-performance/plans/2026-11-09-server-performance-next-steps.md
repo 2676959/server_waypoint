@@ -1,5 +1,13 @@
 # Server Performance Next Steps Implementation Plan
 
+> **Current delivery scope (November 15):** The [minimal critical Paper plan](2026-10-24-server-performance.md) supersedes the broader requirements and earlier Task 11 amendment below. Full-matrix, stress and later milestone work is optional future work. Historical requirements/results remain preserved; exclusions are not passing evidence.
+
+**Superseded for remaining Task 11 work (November 15):** follow
+[the simplified completion gate](2026-11-15-task11-simplified.md). Tasks C–E
+below remain historical execution records; their exhaustive timing and runner
+extraction requirements no longer block the reduced Task 11 milestone. Tasks A–B
+and the later protocol/platform handoffs remain useful.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans for inline execution, or superpowers:subagent-driven-development if the user chooses task-by-task agents. This request produces a plan only. Do not commit without an explicit request.
 
 **Goal:** Complete the original Paper Task 11 evidence path, then unblock Task 12 protocol workloads and Task 13 native loader anchors in dependency order.
