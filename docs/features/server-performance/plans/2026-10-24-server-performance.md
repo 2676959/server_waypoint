@@ -131,11 +131,13 @@ command-leaf execution or a multi-version command-tree matrix.
 **Owning files:** `tools/server-performance/cli.py`, `registry.py`, existing
 configuration and provenance modules; feature validation reports.
 
-- [ ] Record exact candidate, runtime, probe, bot and fixture identities.
-- [ ] Add an explicit minimal selection with distinct case IDs. Preserve historical
+- [x] Record exact candidate, runtime, probe, bot and fixture identities.
+- [x] Add an explicit minimal selection with distinct case IDs. Preserve historical
   registry entries; the minimal selection must not schedule the comprehensive suite.
-- [ ] Map each of the five groups to existing native checks and list only missing
+- [x] Map each of the five groups to existing native checks and list only missing
   observations/adapters. Reuse evidence only when identities and assertions match.
+
+Step 1 evidence: [candidate binding and native check map](../validation/2026-11-15-minimal-execution.md).
 
 ### Step 2: Close the critical functional checks
 

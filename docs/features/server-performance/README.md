@@ -45,6 +45,8 @@ continue running throughout the sample.
 
 ## Documents
 
+- [Minimal suite implementation, candidate identities and remaining adapter gaps](validation/2026-11-15-minimal-execution.md)
+
 - [Superseded Task 11 gate: focused correctness and three representative workloads](plans/2026-11-15-task11-simplified.md)
 
 - [Next steps: Task 11 timed execution, then protocol and loader coverage](plans/2026-11-09-server-performance-next-steps.md)

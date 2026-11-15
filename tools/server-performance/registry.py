@@ -54,3 +54,35 @@ def expand_cases(features, scenarios, runtimes, mode, tiers):
 def coverage_decision(expected, observed):
     missing = sorted(set(expected) - observed.keys())
     return Decision(Status.BLOCKED, tuple(f"missing case: {case}" for case in missing)) if missing else Decision(Status.PASS)
+
+
+def minimal_cases(runtimes, mode):
+    """November 15 scope; separate identities prevent reusing historical outcomes."""
+    if mode != "candidate":
+        raise ValueError("minimal-critical requires candidate mode")
+    runtime = next((r for r in runtimes if r.id == "paper-1.21.11"), None)
+    if runtime is None or runtime.platform != "paper" or runtime.minecraft != "1.21.11":
+        raise ValueError("minimal-critical requires the Paper 1.21.11 runtime")
+    definitions = (
+        ("storage", "minimal-storage-permissions", "small", 1, 0, 1),
+        ("commands", "minimal-command-tree", "small", 1, 0, 3),
+        ("navigation", "minimal-lifecycle", "small", 1, 0, 1),
+        ("map-terrain", "minimal-terrain", "small", 2, 0, 1),
+        ("protection", "minimal-direct-protection", "small", 1, 0, 1),
+        ("idle", "minimal-idle", "medium", 0, 0, 3),
+        ("navigation", "minimal-retarget", "medium", 10, 10, 3),
+    )
+    result = []
+    for feature, variant, tier, clients, rate, repeats in definitions:
+        timed = variant in ("minimal-idle", "minimal-retarget")
+        result.append(CaseSpec(
+            f"{runtime.id}:minimal-critical:{variant}:{tier}", runtime.id,
+            feature, variant, tier, mode,
+            "idle" if feature in ("idle", "commands") else "navigation-terrain",
+            ("tick-processing", "workload-duration") if timed else (),
+            ("backend-medium", "correctness-bounds") if timed else (),
+            clients=clients, offered_rate=rate, repeats=repeats,
+            warmup_seconds=30 if timed else 0,
+            measurement_seconds=60 if timed else 0,
+            minimum_samples=100 if timed else 0))
+    return tuple(sorted(result, key=lambda case: case.id))

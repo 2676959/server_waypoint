@@ -17,30 +17,32 @@ def main(argv=None):
     inventory.add_argument("--output", type=Path, required=True)
     inventory.add_argument("--mode", choices=("audit", "candidate"), default="audit")
     inventory.add_argument("--tiers", default="small,medium,stress")
+    inventory.add_argument("--suite", choices=("all", "zero-player", "minimal-critical"), default="all")
     doctor = sub.add_parser("doctor")
     doctor.add_argument("--runtime-lock", type=Path, default=CONFIG / "runtimes.json")
     doctor.add_argument("--output", type=Path, required=True)
     doctor.add_argument("--targets", default="")
-    doctor.add_argument("--suite", choices=("all", "zero-player"), default="all")
+    doctor.add_argument("--suite", choices=("all", "zero-player", "minimal-critical"), default="all")
     prepare = sub.add_parser("prepare")
     prepare.add_argument("--release-manifest", type=Path, default=CONFIG / "releases/4.0.0.json")
     prepare.add_argument("--runtime-lock", type=Path, default=CONFIG / "runtimes.json")
     prepare.add_argument("--output", type=Path, required=True)
     prepare.add_argument("--cache", type=Path, default=Path("/Volumes/ssd/sw-performance-cache"))
     prepare.add_argument("--targets", default="paper-1.21.11")
-    prepare.add_argument("--scenarios", default="idle,world-container,inventory-regression")
+    prepare.add_argument("--scenarios", default=None)
     prepare.add_argument("--variants", default="")
     prepare.add_argument("--tiers", default="small,medium,stress")
-    prepare.add_argument("--suite", choices=("all", "zero-player"), default="zero-player")
+    prepare.add_argument("--suite", choices=("all", "zero-player", "minimal-critical"), default="zero-player")
+    prepare.add_argument("--mode", choices=("audit", "candidate"), default="audit")
     prepare.add_argument("--profile", action="store_true", help="Separate profiled diagnostic selection")
     run = sub.add_parser("run")
     run.add_argument("--root", type=Path, required=True)
-    run.add_argument("--mode", choices=("audit", "candidate"), default="audit")
-    run.add_argument("--suite", choices=("all", "zero-player"), default="zero-player")
+    run.add_argument("--mode", choices=("audit", "candidate"))
+    run.add_argument("--suite", choices=("all", "zero-player", "minimal-critical"))
     run.add_argument("--tiers", default="small,medium,stress")
     run.add_argument("--scenarios", default="")
     run.add_argument("--variants", default="")
-    run.add_argument("--repeats", type=int, default=3)
+    run.add_argument("--repeats", type=int)
     report = sub.add_parser("report")
     report.add_argument("--root", type=Path, required=True)
     args = parser.parse_args(argv)
@@ -66,9 +68,17 @@ def main(argv=None):
             verify_evidence(args.root, read_document(args.root / "prepared.json"))
             if read_document(args.root / "prepared.json")["inputs"] != input_hashes():
                 raise ValueError("executable suite/config inputs changed since preparation; use a new root")
-            if args.repeats < 1:
+            suite = args.suite or selection.get("suite", "zero-player")
+            if args.mode and any(case.mode != args.mode for case in cases):
+                raise ValueError("run mode must match the prepared artifact mode")
+            if suite == "minimal-critical" and selection.get("suite") != suite:
+                raise ValueError("minimal-critical requires a prepared minimal-critical selection")
+            if selection.get("suite") == "minimal-critical":
+                if args.mode not in (None, "candidate") or suite != "minimal-critical" or args.repeats is not None:
+                    raise ValueError("minimal-critical run preserves candidate mode, suite and per-case repetitions")
+            if args.repeats is not None and args.repeats < 1:
                 raise ValueError("repeats must be positive")
-            cases = tuple(replace(case, repeats=args.repeats, mode=args.mode) for case in cases if case.tier in args.tiers.split(",") and (not args.scenarios or case.feature in args.scenarios.split(",")) and (not args.variants or case.variant in args.variants.split(",")) and (args.suite != "zero-player" or case.clients == 0))
+            cases = tuple(replace(case, repeats=args.repeats if args.repeats is not None else case.repeats, mode=args.mode or case.mode) for case in cases if case.tier in args.tiers.split(",") and (not args.scenarios or case.feature in args.scenarios.split(",")) and (not args.variants or case.variant in args.variants.split(",")) and (suite != "zero-player" or case.clients == 0))
             if not cases:
                 raise ValueError("empty run selection")
             def execute(case):
@@ -104,6 +114,10 @@ def main(argv=None):
         from preflight import check_runtime, required_capabilities
         runtimes = load_runtimes(args.runtime_lock)
         targets = set(args.targets.split(",")) if args.targets else {r.id for r in runtimes}
+        if args.suite == "minimal-critical":
+            if args.targets and targets != {"paper-1.21.11"}:
+                parser.error("minimal-critical supports only Paper 1.21.11")
+            targets = {"paper-1.21.11"}
         if targets - {r.id for r in runtimes}:
             parser.error("unknown target")
         decisions = [check_runtime(r, args.output, required_capabilities(args.suite)) for r in runtimes if r.id in targets]
@@ -112,8 +126,9 @@ def main(argv=None):
             print(f"{runtime.id}: {decision.status.value}: {'; '.join(decision.reasons)}")
         return 2 if any(d.status.value != "PASS" for d in decisions) else 0
     runtimes = load_runtimes(args.runtime_lock) if args.runtime_lock else ()
-    cases = expand_cases(CONFIG / "features.json", CONFIG / "scenarios.json", runtimes, args.mode, tuple(args.tiers.split(",")))
-    artifacts = load_release(args.release_manifest) if args.release_manifest.exists() else ()
-    atomic_write(args.output / "inventory.json", {"schemaVersion": 1, "cardinality": len(cases), "artifacts": artifacts, "cases": cases})
+    from selection import select_cases
+    cases = select_cases(CONFIG / "features.json", CONFIG / "scenarios.json", runtimes, args.suite, tuple(args.tiers.split(",")), mode=args.mode)
+    artifacts = load_release(args.release_manifest) if args.mode == "audit" and args.release_manifest.exists() else ()
+    atomic_write(args.output / "inventory.json", {"schemaVersion": 1, "cardinality": len(cases), "partial": args.suite != "all", "artifacts": artifacts, "cases": cases})
     print(f"{len(cases)} required cases; {len(artifacts)} immutable artifacts; no servers started")
     return 0

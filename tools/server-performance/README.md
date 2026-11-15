@@ -236,3 +236,27 @@ ones. Combined-case evidence does not automatically pass unexecuted case IDs or
 successful feature effects owned by navigation, upload and cross-server adapters.
 See the [Task 10 validation record](../../docs/features/server-performance/validation/2026-10-31-task10-storage-commands.md)
 for exact outcomes and retained roots.
+
+
+### Minimal critical candidate selection (November 15)
+
+Inventory the revised Paper-only scope without starting a server:
+
+```sh
+rtk proxy python3 tools/server-performance/run.py inventory --suite minimal-critical --mode candidate --output /tmp/sw-minimal-inventory
+```
+
+This selects four functional cases (one repetition), command-tree delivery (three
+fresh processes), and idle/ten-owner retarget (three repetitions each). Historical
+case IDs and catalogs remain unchanged. See the [implementation status and native
+check map](../../docs/features/server-performance/validation/2026-11-15-minimal-execution.md).
+Native minimal adapters currently return BLOCKED; inventory is not execution proof.
+
+Preparation accepts `--suite minimal-critical --mode candidate` with an explicit
+candidate `--release-manifest`, Paper `--runtime-lock`, and `--cache` containing the
+exact artifact bytes. The manifest uses `provenance: candidate`; audit manifests
+remain published provenance. Preparation seals the selection and fixture identities.
+`run --root ...` preserves that prepared suite, mode and each case's repetition
+count. Minimal runs reject mode/suite/repetition overrides, and historical roots
+cannot be relabeled as minimal. Filters produce partial coverage, never acceptance
+of omitted cases.

@@ -890,3 +890,16 @@ preserved as `2026-10-24-server-performance-comprehensive-historical.md`; the
 November 15 scope note redirects to the master plan to avoid duplicate checklists.
 The feature README now describes the minimal delivery. Documentation only; no
 new native results, implementation completion or product repairs are claimed.
+
+
+## Minimal critical scope — November 15 implementation
+
+Step 1 is complete: separate seven-case selection, candidate provenance and sealed
+run defaults, Paper-only capability checks, five-group reuse/gap map, fresh candidate
+and probe build, and four native placed/saved/reopened fixtures. All 259 Python tests
+pass; the independent review's three selection/provenance findings were fixed with
+regressions. No production changes or commits were made. Steps 2–5 and all candidate
+functional/timing acceptance remain pending; minimal adapter dispatch is explicitly
+BLOCKED. See [execution evidence](2026-11-15-minimal-execution.md) for hashes, roots,
+exact commands and remaining gaps. This does not close historical tasks or certify
+the candidate.
