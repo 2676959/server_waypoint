@@ -82,6 +82,9 @@ def run_case(case, root):
     if case.variant == "minimal-command-tree":
         from scenarios.command_tree import run_case as run_tree
         return run_tree(case, root)
+    if case.variant in ("minimal-idle", "minimal-retarget"):
+        from scenarios.minimal_performance import run_case as run_timed
+        return run_timed(case, root)
     if case.variant not in REQUIRED:
         return CaseResult(case, Decision(Status.BLOCKED, (f"minimal-critical native adapter pending: {case.variant}",)))
     root = Path(root).absolute()

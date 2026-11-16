@@ -250,8 +250,8 @@ This selects four functional cases (one repetition), command-tree delivery (thre
 fresh processes), and idle/ten-owner retarget (three repetitions each). Historical
 case IDs and catalogs remain unchanged. See the [implementation status and native
 check map](../../docs/features/server-performance/validation/2026-11-15-minimal-execution.md).
-The four functional adapters and command-tree delivery adapter are implemented.
-Idle/retarget timing adapters remain pending; inventory is not execution proof.
+The four functional adapters, command-tree delivery adapter and bounded
+idle/retarget timing adapter are implemented. Inventory is not execution proof.
 
 Preparation accepts `--suite minimal-critical --mode candidate` with an explicit
 candidate `--release-manifest`, Paper `--runtime-lock`, and `--cache` containing the
@@ -282,3 +282,26 @@ Set `SW_PERF_STEP3_ROOT` to a new absolute disposable root. This runs exactly th
 fresh-process sessions; no repetition override or latency-budget PASS is allowed.
 The [Step 3 report](../../docs/features/server-performance/validation/2026-11-16-command-tree-delivery.md)
 contains all twelve timing pairs, median/max summaries, identities and proof limits.
+
+### Minimal Step 4: bounded idle/retarget timing
+
+Use the same explicit candidate/tool locks as Step 3. Each selected case starts
+three fresh processes serially, with 30 seconds warmup and 60 seconds measurement.
+The idle control has zero owners. The retarget case has ten owners, all six
+methods active, alternating B/A once per owner per second. Setup A/B/A must prove
+matched native command completions and exact session/items before timing begins.
+Tick samples retain active-session counts and continuous native tick indices;
+both windows require delivery evidence, and only measurement judges p95 <40 ms
+and p99 <50 ms. Missing evidence is BLOCKED; later errors preserve observed FAIL.
+
+```sh
+rtk proxy python3 tools/server-performance/run.py prepare --output "$SW_PERF_STEP4_ROOT" --suite minimal-critical --mode candidate --variants minimal-idle,minimal-retarget --tiers medium --release-manifest /Volumes/ssd/sw-performance-minimal-20261115-inputs/candidate.json --runtime-lock /Volumes/ssd/sw-performance-minimal-step3-20261116-inputs/runtime-lock.json --cache /Volumes/ssd/sw-performance-minimal-20261115-inputs/cache
+rtk proxy python3 tools/server-performance/run.py run --root "$SW_PERF_STEP4_ROOT" --variants minimal-idle,minimal-retarget
+```
+
+Set `SW_PERF_STEP4_ROOT` to a new absolute disposable root. Each repetition keeps
+its setup receipts, expected/native targets, raw ticks, scheduled/issued/completed
+counts, local roundtrip latencies, offer lag, post-disconnect counters and saved
+shutdown. Pending commands may drain after sampling stops, for at most 30 seconds;
+the measured duration and issued counts remain unchanged. Post-disconnect item
+counts cover online inventories only, not offline inventories or world drops.

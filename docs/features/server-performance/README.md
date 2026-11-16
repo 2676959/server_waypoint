@@ -45,6 +45,8 @@ continue running throughout the sample.
 
 ## Documents
 
+- [Step 4 complete: six bounded idle/ten-owner performance runs PASS](validation/2026-11-16-bounded-performance.md)
+
 - [Step 3 complete: command-tree delivery timings and permission checks](validation/2026-11-16-command-tree-delivery.md)
 
 - [Step 2 complete: four native functional groups PASS](validation/2026-11-16-minimal-functional.md)

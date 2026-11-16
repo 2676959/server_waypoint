@@ -168,12 +168,14 @@ Step 3 evidence: [three live command-tree sessions complete](../validation/2026-
 
 ### Step 4: Execute bounded performance checks
 
-- [ ] Prove the existing retarget adapter observes completed native commands and
+- [x] Prove the existing retarget adapter observes completed native commands and
   expected target/items before timing it.
-- [ ] Execute the idle and ten-owner cases with three repetitions each using the
+- [x] Execute the idle and ten-owner cases with three repetitions each using the
   rates, timing windows and budgets above. Run timed workloads serially.
-- [ ] Preserve individual failures, delivery gaps and post-disconnect observations.
+- [x] Preserve individual failures, delivery gaps and post-disconnect observations.
   Rerun only checks affected by subsequent relevant changes.
+
+Step 4 evidence: [six bounded native performance runs PASS](../validation/2026-11-16-bounded-performance.md).
 
 ### Step 5: Write the minimal completion report
 

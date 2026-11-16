@@ -933,3 +933,28 @@ Minor scheduling race can yield missing-boundary BLOCKED, never a false PASS;
 all final samples have complete boundaries. Saved shutdown/native health and
 prepared seals verified. No owned runtime remains; no commit or push. Step 4
 bounded timing and Step 5 combined completion report remain pending.
+
+## November 16 — Minimal Step 4 complete
+
+Completed the [bounded performance step](2026-11-16-bounded-performance.md) against
+the unchanged candidate and Step 3 native tools. Final root:
+`/Volumes/ssd/sw-performance-minimal-step4-20261116/`, run
+`81666b7f-b27b-4e9c-9088-25f60bc62e07`. Three fresh idle and three fresh
+ten-owner retarget processes ran serially with 30s warmup/60s measurement: all
+six PASS. Ten-owner runs completed 900/900 warmup and 1,800/1,800 measured
+retargets with matched successful native acknowledgements; each process first
+proved all six methods and exact independent A/B/A target/item expectations.
+
+Worst measured retarget tick p95/p99: 3.555208/7.126666 ms, within the
+exclusive 40/50 ms budgets. Every native tick reports the required session
+count. All post-disconnect active counters clear after 10–11 ticks, retaining
+ten intentional map caches per active run; all six processes saved shutdown.
+No delivery gap or candidate failure occurred. No matching runtime remains.
+
+Independent review found interruption/exception verdict-retention gaps; four
+regressions were observed RED then GREEN, and final 310 Python tests PASS.
+Source/evidence seals and candidate/tool hashes match; production JAR has no
+probe/ASM entries. No production repair, native tool rebuild, commit, push or
+baseline promotion. Step 4 checked; Step 5 combined report remains pending.
+Offline inventory/world-item cleanup and broader platforms/stress remain
+outside this observation.

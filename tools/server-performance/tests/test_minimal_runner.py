@@ -108,14 +108,14 @@ class FunctionalRoutingTest(unittest.TestCase):
         self.assertEqual(Status.BLOCKED, result.decision.status)
         self.assertNotIn("adapter pending", " ".join(result.decision.reasons))
 
-    def test_timing_stays_pending_and_never_falls_into_functional_runner(self):
+    def test_timing_requires_its_own_prepared_candidate_binding(self):
         from scenarios import run_case
         from test_minimal_selection import MinimalSelectionTest
         for case in MinimalSelectionTest().select():
             if case.variant in ("minimal-idle", "minimal-retarget"):
                 result = run_case(case, Path("/nonexistent/minimal-root"))
                 self.assertEqual(Status.BLOCKED, result.decision.status)
-                self.assertIn("adapter pending", " ".join(result.decision.reasons))
+                self.assertNotIn("adapter pending", " ".join(result.decision.reasons))
 
 
 class FunctionalExecutionTest(unittest.TestCase):
