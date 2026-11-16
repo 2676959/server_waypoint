@@ -7,6 +7,22 @@ from models import Decision,Status
 
 METHODS=frozenset(("compass","map","bossbar","actionbar","text_display"))
 
+MINIMAL_METHODS = METHODS | {"world_marker"}
+
+
+def world_marker_effect(native, client):
+    parts = native.get("worldMarker", {}).get("displays", [])
+    text = [p for p in parts if p.get("part") in ("badge", "distance")]
+    if len(text) != 2 or {p.get("part") for p in text} != {"badge", "distance"}:
+        return Decision(Status.FAIL, ("native world marker parts missing or duplicated",))
+    for part in text:
+        observed = client.get("textDisplays", {}).get(str(part.get("entityId")))
+        if observed is None:
+            return Decision(Status.BLOCKED, ("world marker client display receipt missing",))
+        if not part.get("text") or observed.get("text") != part["text"] or part.get("inWorld") is not False:
+            return Decision(Status.FAIL, ("world marker native/client text or packet-only state differs",))
+    return Decision(Status.PASS)
+
 
 def method_selections(methods):
     values=tuple(sorted(methods))
@@ -129,10 +145,16 @@ def restored_session(expected,native,client):
         return Decision(Status.FAIL,("restored client bossbar differs",))
     if "text_display" in methods:
         display=displays.get(str(native.get("textDisplayId")),{})
-        if len(displays)!=1 or label not in (display.get("text") or ""):
+        if label not in (display.get("text") or ""):
             return Decision(Status.FAIL,("restored native/client text display identity or text differs",))
-    elif displays:
-        return Decision(Status.FAIL,("unselected client text display retained",))
+    allowed = {str(native.get("textDisplayId"))} if "text_display" in methods else set()
+    if "world_marker" in methods:
+        marker = world_marker_effect(native, client)
+        if marker.status != Status.PASS:
+            return marker
+        allowed.update(str(p["entityId"]) for p in native["worldMarker"]["displays"] if p["part"] in ("badge", "distance"))
+    if set(displays) != allowed:
+        return Decision(Status.FAIL,("unexpected or missing client text display identities",))
     return Decision(Status.PASS)
 
 

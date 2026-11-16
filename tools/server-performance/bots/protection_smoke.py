@@ -11,10 +11,10 @@ from artifacts import sha256, verify_artifact
 from bot_driver import BotDriver, validate_ready
 from contracts import atomic_write, load_release, load_runtimes
 from controller import create_root
-from models import Status
+from models import Status, Decision
 from processes import stop_owned
 from server_health import native_log_health
-from scenarios.navigation import METHODS, physical_receipts, physical_drop_spawned, restored_session, ordinary_conservation, nested_recipes, nested_item_outcome, container_cleanup, container_cases, container_recipe, drag_cases, drag_outcome, player_raw_slot, station_cases, station_outcome, entity_cases, entity_outcome, deleted_navigation
+from scenarios.navigation import METHODS, MINIMAL_METHODS, world_marker_effect, physical_receipts, physical_drop_spawned, restored_session, ordinary_conservation, nested_recipes, nested_item_outcome, container_cleanup, container_cases, container_recipe, drag_cases, drag_outcome, player_raw_slot, station_cases, station_outcome, entity_cases, entity_outcome, deleted_navigation
 from worlds import install_server, boot
 from navigation_smoke import execute, snapshot
 
@@ -24,22 +24,35 @@ def probe_container(probe, name):
     return probe.wait("protection.container.snapshot")["data"]
 
 
-def run(root, count, case_set="physical", candidate=None):
+from minimal_functional import check, minimal_adapter, NativeAssertion
+
+@minimal_adapter("protection", "protection.json")
+def run(root, count, case_set="physical", candidate=None, binding=None, minimal=False, baseline=None):
+    required_methods = MINIMAL_METHODS if minimal else METHODS
     tools = Path(__file__).resolve().parents[1]
-    runtime = next(r for r in load_runtimes(tools / "config/runtimes.json") if r.id == "paper-1.21.11")
-    runtime = replace(runtime, probe={**runtime.probe, "sha256": sha256(runtime.probe["path"])}, bot={**runtime.bot, "sha256": sha256(runtime.bot["path"])})
-    artifact = next(a for a in load_release(tools / "config/releases/4.0.0.json") if a.name == runtime.artifact)
-    release = Path("/Volumes/ssd/sw-performance-m0-audit/artifacts") / artifact.name
-    if candidate is not None:
-        release = Path(candidate).absolute()
-        if release.is_symlink() or not release.is_file():
-            raise ValueError("candidate must be a regular non-symlink JAR")
-        artifact = replace(artifact, sha256=sha256(release), size=release.stat().st_size,
-                           revision="development-candidate", provenance="development-candidate")
+    if binding is not None:
+        from minimal_functional import bound_inputs
+        runtime, artifact, release = bound_inputs(binding)
+    elif minimal:
+        raise ValueError("minimal execution requires explicit binding")
+    else:
+        runtime = next(r for r in load_runtimes(tools / "config/runtimes.json") if r.id == "paper-1.21.11")
+        runtime = replace(runtime, probe={**runtime.probe, "sha256": sha256(runtime.probe["path"])}, bot={**runtime.bot, "sha256": sha256(runtime.bot["path"])})
+        artifact = next(a for a in load_release(tools / "config/releases/4.0.0.json") if a.name == runtime.artifact)
+        release = Path("/Volumes/ssd/sw-performance-m0-audit/artifacts") / artifact.name
+        if candidate is not None:
+            release = Path(candidate).absolute()
+            if release.is_symlink() or not release.is_file():
+                raise ValueError("candidate must be a regular non-symlink JAR")
+            artifact = replace(artifact, sha256=sha256(release), size=release.stat().st_size,
+                               revision="development-candidate", provenance="development-candidate")
     verify_artifact(artifact, release)
     root = create_root(root)
     server = create_root(root / "server")
     port = install_server(runtime, server, runtime.probe["path"], release)
+    if baseline is not None:
+        from worlds import clone_baseline
+        clone_baseline(baseline, server)
     directory = server / "plugins/ServerWaypoint/waypoints"
     directory.mkdir(parents=True)
     point = {"name": "target", "display_name": "Protected", "initials": "P", "pos": [320, -61, 320], "color": "#112233", "yaw": 0, "global": True, "keywords": [], "description": "Physical protection fixture"}
@@ -156,7 +169,7 @@ def run(root, count, case_set="physical", candidate=None):
                 if receipt.status == Status.PASS and ordinary_drop:
                     receipt = physical_drop_spawned(observed["events"][start:], observed.get("worldEntities", []),
                                                     [{"uuid": identities[name], "material": "minecraft:diamond", "amount": 3} for name in names])
-                decisions = {player["name"]: restored_session({"uuid": identities[player["name"]], "mapId": ids[player["name"]], "methods": METHODS, "target": expected_target}, player, client[player["name"]]) for player in native["players"]}
+                decisions = {player["name"]: restored_session({"uuid": identities[player["name"]], "mapId": ids[player["name"]], "methods": required_methods, "target": expected_target}, player, client[player["name"]]) for player in native["players"]}
                 conserved = Counter(observed["worldItems"]["ordinary"])
                 for inventory in observed.get("inventories", {}).values():
                     conserved.update(inventory["ordinary"])
@@ -184,6 +197,14 @@ def run(root, count, case_set="physical", candidate=None):
                     return value
                 if time.monotonic() >= deadline:
                     evidence["steps"].append(value)
+                    if minimal:
+                        from reporting import combine_decisions
+                        evidence_decisions = [receipt, conservation, *decisions.values()]
+                        if len(decisions) != count or len(observed.get("inventories", {})) != count:
+                            evidence_decisions.append(Decision(Status.BLOCKED, ("native owner/inventory observation missing",)))
+                        elif not valid_locations:
+                            evidence_decisions.append(Decision(Status.FAIL, ("direct protected items reached invalid locations",)))
+                        raise NativeAssertion(label, combine_decisions(evidence_decisions))
                     raise ValueError("native protection receipts/state/conservation deadline: " + label)
                 time.sleep(0.1)
 
@@ -267,7 +288,7 @@ def run(root, count, case_set="physical", candidate=None):
                                   "world": observed["worldItems"], "carrier": carrier, "playerOrdinary": native[name]["ordinary"], "receipts": receipts}
                         decision = entity_outcome(recipe, sample)
                         client = packets()
-                        owners = {player["name"]: restored_session({"uuid": identities[player["name"]], "mapId": ids[player["name"]], "methods": METHODS, "target": expected_target}, player, client[player["name"]]) for player in native.values()}
+                        owners = {player["name"]: restored_session({"uuid": identities[player["name"]], "mapId": ids[player["name"]], "methods": required_methods, "target": expected_target}, player, client[player["name"]]) for player in native.values()}
                         step.update(decision=decision, sample=sample, ownerDecisions=owners)
                         if decision.status == Status.PASS and len(owners) == count and all(value.status == Status.PASS for value in owners.values()):
                             evidence["steps"].append(step)
@@ -367,7 +388,7 @@ def run(root, count, case_set="physical", candidate=None):
                     while True:
                         native = snapshot(probe)
                         client = packets()
-                        owners = {player["name"]: restored_session({"uuid": identities[player["name"]], "mapId": ids[player["name"]], "methods": METHODS, "target": expected_target}, player, client[player["name"]]) for player in native["players"]}
+                        owners = {player["name"]: restored_session({"uuid": identities[player["name"]], "mapId": ids[player["name"]], "methods": required_methods, "target": expected_target}, player, client[player["name"]]) for player in native["players"]}
                         ordinary_preserved = all(ordinary_conservation(ordinary_by_owner[player["name"]], player["ordinary"]).status == Status.PASS for player in native["players"])
                         if len(owners) == count and all(value.status == Status.PASS for value in owners.values()) and ordinary_preserved:
                             break
@@ -422,7 +443,7 @@ def run(root, count, case_set="physical", candidate=None):
                 if observed["droppedObservations"]:
                     raise ValueError("native other-container receipts overflowed")
                 client = packets()
-                owners = {player["name"]: restored_session({"uuid": identities[player["name"]], "mapId": ids[player["name"]], "methods": METHODS, "target": expected_target}, player, client[player["name"]]) for player in snapshot(probe)["players"]}
+                owners = {player["name"]: restored_session({"uuid": identities[player["name"]], "mapId": ids[player["name"]], "methods": required_methods, "target": expected_target}, player, client[player["name"]]) for player in snapshot(probe)["players"]}
                 if len(owners) != count or any(value.status != Status.PASS for value in owners.values()):
                     raise ValueError("other-container case changed owner navigation state")
                 decisions = {}
@@ -521,7 +542,7 @@ def run(root, count, case_set="physical", candidate=None):
                 if after_monitor["droppedObservations"]:
                     raise ValueError("native inventory-drag receipts overflowed")
                 client = packets()
-                owners = {player["name"]: restored_session({"uuid": identities[player["name"]], "mapId": ids[player["name"]], "methods": METHODS, "target": expected_target}, player, client[player["name"]]) for player in after_native["players"]}
+                owners = {player["name"]: restored_session({"uuid": identities[player["name"]], "mapId": ids[player["name"]], "methods": required_methods, "target": expected_target}, player, client[player["name"]]) for player in after_native["players"]}
                 if len(owners) != count or any(value.status != Status.PASS for value in owners.values()):
                     raise ValueError("inventory-drag case changed owner navigation state")
                 decisions = {}
@@ -665,7 +686,7 @@ def run(root, count, case_set="physical", candidate=None):
                 if after_monitor["droppedObservations"]:
                     raise ValueError("native station receipts overflowed")
                 client = packets()
-                owners = {player["name"]: restored_session({"uuid": identities[player["name"]], "mapId": ids[player["name"]], "methods": METHODS, "target": expected_target}, player, client[player["name"]]) for player in after_native["players"]}
+                owners = {player["name"]: restored_session({"uuid": identities[player["name"]], "mapId": ids[player["name"]], "methods": required_methods, "target": expected_target}, player, client[player["name"]]) for player in after_native["players"]}
                 if len(owners) != count or any(value.status != Status.PASS for value in owners.values()):
                     raise ValueError("station case changed owner navigation state")
                 decisions = {}
@@ -691,19 +712,19 @@ def run(root, count, case_set="physical", candidate=None):
             print(f"native {count}-owner crafting/cartography protection verified")
             return
 
-        for method in ("compass", "map"):
+        for method in (("compass",) if minimal else ("compass", "map")):
             select(slot(method))
             start = len(monitor()["events"])
             actions({name: {"operation": "drop", "all": True} for name in names})
             verify("protected-drop-" + method, start, [{"event": "drop", "uuid": identities[name], "material": "minecraft:compass" if method == "compass" else "minecraft:filled_map", "amount": 1, "cancelled": True} for name in names])
         held = slot("compass")
         select(held)
-        for label in ("protected-swap-to-offhand", "protected-swap-back"):
+        for label in (() if minimal else ("protected-swap-to-offhand", "protected-swap-back")):
             start = len(monitor()["events"])
             actions({name: {"operation": "swap"} for name in names})
             verify(label, start, [{"event": "swap", "uuid": identities[name], "cancelled": False} for name in names],
                    expected_slots={name: 40 for name in names} if label.endswith("offhand") else held)
-        for label, destination, cancelled in (("protected-own-storage", 9, False), ("protected-armor-denied", 5, True), ("protected-result-denied", 0, True)):
+        for label, destination, cancelled in ((("protected-own-storage", 9, False),) if minimal else (("protected-own-storage", 9, False), ("protected-armor-denied", 5, True), ("protected-result-denied", 0, True))):
             source = slot("compass")
             start = len(monitor()["events"])
             actions({name: {"operation": "inventory", "from": source[name] + 36 if source[name] < 9 else source[name], "to": destination} for name in names})
@@ -712,10 +733,67 @@ def run(root, count, case_set="physical", candidate=None):
         start = len(monitor()["events"])
         actions({name: {"operation": "inventory", "from": 36, "to": 10} for name in names})
         verify("ordinary-storage-control", start, [{"event": "inventory-click", "uuid": identities[name], "rawSlot": 10, "cancelled": False} for name in names] + [{"event": "inventory-close", "uuid": identities[name]} for name in names])
+        if minimal:
+            check(evidence, "inventory")
         select({name: 1 for name in names})
         start = len(monitor()["events"])
         actions({name: {"operation": "drop", "all": True} for name in names})
         verify("ordinary-drop-control", start, [{"event": "drop", "uuid": identities[name], "material": "minecraft:diamond", "amount": 3, "cancelled": False} for name in names], ordinary_drop=True)
+        if minimal:
+            check(evidence, "drop")
+            # The ordinary drop fixture is independent of the protected pickup injection.
+            # Native pickup cases use only direct items; no recursive/hopper policy.
+            for case in (value for value in container_cases() if value["label"] in ("open-direct", "ordinary-control")):
+                for index, name in enumerate(names):
+                    probe.send("lifecycle.arm")
+                    probe.wait("lifecycle.armed")
+                    position = {"x":300 + index * 3, "y":-61, "z":297}
+                    probe.send("protection.container.place", {"player":name, "kind":case["kind"], "method":"compass", **position})
+                    placed = probe.wait("protection.container.placed")["data"]
+                    before_chest = probe_container(probe, name)
+                    one(name, {"operation":"open-container", "hold":True, **position})
+                    after_chest = probe_container(probe, name)
+                    observed = monitor()
+                    receipts = [event for event in observed["events"] if event.get("uuid") == identities[name] and event.get("event") == "inventory-open"]
+                    if not receipts:
+                        raise TimeoutError("native chest open receipt missing")
+                    valid = before_chest["top"]["protectedItems"] == case["expectedBeforeProtected"] and after_chest["top"]["protectedItems"] == 0 and after_chest["top"]["ordinary"] == before_chest["expectedTop"]["ordinary"]
+                    evidence["steps"].append({"label":case["label"], "before":before_chest, "after":after_chest, "monitor":observed})
+                    check(evidence, "chest-" + case["label"], "PASS" if valid else "FAIL", [] if valid else ["direct chest cleanup or ordinary conservation differs"])
+                    one(name, {"operation":"close-container"})
+                    probe.send("protection.container.remove", {"player":name})
+                    probe.wait("protection.container.removed")
+            chest_checks = [value for value in evidence["checks"] if value["name"].startswith("chest-")]
+            check(evidence, "chest", "PASS" if all(value["status"] == "PASS" for value in chest_checks) else "FAIL")
+            for mode in ("ordinary", "protected"):
+                for name in names:
+                    probe.send("protection.entity.prepare", {"player":name, "kind":"pickup", "mode":mode})
+                    prepared = probe.wait("protection.entity.prepared")["data"]
+                    probe.send("lifecycle.arm")
+                    probe.wait("lifecycle.armed")
+                    before_pickup = next(p for p in snapshot(probe)["players"] if p["name"] == name)
+                    probe.send("protection.entity.enable", {"player":name})
+                    probe.wait("protection.entity.enabled")
+                    deadline = time.monotonic() + 8
+                    while True:
+                        observed = monitor()
+                        receipts = [event for event in observed["events"] if event.get("uuid") == identities[name] and event.get("event") == "entity-pickup"]
+                        if receipts:
+                            break
+                        if time.monotonic() >= deadline:
+                            raise TimeoutError("native direct pickup receipt missing")
+                        time.sleep(0.1)
+                    after_pickup = next(p for p in snapshot(probe)["players"] if p["name"] == name)
+                    expected_ordinary = Counter(before_pickup["ordinary"])
+                    if mode == "ordinary":
+                        expected_ordinary.update(prepared["moving"].get("ordinary") or {})
+                    valid = any(event.get("cancelled") is (mode == "protected") for event in receipts) and dict(expected_ordinary) == after_pickup["ordinary"] and sum(item["amount"] for item in after_pickup["items"]) == 2
+                    evidence["steps"].append({"label":"pickup-" + mode, "prepared":prepared, "before":before_pickup, "after":after_pickup, "monitor":observed})
+                    check(evidence, "pickup-" + mode, "PASS" if valid else "FAIL", [] if valid else ["pickup direct cancellation/items/ordinary contents differ"])
+                    probe.send("protection.entity.remove", {"player":name})
+                    probe.wait("protection.entity.removed")
+            pickup_checks = [value for value in evidence["checks"] if value["name"].startswith("pickup-")]
+            check(evidence, "pickup", "PASS" if all(value["status"] == "PASS" for value in pickup_checks) else "FAIL")
         evidence["serverHealth"] = native_log_health(server / "logs/latest.log")
         if evidence["serverHealth"].status != Status.PASS:
             raise ValueError("native server stability failed: " + "; ".join(evidence["serverHealth"].reasons))

@@ -108,14 +108,18 @@ def prepare_remaining_operators(probe, driver, actors, timeout=180, required=100
         prepare_command_operator(probe, driver, actor, timeout=timeout, required=required)
 
 
-def eventually(check, message, timeout=15):
+class NativeStateMismatch(ValueError):
+    """A completed native mutation disagrees with independently expected state."""
+
+
+def eventually(check, message, timeout=15, timeout_error=ValueError):
     deadline = time.monotonic() + timeout
     while True:
         value = check()
         if value:
             return value
         if time.monotonic() >= deadline:
-            raise ValueError(message)
+            raise timeout_error(message)
         time.sleep(0.05)
 
 
@@ -268,7 +272,7 @@ def exercise_mutations(probe, server, expected, cases, output):
                 if after is not None:
                     candidate["minecraft:overworld"].append(after)
                 return (candidate,after) if canonical_saved(actual) == canonical_saved(candidate) else None
-            candidate, after = eventually(matches,"mutation fields/revisions differ: " + case["path"])
+            candidate, after = eventually(matches,"mutation fields/revisions differ: " + case["path"], timeout_error=NativeStateMismatch)
             expected = candidate
             if token:
                 observation = eventually(lambda: async_reload_feedback((server/"logs/latest.log").read_text(),probe.stream.run_id,probe.stream.attempt_id,callback,token),"actual language reload response missing")
@@ -283,7 +287,7 @@ def exercise_mutations(probe, server, expected, cases, output):
                 if replay_decision.status != Status.PASS:
                     raise ValueError(str(replay_decision.reasons))
                 if canonical_saved(snapshot(probe)) != canonical_saved(expected):
-                    raise ValueError("restore token replay mutated exact state")
+                    raise NativeStateMismatch("restore token replay mutated exact state")
             steps.append({"path":case["path"],"command":command,"callback":callback,"after":after,"restoreEvidence":restore_evidence})
         observed = feedback(probe,server)
         overrides = {value["commandObservationId"]:value for value in observations}

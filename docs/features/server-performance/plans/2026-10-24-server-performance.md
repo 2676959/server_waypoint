@@ -144,11 +144,13 @@ Step 1 evidence: [candidate binding and native check map](../validation/2026-11-
 **Owning files:** existing `scenarios/storage_commands.py`, `scenarios/navigation.py`,
 Paper probe assertions and their focused tests.
 
-- [ ] Implement only gaps needed for the storage, lifecycle, terrain and direct
+- [x] Implement only gaps needed for the storage, lifecycle, terrain and direct
   protection rows above. Check current candidate semantics before fixing expectations.
-- [ ] Execute short functional checks against the final candidate, including
+- [x] Execute short functional checks against the final candidate, including
   persistence and owner isolation. Retain native observations and independent
   expected values; record product failures separately from missing evidence.
+
+Step 2 evidence: [four native functional groups PASS](../validation/2026-11-16-minimal-functional.md).
 
 ### Step 3: Implement and measure command-tree delivery
 

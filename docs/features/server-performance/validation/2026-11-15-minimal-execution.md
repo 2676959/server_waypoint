@@ -2,7 +2,9 @@
 
 Plan: [authoritative minimal plan](../plans/2026-10-24-server-performance.md).
 
-Status: Step 1 complete; Steps 2–5 remain in progress/pending. No candidate behavior or timing result yet.
+Status at the Step 1 checkpoint: candidate binding and fixture preparation complete.
+Step 2 subsequently completed with [four native functional groups PASS](2026-11-16-minimal-functional.md).
+Steps 3–5 remain pending; no candidate timing result yet.
 
 ## Execution rulings
 
@@ -26,7 +28,8 @@ Candidate provenance must survive manifest loading and prepared evidence sealing
 
 - Baseline Python suite: 247 tests passed.
 - Step 1: complete. Distinct selection, candidate/tool provenance, native fixture identities and the five-group check map are recorded.
-- Steps 2–5: pending.
+- Step 2: subsequently completed; see the [functional report](2026-11-16-minimal-functional.md).
+- Steps 3–5: pending.
 
 ## Native check map and remaining gaps
 
@@ -88,7 +91,8 @@ tests. The report remains in progress until Steps 2–5 have retained judged evi
 | idle-medium | `4ac2ebf0edcc6db708e07558f6fed891632b3d388daec6ad778364f3f4d197ff` |
 | navigation-terrain-medium | `21b24e598347ecb857029e1b124b29e10f316fc3df74abe1740f39f3ee3be777` |
 
-The next implementation step is the four minimal functional adapters. The current
+At this checkpoint the next step was the four minimal functional adapters; those
+are now complete in the linked Step 2 report. The current
 prepared root is retained evidence; later tooling changes require a new prepared
 root under the existing input seal rules. This avoids claiming unchanged harness
 identity after adapter edits. Production source was not changed and no commit was

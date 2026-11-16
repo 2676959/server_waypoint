@@ -903,3 +903,14 @@ functional/timing acceptance remain pending; minimal adapter dispatch is explici
 BLOCKED. See [execution evidence](2026-11-15-minimal-execution.md) for hashes, roots,
 exact commands and remaining gaps. This does not close historical tasks or certify
 the candidate.
+
+## November 16, 2026 — minimal Step 2 complete
+
+All four functional groups PASS on the pinned development candidate: storage and
+permissions, all-six-method navigation lifecycle, prepared terrain isolation and
+persistence, and direct item protection. Final root:
+`/Volumes/ssd/sw-performance-minimal-step2-20261115-r4/`.
+284 Python tests pass; sealed inputs match; all seven candidate server processes
+saved/stopped cleanly and no test runtime remains. No production repair or commit.
+See [exact evidence, identities, review fixes and proof boundaries](2026-11-16-minimal-functional.md).
+Step 3 command-tree delivery is next; timing and combined final completion remain pending.

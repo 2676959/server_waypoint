@@ -45,6 +45,8 @@ continue running throughout the sample.
 
 ## Documents
 
+- [Step 2 complete: four native functional groups PASS](validation/2026-11-16-minimal-functional.md)
+
 - [Minimal suite implementation, candidate identities and remaining adapter gaps](validation/2026-11-15-minimal-execution.md)
 
 - [Superseded Task 11 gate: focused correctness and three representative workloads](plans/2026-11-15-task11-simplified.md)
