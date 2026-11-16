@@ -250,7 +250,8 @@ This selects four functional cases (one repetition), command-tree delivery (thre
 fresh processes), and idle/ten-owner retarget (three repetitions each). Historical
 case IDs and catalogs remain unchanged. See the [implementation status and native
 check map](../../docs/features/server-performance/validation/2026-11-15-minimal-execution.md).
-Native minimal adapters currently return BLOCKED; inventory is not execution proof.
+The four functional adapters and command-tree delivery adapter are implemented.
+Idle/retarget timing adapters remain pending; inventory is not execution proof.
 
 Preparation accepts `--suite minimal-critical --mode candidate` with an explicit
 candidate `--release-manifest`, Paper `--runtime-lock`, and `--cache` containing the
@@ -260,3 +261,24 @@ remain published provenance. Preparation seals the selection and fixture identit
 count. Minimal runs reject mode/suite/repetition overrides, and historical roots
 cannot be relabeled as minimal. Filters produce partial coverage, never acceptance
 of omitted cases.
+
+
+### Minimal Step 3: live command-tree delivery
+
+Use the explicit Step 3 runtime lock with `probe.commandTreeAgent=true`. The probe
+JAR has a premain entry point and packages ASM only in the test JAR. Each session
+uses an empty catalog and one sequential ordinary/operator connection, measuring
+login plus one native permission refresh per role. The driver installs its own
+validated decoded graph because the pinned Azalea client ignores command trees.
+Native submission and client-local timing have separate clocks/scopes; body bytes,
+CRC, nodes, all expected `/wp` branches and grant/revocation are correlated.
+
+```sh
+rtk proxy python3 tools/server-performance/run.py prepare --output "$SW_PERF_STEP3_ROOT" --suite minimal-critical --mode candidate --variants minimal-command-tree --tiers small --release-manifest /Volumes/ssd/sw-performance-minimal-20261115-inputs/candidate.json --runtime-lock /Volumes/ssd/sw-performance-minimal-step3-20261116-inputs/runtime-lock.json --cache /Volumes/ssd/sw-performance-minimal-20261115-inputs/cache
+rtk proxy python3 tools/server-performance/run.py run --root "$SW_PERF_STEP3_ROOT" --variants minimal-command-tree
+```
+
+Set `SW_PERF_STEP3_ROOT` to a new absolute disposable root. This runs exactly three
+fresh-process sessions; no repetition override or latency-budget PASS is allowed.
+The [Step 3 report](../../docs/features/server-performance/validation/2026-11-16-command-tree-delivery.md)
+contains all twelve timing pairs, median/max summaries, identities and proof limits.

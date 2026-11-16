@@ -45,6 +45,8 @@ continue running throughout the sample.
 
 ## Documents
 
+- [Step 3 complete: command-tree delivery timings and permission checks](validation/2026-11-16-command-tree-delivery.md)
+
 - [Step 2 complete: four native functional groups PASS](validation/2026-11-16-minimal-functional.md)
 
 - [Minimal suite implementation, candidate identities and remaining adapter gaps](validation/2026-11-15-minimal-execution.md)

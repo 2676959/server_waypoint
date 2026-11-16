@@ -914,3 +914,22 @@ persistence, and direct item protection. Final root:
 saved/stopped cleanly and no test runtime remains. No production repair or commit.
 See [exact evidence, identities, review fixes and proof boundaries](2026-11-16-minimal-functional.md).
 Step 3 command-tree delivery is next; timing and combined final completion remain pending.
+
+
+## November 16 — Minimal Step 3 complete
+
+[Command-tree delivery report](2026-11-16-command-tree-delivery.md): three fresh
+Paper 1.21.11 build 111 processes, both roles and both triggers, twelve correlated
+native send/client installed-graph samples. Correctness and evidence completeness
+PASS; durations have no established command-tree latency budget. Exact candidate
+unchanged; new probe/agent and bot identities are retained. Final root:
+`/Volumes/ssd/sw-performance-minimal-step3-20261116-r2/`.
+
+298 Python tests, full pinned Rust suite, probe contract/build and separate Java 17
+compilation of the three new classes pass. A supplemental whole-probe Java 17 build
+exposes an existing Java 21 allocation API; normal pinned Java 21 build passes.
+Two Important review findings were corrected with regression tests. One deferred
+Minor scheduling race can yield missing-boundary BLOCKED, never a false PASS;
+all final samples have complete boundaries. Saved shutdown/native health and
+prepared seals verified. No owned runtime remains; no commit or push. Step 4
+bounded timing and Step 5 combined completion report remain pending.

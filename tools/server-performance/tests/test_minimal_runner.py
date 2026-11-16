@@ -112,7 +112,7 @@ class FunctionalRoutingTest(unittest.TestCase):
         from scenarios import run_case
         from test_minimal_selection import MinimalSelectionTest
         for case in MinimalSelectionTest().select():
-            if case.variant in ("minimal-idle", "minimal-retarget", "minimal-command-tree"):
+            if case.variant in ("minimal-idle", "minimal-retarget"):
                 result = run_case(case, Path("/nonexistent/minimal-root"))
                 self.assertEqual(Status.BLOCKED, result.decision.status)
                 self.assertIn("adapter pending", " ".join(result.decision.reasons))

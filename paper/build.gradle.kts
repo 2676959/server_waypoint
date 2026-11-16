@@ -118,11 +118,14 @@ if (stonecutter.current.version == "1.21.11") {
         compileClasspath += sourceSets.main.get().compileClasspath
         runtimeClasspath += output + compileClasspath
     }
+    val probeAgentLibraries by configurations.creating
     val probeContract by configurations.creating
     evaluationDependsOn(":cross-server")
     val probeContractTask = project(":cross-server").tasks.named("performanceProbeContractJar")
     dependencies {
         add(performanceProbe.compileOnlyConfigurationName, files(probeContractTask))
+        add(performanceProbe.compileOnlyConfigurationName, "org.ow2.asm:asm:9.8")
+        add(probeAgentLibraries.name, "org.ow2.asm:asm:9.8")
         add(probeContract.name, files(probeContractTask))
     }
     tasks.register<Jar>("performanceProbeJar") {
@@ -130,7 +133,9 @@ if (stonecutter.current.version == "1.21.11") {
         archiveBaseName.set("server-waypoint-performance-paper")
         archiveVersion.set("")
         archiveClassifier.set("probe")
+        manifest.attributes["Premain-Class"] = "_959.server_waypoint.perf.paper.CommandTreeAgent"
         from(performanceProbe.output)
+        from(probeAgentLibraries.map { zipTree(it) })
         from(probeContract.map { zipTree(it) })
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }

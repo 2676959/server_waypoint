@@ -157,12 +157,14 @@ Step 2 evidence: [four native functional groups PASS](../validation/2026-11-16-m
 **Owning files:** Paper performance-probe sources, existing Azalea driver/action
 code, Python scenario integration and focused contract tests.
 
-- [ ] Inspect Paper 1.21.11 native send/packet boundaries and implement the timing
+- [x] Inspect Paper 1.21.11 native send/packet boundaries and implement the timing
   protocol above without changing production behavior.
-- [ ] Verify receipt correlation and permission-tree assertions in a short check;
+- [x] Verify receipt correlation and permission-tree assertions in a short check;
   reject missing/mismatched receipts and mixed-clock timing.
-- [ ] Run three fresh-process sessions covering both roles and both triggers.
+- [x] Run three fresh-process sessions covering both roles and both triggers.
   Report server send duration, client timing, packet bytes and node counts separately.
+
+Step 3 evidence: [three live command-tree sessions complete](../validation/2026-11-16-command-tree-delivery.md).
 
 ### Step 4: Execute bounded performance checks
 

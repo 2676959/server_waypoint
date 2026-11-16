@@ -69,6 +69,8 @@ def boot(runtime, root, control, artifact_hash="", attempt_id=None):
     marker = owned_root(root)
     identifier = attempt_id or str(uuid.uuid4())
     argv = [runtime.java, "-Xms1G", "-Xmx2G", "-XX:+UseG1GC", f"-Xlog:gc*:file=gc-{identifier}.log:time,uptime,level,tags", "-jar", "server.jar", "--nogui"]
+    if runtime.probe.get("commandTreeAgent"):
+        argv.insert(1, "-javaagent:" + str(root / "plugins/performance-probe.jar"))
     atomic_write(root / f"argv-{identifier}.json", {"schemaVersion": 1, "argv": argv})
     process = start_owned(argv, root, root / f"server-{identifier}.log")
     try:

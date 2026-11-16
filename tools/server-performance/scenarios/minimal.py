@@ -79,6 +79,9 @@ def run_case(case, root):
     from preparation import REPOSITORY
     from reporting import combine_decisions
     from server_health import native_log_health
+    if case.variant == "minimal-command-tree":
+        from scenarios.command_tree import run_case as run_tree
+        return run_tree(case, root)
     if case.variant not in REQUIRED:
         return CaseResult(case, Decision(Status.BLOCKED, (f"minimal-critical native adapter pending: {case.variant}",)))
     root = Path(root).absolute()

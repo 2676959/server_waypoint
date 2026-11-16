@@ -30,13 +30,27 @@ pub async fn perform(
         std::sync::Mutex<sw_performance_bots::command_ack::PendingAcks>,
     >,
     markers: &std::sync::Arc<std::sync::Mutex<sw_performance_bots::command_ack::PendingAcks>>,
+    trees: &std::sync::Arc<std::sync::Mutex<std::collections::BTreeMap<String, sw_performance_bots::command_tree::Capture>>>,
     open_container: &mut Option<ContainerHandle>,
 ) -> anyhow::Result<Value> {
     let mut started = Instant::now();
     let mut marker_elapsed = 0_u64;
     let before = bot.position();
     let mut native_ack = Value::Null;
+    let mut tree_receipt = Value::Null;
     match data["operation"].as_str().unwrap_or("") {
+        "tree-refresh" => {
+            let (receiver, request) = {
+                let mut trees = trees.lock().unwrap();
+                let capture = trees.get_mut(&bot.profile().name).ok_or_else(|| anyhow::anyhow!("tree capture absent"))?;
+                (capture.refresh().map_err(anyhow::Error::msg)?, capture.request())
+            };
+            bot.write_packet(azalea::protocol::packets::game::ServerboundCustomPayload {
+                identifier: "swperf:tree_refresh".parse().unwrap(),
+                data: azalea::buf::UnsizedByteArray::from(serde_json::to_vec(&request)?),
+            });
+            tree_receipt = tokio::time::timeout(Duration::from_secs(30), receiver).await??;
+        }
         "command" => {
             let command = data["command"]
                 .as_str()
@@ -344,7 +358,7 @@ pub async fn perform(
     let after = bot.position();
     Ok(
         json!({"clientElapsedNs": started.elapsed().as_nanos() as u64,
-        "markerRegistrationNs": marker_elapsed, "clock": "client-monotonic", "completionScope": if native_ack.is_null() {"client-issued"} else {"client-roundtrip"}, "nativeAck":native_ack,
+        "markerRegistrationNs": marker_elapsed, "clock": "client-monotonic", "completionScope": if native_ack.is_null() {"client-issued"} else {"client-roundtrip"}, "nativeAck":native_ack, "treeReceipt":tree_receipt,
         "before": [before.x, before.y, before.z], "after": [after.x, after.y, after.z]}),
     )
 }

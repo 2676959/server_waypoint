@@ -15,6 +15,7 @@ import java.util.List;
 
 public final class PaperPerformanceProbe extends JavaPlugin {
     private PaperFixtureAdapter fixture;
+    private CommandTreeAssertions commandTrees;
     private final BotAssertions bots = new BotAssertions();
     private final CommandAssertions commands = new CommandAssertions();
     private final LifecycleAssertions lifecycle = new LifecycleAssertions();
@@ -27,6 +28,8 @@ public final class PaperPerformanceProbe extends JavaPlugin {
 
     @Override public void onEnable() {
         fixture = new PaperFixtureAdapter();
+        commandTrees = new CommandTreeAssertions(this);
+        commandTrees.install();
         commands.install(this, this::emit);
         Bukkit.getPluginManager().registerEvents(bots, this);
         Bukkit.getPluginManager().registerEvents(lifecycle, this);
@@ -134,6 +137,8 @@ public final class PaperPerformanceProbe extends JavaPlugin {
                 case "navigation.persisted" -> emit("navigation.persisted", protection.persistedSessions());
                 case "commands.feedback-barrier" -> Bukkit.getGlobalRegionScheduler().execute(this, () -> emit("commands.feedback.completed", new JsonObject()));
                 case "commands.restore-tokens" -> emit("commands.restore-tokens", commands.restoreTokens());
+                case "command-tree.arm" -> emit("command-tree.armed", commandTrees.arm(data));
+                case "command-tree.snapshot" -> emit("command-tree.snapshot", commandTrees.snapshot());
                 case "commands.tree" -> emit("commands.tree", commands.tree());
                 case "commands.execute" -> {
                     JsonObject acknowledgement = commands.execute(data);
