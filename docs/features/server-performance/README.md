@@ -1,9 +1,16 @@
 # Server performance
 
-> **Current required scope (November 15):** [Minimal critical Paper suite](plans/2026-11-15-minimal-critical-scope.md) supersedes the comprehensive delivery and earlier Task 11 gate. Broader unfinished tasks are optional future work; historical results remain unchanged.
+The [minimal critical Paper 1.21.11 suite](plans/2026-10-24-server-performance.md)
+completed November 18, 2026. All seven cases passed on the pinned development
+candidate. This covers four functional cases, three command-tree sessions and
+six bounded idle/retarget runs. Command-tree timing is descriptive. The report
+records the exact candidate, evidence roots and coverage limits.
+[Completion report](validation/2026-11-18-minimal-completion.md)
 
+## Historical audit
 
-Status: M1 is in progress. M0 and Tasks 8–9 are implemented and validated on the
+The broader release and platform audit is optional future work. M0 and Tasks 8–9
+were implemented and validated on the
 first Paper 1.21.11 anchor; Task 10 has native command, permission and persistence
 checkpoints. Task 11 has native method/terrain/session-restoration checkpoints,
 a 2026-11-10 Paper small/medium timed run (3 FAIL, 25 BLOCKED, no PASS),
@@ -28,11 +35,6 @@ Recursive detection and cleanup have since been removed from both backends at th
 user's request. Validation checks direct slot/cursor tags only; existing nested
 contents are preserved. Normal bundle/shulker insertion guards remain enabled.
 
-The required delivery is now the [minimal critical Paper 1.21.11 suite](plans/2026-10-24-server-performance.md): storage/permissions, navigation lifecycle,
-terrain maps, direct item protection and command-tree delivery timing. It uses a
-current development candidate, six idle/retarget runs and three command-tree
-sessions. The broader original-release/platform audit is optional future work.
-
 Test bots will use [Azalea](https://github.com/azalea-rs/azalea), as selected by the user,
 with real protocol connections and verified version-specific dependency pins. The design
 includes a Server Waypoint protocol extension for sync/upload/edit traffic.
@@ -44,6 +46,8 @@ by the target Minecraft runtime. Measurements must verify that the world mechani
 continue running throughout the sample.
 
 ## Documents
+
+- [Step 5 complete — minimal Paper suite completion report](validation/2026-11-18-minimal-completion.md)
 
 - [Step 4 complete: six bounded idle/ten-owner performance runs PASS](validation/2026-11-16-bounded-performance.md)
 
@@ -92,8 +96,8 @@ continue running throughout the sample.
 - [Tool commands](../../../tools/server-performance/README.md)
 
 The original harness and audit results remain reusable evidence with their original
-identities. Follow the revised master plan for the remaining required work; no
-full-matrix audit, soak, JMH suite or publishing gate is required for this delivery.
+identities. The [completion report](validation/2026-11-18-minimal-completion.md)
+records the limits of the finished minimal delivery.
 
 Implementation plans belong in `plans/`; execution reports and reviewed performance
 budgets belong in `validation/`. Scope metadata and unchecked checklists are not passing

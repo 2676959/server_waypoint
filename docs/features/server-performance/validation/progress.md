@@ -958,3 +958,20 @@ probe/ASM entries. No production repair, native tool rebuild, commit, push or
 baseline promotion. Step 4 checked; Step 5 combined report remains pending.
 Offline inventory/world-item cleanup and broader platforms/stress remain
 outside this observation.
+
+## November 18 — Minimal Step 5 complete
+
+The [completion report](2026-11-18-minimal-completion.md) closes the five-step
+minimal Paper 1.21.11 plan. All four functional cases passed, three command-tree
+sessions produced twelve matched samples with correct permission views, and all
+six idle/retarget runs met their native tick budgets. The command-tree durations
+carry no latency-budget verdict. The report retains the candidate and tool
+identities, evidence roots, historical findings and explicit exclusions.
+
+Closeout verified all seven case results and their sealed source/fixture inputs,
+all 16 candidate server shutdown logs and the absence of matching test
+processes. The candidate JAR contains zero probe, ASM or Querz/NBT entries.
+Fresh verification passed 310 Python tests, 36 Rust bot tests, both Java probe
+contract tests and the Paper 1.21.11 probe JAR task. The runtime measurements
+were reused for the pinned candidate. The completion changes are documentation
+only. Broader historical coverage remains optional.

@@ -11,6 +11,9 @@ coverage is optional future work, not a prerequisite for this delivery.
 The older design/specification, continuation plans and coverage ledger describe
 broader historical requirements; they do not expand this delivery's scope.
 
+**Status** — The minimal plan completed on November 18, 2026.
+[Completion evidence](../validation/2026-11-18-minimal-completion.md)
+
 **Goal:** Produce a small, trustworthy regression report for a current development
 candidate on Paper 1.21.11, covering five critical groups and bounded timing checks.
 
@@ -124,7 +127,7 @@ This adds three short fresh-process sessions, covering two roles and two deliver
 triggers each, outside the six idle/retarget runs. It does not add exhaustive
 command-leaf execution or a multi-version command-tree matrix.
 
-## Remaining implementation steps
+## Execution steps
 
 ### Step 1: Bind the candidate and minimal selection
 
@@ -182,15 +185,17 @@ Step 4 evidence: [six bounded native performance runs PASS](../validation/2026-1
 **Output:** a report under `docs/features/server-performance/validation/`, linked
 from the feature README and progress log.
 
-- [ ] Report all five groups, six idle/retarget runs and three command-tree sessions
+- [x] Report all five groups, six idle/retarget runs and three command-tree sessions
   with artifact identities, retained roots, metrics and judged outcomes.
-- [ ] List known defects and explicit exclusions. Mark missing evidence BLOCKED;
+- [x] List known defects and explicit exclusions. Mark missing evidence BLOCKED;
   a reproduced product FAIL can complete an audited case but cannot establish a
   healthy candidate. Command-tree durations have no established latency budget.
-- [ ] Run relevant focused tool/probe checks after implementation, verify no probe
+- [x] Run relevant focused tool/probe checks after implementation, verify no probe
   code enters production JARs, and confirm owned processes stop cleanly.
-- [ ] Mark this plan complete only when all required evidence exists. Do not require
+- [x] Mark this plan complete only when all required evidence exists. Do not require
   any excluded historical task, and do not claim comprehensive release coverage.
+
+Step 5 evidence — [minimal completion report](../validation/2026-11-18-minimal-completion.md).
 
 No product repair is implied by this scope change. Report demonstrated defects
 before choosing their repair scope. No baseline promotion or release certification
