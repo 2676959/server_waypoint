@@ -327,11 +327,5 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
         protected int getSelectedMenuItemIndex() {
             return this.choices.indexOf(this.selected.get());
         }
-
-        /** It sits among the form's text fields and comboboxes, so its trigger is filled like them. */
-        @Override
-        protected boolean usesFieldSurface() {
-            return true;
-        }
     }
 }

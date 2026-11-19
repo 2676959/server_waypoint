@@ -5,20 +5,11 @@ import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
 import _959.server_waypoint.common.client.gui.widgets.AbstractDropdownMenuWidget;
 import _959.server_waypoint.common.client.gui.widgets.ScalableText;
 import _959.server_waypoint.common.client.gui.widgets.ShiftableClickableWidget;
-import _959.server_waypoint.common.client.gui.widgets.WidgetThemeState;
 import java.util.Objects;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 
-import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
-import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutlineWithoutBottom;
-import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutlineWithoutTop;
-import static _959.server_waypoint.common.client.gui.render.WidgetThemeManager.getColor;
-import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.BORDER;
-import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.FOCUS_RING;
-import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.POPUP_BACKGROUND;
-import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.ROW_HOVER_BACKGROUND;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_DISABLED;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_PRIMARY;
 
@@ -51,16 +42,6 @@ abstract class TextChoiceDropdown extends AbstractDropdownMenuWidget {
     /** What the trigger shows, read each time it is drawn. */
     protected abstract Component triggerLabel();
 
-    /**
-     * Whether the trigger looks like a text field, as a dropdown among fields does: the theme's control
-     * background with its hover and disabled fills, and an outline that takes the focus ring while the trigger
-     * is active and hovered or focused. By default it looks like the popup: its fill with a wash while hovered
-     * or focused, and a focus ring while focused.
-     */
-    protected boolean usesFieldSurface() {
-        return false;
-    }
-
     /** Resizes the choices with the trigger, so the popup stays as wide as the control. */
     @Override
     public void setWidth(int width) {
@@ -84,36 +65,16 @@ abstract class TextChoiceDropdown extends AbstractDropdownMenuWidget {
                 (context, mouseX, mouseY, deltaTicks);
     }
 
-    /**
-     * Draws the trigger or a choice: the fill, the outline, and the label clipped inside it. A choice, and a
-     * trigger that doesn't look like a field, is filled like the popup, with a wash while hovered or focused.
-     * A choice in the popup leaves out the edge it shares with the row or trigger before it: its top when the
-     * popup opens downward, its bottom when it opens upward.
-     */
     private void renderChoice(GuiGraphicsExtractor context, ShiftableClickableWidget widget,
             Component message, boolean popup, int mouseX, int mouseY, float deltaTicks) {
-        boolean field = !popup && this.usesFieldSurface();
-        context.fill(widget.getX(), widget.getY(), widget.getX() + widget.getWidth(),
-                widget.getY() + widget.getHeight(),
-                field ? WidgetThemeState.controlBackground(widget.active, widget.isHovered()) : getColor(POPUP_BACKGROUND));
-        if (!field && (widget.isHovered() || widget.isFocused())) {
-            context.fill(widget.getX(), widget.getY(), widget.getX() + widget.getWidth(),
-                    widget.getY() + widget.getHeight(), getColor(ROW_HOVER_BACKGROUND));
-        }
-        int border = field ? WidgetThemeState.border(widget.active, widget.isFocused(), widget.isHovered())
-                : getColor(widget.isFocused() ? FOCUS_RING : BORDER);
-        if (!popup) {
-            renderOutline(context, widget.getX(), widget.getY(), widget.getWidth(), widget.getHeight(), border);
-        } else if (this.getExpansionDirection() == LayoutFlow.Direction.REVERSE) {
-            renderOutlineWithoutBottom(context, widget.getX(), widget.getY(), widget.getWidth(), widget.getHeight(), border);
-        } else {
-            renderOutlineWithoutTop(context, widget.getX(), widget.getY(), widget.getWidth(), widget.getHeight(), border);
-        }
+        this.renderTextChoiceSurface(context, widget, popup);
         this.label.setText(message);
         this.label.setColor(widget.active ? TEXT_PRIMARY : TEXT_DISABLED);
         this.label.setPosition(widget.getX() + TEXT_INSET, widget.getY() + TEXT_INSET);
+        int labelRight = popup ? Math.min(widget.getWidth(), this.getPopupContentWidth()) - TEXT_INSET
+                : widget.getWidth() - ARROW_COLUMN;
         context.enableScissor(widget.getX() + TEXT_INSET, widget.getY() + 1,
-                widget.getX() + widget.getWidth() - (popup ? TEXT_INSET : ARROW_COLUMN),
+                widget.getX() + Math.max(TEXT_INSET, labelRight),
                 widget.getY() + widget.getHeight() - 1);
         this.label.
         //$ render_method_swap

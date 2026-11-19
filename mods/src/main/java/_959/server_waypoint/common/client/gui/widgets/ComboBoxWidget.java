@@ -3,8 +3,6 @@ package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
 import _959.server_waypoint.common.client.gui.layout.VerticalAlignment;
-import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
-import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import com.mojang.blaze3d.platform.InputConstants;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,9 +16,6 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
-import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
-import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutlineWithoutBottom;
-import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutlineWithoutTop;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.nextLayer;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.previousLayer;
 
@@ -343,7 +338,7 @@ public class ComboBoxWidget extends AbstractDropdownMenuWidget implements Vertic
 
     @Override
     protected void renderDropdownControl(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
-        drawSurface(context, this, false);
+        this.renderTextChoiceSurface(context, this, false);
         this.input.active = this.active;
         this.input.
         //$ render_method_swap
@@ -352,34 +347,6 @@ public class ComboBoxWidget extends AbstractDropdownMenuWidget implements Vertic
         this.arrow.setText(this.isExpanded() ? "⏶" : "⏷");
         renderLabel(context, this.arrow, this.getX() + this.width - 12, this.getY(),
                 9, this.height, mouseX, mouseY, deltaTicks);
-    }
-
-    private void drawSurface(GuiGraphicsExtractor context, ShiftableClickableWidget widget, boolean popup) {
-        int color = popup && !widget.isHovered() && !widget.isFocused()
-                ? WidgetThemeManager.getColor(WidgetThemeVariable.POPUP_BACKGROUND)
-                : WidgetThemeState.controlBackground(widget.active, widget.isHovered() || widget.isFocused());
-        int x = widget.getX();
-        int y = widget.getY();
-        int surfaceWidth = popup ? Math.min(widget.getWidth(), this.getPopupContentWidth()) : widget.getWidth();
-        int right = x + surfaceWidth;
-        int bottom = y + widget.getHeight();
-        int border = WidgetThemeState.border(widget.active, widget.isFocused(), widget.isHovered());
-        context.fill(x, y, right, bottom, color);
-        if (popup && surfaceWidth < widget.getWidth()) {
-            // The scrollbar column has the resting popup surface, never the row highlight.
-            context.fill(right, y, x + widget.getWidth(), bottom,
-                    WidgetThemeManager.getColor(WidgetThemeVariable.POPUP_BACKGROUND));
-        }
-        if (popup && !widget.isHovered() && !widget.isFocused()) {
-            if (this.getExpansionDirection() == LayoutFlow.Direction.REVERSE) {
-                renderOutlineWithoutBottom(context, x, y, surfaceWidth, widget.getHeight(), border);
-            } else {
-                // The preceding control/row owns the shared horizontal border.
-                renderOutlineWithoutTop(context, x, y, surfaceWidth, widget.getHeight(), border);
-            }
-        } else {
-            renderOutline(context, x, y, surfaceWidth, widget.getHeight(), border);
-        }
     }
 
     private static void renderLabel(GuiGraphicsExtractor context, ScalableText text, int x, int y,
@@ -445,7 +412,7 @@ public class ComboBoxWidget extends AbstractDropdownMenuWidget implements Vertic
 
         @Override
         protected void renderMenuItem(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
-            drawSurface(context, this, true);
+            ComboBoxWidget.this.renderTextChoiceSurface(context, this, true);
             renderLabel(context, this.text, this.getX() + TEXT_INSET, this.getY(),
                     Math.max(0, ComboBoxWidget.this.getPopupContentWidth() - 2 * TEXT_INSET),
                     this.height, mouseX, mouseY, deltaTicks);

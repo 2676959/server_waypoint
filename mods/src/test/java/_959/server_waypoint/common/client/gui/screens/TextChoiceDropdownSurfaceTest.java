@@ -17,17 +17,12 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/**
- * A dropdown among text fields, as the waypoint form's Collection row is, looks like them: the theme's control
- * background with its hover and disabled fills, and an outline that takes the focus ring while the dropdown is
- * hovered or focused and active. A dropdown that doesn't ask for this keeps the popup's fill and its hover
- * wash, and its outline lights only while it is focused.
- */
+/** Text choice triggers use the combobox's control colors, and their choices use popup colors. */
 class TextChoiceDropdownSurfaceTest {
     private static final int POPUP = 0xFF010101;
     private static final int WASH = 0xFF020202;
     private static final int CONTROL = 0xFF030303;
-    private static final int CONTROL_HOVER = 0xFF040404;
+    private static final int CONTROL_HOVER = 0x80040404;
     private static final int CONTROL_DISABLED = 0xFF050505;
     private static final int FOCUS_RING = 0xFF060606;
     private static final int BORDER = 0xFF070707;
@@ -55,47 +50,47 @@ class TextChoiceDropdownSurfaceTest {
     }
 
     @Test
-    void aFieldTriggerIsFilledWithTheControlBackgroundAtRest() throws Exception {
-        assertEquals(CONTROL, render(new Dropdown(true), AWAY, AWAY).colorAt(INSIDE_X, INSIDE_Y));
+    void theTriggerTakesTheControlBackgroundAtRest() throws Exception {
+        assertEquals(CONTROL, render(new Dropdown(), AWAY, AWAY).colorAt(INSIDE_X, INSIDE_Y));
     }
 
     @Test
-    void aFieldTriggerTakesTheControlHoverFillWhileHovered() throws Exception {
-        assertEquals(CONTROL_HOVER, render(new Dropdown(true), INSIDE_X, INSIDE_Y).colorAt(INSIDE_X, INSIDE_Y));
+    void theTriggerTakesTheControlHoverFillWhileHovered() throws Exception {
+        assertEquals(CONTROL_HOVER, render(new Dropdown(), INSIDE_X, INSIDE_Y).colorAt(INSIDE_X, INSIDE_Y));
     }
 
     @Test
-    void aDisabledFieldTriggerTakesTheDisabledFill() throws Exception {
-        Dropdown dropdown = new Dropdown(true);
+    void aDisabledTriggerTakesTheDisabledFill() throws Exception {
+        Dropdown dropdown = new Dropdown();
         dropdown.active = false;
 
         assertEquals(CONTROL_DISABLED, render(dropdown, AWAY, AWAY).colorAt(INSIDE_X, INSIDE_Y));
     }
 
     @Test
-    void aFocusedFieldTriggerKeepsItsFillAndShowsTheFocusRing() throws Exception {
-        Dropdown dropdown = new Dropdown(true);
+    void aFocusedTriggerTakesTheControlHoverFillAndShowsTheFocusRing() throws Exception {
+        Dropdown dropdown = new Dropdown();
         dropdown.setFocused(true);
 
         RecordingGraphics graphics = render(dropdown, AWAY, AWAY);
 
-        assertEquals(CONTROL, graphics.colorAt(INSIDE_X, INSIDE_Y), "focus does not wash the fill");
+        assertEquals(CONTROL_HOVER, graphics.colorAt(INSIDE_X, INSIDE_Y), "focus highlights the fill");
         assertEquals(FOCUS_RING, graphics.colorAt(EDGE_X, INSIDE_Y), "the outline shows focus");
     }
 
     @Test
-    void aFieldTriggerLightsItsOutlineWhileHovered() throws Exception {
-        assertEquals(FOCUS_RING, render(new Dropdown(true), INSIDE_X, INSIDE_Y).colorAt(EDGE_X, INSIDE_Y));
+    void theTriggerLightsItsOutlineWhileHovered() throws Exception {
+        assertEquals(FOCUS_RING, render(new Dropdown(), INSIDE_X, INSIDE_Y).colorAt(EDGE_X, INSIDE_Y));
     }
 
     @Test
-    void aFieldTriggerKeepsItsRestingOutlineOtherwise() throws Exception {
-        assertEquals(BORDER, render(new Dropdown(true), AWAY, AWAY).colorAt(EDGE_X, INSIDE_Y));
+    void theTriggerKeepsItsRestingOutlineOtherwise() throws Exception {
+        assertEquals(BORDER, render(new Dropdown(), AWAY, AWAY).colorAt(EDGE_X, INSIDE_Y));
     }
 
     @Test
-    void aDisabledFieldTriggerDoesNotLightItsOutlineEvenWhenHoveredAndFocused() throws Exception {
-        Dropdown dropdown = new Dropdown(true);
+    void aDisabledTriggerDoesNotLightItsOutlineEvenWhenHoveredAndFocused() throws Exception {
+        Dropdown dropdown = new Dropdown();
         dropdown.active = false;
         dropdown.setFocused(true);
 
@@ -103,8 +98,8 @@ class TextChoiceDropdownSurfaceTest {
     }
 
     @Test
-    void theChoicesOfAFieldTriggerKeepThePopupFill() throws Exception {
-        Dropdown dropdown = new Dropdown(true);
+    void theChoicesKeepThePopupFill() throws Exception {
+        Dropdown dropdown = new Dropdown();
         dropdown.setExpanded(true);
         RecordingGraphics graphics = RecordingGraphics.create();
 
@@ -115,18 +110,31 @@ class TextChoiceDropdownSurfaceTest {
     }
 
     @Test
-    void aDefaultTriggerKeepsThePopupFillAndItsHoverWash() throws Exception {
-        assertEquals(POPUP, render(new Dropdown(false), AWAY, AWAY).colorAt(INSIDE_X, INSIDE_Y));
-        assertEquals(WASH, render(new Dropdown(false), INSIDE_X, INSIDE_Y).colorAt(INSIDE_X, INSIDE_Y));
+    void aHoveredChoiceDrawsTheControlHoverFillAndCompleteFocusRing() throws Exception {
+        Dropdown dropdown = new Dropdown();
+        dropdown.setExpanded(true);
+        int rowY = dropdown.getMenuItems().get(0).getY();
+        RecordingGraphics graphics = RecordingGraphics.create();
+
+        dropdown.renderPopup(graphics, INSIDE_X, rowY + 5, 0);
+
+        assertEquals(List.of(CONTROL_HOVER), graphics.colorsAt(INSIDE_X, rowY + 5));
+        assertEquals(FOCUS_RING, graphics.colorAt(INSIDE_X, rowY));
+        assertEquals(FOCUS_RING, graphics.colorAt(INSIDE_X, rowY + dropdown.getHeight() - 1));
     }
 
     @Test
-    void aDefaultTriggerLightsItsOutlineOnlyWhileFocused() throws Exception {
-        assertEquals(BORDER, render(new Dropdown(false), INSIDE_X, INSIDE_Y).colorAt(EDGE_X, INSIDE_Y), "hovered");
-        Dropdown focused = new Dropdown(false);
-        focused.setFocused(true);
+    void aKeyboardHighlightedChoiceTakesTheControlHoverFill() throws Exception {
+        Dropdown dropdown = new Dropdown();
+        dropdown.setExpanded(true);
+        var row = dropdown.getMenuItems().get(0);
+        row.setFocused(true);
+        RecordingGraphics graphics = RecordingGraphics.create();
 
-        assertEquals(FOCUS_RING, render(focused, AWAY, AWAY).colorAt(EDGE_X, INSIDE_Y), "focused");
+        dropdown.renderPopup(graphics, AWAY, AWAY, 0);
+
+        assertEquals(List.of(CONTROL_HOVER), graphics.colorsAt(INSIDE_X, row.getY() + 5));
+        assertEquals(FOCUS_RING, graphics.colorAt(INSIDE_X, row.getY()));
     }
 
     private static RecordingGraphics render(Dropdown dropdown, int mouseX, int mouseY) throws Exception {
@@ -136,11 +144,8 @@ class TextChoiceDropdownSurfaceTest {
     }
 
     private static final class Dropdown extends TextChoiceDropdown {
-        private final boolean fieldSurface;
-
-        private Dropdown(boolean fieldSurface) {
+        private Dropdown() {
             super(60, Component.literal("Choices"), new TestFont());
-            this.fieldSurface = fieldSurface;
             this.setPosition(10, 20);
             this.addMenuItem(new TextChoice(Component.literal("One"), () -> { }));
         }
@@ -148,11 +153,6 @@ class TextChoiceDropdownSurfaceTest {
         @Override
         protected Component triggerLabel() {
             return Component.literal("Choices");
-        }
-
-        @Override
-        protected boolean usesFieldSurface() {
-            return this.fieldSurface;
         }
     }
 
@@ -181,13 +181,15 @@ class TextChoiceDropdownSurfaceTest {
 
         /** The color painted last at a pixel, or 0 when nothing covers it. */
         private int colorAt(int x, int y) {
-            int color = 0;
-            for (Fill fill : this.fills) {
-                if (x >= fill.left && x < fill.right && y >= fill.top && y < fill.bottom) {
-                    color = fill.color;
-                }
-            }
-            return color;
+            List<Integer> colors = this.colorsAt(x, y);
+            return colors.isEmpty() ? 0 : colors.get(colors.size() - 1);
+        }
+
+        private List<Integer> colorsAt(int x, int y) {
+            return this.fills.stream()
+                    .filter(fill -> x >= fill.left && x < fill.right && y >= fill.top && y < fill.bottom)
+                    .map(Fill::color)
+                    .toList();
         }
 
         @Override

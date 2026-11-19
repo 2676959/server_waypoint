@@ -40,13 +40,14 @@ class PreviewSampleTest {
         assertFalse(PreviewSample.BUTTON.uses(WidgetThemeVariable.TEXT_DISABLED));
         assertEquals(Set.of(WidgetThemeVariable.CONTROL_DISABLED_BACKGROUND, WidgetThemeVariable.BORDER,
                 WidgetThemeVariable.TEXT_DISABLED, WidgetThemeVariable.TEXT_SHADOW), PreviewSample.DISABLED_BUTTON.keys());
-        // The combobox hovers in control.hoverBackground, never row.hoverBackground, and typed text brings
-        // suggestions and an inline completion; the dropdown's choices hover in row.hoverBackground.
+        // The combobox and dropdown share choice colors. Typed text in the combobox adds suggestions and completion.
         assertTrue(PreviewSample.COMBOBOX.uses(WidgetThemeVariable.CONTROL_HOVER_BACKGROUND));
         assertFalse(PreviewSample.COMBOBOX.uses(WidgetThemeVariable.ROW_HOVER_BACKGROUND));
         assertTrue(PreviewSample.COMBOBOX.uses(WidgetThemeVariable.SELECTION_BACKGROUND));
         assertTrue(PreviewSample.COMBOBOX.uses(WidgetThemeVariable.TEXT_PLACEHOLDER));
-        assertTrue(PreviewSample.DROPDOWN.uses(WidgetThemeVariable.ROW_HOVER_BACKGROUND));
+        assertTrue(PreviewSample.DROPDOWN.uses(WidgetThemeVariable.CONTROL_BACKGROUND));
+        assertTrue(PreviewSample.DROPDOWN.uses(WidgetThemeVariable.CONTROL_HOVER_BACKGROUND));
+        assertFalse(PreviewSample.DROPDOWN.uses(WidgetThemeVariable.ROW_HOVER_BACKGROUND));
         assertTrue(PreviewSample.TEXT_FIELD.uses(WidgetThemeVariable.CONTROL_HOVER_BACKGROUND));
         // The slider's number field is a text field.
         assertTrue(PreviewSample.SLIDER.uses(WidgetThemeVariable.FOCUS_RING));
@@ -57,7 +58,7 @@ class PreviewSampleTest {
                 PreviewSample.WARNING_CHIP, PreviewSample.DANGER_CHIP)) {
             assertTrue(chip.uses(WidgetThemeVariable.BORDER), chip.name());
         }
-        assertEquals(Set.of(WidgetThemeVariable.POPUP_BACKGROUND, WidgetThemeVariable.ROW_HOVER_BACKGROUND,
+        assertEquals(Set.of(WidgetThemeVariable.POPUP_BACKGROUND, WidgetThemeVariable.CONTROL_HOVER_BACKGROUND,
                 WidgetThemeVariable.BORDER, WidgetThemeVariable.FOCUS_RING,
                 WidgetThemeVariable.TEXT_PRIMARY, WidgetThemeVariable.TEXT_SHADOW), PreviewSample.POPUP_CHIP.keys());
         // A click toggles the toggles, so they declare both of their states.

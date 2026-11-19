@@ -18,6 +18,9 @@ import org.jetbrains.annotations.Nullable;
 
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.nextLayer;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.previousLayer;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutlineWithoutBottom;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutlineWithoutTop;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.NO_MOUSE;
 
 /**
@@ -117,6 +120,33 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
         boolean scrollbar = this.expanded && this.expansionOrientation == LayoutFlow.Orientation.VERTICAL
                 && this.countDisplayedMenuItems(this.selectedMenuItemIndex) > this.getPopupItemCount();
         return Math.max(0, this.getWidth() - (scrollbar ? 4 : 0));
+    }
+
+    /** Draws the shared combobox and text dropdown surface for a trigger or a popup choice. */
+    protected final void renderTextChoiceSurface(GuiGraphicsExtractor context, ShiftableClickableWidget widget,
+            boolean popup) {
+        boolean hovered = widget.isHovered();
+        boolean focused = widget.isFocused();
+        boolean restingChoice = popup && !hovered && !focused;
+        int color = restingChoice ? WidgetThemeManager.getColor(WidgetThemeVariable.POPUP_BACKGROUND)
+                : WidgetThemeState.controlBackground(widget.active, hovered || focused);
+        int x = widget.getX();
+        int y = widget.getY();
+        int width = popup ? Math.min(widget.getWidth(), this.getPopupContentWidth()) : widget.getWidth();
+        int height = widget.getHeight();
+        int border = WidgetThemeState.border(widget.active, focused, hovered);
+        context.fill(x, y, x + width, y + height, color);
+        if (popup && width < widget.getWidth()) {
+            context.fill(x + width, y, x + widget.getWidth(), y + height,
+                    WidgetThemeManager.getColor(WidgetThemeVariable.POPUP_BACKGROUND));
+        }
+        if (!restingChoice) {
+            renderOutline(context, x, y, width, height, border);
+        } else if (this.expansionDirection == LayoutFlow.Direction.REVERSE) {
+            renderOutlineWithoutBottom(context, x, y, width, height, border);
+        } else {
+            renderOutlineWithoutTop(context, x, y, width, height, border);
+        }
     }
 
     /** Caps the popup's vertical extent; wheel and arrow keys can reach the remaining choices. */

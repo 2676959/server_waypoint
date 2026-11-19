@@ -446,10 +446,11 @@ Enter for anything else.
 An exact matching choice is omitted from the popup when other choices exist. A sole choice remains
 in the popup even when it matches the current text or resolved resource ID, so the arrow still opens
 the list. Resizing also resizes the field and choice rows.
-Resting combobox popup rows draw side and bottom borders; the preceding control or row supplies
-the shared top edge, keeping separators one pixel thick without overlapping row hit areas.
-Hovered and keyboard-highlighted rows draw their own complete four-sided outline. Their surface,
-outline, and label reserve the scrollbar column when the popup overflows.
+Comboboxes and text choice dropdowns call `AbstractDropdownMenuWidget.renderTextChoiceSurface(...)`
+for their triggers and popup rows. Resting rows use `POPUP_BACKGROUND` and share one edge with
+the preceding control or row. Active rows under the pointer or highlighted by the keyboard use
+`CONTROL_HOVER_BACKGROUND` and draw a complete `FOCUS_RING`. Row fills, outlines, and labels reserve
+the scrollbar column when the popup overflows.
 `AbstractDropdownMenuWidget.getPopupContentWidth()` reports this row area, excluding the visible
 three-pixel scrollbar and its right inset. Popup rendering passes `NO_MOUSE` to the choice rows
 while the pointer is over the scrollbar, so it does not highlight a row underneath the thumb.
@@ -1825,16 +1826,14 @@ content, as the waypoint form does:
 The trigger shows `triggerLabel()`, read each time it is drawn, and an open/closed arrow; each `TextChoice`
 shows its label and runs a `Runnable` when chosen. The trigger and the choices are `font.lineHeight + 2` high
 with the text 2 px in, like text fields and comboboxes; labels are clipped inside the outline, and the
-trigger reserves a 14-pixel column for the arrow (`triggerWidth(labelWidth)` adds it). Popup rows share
-single-pixel separators: a choice leaves out the edge it shares with the row or trigger before it, which is
-its top, or its bottom after `setExpansionDirection(REVERSE)`. A subclass supplies `triggerLabel()` and, to
+trigger reserves a 14-pixel column for the arrow (`triggerWidth(labelWidth)` adds it). A resting popup row
+shares its top edge with the preceding row or trigger, or its bottom edge after `setExpansionDirection(REVERSE)`.
+A subclass supplies `triggerLabel()` and, to
 leave the selected choice out of the popup, `getSelectedMenuItemIndex()`. `setWidth` resizes the choices with
-the trigger, so a dropdown that a layout stretches keeps its popup as wide as the control. A dropdown among
-text fields overrides `usesFieldSurface()` so its trigger looks like them: `WidgetThemeState.controlBackground`
-fills it at rest, hovered and disabled, and `WidgetThemeState.border` draws the outline, which takes the focus
-ring while the trigger is active and hovered or focused. The default is the popup's fill with a wash while
-hovered or focused, and a ring while focused. The choices keep the popup look either way, because they float
-over other rows.
+the trigger, so a dropdown that a layout stretches keeps its popup as wide as the control. The trigger uses
+the same theme colors as a combobox. `WidgetThemeState.controlBackground` supplies the resting, highlighted,
+and disabled fills. An active trigger uses the highlighted fill and focus ring while hovered or focused.
+The open choices use the same themed surfaces and outlines as combobox choices.
 
 - **Theme dropdown:** `ThemeSelector`, an inner class of the screen, offers Custom, Translucent Dark, Modern
   Dark, High Contrast and Classic (`WidgetThemeSelection`) and previews a choice at once. It is as wide as its
@@ -1853,9 +1852,8 @@ over other rows.
   first row and is stretched to the control column. It has a choice for each collection that accepted Add when
   the form opened, in Shared, Private, Local order. Its trigger shows the form's current collection, which the
   popup leaves out; when that collection is not among the choices, because it did not accept Add when the form
-  opened, every choice shows. Choosing one runs `selectDestination`. Its trigger takes the text fields' surface
-  (`usesFieldSurface()`), so it matches the Dimension and List rows below it. The screen draws its popup after the
-  other rows, like the comboboxes' (`setRenderPopupSeparately(true)`).
+  opened, every choice shows. Choosing one runs `selectDestination`. Its trigger matches the Dimension and
+  List comboboxes below it. The screen draws its popup after the other rows (`setRenderPopupSeparately(true)`).
 
 #### Footer, editing and status
 
