@@ -159,6 +159,11 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
     }
 
     @Override
+    protected boolean isOperator(CommandSourceStack source, Player player) {
+        return player.isOp();
+    }
+
+    @Override
     protected boolean isServerConsoleWithHighestPermission(CommandSourceStack source) {
         if (!(source.getSender() instanceof ConsoleCommandSender)) return false;
         var vanilla = ((CraftServer) source.getSender().getServer()).getHandle().getServer().createCommandSourceStack();

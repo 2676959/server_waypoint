@@ -100,7 +100,7 @@ On Minecraft 1.21.9 and later, player chat can show supported vanilla item icons
     - Catalog synchronization starts when cross-server configuration is enabled. See [Velocity runtime setup](../features/cross-server/specs/cross-server-velocity-runtime.md) and [remote catalog queries](../features/cross-server/specs/cross-server-catalog-queries.md).
 - `/wp remote tp <server> <dimension> <list> <waypoint>` requests a teleport using exact cached identities (quote names with spaces). Stale or missing targets fail before preparation; the player stays on the source until destination preparation and fresh permission checks succeed, and the destination confirms the arrival. See [remote teleport initiation](../features/cross-server/specs/cross-server-source-teleport.md).
     - Velocity and dedicated backend runtime integration is implemented and disabled by default. Suggestions use only the local cache. Use unquoted dimension identifiers such as `minecraft:overworld` or `overworld` (default namespace: `minecraft`). See [configuration and validation](../features/cross-server/specs/cross-server-velocity-runtime.md).
-- `/wp reload` reloads `config.json` and the translation files in the `lang/` directory beside it (see [configuration paths](#server-configurations)). `defaultPageLimit`, `defaultNavigationMethods`, `CommandPermission`, `privateWaypoints`, `addWaypointFromChatSharing` and `compressChunkedMessages` apply at once; `serverId`, `cross-server.json` and turning on `sendXaerosWorldId` need a restart. Waypoint files are not reloaded, so edit them while the server is stopped.
+- `/wp reload` reloads `config.json` and the translation files in the `lang/` directory beside it (see [configuration paths](#server-configurations)). `defaultPageLimit`, `defaultNavigationMethods`, `CommandPermission`, `privateWaypoints`, `addWaypointFromChatSharing`, `compressChunkedMessages` and `broadcastFeedback` apply at once; `serverId`, `cross-server.json` and turning on `sendXaerosWorldId` need a restart. Waypoint files are not reloaded, so edit them while the server is stopped.
 - `/wp remove` removes a waypoint by identifier and answers with a temporary, single-use Restore link.
     - `/wp remove <dimension> <list-identifier>` removes an empty waypoint list.
 - `/wp restore <token>` restores a waypoint removed in the last 10 minutes. Each token works once.
@@ -349,7 +349,7 @@ Paper, Folia, Purpur:
 
 `<server-root>/plugins/ServerWaypoint/config.json`
 
-`/wp reload` applies changes to `defaultPageLimit`, `defaultNavigationMethods`, `CommandPermission`, `privateWaypoints`, `addWaypointFromChatSharing` and `compressChunkedMessages`. Changes to `serverId`, turning on `sendXaerosWorldId` and changes to `cross-server.json` take effect after a restart.
+`/wp reload` applies changes to `defaultPageLimit`, `defaultNavigationMethods`, `CommandPermission`, `privateWaypoints`, `addWaypointFromChatSharing`, `compressChunkedMessages` and `broadcastFeedback`. Changes to `serverId`, turning on `sendXaerosWorldId` and changes to `cross-server.json` take effect after a restart.
 
 ### Default Page Limit
 Sets the page limit `L` that `/wp list` and `/wp remote list` use when the command does not include `limit`: flat views and single lists show `L` rows, while the tree view, the one-line-per-list view and the dimension and server lists hold `L + 5` lines. Values are constrained to `1-100`, and the default is `10`. This setting takes effect after `/wp reload`.
@@ -464,6 +464,26 @@ Default value:
        }
      }
      ```
+
+#### broadcastFeedback
+
+Controls who sees chat announcements when a command creates, edits, removes or restores Shared waypoints or creates, edits or removes their lists. In every mode, the command sender gets their own result and eligible clients receive waypoint updates.
+
+| Value | Chat announcement recipients |
+| --- | --- |
+| `all` (default) | All other online players |
+| `ops` | Other online players with Minecraft operator status |
+| `off` | Nobody |
+
+For example, set `Features.broadcastFeedback` in the server's `config.json` to announce changes only to operators, then run `/wp reload`.
+
+```json
+{
+    "Features": {
+        "broadcastFeedback": "ops"
+    }
+}
+```
 
 ## Action logging
 

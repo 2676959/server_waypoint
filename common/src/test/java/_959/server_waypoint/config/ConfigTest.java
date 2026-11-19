@@ -4,6 +4,7 @@ import _959.server_waypoint.navigation.NavigationMethod;
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -57,6 +58,24 @@ class ConfigTest {
 
         assertTrue(defaultConfig.Features().compressChunkedMessages());
         assertFalse(disabledConfig.Features().compressChunkedMessages());
+    }
+
+    @Test
+    void broadcastFeedbackDefaultsToAllAndSerializesItsConfiguredMode() {
+        assertEquals(new JsonPrimitive("all"), GSON.toJsonTree(GSON.fromJson("{}", Config.class))
+                .getAsJsonObject().getAsJsonObject("Features").get("broadcastFeedback"));
+
+        Config config = GSON.fromJson("{\"Features\":{\"broadcastFeedback\":\"ops\"}}", Config.class);
+        assertEquals(new JsonPrimitive("ops"), GSON.toJsonTree(config)
+                .getAsJsonObject().getAsJsonObject("Features").get("broadcastFeedback"));
+    }
+
+    @Test
+    void invalidBroadcastFeedbackValuesAreRejected() {
+        for (String value : List.of("null", "true", "1", "[]", "\"unknown\"")) {
+            String json = "{\"Features\":{\"broadcastFeedback\":" + value + "}}";
+            assertThrows(JsonParseException.class, () -> GSON.fromJson(json, Config.class), json);
+        }
     }
 
     @Test

@@ -30,6 +30,7 @@ import net.kyori.adventure.text.Component;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,6 +86,7 @@ final class CommandHarness {
 
     final WaypointServerCore server;
     final Sender sender = new Sender();
+    final Set<Source> operators = new HashSet<>();
     final Map<String, String> dimensionTypes = new LinkedHashMap<>();
     final List<Teleport> teleports = new ArrayList<>();
     /** Display names by account name; a player without one is shown by account name. */
@@ -152,6 +154,7 @@ final class CommandHarness {
         final List<Component> errors = new ArrayList<>();
         final List<Map.Entry<Object, Component>> toPlayers = new ArrayList<>();
         final List<Object> online = new ArrayList<>();
+        final List<Object> packetRecipients = new ArrayList<>();
         final Map<Source, Source> viewingSources = new LinkedHashMap<>();
         final Map<Source, Source> commandSenders = new LinkedHashMap<>();
         boolean handshake = true;
@@ -193,6 +196,7 @@ final class CommandHarness {
 
         @Override
         public void sendPlayerPacket(Object player, SinglePacketMessage message) {
+            this.packetRecipients.add(player);
         }
 
         @Override
@@ -311,6 +315,11 @@ final class CommandHarness {
         @Override
         protected Object getPlayer(Source source) {
             return source.player() ? source : null;
+        }
+
+        @Override
+        protected boolean isOperator(Source source, Object player) {
+            return this.harness.operators.contains(player);
         }
 
         @Override

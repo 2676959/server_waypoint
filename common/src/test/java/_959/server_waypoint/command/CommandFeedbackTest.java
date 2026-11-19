@@ -12,10 +12,14 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import net.kyori.adventure.text.Component;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -354,6 +358,36 @@ class CommandFeedbackTest {
         Component broadcast = this.harness.sender.toPlayers.get(0).getValue();
         assertEquals("Alex added [PP] Pumpkin Patch to Farms", render(broadcast));
         assertTrue(runCommands(broadcast).stream().noneMatch(command -> command.startsWith("/wp tp")));
+    }
+
+    @ParameterizedTest
+    @CsvSource({"all, true, true", "ops, true, false", "off, false, false"})
+    void broadcastFeedbackFiltersChatWithoutFilteringWaypointSync(
+            String mode, boolean notifyOperator, boolean notifyMember
+    ) throws IOException {
+        this.harness.server.initConfigAndLanguageResource();
+        Files.writeString(this.directory.resolve("config.json"), """
+                {"Features":{"broadcastFeedback":"%s"}}
+                """.formatted(mode));
+        this.harness.run(CommandHarness.console(), "wp reload");
+        this.harness.addList("minecraft:overworld", "Farms");
+        CommandHarness.Source actor = CommandHarness.player();
+        CommandHarness.Source operator = new CommandHarness.Source(
+                "Pat", actor.dimension(), actor.position(), 0F, true, false, Set.of());
+        CommandHarness.Source member = new CommandHarness.Source(
+                "Sam", actor.dimension(), actor.position(), 0F, true, false, CommandHarness.EVERY_PERMISSION);
+        this.harness.operators.addAll(Set.of(actor, operator));
+        this.harness.sender.online.addAll(List.of(actor, operator, member));
+
+        Component result = this.harness.run(actor, "wp add minecraft:overworld Farms 80 66 40 Gate G FFAA00 0 true");
+
+        assertEquals("✔ Added [G] Gate to Farms   Details · Navigate · Undo", render(result));
+        List<Object> notified = this.harness.sender.toPlayers.stream().map(entry -> entry.getKey()).toList();
+        assertFalse(notified.contains(actor));
+        assertEquals(notifyOperator, notified.contains(operator));
+        assertEquals(notifyMember, notified.contains(member));
+        this.harness.sender.tickChunkedMessages();
+        assertEquals(Set.of(actor, operator, member), Set.copyOf(this.harness.sender.packetRecipients));
     }
 
     @Test

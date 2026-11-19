@@ -5,6 +5,7 @@ public class Features {
     volatile boolean addWaypointFromChatSharing = true;
     volatile boolean sendXaerosWorldId = true;
     volatile boolean compressChunkedMessages = true;
+    private BroadcastFeedback broadcastFeedback = BroadcastFeedback.ALL;
 
     public Features() {
     }
@@ -25,10 +26,15 @@ public class Features {
         return this.compressChunkedMessages;
     }
 
+    public BroadcastFeedback broadcastFeedback() {
+        return this.broadcastFeedback;
+    }
+
     @Override
     public String toString() {
         return "{addWaypointFromChatSharing=" + addWaypointFromChatSharing
                 + ", sendXaerosWorldId=" + sendXaerosWorldId
-                + ", compressChunkedMessages=" + compressChunkedMessages + "}";
+                + ", compressChunkedMessages=" + compressChunkedMessages
+                + ", broadcastFeedback=" + broadcastFeedback + "}";
     }
 }

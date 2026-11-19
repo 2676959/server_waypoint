@@ -712,6 +712,11 @@ class CoreWaypointCommandNavigationTest {
         }
 
         @Override
+        protected boolean isOperator(TestSource source, TestPlayer player) {
+            return false;
+        }
+
+        @Override
         protected String getPlayerName(TestPlayer player) {
             return "player";
         }

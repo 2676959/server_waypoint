@@ -218,7 +218,7 @@
   "wp.help.remote.tp": "傳送到另一台伺服器上的路徑點",
   "wp.help.remote.example": "瀏覽 survival 伺服器",
   "wp.help.reload.run": "重新載入設定和翻譯檔案",
-  "wp.help.reload.applies": "立即生效：defaultPageLimit、defaultNavigationMethods、privateWaypoints、CommandPermission、addWaypointFromChatSharing 和 compressChunkedMessages",
+  "wp.help.reload.applies": "立即生效：defaultPageLimit、defaultNavigationMethods、privateWaypoints、CommandPermission、addWaypointFromChatSharing、compressChunkedMessages 和 broadcastFeedback",
   "wp.help.reload.restart": "需要重新啟動：serverId、cross-server.json 以及開啟 sendXaerosWorldId",
   "wp.help.reload.waypoints": "不會重新載入路徑點檔案；請在伺服器停止時編輯",
 

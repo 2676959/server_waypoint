@@ -16,6 +16,7 @@ import _959.server_waypoint.crossserver.pairing.StaticKeyGenerator;
 
 import _959.server_waypoint.command.permission.PermissionKeys;
 import _959.server_waypoint.command.permission.PermissionManager;
+import _959.server_waypoint.config.BroadcastFeedback;
 import _959.server_waypoint.config.Config;
 import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointServerCore;
@@ -359,6 +360,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     protected abstract WaypointPos getSourcePosition(S source);
     protected abstract float getSourceYaw(S source);
     protected abstract @Nullable P getPlayer(S source);
+    protected abstract boolean isOperator(S source, P player);
     protected abstract boolean isServerConsoleWithHighestPermission(S source);
     protected abstract String getPlayerName(P player);
     /** The player's display name, such as a nickname or team prefix; {@link #getPlayerName} is the account name. */
@@ -1425,8 +1427,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     }
 
     /**
-     * Sends a change to every client, and a chat line about it to every other player (spec 13). Each
-     * line is built for its reader.
+     * Syncs the change to clients and sends chat feedback to other players according to the server setting.
+     * Each chat line is built for its reader.
      */
     private void broadcast(S source, WaypointScopedMessage update, Function<DimensionStyle, Component> line) {
         if (isPrivate()) {
@@ -1437,21 +1439,30 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         }
         Iterable<? extends P> recipients = this.sender.getBroadcastPlayers(source);
         this.sender.broadcastChunkedMessage(recipients, update);
+        BroadcastFeedback feedback = CONFIG.Features().broadcastFeedback();
+        if (feedback == BroadcastFeedback.OFF) {
+            return;
+        }
+
         P actor = getPlayer(source);
         Map<String, String> types = getDimensionTypes(source);
         for (P player : recipients) {
-            if (!player.equals(actor)) {
-                try {
-                    sendPlayerMessage(player, line.apply(DimensionStyle.local(recipientViewer(player), types)));
-                } catch (RuntimeException exception) {
-                    PlayerActionLog.Actor recipient = this.sender.playerActor(player);
-                    WaypointServerCore.LOGGER.warn(
-                            "Failed to send waypoint broadcast chat to {} ({})",
-                            recipient.name(),
-                            recipient.playerId(),
-                            exception
-                    );
+            if (player.equals(actor)) {
+                continue;
+            }
+            try {
+                if (feedback == BroadcastFeedback.OPS && !isOperator(source, player)) {
+                    continue;
                 }
+                sendPlayerMessage(player, line.apply(DimensionStyle.local(recipientViewer(player), types)));
+            } catch (RuntimeException exception) {
+                PlayerActionLog.Actor recipient = this.sender.playerActor(player);
+                WaypointServerCore.LOGGER.warn(
+                        "Failed to send waypoint broadcast chat to {} ({})",
+                        recipient.name(),
+                        recipient.playerId(),
+                        exception
+                );
             }
         }
     }

@@ -868,6 +868,11 @@ class CoreWaypointCommandListTest {
         }
 
         @Override
+        protected boolean isOperator(TestSource source, Object player) {
+            return false;
+        }
+
+        @Override
         protected String getPlayerName(Object player) {
             return "player";
         }

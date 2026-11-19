@@ -209,6 +209,13 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
     }
 
     @Override
+    protected boolean isOperator(CommandSourceStack source, ServerPlayer player) {
+        return source.getServer().getPlayerList().isOp(
+                /*? if >=1.21.9 {*/ player.nameAndId() /*?} else {*//* player.getGameProfile() *//*?}*/
+        );
+    }
+
+    @Override
     protected boolean isServerConsoleWithHighestPermission(CommandSourceStack source) {
         if (!source.getServer().isDedicatedServer()
                 || ((CommandSourceStackAccessor) source).serverWaypoint$getSource() != source.getServer()) {

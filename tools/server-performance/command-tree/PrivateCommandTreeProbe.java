@@ -115,6 +115,7 @@ public final class PrivateCommandTreeProbe {
         @Override protected WaypointPos getSourcePosition(Object source) { return new WaypointPos(0, 64, 0); }
         @Override protected float getSourceYaw(Object source) { return 0; }
         @Override protected Object getPlayer(Object source) { return (Boolean) source ? source : null; }
+        @Override protected boolean isOperator(Object source, Object player) { return false; }
         @Override protected boolean isServerConsoleWithHighestPermission(Object source) { return false; }
         @Override protected String getPlayerName(Object player) { return "probe"; }
         @Override protected Component getPlayerDisplayName(Object player) { return Component.text("probe"); }
