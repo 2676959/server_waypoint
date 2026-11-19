@@ -187,6 +187,9 @@ def check_jar(path: Path, loader: str, minecraft_version: str) -> list[str]:
         return visible[release]
 
     forbidden = [name for name in entries if logical[name].startswith("META-INF/maven/")]
+    if loader == "neoforge":
+        forbidden += [name for name in entries
+                      if logical[name].startswith(("net/kyori/", "META-INF/services/net.kyori."))]
     required = []
     if velocity:
         forbidden += [name for name in entries if logical[name].startswith(VELOCITY_FORBIDDEN_PREFIXES)

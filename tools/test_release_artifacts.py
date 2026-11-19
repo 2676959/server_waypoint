@@ -168,6 +168,20 @@ class CheckReleaseJarTest(unittest.TestCase):
         self.assertEqual([], self.violations({**BACKEND, **A_REFERENCING_B}, "fabric", "1.21.11"))
         self.assertEqual([], self.violations({**VELOCITY, **A_REFERENCING_B}, "velocity", "-"))
 
+    def test_neoforge_rejects_unrelocated_kyori_entries(self):
+        adventure = "net/kyori/adventure/internal/properties/AdventureProperties"
+        examination = "net/kyori/examination/Examinable"
+        service = "META-INF/services/net.kyori.adventure.text.serializer.json.JSONComponentSerializer$Provider"
+        entries = {**BACKEND, **MULTI_RELEASE,
+                   f"{adventure}.class": minimal_class(adventure),
+                   f"META-INF/versions/17/{examination}.class": minimal_class(examination),
+                   service: b""}
+        self.assertCountEqual([
+            f"forbidden-entry: {adventure}.class",
+            f"forbidden-entry: META-INF/versions/17/{examination}.class",
+            f"forbidden-entry: {service}",
+        ], self.violations(entries, "neoforge", "1.21.11"))
+
     def test_missing_internal_class(self):
         entries = {**BACKEND, "_959/server_waypoint/A.class": minimal_class(
             "_959/server_waypoint/A", [TRANSPORT + "TcpChannel"])}
