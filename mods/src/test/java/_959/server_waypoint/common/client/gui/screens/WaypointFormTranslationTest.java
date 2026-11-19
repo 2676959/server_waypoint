@@ -170,8 +170,7 @@ class WaypointFormTranslationTest {
         var english = read("en_us");
         var keys = english.keySet().stream().filter(key -> key.startsWith("waypoint.collection.")
                 || key.startsWith("waypoint.profile.") || key.equals("waypoint.copy")
-                || key.equals("waypoint.form.status.saved") || key.equals("waypoint.form.status.awaiting_server")
-                || key.equals("waypoint.form.status.command_submitted")).toList();
+                || key.equals("waypoint.form.status.saved") || key.equals("waypoint.form.status.awaiting_server")).toList();
         assertFalse(keys.isEmpty());
         assertSameKeysAndArguments(keys);
     }

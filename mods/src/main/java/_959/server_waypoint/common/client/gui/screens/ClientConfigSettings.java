@@ -1,9 +1,11 @@
 package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.common.client.ClientConfig;
+import _959.server_waypoint.common.client.ClientConfig.TeleportMethod;
 import _959.server_waypoint.core.network.upload.UploadTarget;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.ObjIntConsumer;
@@ -19,21 +21,15 @@ import org.jetbrains.annotations.Nullable;
 final class ClientConfigSettings {
     private static final String KEY_PREFIX = "server_waypoint.config.";
 
-    static final BooleanSetting TELEPORT_METHOD = new BooleanSetting(
-            SettingText.of("teleport_method"),
-            ClientConfig.DEFAULT_DOUBLE_CLICK_TO_TELEPORT,
-            ClientConfig::isDoubleClickToTeleport,
-            ClientConfig::setDoubleClickToTeleport,
-            Component.translatable(KEY_PREFIX + "teleport_method.key"),
-            Component.translatable(KEY_PREFIX + "teleport_method.double_click")
-    );
+    static final TeleportMethodSetting TELEPORT_METHOD = new TeleportMethodSetting(SettingText.of("teleport_method"));
+    static final TeleportKeySetting TELEPORT_KEY = new TeleportKeySetting(SettingText.of("teleport_key"));
     static final BooleanSetting CLOSE_AFTER_TELEPORT = new BooleanSetting(
             SettingText.of("close_waypoint_manager_after_teleport"),
             ClientConfig.DEFAULT_CLOSE_WAYPOINT_MANAGER_AFTER_TELEPORT,
             ClientConfig::isCloseWaypointManagerAfterTeleport,
             ClientConfig::setCloseWaypointManagerAfterTeleport
     );
-    static final List<Setting> WAYPOINT_MANAGER = List.of(TELEPORT_METHOD, CLOSE_AFTER_TELEPORT);
+    static final List<Setting> WAYPOINT_MANAGER = List.of(TELEPORT_METHOD, TELEPORT_KEY, CLOSE_AFTER_TELEPORT);
 
     static final BooleanSetting SHOW_WAYPOINTS = new BooleanSetting(
             SettingText.of("enable_waypoint_render"),
@@ -150,7 +146,7 @@ final class ClientConfigSettings {
     }
 
     /** A setting shown as one row. */
-    sealed interface Setting permits IntSetting, BooleanSetting {
+    sealed interface Setting permits IntSetting, BooleanSetting, TeleportMethodSetting, TeleportKeySetting {
         SettingText text();
 
         /** The default as the row shows it, such as "100%", "12 chunks" or "On". */
@@ -189,13 +185,7 @@ final class ClientConfigSettings {
     }
 
     record BooleanSetting(SettingText text, boolean defaultValue, Predicate<ClientConfig> getter,
-                          BiConsumer<ClientConfig, Boolean> setter,
-                          Component falseText, Component trueText) implements Setting {
-        BooleanSetting(SettingText text, boolean defaultValue, Predicate<ClientConfig> getter,
-                       BiConsumer<ClientConfig, Boolean> setter) {
-            this(text, defaultValue, getter, setter, onOff(false), onOff(true));
-        }
-
+                          BiConsumer<ClientConfig, Boolean> setter) implements Setting {
         boolean get(ClientConfig config) {
             return this.getter.test(config);
         }
@@ -206,7 +196,7 @@ final class ClientConfigSettings {
 
         @Override
         public Component defaultText() {
-            return this.defaultValue ? this.trueText : this.falseText;
+            return onOff(this.defaultValue);
         }
 
         @Override
@@ -217,6 +207,48 @@ final class ClientConfigSettings {
         @Override
         public void reset(ClientConfig config) {
             this.set(config, this.defaultValue);
+        }
+    }
+
+    record TeleportMethodSetting(SettingText text) implements Setting {
+        void set(ClientConfig config, TeleportMethod method) {
+            config.setTeleportMethod(method);
+        }
+
+        Component valueText(TeleportMethod method) {
+            return Component.translatable(this.text.labelKey() + "." + method.name().toLowerCase(Locale.ROOT));
+        }
+
+        @Override
+        public Component defaultText() {
+            return this.valueText(ClientConfig.DEFAULT_TELEPORT_METHOD);
+        }
+
+        @Override
+        public boolean isDefault(ClientConfig config) {
+            return config.getTeleportMethod() == ClientConfig.DEFAULT_TELEPORT_METHOD;
+        }
+
+        @Override
+        public void reset(ClientConfig config) {
+            this.set(config, ClientConfig.DEFAULT_TELEPORT_METHOD);
+        }
+    }
+
+    record TeleportKeySetting(SettingText text) implements Setting {
+        @Override
+        public Component defaultText() {
+            return ClientConfig.DEFAULT_TELEPORT_KEY.getDisplayName();
+        }
+
+        @Override
+        public boolean isDefault(ClientConfig config) {
+            return ClientConfig.DEFAULT_TELEPORT_KEY.equals(config.getTeleportKey());
+        }
+
+        @Override
+        public void reset(ClientConfig config) {
+            config.setTeleportKey(ClientConfig.DEFAULT_TELEPORT_KEY);
         }
     }
 

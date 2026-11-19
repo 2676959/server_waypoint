@@ -1,10 +1,13 @@
 package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.common.client.ClientConfig;
+import _959.server_waypoint.common.client.ClientConfig.TeleportMethod;
+import _959.server_waypoint.common.client.gui.TestFont;
 import _959.server_waypoint.core.network.upload.UploadTarget;
 import _959.server_waypoint.core.waypoint.WaypointSorting;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.mojang.blaze3d.platform.InputConstants;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -124,23 +127,102 @@ class ClientConfigSettingsTest {
         var method = ClientConfigSettings.TELEPORT_METHOD;
         var close = ClientConfigSettings.CLOSE_AFTER_TELEPORT;
 
-        assertFalse(config.isDoubleClickToTeleport());
+        assertEquals(TeleportMethod.KEY, config.getTeleportMethod());
         assertTrue(config.isCloseWaypointManagerAfterTeleport());
         assertTranslation(method.defaultText(), "server_waypoint.config.teleport_method.key");
         assertTranslation(close.defaultText(), "server_waypoint.config.on");
 
-        method.set(config, true);
         close.set(config, false);
+        for (TeleportMethod choice : TeleportMethod.values()) {
+            method.set(config, choice);
+            ClientConfig saved = GSON.fromJson(GSON.toJson(config), ClientConfig.class);
+            assertEquals(choice, saved.getTeleportMethod());
+            assertFalse(saved.isCloseWaypointManagerAfterTeleport());
+        }
         ClientConfig restored = GSON.fromJson(GSON.toJson(config), ClientConfig.class);
-        assertTrue(restored.isDoubleClickToTeleport());
-        assertFalse(restored.isCloseWaypointManagerAfterTeleport());
 
         method.reset(restored);
-        assertFalse(restored.isDoubleClickToTeleport());
+        assertEquals(TeleportMethod.KEY, restored.getTeleportMethod());
         assertFalse(restored.isCloseWaypointManagerAfterTeleport());
         close.reset(restored);
         assertTrue(restored.isCloseWaypointManagerAfterTeleport());
         assertTrue(ClientConfigSettings.allDefault(restored, ClientConfigSettings.WAYPOINT_MANAGER));
+    }
+
+    @Test
+    void resettingTheTeleportKeyPreservesTheMethod() {
+        ClientConfig config = GSON.fromJson("{}", ClientConfig.class);
+        var setting = ClientConfigSettings.TELEPORT_KEY;
+        assertTrue(ClientConfigSettings.WAYPOINT_MANAGER.contains(setting));
+        config.setTeleportMethod(TeleportMethod.DOUBLE_CLICK);
+        config.setTeleportKey(InputConstants.getKey("key.keyboard.escape"));
+        assertFalse(setting.isDefault(config));
+
+        setting.reset(config);
+
+        assertTrue(setting.isDefault(config));
+        assertEquals(InputConstants.KEY_T, config.getTeleportKey().getValue());
+        assertEquals(TeleportMethod.DOUBLE_CLICK, config.getTeleportMethod());
+    }
+
+    @Test
+    void teleportDropdownOmitsTheCurrentMethodAndReflectsReset() {
+        ClientConfig config = GSON.fromJson("{}", ClientConfig.class);
+        var dropdown = new ClientConfigScreen.TeleportMethodDropdown(config, new TestFont(), () -> { });
+        int left = InputConstants.MOUSE_BUTTON_LEFT;
+        int rowHeight = dropdown.getHeight();
+        assertTranslation(dropdown.triggerLabel(), "server_waypoint.config.teleport_method.key");
+
+        var choices = List.of(TeleportMethod.DOUBLE_CLICK, TeleportMethod.RIGHT_CLICK,
+                TeleportMethod.MIDDLE_CLICK, TeleportMethod.KEY, TeleportMethod.MIDDLE_CLICK);
+        var keys = List.of("double_click", "right_click", "middle_click", "key", "middle_click");
+        int[] popupRows = {1, 2, 3, 1, 3};
+        for (int index = 0; index < choices.size(); index++) {
+            assertTrue(dropdown.mouseClicked(2, 2, left));
+            assertEquals(3, dropdown.getPopupItemCount());
+            assertTrue(dropdown.mouseClicked(2, popupRows[index] * rowHeight + 2, left));
+            assertFalse(dropdown.isExpanded());
+            assertEquals(choices.get(index), config.getTeleportMethod());
+            assertTranslation(dropdown.triggerLabel(), "server_waypoint.config.teleport_method." + keys.get(index));
+        }
+
+        ClientConfigSettings.TELEPORT_METHOD.reset(config);
+        assertTranslation(dropdown.triggerLabel(), "server_waypoint.config.teleport_method.key");
+        assertTrue(dropdown.mouseClicked(2, 2, left));
+        assertTrue(dropdown.mouseClicked(2, rowHeight + 2, left));
+        assertEquals(TeleportMethod.DOUBLE_CLICK, config.getTeleportMethod());
+    }
+
+    @Test
+    void teleportDropdownKeyboardNavigationSkipsTheCurrentMethod() {
+        ClientConfig config = GSON.fromJson("{}", ClientConfig.class);
+        config.setTeleportMethod(TeleportMethod.RIGHT_CLICK);
+        var dropdown = new ClientConfigScreen.TeleportMethodDropdown(config, new TestFont(), () -> { });
+
+        assertTrue(dropdown.keyPressed(InputConstants.KEY_RETURN, 0, 0));
+        assertEquals(TeleportMethod.KEY.ordinal(), dropdown.getHighlightedItemIndex());
+        assertTrue(dropdown.keyPressed(InputConstants.KEY_DOWN, 0, 0));
+        assertTrue(dropdown.keyPressed(InputConstants.KEY_DOWN, 0, 0));
+        assertEquals(TeleportMethod.MIDDLE_CLICK.ordinal(), dropdown.getHighlightedItemIndex());
+        assertTrue(dropdown.keyPressed(InputConstants.KEY_RETURN, 0, 0));
+        assertEquals(TeleportMethod.MIDDLE_CLICK, config.getTeleportMethod());
+    }
+
+    @Test
+    void teleportDropdownOpensAboveTheControlNearTheBottomOfTheScreen() {
+        ClientConfig config = GSON.fromJson("{}", ClientConfig.class);
+        var dropdown = new ClientConfigScreen.TeleportMethodDropdown(config, new TestFont(), () -> { });
+        int rowHeight = dropdown.getHeight();
+        int y = 100 - rowHeight;
+        int left = InputConstants.MOUSE_BUTTON_LEFT;
+        dropdown.setY(y);
+        dropdown.layoutPopup(100);
+
+        assertTrue(dropdown.mouseClicked(2, y + 2, left));
+        assertTrue(dropdown.isMouseOverPopup(2, y - 3 * rowHeight + 2));
+        assertFalse(dropdown.isMouseOverPopup(2, y - 4 * rowHeight + 2));
+        assertTrue(dropdown.mouseClicked(2, y - rowHeight + 2, left));
+        assertEquals(TeleportMethod.MIDDLE_CLICK, config.getTeleportMethod());
     }
 
     @Test

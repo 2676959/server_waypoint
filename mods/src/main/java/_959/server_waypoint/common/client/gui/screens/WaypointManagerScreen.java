@@ -3,6 +3,7 @@
 package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.common.client.ClientConfig;
+import _959.server_waypoint.common.client.ClientConfig.TeleportMethod;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.ClientWaypointQuery;
 import _959.server_waypoint.common.client.ClientWaypointCollections;
@@ -710,15 +711,28 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
             MinecraftClientHelper.setScreen(this.minecraft, new ClientConfigScreen(this));
             return true;
         }
-        return notTyping
-                && this.builtState == ManagerViewState.READY
-                && !showingRemote
-                && waypointListWidget.keyPressed(keyCode, scanCode, modifiers)
-                || super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     static boolean canUseShortcuts(@Nullable GuiEventListener focused) {
         return !(focused instanceof EditBox) && !(focused instanceof ComboBoxWidget);
+    }
+
+    /** Handles the bound key before Minecraft's global shortcuts, while a waypoint is hovered. */
+    public boolean handleTeleportKey(InputConstants.Key key, int action) {
+        if (action == InputConstants.RELEASE || this.builtState != ManagerViewState.READY || this.showingRemote
+                || !canUseShortcuts(this.getFocused()) || this.sortingModeDropdown.isExpanded()
+                || this.collectionDropdown.isExpanded() || !WaypointClientMod.getClientConfig().matchesTeleportKey(key)) {
+            return false;
+        }
+        var waypoint = waypointListWidget.hoveredWaypointIdentity();
+        if (waypoint == null) {
+            return false;
+        }
+        if (action == InputConstants.PRESS) {
+            this.teleportToWaypoint(waypoint);
+        }
+        return true;
     }
 
     //? if >= 1.21.9 {
@@ -753,10 +767,15 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     }
     *///?}
 
-    /** Handles a left click on the waypoint row body after ordinary row selection. */
-    public void onWaypointRowClicked(ClientWaypointSelection waypoint) {
-        if (!WaypointClientMod.getClientConfig().isDoubleClickToTeleport()) {
-            return;
+    /** Handles the configured mouse shortcut on a waypoint row body. */
+    public boolean onWaypointRowClicked(ClientWaypointSelection waypoint, int button) {
+        TeleportMethod method = WaypointClientMod.getClientConfig().getTeleportMethod();
+        if (isSingleClickTeleport(method, button)) {
+            this.teleportToWaypoint(waypoint);
+            return true;
+        }
+        if (method != TeleportMethod.DOUBLE_CLICK || button != InputConstants.MOUSE_BUTTON_LEFT) {
+            return false;
         }
         WaypointClick click = new WaypointClick(waypoint, this.mouseClickSequence, System.nanoTime());
         if (click.completesDoubleClick(this.lastWaypointClick)) {
@@ -765,6 +784,15 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         } else {
             this.lastWaypointClick = click;
         }
+        return true;
+    }
+
+    static boolean isSingleClickTeleport(TeleportMethod method, int button) {
+        return switch (method) {
+            case RIGHT_CLICK -> button == InputConstants.MOUSE_BUTTON_RIGHT;
+            case MIDDLE_CLICK -> button == InputConstants.MOUSE_BUTTON_MIDDLE;
+            default -> false;
+        };
     }
 
     record WaypointClick(ClientWaypointSelection waypoint, long sequence, long timeNanos) {
@@ -776,12 +804,13 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         }
     }
 
-    /** Submits a teleport for a row in the current-server list and reports the client outcome. */
+    /** Submits a teleport for a row in the current-server list and reports local failures. */
     public void teleportToWaypoint(ClientWaypointSelection waypoint) {
         ClientWaypointAccess.Outcome outcome = this.waypointClientMod.access().teleport(waypoint);
-        this.showOperationOutcome(outcome);
         if (outcome.status() == ClientWaypointAccess.Status.COMMAND_SUBMITTED) {
             this.onTeleportCommandSubmitted();
+        } else {
+            this.showOperationOutcome(outcome);
         }
     }
 

@@ -443,11 +443,8 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
 
     @Override
     protected boolean onEntryClicked(TreeEntry<RowNode> entry, double contentMouseX, double contentMouseY, int button) {
-        if (button != InputConstants.MOUSE_BUTTON_LEFT) {
-            return false;
-        }
         RowNode value = entry.value();
-        if (value instanceof ListNode listNode) {
+        if (button == InputConstants.MOUSE_BUTTON_LEFT && value instanceof ListNode listNode) {
             return onListClicked(
                     entry.row(),
                     listNode.dimensionName(),
@@ -461,7 +458,8 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
                     waypointNode.dimensionName(),
                     waypointNode.waypointList(),
                     waypointNode.waypoint(),
-                    contentMouseX
+                    contentMouseX,
+                    button
             );
         }
         return false;
@@ -510,14 +508,23 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
             String dimensionName,
             WaypointList waypointList,
             SimpleWaypoint waypoint,
-            double contentMouseX
+            double contentMouseX,
+            int button
     ) {
+        boolean leftClick = button == InputConstants.MOUSE_BUTTON_LEFT;
         if (contentMouseX <= firstBtnXPos) {
             WaypointSelection selection = createSelection(dimensionName, waypointList, waypoint);
-            setSelectedWaypoint(selection);
-            this.removeClickedPos = -1;
-            this.parentScreen.onWaypointRowClicked(selection.identity());
-            return true;
+            if (leftClick) {
+                setSelectedWaypoint(selection);
+            }
+            boolean handled = this.parentScreen.onWaypointRowClicked(selection.identity(), button) || leftClick;
+            if (handled) {
+                this.removeClickedPos = -1;
+            }
+            return handled;
+        }
+        if (!leftClick) {
+            return false;
         }
         if (contentMouseX > thirdBtnXPos) {
             if (removeClickedPos == row) {
@@ -622,21 +629,13 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         }
     }
 
-    @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (isTeleportKey(keyCode) && !WaypointClientMod.getClientConfig().isDoubleClickToTeleport()) {
-            TreeEntry<RowNode> hoveredEntry = getHoveredEntry();
-            if (hoveredEntry != null && hoveredEntry.value() instanceof WaypointNode waypointNode) {
-                this.parentScreen.teleportToWaypoint(createSelection(waypointNode.dimensionName(),
-                        waypointNode.waypointList(), waypointNode.waypoint()).identity());
-                return true;
-            }
+    /** The hovered waypoint's captured identity, when a waypoint row is under the pointer. */
+    public @Nullable ClientWaypointSelection hoveredWaypointIdentity() {
+        TreeEntry<RowNode> hoveredEntry = getHoveredEntry();
+        if (this.active && this.visible && hoveredEntry != null && hoveredEntry.value() instanceof WaypointNode waypointNode) {
+            return createSelection(waypointNode.dimensionName(), waypointNode.waypointList(), waypointNode.waypoint()).identity();
         }
-        return super.keyPressed(keyCode, scanCode, modifiers);
-    }
-
-    static boolean isTeleportKey(int keyCode) {
-        return keyCode == InputConstants.KEY_T;
+        return null;
     }
 
     @Override

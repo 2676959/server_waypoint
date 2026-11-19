@@ -571,8 +571,14 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
             return this;
         }
 
+        /** Sets the theme color of the label without changing its layout. */
         public Row labelColor(WidgetThemeVariable color) {
-            this.labelColor = Objects.requireNonNull(color, "color");
+            if (this.labelColor != color) {
+                this.labelColor = Objects.requireNonNull(color, "color");
+                if (this.labelText != null) {
+                    this.labelText.setColor(color);
+                }
+            }
             return this;
         }
 
@@ -613,8 +619,6 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
                     VisualPositioning.getVisualWidth(this.control), suffixColumn, actionColumn);
             if (this.labelText == null) {
                 this.labelText = new ScalableText(0, 0, this.label, ROW_TEXT_SCALE, this.labelColor, list.font);
-            } else {
-                this.labelText.setColor(this.labelColor);
             }
             this.labelText.setWidth(labelWidth);
             if (this.suffix != null) {

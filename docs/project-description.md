@@ -85,7 +85,7 @@ The client manager brings waypoint lists and destination details into one view. 
 
 **Lists for the places you share.** Harbour Town is expanded here, with Lantern Market selected alongside Harbour Square, Mapmakers Library and other destinations. Item icons and distances help distinguish entries. The details panel shows the selected waypoint's identifier, display name, initials, coordinates, visibility, color and keywords.
 
-Open the manager with **Right Shift** or `/wp_gui`. Hover over a local waypoint and press **T** to teleport to it. Available actions, including editing, navigation and teleportation, follow the server's permissions.
+Open the manager with **Right Shift** or `/wp_gui`. Hover over a waypoint in the current-server view and press **T** to teleport to it. Under **Client Settings → Waypoint Manager**, you can change the teleport key, choose a mouse shortcut, and control whether the manager closes after sending the command. Available actions, including editing, navigation and teleportation, follow the server's permissions.
 
 ## Your waypoints. Your favorite map.
 

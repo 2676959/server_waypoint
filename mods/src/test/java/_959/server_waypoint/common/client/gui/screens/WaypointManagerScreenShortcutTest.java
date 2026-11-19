@@ -1,13 +1,16 @@
 package _959.server_waypoint.common.client.gui.screens;
 
+import _959.server_waypoint.common.client.ClientConfig.TeleportMethod;
 import _959.server_waypoint.common.client.ClientWaypointSelection;
 import _959.server_waypoint.common.client.ClientWaypointSource;
 import _959.server_waypoint.common.client.gui.widgets.ComboBoxWidget;
 import _959.server_waypoint.common.client.gui.widgets.IconButton;
 import _959.server_waypoint.common.client.gui.widgets.WaypointSearchBarWidget;
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.gui.components.EditBox;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -37,6 +40,17 @@ class WaypointManagerScreenShortcutTest {
         assertFalse(new WaypointManagerScreen.WaypointClick(waypoint, 2, 250_000_000).completesDoubleClick(first));
         assertFalse(new WaypointManagerScreen.WaypointClick(waypoint, 3, 1_000_000).completesDoubleClick(first));
         assertFalse(new WaypointManagerScreen.WaypointClick(other, 2, 1_000_000).completesDoubleClick(first));
+    }
+
+    @Test
+    void singleClickTeleportRequiresTheButtonOfTheSelectedMethod() {
+        for (TeleportMethod method : TeleportMethod.values()) {
+            assertFalse(WaypointManagerScreen.isSingleClickTeleport(method, InputConstants.MOUSE_BUTTON_LEFT));
+            assertEquals(method == TeleportMethod.RIGHT_CLICK,
+                    WaypointManagerScreen.isSingleClickTeleport(method, InputConstants.MOUSE_BUTTON_RIGHT));
+            assertEquals(method == TeleportMethod.MIDDLE_CLICK,
+                    WaypointManagerScreen.isSingleClickTeleport(method, InputConstants.MOUSE_BUTTON_MIDDLE));
+        }
     }
 
     /** Only the listener type matters; skip constructors that need a running Minecraft client. */

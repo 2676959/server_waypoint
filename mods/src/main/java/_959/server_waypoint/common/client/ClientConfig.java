@@ -3,6 +3,7 @@ package _959.server_waypoint.common.client;
 import _959.server_waypoint.common.client.render.OptimizedWaypointRenderer;
 import _959.server_waypoint.core.waypoint.WaypointSorting;
 import com.google.gson.annotations.Expose;
+import com.mojang.blaze3d.platform.InputConstants;
 
 public class ClientConfig {
     public static final boolean DEFAULT_ENABLE_WAYPOINT_RENDER = true;
@@ -14,7 +15,8 @@ public class ClientConfig {
     public static final boolean DEFAULT_AUTO_SYNC_TO_XAEROS_MINIMAP = true;
     public static final boolean DEFAULT_XAERO_DEFAULT_LIST_DIRECT_SYNC = false;
     public static final boolean DEFAULT_AUTO_SYNC_TO_VOXELMAP = true;
-    public static final boolean DEFAULT_DOUBLE_CLICK_TO_TELEPORT = false;
+    public static final TeleportMethod DEFAULT_TELEPORT_METHOD = TeleportMethod.KEY;
+    public static final InputConstants.Key DEFAULT_TELEPORT_KEY = InputConstants.getKey("key.keyboard.t");
     public static final boolean DEFAULT_CLOSE_WAYPOINT_MANAGER_AFTER_TELEPORT = true;
 
     @Expose private boolean enableWaypointRender = DEFAULT_ENABLE_WAYPOINT_RENDER;
@@ -31,7 +33,8 @@ public class ClientConfig {
     @Expose private boolean waypointManagerGroupByLists = true;
     @Expose private boolean waypointManagerShowAllDimensions = false;
     @Expose private ClientWaypointQuery.View waypointManagerView = ClientWaypointQuery.View.COMBINED;
-    @Expose private boolean doubleClickToTeleport = DEFAULT_DOUBLE_CLICK_TO_TELEPORT;
+    @Expose private TeleportMethod teleportMethod = DEFAULT_TELEPORT_METHOD;
+    @Expose private String teleportKey = DEFAULT_TELEPORT_KEY.getName();
     @Expose private boolean closeWaypointManagerAfterTeleport = DEFAULT_CLOSE_WAYPOINT_MANAGER_AFTER_TELEPORT;
 
     public ClientWaypointQuery.View getWaypointManagerView() {
@@ -166,12 +169,34 @@ public class ClientConfig {
         this.waypointManagerShowAllDimensions = waypointManagerShowAllDimensions;
     }
 
-    public boolean isDoubleClickToTeleport() {
-        return doubleClickToTeleport;
+    public TeleportMethod getTeleportMethod() {
+        return teleportMethod == null ? DEFAULT_TELEPORT_METHOD : teleportMethod;
     }
 
-    public void setDoubleClickToTeleport(boolean doubleClickToTeleport) {
-        this.doubleClickToTeleport = doubleClickToTeleport;
+    public void setTeleportMethod(TeleportMethod teleportMethod) {
+        this.teleportMethod = java.util.Objects.requireNonNull(teleportMethod);
+    }
+
+    public InputConstants.Key getTeleportKey() {
+        if (teleportKey != null && (teleportKey.startsWith("key.keyboard.") || teleportKey.startsWith("scancode."))) {
+            try {
+                InputConstants.Key key = InputConstants.getKey(teleportKey);
+                if (!key.equals(InputConstants.UNKNOWN)) {
+                    return key;
+                }
+            } catch (IllegalArgumentException ignored) {
+                // Fall back to the default if the saved key name is invalid on this version.
+            }
+        }
+        return DEFAULT_TELEPORT_KEY;
+    }
+
+    public void setTeleportKey(InputConstants.Key key) {
+        this.teleportKey = key.getName();
+    }
+
+    public boolean matchesTeleportKey(InputConstants.Key key) {
+        return getTeleportMethod() == TeleportMethod.KEY && getTeleportKey().equals(key);
     }
 
     public boolean isCloseWaypointManagerAfterTeleport() {
@@ -180,5 +205,12 @@ public class ClientConfig {
 
     public void setCloseWaypointManagerAfterTeleport(boolean closeWaypointManagerAfterTeleport) {
         this.closeWaypointManagerAfterTeleport = closeWaypointManagerAfterTeleport;
+    }
+
+    public enum TeleportMethod {
+        KEY,
+        DOUBLE_CLICK,
+        RIGHT_CLICK,
+        MIDDLE_CLICK
     }
 }

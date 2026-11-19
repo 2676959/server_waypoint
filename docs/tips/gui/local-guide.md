@@ -277,9 +277,9 @@ direction-aware arrow-key selection to those internal choices; they are not sepa
 or focused by the screen. Items are centered on the trigger's cross axis and retain logical
 insertion order even when expanding in reverse.
 
-If a concrete dropdown tracks a selected value, override `getSelectedMenuItemIndex()`. The selected
-item is represented by the dropdown control and omitted from the popup; the remaining visible
-items are compacted in logical insertion order. Use `getPopupItemCount()` when positioning the
+To show only the other choices in the popup, override `getSelectedMenuItemIndex()`. The control
+represents the selected item, and the popup compacts the remaining visible items in logical
+insertion order. Use `getPopupItemCount()` when positioning the
 popup based on its displayed size. The initial keyboard highlight starts at the first selectable
 remaining choice and skips hidden or inactive items. Opening the popup with the mouse does not
 pre-highlight an item; arrow-key navigation starts from the first choice in that direction.
@@ -986,13 +986,10 @@ to its constructor. Its action columns remain independent: visibility, edit, and
 not replace the current selection. `WaypointSelection` carries the source dimension, plain and
 display list names, and live waypoint; the widget reconciles that identity after queries so sorting
 and refreshes preserve a still-visible selection while filtering or removal clears it.
-In the ready local view, `WaypointManagerScreen.keyPressed` offers keys to the list before
-`super.keyPressed` only when `canUseShortcuts(focused)` permits them: neither an `EditBox`
-(including the search field) nor a `ComboBoxWidget` may be focused. The same guard controls the
-manager's C shortcut and movement keys. With non-text focus, pressing T while a waypoint row is
-hovered sends that waypoint's teleport command; typing T in a text control leaves input to that
-control even while the mouse hovers over a waypoint.
-`isTeleportKey` compares against `InputConstants.KEY_T`, which is 23 on 26.3 and 84 before it.
+In the ready current-server view, `WaypointManagerScreen.handleTeleportKey` uses the list's
+hovered waypoint identity when the configured key is pressed. `canUseShortcuts(focused)` gives
+focused text controls priority and also governs the manager's C shortcut and movement keys.
+The key is saved by name so keys such as T resolve to their Minecraft-specific input codes.
 `WaypointDetailsWidget` consumes that selection and presents every stored waypoint field plus its
 dimension/list context in a separately scrollable viewport. Keep formatted display names and
 descriptions parsed only at this render boundary, and reserve scrollbar width while wrapping so
@@ -1179,6 +1176,9 @@ one, while reserving its column, so controls do not shift when it disappears. Hi
 tooltips and Tab navigation. Call `refreshWidgetVisibility()` after the condition changes; scrolling
 and relayout also recheck it. `ClientConfigScreen` uses this for reset buttons, which appear only
 when their setting differs from its default and disappear immediately after a reset.
+`Row.labelColor(...)` updates the label color without relayout. When a mouse teleport shortcut is
+selected, the client settings screen uses `TEXT_DISABLED` for the Teleport key label and disables
+its key capture and reset buttons.
 
 `SettingsListWidget.WideRow` is a third entry type: a control with no label column, unit, action or
 tooltip, built as `new WideRow(control)`. The control starts at the row's left edge, can use the
@@ -1476,15 +1476,21 @@ Let registered widgets receive ordinary input through the screen. Intercept only
   keep moving the player while a button is focused.
 - Screen shortcuts should normally be disabled while the focused listener is an `EditBox` or
   a `ComboBoxWidget`, whose editable field is owned by the composite.
-  Shortcuts that run before `super.keyPressed`, such as the manager's `C` binding and the list's
-  T teleport, must leave Enter, Space and keypad Enter to the focused widget.
-- The current-server `WaypointListWidget` calls `WaypointManagerScreen.onWaypointRowClicked(identity)`
-  after selecting a row with a left click on its body. In Double-click mode the manager requires two
-  consecutive clicks on the same captured identity within 250 ms. In T key mode the list routes
-  the hovered waypoint through `WaypointManagerScreen.teleportToWaypoint(identity)`.
-  That method uses `ClientWaypointAccess` and reports its outcome. The current-server and remote teleport
-  paths share the manager's **Close after teleport** setting and close only on command submission.
-  Both preferences are in the **Waypoint Manager** section of `ClientConfigScreen`.
+  The manager's `C` shortcut opens client settings and lets other keys reach the focused widget.
+- The current-server `WaypointListWidget` forwards clicks on a row body to
+  `WaypointManagerScreen.onWaypointRowClicked(identity, button)`. Left-click selects the row.
+  Double-click mode requires two consecutive left clicks on the same captured identity within 250 ms.
+  Right-click and Middle-click modes submit on one click of the corresponding button.
+- `WaypointKeyboardHandlerMixin` offers keyboard events to `ClientConfigScreen.captureTeleportKey`
+  and `WaypointManagerScreen.handleTeleportKey` before Minecraft's global shortcuts. The settings
+  screen captures a press after the **Teleport key** button is activated. Clicking elsewhere cancels
+  capture. `ClientConfig` saves the Minecraft key name and defaults to T. The manager uses the
+  binding only in Keyboard key mode while `WaypointListWidget.hoveredWaypointIdentity()` returns a
+  waypoint and text entry and dropdowns are inactive. A held key sends one command per press.
+- `WaypointManagerScreen.teleportToWaypoint(identity)` uses `ClientWaypointAccess` and reports failures.
+  The current-server and remote teleport paths share the manager's **Close after teleport**
+  setting and close only on command submission. The **Waypoint Manager** section of `ClientConfigScreen`
+  holds all three teleport settings.
 - Call `acceptMovementKeys(false)` while text entry or another control must own movement-key input.
   On Forge and NeoForge, `MovementAllowedScreen` temporarily extends the seven movement bindings'
   conflict contexts so they stay active while this screen accepts movement. Modifier checks and
@@ -1838,6 +1844,11 @@ over other rows.
   choices.
 - **Preview dropdown:** `WidgetThemePreview.SampleDropdown` shows "Choice 1" to "Choice 3" and keeps the
   choice made.
+- **Teleport shortcut dropdown:** `ClientConfigScreen.TeleportMethodDropdown` shows the current method in
+  the trigger and the three alternatives in the popup. Both read the current setting after a reset.
+  The popup opens above the control when there is more room there and the choices would be clipped below.
+  The screen draws the popup outside the settings list's clipping bounds and gives it input priority
+  over covered rows.
 - **Collection dropdown:** `WaypointAddScreen.DestinationDropdown`, a static nested class, fills the add form's
   first row and is stretched to the control column. It has a choice for each collection that accepted Add when
   the form opened, in Shared, Private, Local order. Its trigger shows the form's current collection, which the
