@@ -14,6 +14,8 @@ public class ClientConfig {
     public static final boolean DEFAULT_AUTO_SYNC_TO_XAEROS_MINIMAP = true;
     public static final boolean DEFAULT_XAERO_DEFAULT_LIST_DIRECT_SYNC = false;
     public static final boolean DEFAULT_AUTO_SYNC_TO_VOXELMAP = true;
+    public static final boolean DEFAULT_DOUBLE_CLICK_TO_TELEPORT = false;
+    public static final boolean DEFAULT_CLOSE_WAYPOINT_MANAGER_AFTER_TELEPORT = true;
 
     @Expose private boolean enableWaypointRender = DEFAULT_ENABLE_WAYPOINT_RENDER;
     @Expose private boolean renderWaypointsUnderF1 = DEFAULT_RENDER_WAYPOINTS_UNDER_F1;
@@ -29,6 +31,8 @@ public class ClientConfig {
     @Expose private boolean waypointManagerGroupByLists = true;
     @Expose private boolean waypointManagerShowAllDimensions = false;
     @Expose private ClientWaypointQuery.View waypointManagerView = ClientWaypointQuery.View.COMBINED;
+    @Expose private boolean doubleClickToTeleport = DEFAULT_DOUBLE_CLICK_TO_TELEPORT;
+    @Expose private boolean closeWaypointManagerAfterTeleport = DEFAULT_CLOSE_WAYPOINT_MANAGER_AFTER_TELEPORT;
 
     public ClientWaypointQuery.View getWaypointManagerView() {
         return waypointManagerView == null ? ClientWaypointQuery.View.COMBINED : waypointManagerView;
@@ -160,5 +164,21 @@ public class ClientConfig {
 
     public void setWaypointManagerShowAllDimensions(boolean waypointManagerShowAllDimensions) {
         this.waypointManagerShowAllDimensions = waypointManagerShowAllDimensions;
+    }
+
+    public boolean isDoubleClickToTeleport() {
+        return doubleClickToTeleport;
+    }
+
+    public void setDoubleClickToTeleport(boolean doubleClickToTeleport) {
+        this.doubleClickToTeleport = doubleClickToTeleport;
+    }
+
+    public boolean isCloseWaypointManagerAfterTeleport() {
+        return closeWaypointManagerAfterTeleport;
+    }
+
+    public void setCloseWaypointManagerAfterTeleport(boolean closeWaypointManagerAfterTeleport) {
+        this.closeWaypointManagerAfterTeleport = closeWaypointManagerAfterTeleport;
     }
 }

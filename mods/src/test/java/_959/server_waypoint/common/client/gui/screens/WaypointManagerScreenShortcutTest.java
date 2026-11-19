@@ -1,5 +1,7 @@
 package _959.server_waypoint.common.client.gui.screens;
 
+import _959.server_waypoint.common.client.ClientWaypointSelection;
+import _959.server_waypoint.common.client.ClientWaypointSource;
 import _959.server_waypoint.common.client.gui.widgets.ComboBoxWidget;
 import _959.server_waypoint.common.client.gui.widgets.IconButton;
 import _959.server_waypoint.common.client.gui.widgets.WaypointSearchBarWidget;
@@ -21,6 +23,20 @@ class WaypointManagerScreenShortcutTest {
     void nonTextFocusAllowsManagerShortcuts() {
         assertTrue(WaypointManagerScreen.canUseShortcuts(null));
         assertTrue(WaypointManagerScreen.canUseShortcuts(allocate(IconButton.class)));
+    }
+
+    @Test
+    void doubleClickRequiresConsecutiveClicksWithinVanillaWindowOnTheSameWaypoint() {
+        var waypoint = new ClientWaypointSelection(ClientWaypointSource.SHARED, 1, null,
+                "minecraft:overworld", "travel", "home");
+        var first = new WaypointManagerScreen.WaypointClick(waypoint, 1, 0);
+        var other = waypoint.at(waypoint.dimensionName(), waypoint.listIdentifier(), "village");
+
+        assertFalse(first.completesDoubleClick(null));
+        assertTrue(new WaypointManagerScreen.WaypointClick(waypoint, 2, 249_000_000).completesDoubleClick(first));
+        assertFalse(new WaypointManagerScreen.WaypointClick(waypoint, 2, 250_000_000).completesDoubleClick(first));
+        assertFalse(new WaypointManagerScreen.WaypointClick(waypoint, 3, 1_000_000).completesDoubleClick(first));
+        assertFalse(new WaypointManagerScreen.WaypointClick(other, 2, 1_000_000).completesDoubleClick(first));
     }
 
     /** Only the listener type matters; skip constructors that need a running Minecraft client. */

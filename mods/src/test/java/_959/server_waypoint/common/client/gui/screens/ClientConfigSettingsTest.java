@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import org.junit.jupiter.api.AfterEach;
@@ -106,13 +107,40 @@ class ClientConfigSettingsTest {
 
     @Test
     void settingsOfMissingMapModsAreLeftOut() {
-        assertEquals(ClientConfigSettings.RENDERING, ClientConfigSettings.forScreen(Set.of()));
+        var withoutMapMods = ClientConfigSettings.forScreen(Set.of());
+        assertEquals(Stream.concat(ClientConfigSettings.RENDERING.stream(), ClientConfigSettings.WAYPOINT_MANAGER.stream())
+                .toList(), withoutMapMods);
 
         List<ClientConfigSettings.Setting> withXaero = ClientConfigSettings.forScreen(Set.of(UploadTarget.XAERO));
 
-        assertEquals(ClientConfigSettings.RENDERING.size() + 2, withXaero.size());
+        assertEquals(withoutMapMods.size() + 2, withXaero.size());
         assertEquals("server_waypoint.map_mod.xaeros_minimap",
-                withXaero.get(ClientConfigSettings.RENDERING.size()).text().argumentKey());
+                withXaero.get(withoutMapMods.size()).text().argumentKey());
+    }
+
+    @Test
+    void waypointManagerTeleportSettingsPersistAndResetIndependently() {
+        ClientConfig config = GSON.fromJson("{}", ClientConfig.class);
+        var method = ClientConfigSettings.TELEPORT_METHOD;
+        var close = ClientConfigSettings.CLOSE_AFTER_TELEPORT;
+
+        assertFalse(config.isDoubleClickToTeleport());
+        assertTrue(config.isCloseWaypointManagerAfterTeleport());
+        assertTranslation(method.defaultText(), "server_waypoint.config.teleport_method.key");
+        assertTranslation(close.defaultText(), "server_waypoint.config.on");
+
+        method.set(config, true);
+        close.set(config, false);
+        ClientConfig restored = GSON.fromJson(GSON.toJson(config), ClientConfig.class);
+        assertTrue(restored.isDoubleClickToTeleport());
+        assertFalse(restored.isCloseWaypointManagerAfterTeleport());
+
+        method.reset(restored);
+        assertFalse(restored.isDoubleClickToTeleport());
+        assertFalse(restored.isCloseWaypointManagerAfterTeleport());
+        close.reset(restored);
+        assertTrue(restored.isCloseWaypointManagerAfterTeleport());
+        assertTrue(ClientConfigSettings.allDefault(restored, ClientConfigSettings.WAYPOINT_MANAGER));
     }
 
     @Test

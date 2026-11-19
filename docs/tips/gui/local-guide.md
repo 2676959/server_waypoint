@@ -1478,6 +1478,13 @@ Let registered widgets receive ordinary input through the screen. Intercept only
   a `ComboBoxWidget`, whose editable field is owned by the composite.
   Shortcuts that run before `super.keyPressed`, such as the manager's `C` binding and the list's
   T teleport, must leave Enter, Space and keypad Enter to the focused widget.
+- The current-server `WaypointListWidget` calls `WaypointManagerScreen.onWaypointRowClicked(identity)`
+  after selecting a row with a left click on its body. In Double-click mode the manager requires two
+  consecutive clicks on the same captured identity within 250 ms. In T key mode the list routes
+  the hovered waypoint through `WaypointManagerScreen.teleportToWaypoint(identity)`.
+  That method uses `ClientWaypointAccess` and reports its outcome. The current-server and remote teleport
+  paths share the manager's **Close after teleport** setting and close only on command submission.
+  Both preferences are in the **Waypoint Manager** section of `ClientConfigScreen`.
 - Call `acceptMovementKeys(false)` while text entry or another control must own movement-key input.
   On Forge and NeoForge, `MovementAllowedScreen` temporarily extends the seven movement bindings'
   conflict contexts so they stay active while this screen accepts movement. Modifier checks and

@@ -19,6 +19,22 @@ import org.jetbrains.annotations.Nullable;
 final class ClientConfigSettings {
     private static final String KEY_PREFIX = "server_waypoint.config.";
 
+    static final BooleanSetting TELEPORT_METHOD = new BooleanSetting(
+            SettingText.of("teleport_method"),
+            ClientConfig.DEFAULT_DOUBLE_CLICK_TO_TELEPORT,
+            ClientConfig::isDoubleClickToTeleport,
+            ClientConfig::setDoubleClickToTeleport,
+            Component.translatable(KEY_PREFIX + "teleport_method.key"),
+            Component.translatable(KEY_PREFIX + "teleport_method.double_click")
+    );
+    static final BooleanSetting CLOSE_AFTER_TELEPORT = new BooleanSetting(
+            SettingText.of("close_waypoint_manager_after_teleport"),
+            ClientConfig.DEFAULT_CLOSE_WAYPOINT_MANAGER_AFTER_TELEPORT,
+            ClientConfig::isCloseWaypointManagerAfterTeleport,
+            ClientConfig::setCloseWaypointManagerAfterTeleport
+    );
+    static final List<Setting> WAYPOINT_MANAGER = List.of(TELEPORT_METHOD, CLOSE_AFTER_TELEPORT);
+
     static final BooleanSetting SHOW_WAYPOINTS = new BooleanSetting(
             SettingText.of("enable_waypoint_render"),
             ClientConfig.DEFAULT_ENABLE_WAYPOINT_RENDER,
@@ -99,9 +115,10 @@ final class ClientConfigSettings {
         };
     }
 
-    /** Rendering settings, then the settings for each installed map mod in {@link #MAP_MODS} order. */
+    /** Settings in screen order, including the settings for each installed map mod. */
     static List<Setting> forScreen(Set<UploadTarget> installedMapMods) {
         List<Setting> settings = new ArrayList<>(RENDERING);
+        settings.addAll(WAYPOINT_MANAGER);
         for (UploadTarget target : MAP_MODS) {
             if (installedMapMods.contains(target)) {
                 settings.add(autoSync(target));
@@ -128,7 +145,7 @@ final class ClientConfigSettings {
         return true;
     }
 
-    static Component onOff(boolean value) {
+    private static Component onOff(boolean value) {
         return Component.translatable(KEY_PREFIX + (value ? "on" : "off"));
     }
 
@@ -172,7 +189,13 @@ final class ClientConfigSettings {
     }
 
     record BooleanSetting(SettingText text, boolean defaultValue, Predicate<ClientConfig> getter,
-                          BiConsumer<ClientConfig, Boolean> setter) implements Setting {
+                          BiConsumer<ClientConfig, Boolean> setter,
+                          Component falseText, Component trueText) implements Setting {
+        BooleanSetting(SettingText text, boolean defaultValue, Predicate<ClientConfig> getter,
+                       BiConsumer<ClientConfig, Boolean> setter) {
+            this(text, defaultValue, getter, setter, onOff(false), onOff(true));
+        }
+
         boolean get(ClientConfig config) {
             return this.getter.test(config);
         }
@@ -183,7 +206,7 @@ final class ClientConfigSettings {
 
         @Override
         public Component defaultText() {
-            return onOff(this.defaultValue);
+            return this.defaultValue ? this.trueText : this.falseText;
         }
 
         @Override

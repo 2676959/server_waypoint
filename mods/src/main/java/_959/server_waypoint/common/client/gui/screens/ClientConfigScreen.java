@@ -14,9 +14,9 @@ import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import _959.server_waypoint.common.client.gui.widgets.ConfirmationDialog;
 import _959.server_waypoint.common.client.gui.widgets.IconButton;
 import _959.server_waypoint.common.client.gui.widgets.IntegerSlider;
-import _959.server_waypoint.common.client.gui.widgets.OnOffToggleButton;
 import _959.server_waypoint.common.client.gui.widgets.ScalableText;
 import _959.server_waypoint.common.client.gui.widgets.SettingsListWidget;
+import _959.server_waypoint.common.client.gui.widgets.ToggleButton;
 import _959.server_waypoint.common.client.gui.widgets.TranslucentButton;
 import _959.server_waypoint.common.client.integrations.MapModIntegration;
 import _959.server_waypoint.common.client.integrations.MapModIntegrations;
@@ -51,9 +51,11 @@ import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.SUCCESS;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_MUTED;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_PRIMARY;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TOGGLE_OFF_BACKGROUND;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TOGGLE_ON_BACKGROUND;
 
 /**
- * The client settings: waypoint rendering, map-mod sync and appearance in a
+ * The client settings: waypoint rendering, manager behavior, map-mod sync and appearance in a
  * {@link SettingsListWidget}, with per-row and global reset and confirmation dialogs.
  */
 public class ClientConfigScreen extends MovementAllowedScreen {
@@ -67,6 +69,9 @@ public class ClientConfigScreen extends MovementAllowedScreen {
     private static final int MIN_STATUS_WIDTH = 100;
     private static final int STATUS_LINE_GAP = 4;
     private static final int RESET_BUTTON_SIZE = 11;
+    private static final int TOGGLE_MIN_WIDTH = 50;
+    private static final int TOGGLE_HEIGHT = 11;
+    private static final int TOGGLE_TEXT_PADDING = 8;
     private static final int SLIDER_TRACK_WIDTH = 100;
     private static final int SLIDER_FIELD_WIDTH = 30;
     private static final int DIALOG_TEXT_WIDTH = 220;
@@ -123,6 +128,10 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         List<SettingsListWidget.Entry> entries = new ArrayList<>();
         entries.add(new SettingsListWidget.Header(Component.translatable("server_waypoint.config.section.rendering")));
         for (ClientConfigSettings.Setting setting : ClientConfigSettings.RENDERING) {
+            entries.add(this.createSettingRow(setting));
+        }
+        entries.add(new SettingsListWidget.Header(Component.translatable("server_waypoint.config.section.waypoint_manager")));
+        for (ClientConfigSettings.Setting setting : ClientConfigSettings.WAYPOINT_MANAGER) {
             entries.add(this.createSettingRow(setting));
         }
         entries.add(new SettingsListWidget.Header(Component.translatable("server_waypoint.config.section.map_mods")));
@@ -357,10 +366,12 @@ public class ClientConfigScreen extends MovementAllowedScreen {
                     intSetting.get(this.config), value -> this.onIntChanged(intSetting, value), this.font, ROW_CONTROL_SCALE);
         } else {
             ClientConfigSettings.BooleanSetting booleanSetting = (ClientConfigSettings.BooleanSetting) setting;
-            OnOffToggleButton toggle = new OnOffToggleButton(0, 0, value -> this.onBooleanChanged(booleanSetting, value));
+            int textWidth = Math.max(this.font.width(booleanSetting.falseText()), this.font.width(booleanSetting.trueText()));
+            int width = Math.round(Math.max(TOGGLE_MIN_WIDTH, textWidth + TOGGLE_TEXT_PADDING) * ROW_CONTROL_SCALE);
+            int height = Math.round(TOGGLE_HEIGHT * ROW_CONTROL_SCALE);
+            ToggleButton toggle = new ToggleButton(0, 0, width, height, booleanSetting.falseText(), booleanSetting.trueText(),
+                    TOGGLE_OFF_BACKGROUND, TOGGLE_ON_BACKGROUND, value -> this.onBooleanChanged(booleanSetting, value));
             toggle.setTextScale(ROW_CONTROL_SCALE);
-            toggle.setWidth(Math.round(toggle.getWidth() * ROW_CONTROL_SCALE));
-            toggle.setHeight(Math.round(toggle.getHeight() * ROW_CONTROL_SCALE));
             toggle.setState(booleanSetting.get(this.config));
             widget = toggle;
         }
@@ -674,7 +685,7 @@ public class ClientConfigScreen extends MovementAllowedScreen {
                     && this.widget instanceof IntegerSlider slider) {
                 slider.setValue(intSetting.get(config));
             } else if (this.setting instanceof ClientConfigSettings.BooleanSetting booleanSetting
-                    && this.widget instanceof OnOffToggleButton toggle) {
+                    && this.widget instanceof ToggleButton toggle) {
                 toggle.setState(booleanSetting.get(config));
             }
         }

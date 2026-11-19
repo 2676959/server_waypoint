@@ -54,6 +54,7 @@ import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.pr
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
 
 public class WaypointManagerScreen extends MovementAllowedScreen {
+    private static final long DOUBLE_CLICK_INTERVAL_NANOS = 250_000_000L;
     private static final float MIDDLE_PART_WIDTH_RATIO = 0.38F;
     private static final float DETAILS_PART_WIDTH_RATIO = 0.32F;
     private static final int MIN_MIDDLE_PART_WIDTH = 180;
@@ -103,6 +104,9 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     private final Screen parentScreen;
     private final IconToggleButton serverScopeToggle;
     private final RemoteWaypointPanel remotePanel;
+    // Count clicks before widget dispatch so clicks outside the row body break the pair.
+    private long mouseClickSequence;
+    private @Nullable WaypointClick lastWaypointClick;
     private boolean showingRemote;
     private final ServerListWidget serverListWidget;
     private final SeparatorWidget selectorSeparator;
@@ -140,7 +144,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 () -> MinecraftClientHelper.setScreen(new LocalWaypointProfilesScreen(this, waypointClientMod)));
         this.copyButton = TranslucentButton.fitted(Component.translatable("waypoint.copy"), this::openCopyScreen);
         this.copyButton.visible = false;
-        this.remotePanel = new RemoteWaypointPanel(waypointClientMod, this.font);
+        this.remotePanel = new RemoteWaypointPanel(waypointClientMod, this.font, this::onTeleportCommandSubmitted);
         this.statusMessage = new ScalableText(0, 0, Component.empty(), WidgetThemeVariable.TEXT_PRIMARY, this.font);
         this.serverScopeToggle = new IconToggleButton(
                 Component.translatable("waypoint.collection.current"),
@@ -567,6 +571,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     @Override
     protected void init() {
         super.init();
+        this.lastWaypointClick = null;
         this.builtState = resolveManagerState();
         this.collectionGeneration = waypointClientMod.collections().generation();
         if (this.builtState != ManagerViewState.READY) {
@@ -719,6 +724,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     //? if >= 1.21.9 {
     @Override
     public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClicked) {
+        this.mouseClickSequence++;
         if (this.mouseClickedOpenDropdown(
                 mouseButtonEvent.x(),
                 mouseButtonEvent.y(),
@@ -735,6 +741,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     //?} else {
     /*@Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        this.mouseClickSequence++;
         if (this.mouseClickedOpenDropdown(mouseX, mouseY, button)) {
             return true;
         }
@@ -745,6 +752,44 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         return super.mouseClicked(mouseX, mouseY, button);
     }
     *///?}
+
+    /** Handles a left click on the waypoint row body after ordinary row selection. */
+    public void onWaypointRowClicked(ClientWaypointSelection waypoint) {
+        if (!WaypointClientMod.getClientConfig().isDoubleClickToTeleport()) {
+            return;
+        }
+        WaypointClick click = new WaypointClick(waypoint, this.mouseClickSequence, System.nanoTime());
+        if (click.completesDoubleClick(this.lastWaypointClick)) {
+            this.lastWaypointClick = null;
+            this.teleportToWaypoint(waypoint);
+        } else {
+            this.lastWaypointClick = click;
+        }
+    }
+
+    record WaypointClick(ClientWaypointSelection waypoint, long sequence, long timeNanos) {
+        boolean completesDoubleClick(@Nullable WaypointClick previous) {
+            return previous != null
+                    && this.sequence - previous.sequence == 1
+                    && this.timeNanos - previous.timeNanos < DOUBLE_CLICK_INTERVAL_NANOS
+                    && this.waypoint.equals(previous.waypoint);
+        }
+    }
+
+    /** Submits a teleport for a row in the current-server list and reports the client outcome. */
+    public void teleportToWaypoint(ClientWaypointSelection waypoint) {
+        ClientWaypointAccess.Outcome outcome = this.waypointClientMod.access().teleport(waypoint);
+        this.showOperationOutcome(outcome);
+        if (outcome.status() == ClientWaypointAccess.Status.COMMAND_SUBMITTED) {
+            this.onTeleportCommandSubmitted();
+        }
+    }
+
+    private void onTeleportCommandSubmitted() {
+        if (WaypointClientMod.getClientConfig().isCloseWaypointManagerAfterTeleport()) {
+            this.onClose();
+        }
+    }
 
     private void onSelectDimension(String dimensionName) {
         if (showingRemote) refreshRemoteScope();

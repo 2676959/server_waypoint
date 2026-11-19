@@ -513,8 +513,10 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
             double contentMouseX
     ) {
         if (contentMouseX <= firstBtnXPos) {
-            setSelectedWaypoint(createSelection(dimensionName, waypointList, waypoint));
+            WaypointSelection selection = createSelection(dimensionName, waypointList, waypoint);
+            setSelectedWaypoint(selection);
             this.removeClickedPos = -1;
+            this.parentScreen.onWaypointRowClicked(selection.identity());
             return true;
         }
         if (contentMouseX > thirdBtnXPos) {
@@ -622,16 +624,15 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        boolean ret = false;
-        if (isTeleportKey(keyCode)) {
+        if (isTeleportKey(keyCode) && !WaypointClientMod.getClientConfig().isDoubleClickToTeleport()) {
             TreeEntry<RowNode> hoveredEntry = getHoveredEntry();
             if (hoveredEntry != null && hoveredEntry.value() instanceof WaypointNode waypointNode) {
-                operationAccepted(client().access().teleport(createSelection(waypointNode.dimensionName(),
-                        waypointNode.waypointList(), waypointNode.waypoint()).identity()));
-                ret = true;
+                this.parentScreen.teleportToWaypoint(createSelection(waypointNode.dimensionName(),
+                        waypointNode.waypointList(), waypointNode.waypoint()).identity());
+                return true;
             }
         }
-        return ret || super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     static boolean isTeleportKey(int keyCode) {
