@@ -61,6 +61,25 @@ class ConfigTest {
     }
 
     @Test
+    void uploadPlatformsRoundTripAsAnArrayOfCanonicalIds() {
+        for (String input : List.of("[\"VOXELMAP\"]", "[]")) {
+            Config config = GSON.fromJson("{\"Features\":{\"waypointUploadPlatforms\":" + input + "}}", Config.class);
+            assertEquals(JsonParser.parseString(input.toLowerCase(java.util.Locale.ROOT)),
+                    GSON.toJsonTree(config).getAsJsonObject().getAsJsonObject("Features").get("waypointUploadPlatforms"));
+        }
+        assertEquals(JsonParser.parseString("[\"xaero\",\"voxelmap\"]"),
+                GSON.toJsonTree(new Config()).getAsJsonObject().getAsJsonObject("Features").get("waypointUploadPlatforms"));
+    }
+
+    @Test
+    void invalidUploadPlatformListsAreRejected() {
+        for (String value : List.of("null", "\"xaero\"", "[null]", "[1]", "[\"unknown\"]", "[\"xaero\",\"XAERO\"]")) {
+            String json = "{\"Features\":{\"waypointUploadPlatforms\":" + value + "}}";
+            assertThrows(JsonParseException.class, () -> GSON.fromJson(json, Config.class), json);
+        }
+    }
+
+    @Test
     void broadcastFeedbackDefaultsToAllAndSerializesItsConfiguredMode() {
         assertEquals(new JsonPrimitive("all"), GSON.toJsonTree(GSON.fromJson("{}", Config.class))
                 .getAsJsonObject().getAsJsonObject("Features").get("broadcastFeedback"));

@@ -1,5 +1,6 @@
 package _959.server_waypoint.text.feedback;
 
+import _959.server_waypoint.core.network.upload.UploadTarget;
 import _959.server_waypoint.text.chat.Chat;
 import _959.server_waypoint.text.chat.ChatFont;
 import _959.server_waypoint.text.chat.ChatLines;
@@ -12,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
@@ -52,8 +54,8 @@ public final class HelpScreen {
         return lines.buildScreen();
     }
 
-    public static Component topic(Viewer viewer, HelpTopics.Topic topic, boolean textDisplay) {
-        HelpTopics.Content content = HelpTopics.content(topic, textDisplay);
+    public static Component topic(Viewer viewer, HelpTopics.Topic topic, boolean textDisplay, Set<UploadTarget> uploadPlatforms) {
+        HelpTopics.Content content = HelpTopics.content(topic, textDisplay, uploadPlatforms);
         ChatLines lines = new ChatLines();
         Component title = Chat.colored(topic.label(), GOLD);
         lines.add(viewer.plainText() ? title : Chat.concat(title, text("  "), translatable("wp.help.topic.hint", GRAY)));

@@ -1,8 +1,10 @@
 package _959.server_waypoint.text.feedback;
 
 import _959.server_waypoint.config.Config;
+import _959.server_waypoint.core.network.upload.UploadTarget;
 import _959.server_waypoint.text.chat.ChatAssert;
 import _959.server_waypoint.text.chat.ChatFont;
+import _959.server_waypoint.text.chat.Viewer;
 import _959.server_waypoint.translation.TranslationFilesTest;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -29,6 +31,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class HelpScreenTest {
+    private static Component topic(Viewer viewer, HelpTopics.Topic topic, boolean textDisplay) {
+        return HelpScreen.topic(viewer, topic, textDisplay, UploadTarget.supportedTargets());
+    }
+
     @Test
     void theIndexLinksTheMenuAndEveryTopicTheViewerCanUse() {
         Component index = HelpScreen.index(Fixtures.player());
@@ -63,7 +69,7 @@ class HelpScreenTest {
 
     @Test
     void usagesAreColouredBrokenToFitAndExplainedInTheirTooltips() {
-        Component add = HelpScreen.topic(Fixtures.player(), HelpTopics.Topic.ADD, false);
+        Component add = topic(Fixtures.player(), HelpTopics.Topic.ADD, false);
         List<String> lines = lines(add);
 
         assertEquals("Add  hover a line for details, click to use it", lines.get(0));
@@ -83,8 +89,8 @@ class HelpScreenTest {
 
     @Test
     void keywordsInOptionalPartsAreAquaAndOnlyTheirBracketsAndBarsAreGray() {
-        Component list = HelpScreen.topic(Fixtures.player(), HelpTopics.Topic.LIST, false);
-        Component upload = HelpScreen.topic(Fixtures.player(), HelpTopics.Topic.UPLOAD, false);
+        Component list = topic(Fixtures.player(), HelpTopics.Topic.LIST, false);
+        Component upload = topic(Fixtures.player(), HelpTopics.Topic.UPLOAD, false);
 
         assertEquals(NamedTextColor.GRAY, colorOf(list, "[search"));
         assertEquals(NamedTextColor.AQUA, colorOf(list, "search <text>"));
@@ -97,7 +103,7 @@ class HelpScreenTest {
 
     @Test
     void remoteDimensionHelpExplainsIdentifierSyntaxAndDefaultNamespace() {
-        Component remote = HelpScreen.topic(Fixtures.player(), HelpTopics.Topic.REMOTE, false);
+        Component remote = topic(Fixtures.player(), HelpTopics.Topic.REMOTE, false);
         String tooltip = tooltipOf(remote, "/wp remote details <server> <dimension> <list>");
         assertTrue(tooltip.contains("namespace:path"), tooltip);
         assertTrue(tooltip.contains("minecraft"), tooltip);
@@ -107,8 +113,8 @@ class HelpScreenTest {
 
     @Test
     void argumentsAreColouredByTheirType() {
-        Component add = HelpScreen.topic(Fixtures.player(), HelpTopics.Topic.ADD, false);
-        Component list = HelpScreen.topic(Fixtures.player(), HelpTopics.Topic.LIST, false);
+        Component add = topic(Fixtures.player(), HelpTopics.Topic.ADD, false);
+        Component list = topic(Fixtures.player(), HelpTopics.Topic.LIST, false);
 
         assertEquals(NamedTextColor.YELLOW, colorOf(add, "<list>"));
         assertEquals(NamedTextColor.YELLOW, colorOf(add, "<name>"));
@@ -121,13 +127,13 @@ class HelpScreenTest {
         assertEquals(NamedTextColor.DARK_PURPLE, colorOf(add, "<global>"));
         assertEquals(NamedTextColor.DARK_PURPLE, colorOf(list, "<view>"));
         assertEquals(NamedTextColor.DARK_PURPLE,
-                colorOf(HelpScreen.topic(Fixtures.player(), HelpTopics.Topic.NAVIGATE, false), "<method>"));
-        assertEquals(NamedTextColor.GOLD, colorOf(HelpScreen.topic(Fixtures.player(), HelpTopics.Topic.NAVIGATE, true), "<x>"));
+                colorOf(topic(Fixtures.player(), HelpTopics.Topic.NAVIGATE, false), "<method>"));
+        assertEquals(NamedTextColor.GOLD, colorOf(topic(Fixtures.player(), HelpTopics.Topic.NAVIGATE, true), "<x>"));
     }
 
     @Test
     void listOptionsComeAfterOnlyTheUsagesThatTakeThem() {
-        List<String> lines = lines(HelpScreen.topic(Fixtures.console(), HelpTopics.Topic.LIST, false));
+        List<String> lines = lines(topic(Fixtures.console(), HelpTopics.Topic.LIST, false));
         int options = lines.indexOf("  Options, in this order, after any of the above");
 
         assertTrue(lines.indexOf("/wp list all") < options, String.join("\n", lines));
@@ -136,7 +142,7 @@ class HelpScreenTest {
 
     @Test
     void reloadHelpSaysWhetherEachConfigSettingReloads() {
-        String help = render(HelpScreen.topic(Fixtures.console(), HelpTopics.Topic.RELOAD, false));
+        String help = render(topic(Fixtures.console(), HelpTopics.Topic.RELOAD, false));
         List<String> unnamed = new ArrayList<>();
         for (Map.Entry<String, JsonElement> setting : new Gson().toJsonTree(new Config()).getAsJsonObject().entrySet()) {
             if (help.contains(setting.getKey())) {
@@ -158,26 +164,26 @@ class HelpScreenTest {
 
     @Test
     void remoteHelpCoversDetails() {
-        assertTrue(lines(HelpScreen.topic(Fixtures.console(), HelpTopics.Topic.REMOTE, false))
+        assertTrue(lines(topic(Fixtures.console(), HelpTopics.Topic.REMOTE, false))
                 .contains("/wp remote details <server> <dimension> <list> <waypoint>"));
     }
 
     @Test
     void notesNameTheirArgumentInTheColourOfItsType() {
-        Component list = HelpScreen.topic(Fixtures.player(), HelpTopics.Topic.LIST, false);
+        Component list = topic(Fixtures.player(), HelpTopics.Topic.LIST, false);
         Component tooltip = (Component) Objects.requireNonNull(find(list, "[search").style().hoverEvent()).value();
 
         assertEquals(NamedTextColor.DARK_PURPLE, colorOf(tooltip, "<mode>"));
         assertEquals(NamedTextColor.GRAY, colorOf(tooltip, ": default, name, distance or color"));
         assertEquals(NamedTextColor.DARK_PURPLE,
-                colorOf(HelpScreen.topic(Fixtures.console(), HelpTopics.Topic.LIST, false), "<mode>: default"));
+                colorOf(topic(Fixtures.console(), HelpTopics.Topic.LIST, false), "<mode>: default"));
     }
 
     @Test
     void examplesColourEachValueLikeTheArgumentItFills() {
         String command = "/wp edit waypoint minecraft:overworld \"Home Bases\" \"Main Home\" set color gold";
-        Component edit = HelpScreen.topic(Fixtures.player(), HelpTopics.Topic.EDIT, false);
-        Component plain = HelpScreen.topic(Fixtures.console(), HelpTopics.Topic.EDIT, false);
+        Component edit = topic(Fixtures.player(), HelpTopics.Topic.EDIT, false);
+        Component plain = topic(Fixtures.console(), HelpTopics.Topic.EDIT, false);
 
         assertEquals(NamedTextColor.AQUA, colorOf(edit, "set"));
         assertEquals(NamedTextColor.YELLOW, colorOf(edit, "gold"));
@@ -188,13 +194,13 @@ class HelpScreenTest {
         assertEquals(NamedTextColor.AQUA, colorOf(plain, "set color gold"));
         assertEquals(NamedTextColor.DARK_PURPLE, colorOf(plain, "color gold"));
         assertEquals(NamedTextColor.LIGHT_PURPLE,
-                colorOf(HelpScreen.topic(Fixtures.console(), HelpTopics.Topic.ADD, false), "~ ~ ~"));
+                colorOf(topic(Fixtures.console(), HelpTopics.Topic.ADD, false), "~ ~ ~"));
     }
 
     @Test
     void everyTopicFitsTheChat() {
         for (HelpTopics.Topic topic : HelpTopics.Topic.values()) {
-            ChatAssert.assertFitsChat(HelpScreen.topic(Fixtures.player(), topic, true));
+            ChatAssert.assertFitsChat(topic(Fixtures.player(), topic, true));
         }
     }
 
@@ -202,7 +208,7 @@ class HelpScreenTest {
     void everyTopicTitleFitsTheChatInEveryLocale() {
         List<String> problems = new ArrayList<>();
         for (HelpTopics.Topic topic : HelpTopics.Topic.values()) {
-            Component help = HelpScreen.topic(Fixtures.player(), topic, true);
+            Component help = topic(Fixtures.player(), topic, true);
             String english = lines(help).get(0);
             for (String locale : TranslationFilesTest.LOCALES) {
                 String title = lines(help, Translator.parseLocale(locale)).get(0);
@@ -220,7 +226,7 @@ class HelpScreenTest {
 
     @Test
     void plainTextTopicsPrintTheirTooltipsAsIndentedLines() {
-        List<String> lines = lines(HelpScreen.topic(Fixtures.console(), HelpTopics.Topic.ADD, false));
+        List<String> lines = lines(topic(Fixtures.console(), HelpTopics.Topic.ADD, false));
 
         assertEquals("Add", lines.get(0));
         assertTrue(lines.contains("/wp add <dimension> <list>"));
@@ -228,12 +234,12 @@ class HelpScreenTest {
         assertTrue(lines.contains("  Quote names with spaces"));
         assertTrue(lines.contains("  /wp add ~ ~ ~ \"Home Bases\" \"Main Home\""));
         assertTrue(lines.contains("    Add Main Home where you stand"));
-        assertFalse(render(HelpScreen.topic(Fixtures.console(), HelpTopics.Topic.ADD, false)).contains("Help index"));
+        assertFalse(render(topic(Fixtures.console(), HelpTopics.Topic.ADD, false)).contains("Help index"));
     }
 
     @Test
     void plainTextTopicsKeepTheColoursOfChatAndItsTooltips() {
-        Component add = HelpScreen.topic(Fixtures.console(), HelpTopics.Topic.ADD, false);
+        Component add = topic(Fixtures.console(), HelpTopics.Topic.ADD, false);
 
         assertEquals(NamedTextColor.AQUA, colorOf(add, "/wp add <dimension> <list>"));
         assertEquals(NamedTextColor.GREEN, colorOf(add, "<dimension>"));
@@ -246,9 +252,9 @@ class HelpScreenTest {
 
     @Test
     void navigateHelpMentionsTheTextDisplayOnlyWhereItIsSupported() {
-        List<String> supported = lines(HelpScreen.topic(Fixtures.console(), HelpTopics.Topic.NAVIGATE, true));
+        List<String> supported = lines(topic(Fixtures.console(), HelpTopics.Topic.NAVIGATE, true));
 
-        assertFalse(render(HelpScreen.topic(Fixtures.player(), HelpTopics.Topic.NAVIGATE, false)).contains("text_display"));
+        assertFalse(render(topic(Fixtures.player(), HelpTopics.Topic.NAVIGATE, false)).contains("text_display"));
         assertTrue(supported.contains("/wp navigate config text_display"));
         assertTrue(supported.contains("/wp navigate config text_display transformation translation|rotation|scale <x> <y> <z>"));
         assertTrue(supported.contains("/wp navigate config text_display transformation reset"));

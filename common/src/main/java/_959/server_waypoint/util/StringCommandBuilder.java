@@ -8,8 +8,6 @@ import _959.server_waypoint.core.network.upload.UploadScope;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Locale;
-
 import static _959.server_waypoint.command.CoreWaypointCommand.*;
 import static _959.server_waypoint.util.ColorUtils.rgbToNameOrHexCode;
 
@@ -68,7 +66,7 @@ public class StringCommandBuilder {
                                    boolean deleteMissing) {
         StringBuilder command = new StringBuilder(WAYPOINT_COMMAND_WITH_SLASH)
                 .append(' ').append(UPLOAD_COMMAND)
-                .append(' ').append(request.target().name().toLowerCase(Locale.ROOT));
+                .append(' ').append(request.target().id());
         if (conflictPolicy == UploadConflictPolicy.LOCAL) {
             command.append(" force local");
             if (deleteMissing) {

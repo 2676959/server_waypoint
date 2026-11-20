@@ -2,6 +2,7 @@ package _959.server_waypoint.core.network.upload;
 
 import _959.server_waypoint.core.collection.WaypointScope;
 import _959.server_waypoint.core.collection.WaypointCollectionKey;
+import _959.server_waypoint.config.Config;
 import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointFilesManagerCore;
@@ -26,6 +27,7 @@ import _959.server_waypoint.navigation.NavigationTarget;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Clock;
@@ -54,6 +56,49 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class UploadCoordinatorTest {
+    @Test
+    void removingAPlatformRejectsItsPendingResponseWithoutChangingWaypoints() {
+        Config originalConfig = WaypointServerCore.CONFIG;
+        WaypointServerCore server = server();
+        UploadCoordinator<String> coordinator = coordinator(server);
+        var request = begin(coordinator, "player").request();
+
+        try {
+            server.loadConfig(new StringReader("""
+                    {"Features":{"waypointUploadPlatforms":["voxelmap"]}}
+                    """));
+            assertFalse(coordinator.acceptsUploadChunk("player", request.requestId()));
+            coordinator.onUpload("player", uploadData(request, "minecraft:overworld", "imported", List.of(waypoint("home", 0))));
+
+            assertNull(server.getWaypointFileManager("minecraft:overworld"));
+            assertTrue(coordinator.tryBeginEditRequest());
+            coordinator.finishEditRequest();
+            assertNull(begin(coordinator, "another player").request());
+        } finally {
+            WaypointServerCore.CONFIG = originalConfig;
+        }
+    }
+
+    @Test
+    void tickReportsTheCancelledRequestAndReleasesEditAdmission() {
+        Config originalConfig = WaypointServerCore.CONFIG;
+        WaypointServerCore server = server();
+        UploadCoordinator<String> coordinator = coordinator(server);
+        var request = begin(coordinator, "player").request();
+
+        try {
+            server.loadConfig(new StringReader("""
+                    {"Features":{"waypointUploadPlatforms":[]}}
+                    """));
+
+            assertEquals(Optional.of(request.requestId()), coordinator.tick());
+            assertTrue(coordinator.tryBeginEditRequest());
+            coordinator.finishEditRequest();
+        } finally {
+            WaypointServerCore.CONFIG = originalConfig;
+        }
+    }
+
     @Test
     void uploadAuditSummarizesChangesWithTheRequestAndPlayerIdentity() {
         UploadCoordinator<String> coordinator = coordinator(server());

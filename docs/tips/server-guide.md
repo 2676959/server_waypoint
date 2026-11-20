@@ -100,7 +100,7 @@ On Minecraft 1.21.9 and later, player chat can show supported vanilla item icons
     - Catalog synchronization starts when cross-server configuration is enabled. See [Velocity runtime setup](../features/cross-server/specs/cross-server-velocity-runtime.md) and [remote catalog queries](../features/cross-server/specs/cross-server-catalog-queries.md).
 - `/wp remote tp <server> <dimension> <list> <waypoint>` requests a teleport using exact cached identities (quote names with spaces). Stale or missing targets fail before preparation; the player stays on the source until destination preparation and fresh permission checks succeed, and the destination confirms the arrival. See [remote teleport initiation](../features/cross-server/specs/cross-server-source-teleport.md).
     - Velocity and dedicated backend runtime integration is implemented and disabled by default. Suggestions use only the local cache. Use unquoted dimension identifiers such as `minecraft:overworld` or `overworld` (default namespace: `minecraft`). See [configuration and validation](../features/cross-server/specs/cross-server-velocity-runtime.md).
-- `/wp reload` reloads `config.json` and the translation files in the `lang/` directory beside it (see [configuration paths](#server-configurations)). `defaultPageLimit`, `defaultNavigationMethods`, `CommandPermission`, `privateWaypoints`, `addWaypointFromChatSharing`, `compressChunkedMessages` and `broadcastFeedback` apply at once; `serverId`, `cross-server.json` and turning on `sendXaerosWorldId` need a restart. Waypoint files are not reloaded, so edit them while the server is stopped.
+- `/wp reload` reloads `config.json` and the translation files in the `lang/` directory beside it (see [configuration paths](#server-configurations)). `defaultPageLimit`, `defaultNavigationMethods`, `CommandPermission`, `privateWaypoints`, `addWaypointFromChatSharing`, `compressChunkedMessages`, `waypointUploadPlatforms` and `broadcastFeedback` apply at once. `serverId`, `cross-server.json` and turning on `sendXaerosWorldId` need a restart. Edit waypoint files while the server is stopped.
 - `/wp remove` removes a waypoint by identifier and answers with a temporary, single-use Restore link.
     - `/wp remove <dimension> <list-identifier>` removes an empty waypoint list.
 - `/wp restore <token>` restores a waypoint removed in the last 10 minutes. Each token works once.
@@ -246,7 +246,7 @@ The cross-server [release notes](../features/cross-server/cross-server-release-n
 
 Map sync replaces the waypoints Server Waypoint previously added, including local edits to those synced copies. Personal waypoints outside its managed sets remain separate. Upload any edits you want to keep before using **Sync now**.
 
-Upload is initiated by the server but reads map data from the executing player’s client. The required `<source>` is `xaero` or `voxelmap`; the client must have both Server Waypoint and the selected map mod installed and ready. The server accepts only the dimensions and optional list/waypoint selected by the command.
+Upload reads map data from the executing player’s client. The required `<source>` is `xaero` or `voxelmap`, as enabled by [`Features.waypointUploadPlatforms`](#waypointuploadplatforms). The client must have both Server Waypoint and the selected map mod installed and ready. The server accepts only the dimensions and optional list or waypoint selected by the command.
 
 In singleplayer (integrated-server mode), the host uses the same `/wp upload xaero` and `/wp upload voxelmap` commands. Waypoints are collected on the Minecraft client thread and passed directly to the server thread for validation and application, without upload request packets or chunked upload transport. This also applies to the host of a world opened to LAN; joining players still upload from their own clients over the network. Permissions, scope, conflict policies, and deletion rules remain the same.
 
@@ -349,7 +349,7 @@ Paper, Folia, Purpur:
 
 `<server-root>/plugins/ServerWaypoint/config.json`
 
-`/wp reload` applies changes to `defaultPageLimit`, `defaultNavigationMethods`, `CommandPermission`, `privateWaypoints`, `addWaypointFromChatSharing`, `compressChunkedMessages` and `broadcastFeedback`. Changes to `serverId`, turning on `sendXaerosWorldId` and changes to `cross-server.json` take effect after a restart.
+`/wp reload` applies changes to `defaultPageLimit`, `defaultNavigationMethods`, `CommandPermission`, `privateWaypoints`, `addWaypointFromChatSharing`, `compressChunkedMessages`, `waypointUploadPlatforms` and `broadcastFeedback`. Changes to `serverId`, turning on `sendXaerosWorldId` and changes to `cross-server.json` take effect after a restart.
 
 ### Default Page Limit
 Sets the page limit `L` that `/wp list` and `/wp remote list` use when the command does not include `limit`: flat views and single lists show `L` rows, while the tree view, the one-line-per-list view and the dimension and server lists hold `L + 5` lines. Values are constrained to `1-100`, and the default is `10`. This setting takes effect after `/wp reload`.
@@ -464,6 +464,20 @@ Default value:
        }
      }
      ```
+
+#### waypointUploadPlatforms
+
+Controls which map mods players can upload waypoints from. The default is `["xaero", "voxelmap"]`. Set `[]` to disable `/wp upload` entirely, or list only the platforms you want to allow. Platform IDs are case-insensitive. Existing upload and deletion permissions still apply. Reloading with a platform removed cancels requests from that platform that are still awaiting upload data.
+
+This example allows VoxelMap uploads only. Save the change to `config.json` and run `/wp reload`.
+
+```json
+{
+    "Features": {
+        "waypointUploadPlatforms": ["voxelmap"]
+    }
+}
+```
 
 #### broadcastFeedback
 

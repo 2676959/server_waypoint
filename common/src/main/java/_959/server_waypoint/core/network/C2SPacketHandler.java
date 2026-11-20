@@ -518,10 +518,10 @@ public class C2SPacketHandler<S, K, P> {
             );
             this.onUploadTransportFailure(failure);
         }
-        this.uploadCoordinator.tick().ifPresent(this::clearExpiredUploadTransport);
+        this.uploadCoordinator.tick().ifPresent(this::clearFinishedUploadTransport);
     }
 
-    private void clearExpiredUploadTransport(UUID requestId) {
+    private void clearFinishedUploadTransport(UUID requestId) {
         UploadTransportSession<P> session = this.activeUploadTransportSession.get();
         if (session != null
                 && session.requestId().equals(requestId)

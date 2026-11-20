@@ -59,6 +59,8 @@ import _959.server_waypoint.core.network.upload.UploadTarget;
 import _959.server_waypoint.core.network.upload.UploadStatus;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.io.StringReader;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -587,6 +589,64 @@ class CoreWaypointCommandListTest {
         this.dispatcher.execute("wp upload unsupported", this.source);
         assertTrue(translationKeys(this.sender.errors.get(0))
                 .contains("wp.error.upload.source"));
+    }
+
+    @Test
+    void uploadUsesConfiguredPlatformsForSuggestionsPanelAndRequests() throws CommandSyntaxException {
+        this.server.loadConfig(new StringReader("""
+                {"Features":{"waypointUploadPlatforms":["voxelmap"]}}
+                """));
+        TestWaypointCommand command = new TestWaypointCommand(this.server, this.sender);
+        command.player = new Object();
+        command.localUpload = true;
+        this.dispatcher = new CommandDispatcher<>();
+        command.register(this.dispatcher);
+
+        var suggestions = this.dispatcher.getCompletionSuggestions(this.dispatcher.parse("wp upload ", this.source))
+                .join().getList().stream().map(suggestion -> suggestion.getText()).toList();
+        assertEquals(List.of("voxelmap"), suggestions);
+
+        this.dispatcher.execute("wp upload", this.source);
+        var panel = translationKeys(this.sender.messages.get(0));
+        assertTrue(panel.contains("wp.upload.source.voxelmap"));
+        assertFalse(panel.contains("wp.upload.source.xaero"));
+
+        this.dispatcher.execute("wp help upload", this.source);
+        List<String> helpCommands = suggestedCommands(this.sender.messages.get(1));
+        assertTrue(helpCommands.contains("/wp upload voxelmap"));
+        assertFalse(helpCommands.contains("/wp upload xaero"));
+
+        this.dispatcher.execute("wp upload xaero force local delete overworld", this.source);
+        assertNull(command.collectedTarget);
+        assertTrue(translationKeys(this.sender.errors.get(0)).contains("wp.error.upload.disabled"));
+
+        this.dispatcher.execute("wp upload voxelmap overworld", this.source);
+        assertEquals(UploadTarget.VOXELMAP, command.collectedTarget);
+        assertNotNull(this.server.getWaypointFileManager("overworld").getWaypointListByName("imported"));
+    }
+
+    @Test
+    void emptyUploadPlatformsDisablesTheCommandAndHelpTopicAfterReload() throws Exception {
+        this.server.initConfigAndLanguageResource();
+        Path configFile = this.tempDir.resolve("config.json");
+        Files.writeString(configFile, """
+                {"Features":{"waypointUploadPlatforms":[]}}
+                """);
+        this.server.reload();
+
+        assertThrows(CommandSyntaxException.class, () -> this.dispatcher.execute("wp upload", this.source));
+        assertThrows(CommandSyntaxException.class, () -> this.dispatcher.execute("wp upload xaero", this.source));
+        assertThrows(CommandSyntaxException.class, () -> this.dispatcher.execute("wp help upload", this.source));
+
+        this.dispatcher.execute("wp help", this.source);
+        assertFalse(translationKeys(this.sender.messages.get(0)).contains("wp.help.topic.upload"));
+
+        Files.writeString(configFile, """
+                {"Features":{"waypointUploadPlatforms":["xaero"]}}
+                """);
+        this.server.reload();
+        this.dispatcher.execute("wp help", this.source);
+        assertTrue(translationKeys(this.sender.messages.get(1)).contains("wp.help.topic.upload"));
     }
 
     @Test

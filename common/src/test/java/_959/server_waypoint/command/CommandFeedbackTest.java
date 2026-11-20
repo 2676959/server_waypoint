@@ -3,6 +3,7 @@ package _959.server_waypoint.command;
 import _959.server_waypoint.config.Config;
 import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.network.PlatformMessageSender;
+import _959.server_waypoint.core.network.upload.UploadTarget;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import _959.server_waypoint.text.chat.Viewer;
 import _959.server_waypoint.text.feedback.HelpTopics;
@@ -158,7 +159,7 @@ class CommandFeedbackTest {
     void everySubcommandHasAHelpUsage() {
         Set<String> documented = new HashSet<>();
         for (HelpTopics.Topic topic : HelpTopics.Topic.values()) {
-            for (HelpTopics.Usage usage : HelpTopics.content(topic, true).usages()) {
+            for (HelpTopics.Usage usage : HelpTopics.content(topic, true, UploadTarget.supportedTargets()).usages()) {
                 String[] words = usage.syntax().split(" ");
                 if (words.length > 1 && words[0].equals("/wp")) {
                     documented.add(words[1]);

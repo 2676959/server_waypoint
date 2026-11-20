@@ -252,7 +252,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                         feedback.accept(result);
                     });
                 },
-                source -> HelpScreen.topic(this.viewer(source), HelpTopics.Topic.REMOTE, false), this::viewer, iconArgument,
+                source -> HelpScreen.topic(this.viewer(source), HelpTopics.Topic.REMOTE, false, Set.of()),
+                this::viewer, iconArgument,
                 context -> getArgument(context, RemoteWaypointCommand.DIMENSION).toString());
         this.permissionManager = permissionManager;
         this.navigationService = Objects.requireNonNull(navigationService, "navigationService");
@@ -420,7 +421,9 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     }
 
     private boolean hasUploadPermission(S source) {
-        return !isPrivate() && this.permissionManager.hasPermission(source, this.permissionKeys.upload(), CONFIG.CommandPermission().upload());
+        var config = CONFIG;
+        return !isPrivate() && !config.Features().waypointUploadPlatforms().isEmpty()
+                && this.permissionManager.hasPermission(source, this.permissionKeys.upload(), config.CommandPermission().upload());
     }
 
     private boolean hasUploadDeletePermission(S source) {
@@ -533,8 +536,11 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     private RequiredArgumentBuilder<S, String> sourceNode() {
         return RequiredArgumentBuilder.<S, String>argument(UPLOAD_SOURCE_ARG, StringArgumentType.word())
                 .suggests((context, builder) -> {
-                    builder.suggest("xaero");
-                    builder.suggest("voxelmap");
+                    for (UploadTarget target : CONFIG.Features().waypointUploadPlatforms()) {
+                        if (target.id().startsWith(builder.getRemainingLowerCase())) {
+                            builder.suggest(target.id());
+                        }
+                    }
                     return builder.buildFuture();
                 });
     }
@@ -1275,6 +1281,10 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
 
     /** /wp upload: the map mods and their modes, for a player whose client has the mod. */
     private int executeUploadPanel(S source) {
+        Set<UploadTarget> platforms = CONFIG.Features().waypointUploadPlatforms();
+        if (platforms.isEmpty()) {
+            return 0;
+        }
         if (getPlayer(source) == null) {
             sendError(source, Errors.playerOnly());
             return 0;
@@ -1284,7 +1294,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
             sendError(source, Errors.of("wp.error.upload.no_mod"));
             return 0;
         }
-        sendMessage(source, UploadScreens.panel(viewer));
+        sendMessage(source, UploadScreens.panel(viewer, platforms));
         return Command.SINGLE_SUCCESS;
     }
 
@@ -1315,7 +1325,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                     .requires(source -> topic.readableBy(new Viewer(permissions(source), false, false, null, null, 0F, ChatIcons.NONE, commandMode.get())))
                     .executes(context -> {
                         sendMessage(context.getSource(), HelpScreen.topic(viewer(context.getSource()), topic,
-                                this.isNavigationMethodSupported(NavigationMethod.TEXT_DISPLAY)));
+                                this.isNavigationMethodSupported(NavigationMethod.TEXT_DISPLAY),
+                                CONFIG.Features().waypointUploadPlatforms()));
                         return Command.SINGLE_SUCCESS;
                     }));
         }
@@ -2400,11 +2411,13 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
             @Nullable String listName,
             @Nullable String waypointName
     ) {
-        UploadTarget target;
-        try {
-            target = UploadTarget.valueOf(uploadSource.toUpperCase(Locale.ROOT));
-        } catch (IllegalArgumentException exception) {
+        UploadTarget target = UploadTarget.fromId(uploadSource).orElse(null);
+        if (target == null) {
             sendError(source, Errors.of("wp.error.upload.source", text(uploadSource)));
+            return;
+        }
+        if (!CONFIG.Features().waypointUploadPlatforms().contains(target)) {
+            sendError(source, UploadScreens.platformDisabled(target));
             return;
         }
         P player = executingPlayer(source);
@@ -2437,6 +2450,10 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                 player, target, scope, conflictPolicy, deleteMissing, dimensions, listName, waypointName,
                 this.sender.commandSenderActor(source)
         );
+        if (beginResult.status() == UploadCoordinator.BeginStatus.PLATFORM_DISABLED) {
+            sendError(source, UploadScreens.platformDisabled(target));
+            return;
+        }
         if (beginResult.status() == UploadCoordinator.BeginStatus.BUSY) {
             sendError(source, Errors.of("wp.error.upload.busy"));
             return;
@@ -2840,7 +2857,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         Viewer viewer = viewer(source);
         if (viewer.plainText()) {
             sendMessage(source, HelpScreen.topic(viewer, plainTopic,
-                    isNavigationMethodSupported(NavigationMethod.TEXT_DISPLAY)));
+                    isNavigationMethodSupported(NavigationMethod.TEXT_DISPLAY), Set.of()));
             return Command.SINGLE_SUCCESS;
         }
         sendMessage(source, new ChatLines()

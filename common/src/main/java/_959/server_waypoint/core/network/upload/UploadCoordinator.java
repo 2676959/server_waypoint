@@ -41,6 +41,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
+
 /**
  * Correlates a player-issued upload command with the C2S response and merges the
  * validated data into the server-owned waypoint files.
@@ -119,6 +121,9 @@ public final class UploadCoordinator<P> {
     public BeginResult begin(P player, UploadTarget target, UploadScope scope,
                              UploadConflictPolicy conflictPolicy, boolean deleteMissing,
                              List<String> dimensionNames, String listName, String waypointName, PlayerActionLog.Actor sender) {
+        if (!isPlatformEnabled(target)) {
+            return BeginResult.platformDisabled();
+        }
         if (deleteMissing && conflictPolicy != UploadConflictPolicy.LOCAL) {
             throw new IllegalArgumentException("Only force-local uploads can delete missing waypoints");
         }
@@ -192,16 +197,18 @@ public final class UploadCoordinator<P> {
     public Optional<UUID> tick() {
         Instant now = this.clock.instant();
         PendingUpload<P> pending = this.activeUpload.get();
-        UUID expiredRequestId = pending != null
-                && pending.expired(now)
-                && this.finishPending(pending, false)
-                ? pending.request.requestId()
-                : null;
-        if (expiredRequestId != null) audit(pending, "expired");
+        UUID finishedRequestId = null;
+        if (pending != null) {
+            boolean expired = pending.expired(now);
+            if ((expired || !isPlatformEnabled(pending.request.target())) && this.finishPending(pending, false)) {
+                finishedRequestId = pending.request.requestId();
+                audit(pending, expired ? "expired" : "platform_disabled");
+            }
+        }
         synchronized (this.admissionMonitor) {
             this.removeExpiredCooldowns(now);
         }
-        return Optional.ofNullable(expiredRequestId);
+        return Optional.ofNullable(finishedRequestId);
     }
 
     public void resetSession() {
@@ -237,6 +244,7 @@ public final class UploadCoordinator<P> {
         PendingUpload<P> pending = this.activeUpload.get();
         return pending != null
                 && !pending.expired(this.clock.instant())
+                && isPlatformEnabled(pending.request.target())
                 && pending.phase.get() == RequestPhase.RECEIVING
                 && this.matchesPlayer(pending, player)
                 && pending.request.requestId().equals(requestId);
@@ -262,6 +270,11 @@ public final class UploadCoordinator<P> {
             return;
         }
         try {
+            if (!isPlatformEnabled(pending.request.target())) {
+                audit(pending, "platform_disabled");
+                this.playerMessageSender.send(player, UploadScreens.platformDisabled(pending.request.target()));
+                return;
+            }
             if (!this.permissionChecker.test(player)) {
                 audit(pending, "permission_denied");
                 this.playerMessageSender.send(player, Errors.of("wp.error.upload.permission"));
@@ -338,6 +351,10 @@ public final class UploadCoordinator<P> {
         } finally {
             this.finishPending(pending, true);
         }
+    }
+
+    private static boolean isPlatformEnabled(UploadTarget target) {
+        return CONFIG.Features().waypointUploadPlatforms().contains(target);
     }
 
     private static void audit(PendingUpload<?> pending, String outcome, Object... details) {
@@ -761,6 +778,7 @@ public final class UploadCoordinator<P> {
 
     public enum BeginStatus {
         STARTED,
+        PLATFORM_DISABLED,
         BUSY,
         COOLDOWN
     }
@@ -776,6 +794,10 @@ public final class UploadCoordinator<P> {
 
         private static BeginResult busy() {
             return new BeginResult(BeginStatus.BUSY, null, Duration.ZERO);
+        }
+
+        private static BeginResult platformDisabled() {
+            return new BeginResult(BeginStatus.PLATFORM_DISABLED, null, Duration.ZERO);
         }
 
         private static BeginResult cooldown(Duration remaining) {
