@@ -78,11 +78,11 @@ public class ClientConfigScreen extends MovementAllowedScreen {
     private final Screen parentScreen;
     private final ClientConfig config = WaypointClientMod.getClientConfig();
     private final List<SettingControl> settingControls = new ArrayList<>();
+    private final List<SettingDropdown<?>> settingDropdowns = new ArrayList<>();
     private final List<MapModControls> mapModControls = new ArrayList<>();
     private final WidgetPack footer = new WidgetPack(Orientation.HORIZONTAL);
     private final ScalableText titleText;
     private final SettingsListWidget settingsList;
-    private final TeleportMethodDropdown teleportMethodDropdown;
     private final TranslucentButton teleportKeyButton;
     private final int teleportKeyButtonMinWidth;
     private final TranslucentButton themeButton;
@@ -108,7 +108,6 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         this.parentScreen = parentScreen;
         this.titleText = new ScalableText(0, 0, this.title, TITLE_SCALE, TEXT_PRIMARY, this.font);
         this.settingsList = new SettingsListWidget(this.font);
-        this.teleportMethodDropdown = new TeleportMethodDropdown(this.config, this.font, this::refreshControlStates);
         this.teleportKeyButton = TranslucentButton.fitted(Component.translatable("server_waypoint.config.teleport_key.capture"),
                 () -> this.setCapturingTeleportKey(!this.capturingTeleportKey));
         scaleRowButton(this.teleportKeyButton);
@@ -144,6 +143,7 @@ public class ClientConfigScreen extends MovementAllowedScreen {
             entries.add(this.createSettingRow(setting));
         }
         entries.add(new SettingsListWidget.Header(Component.translatable("server_waypoint.config.section.map_mods")));
+        entries.add(this.createSettingRow(ClientConfigSettings.SYNC_NOTIFICATIONS));
         for (UploadTarget target : ClientConfigSettings.MAP_MODS) {
             if (this.addMapModRows(entries, target)) {
                 installedMapMods.add(target);
@@ -165,7 +165,7 @@ public class ClientConfigScreen extends MovementAllowedScreen {
     @Override
     protected void init() {
         super.init();
-        this.teleportMethodDropdown.closeMenuIfOpen();
+        this.closeSettingDropdowns();
         this.setCapturingTeleportKey(false);
         // Row widgets first and the list last, so the list can't take clicks meant for its rows.
         this.settingsList.visitWidgets(this::addRenderableWidget);
@@ -236,13 +236,13 @@ public class ClientConfigScreen extends MovementAllowedScreen {
 
     @Override
     protected void renderScreenContents(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
-        boolean dropdownExpanded = this.teleportMethodDropdown.isExpanded();
-        if (dropdownExpanded) {
-            this.teleportMethodDropdown.layoutPopup(this.height);
+        SettingDropdown<?> openDropdown = this.getExpandedSettingDropdown();
+        if (openDropdown != null) {
+            openDropdown.layoutPopup(this.height);
         }
         // A dialog or the open dropdown owns hover and tooltips above the settings list.
         boolean suppressHover = this.openDialog != null
-                || dropdownExpanded && this.teleportMethodDropdown.isMouseOver(mouseX, mouseY);
+                || openDropdown != null && openDropdown.isMouseOver(mouseX, mouseY);
         int contentMouseX = suppressHover ? NO_MOUSE : mouseX;
         int contentMouseY = suppressHover ? NO_MOUSE : mouseY;
         this.titleText.
@@ -272,8 +272,8 @@ public class ClientConfigScreen extends MovementAllowedScreen {
             extractRenderState
                     (context, mouseX, mouseY, deltaTicks);
             previousLayer(context);
-        } else {
-            this.teleportMethodDropdown.renderPopup(context, mouseX, mouseY, deltaTicks);
+        } else if (openDropdown != null) {
+            openDropdown.renderPopup(context, mouseX, mouseY, deltaTicks);
         }
     }
 
@@ -299,12 +299,28 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         if (this.capturingTeleportKey && !this.teleportKeyButton.isMouseOver(mouseX, mouseY)) {
             this.setCapturingTeleportKey(false);
         }
-        if (this.teleportMethodDropdown.isMouseOverPopup(mouseX, mouseY)) {
-            this.teleportMethodDropdown.mouseClicked(mouseX, mouseY, button);
-            return true;
+        SettingDropdown<?> openDropdown = this.getExpandedSettingDropdown();
+        if (openDropdown != null) {
+            if (openDropdown.isMouseOverPopup(mouseX, mouseY)) {
+                openDropdown.mouseClicked(mouseX, mouseY, button);
+                return true;
+            }
+            openDropdown.closeMenuIfOutside(mouseX, mouseY);
         }
-        this.teleportMethodDropdown.closeMenuIfOutside(mouseX, mouseY);
         return false;
+    }
+
+    private @Nullable SettingDropdown<?> getExpandedSettingDropdown() {
+        for (SettingDropdown<?> dropdown : this.settingDropdowns) {
+            if (dropdown.isExpanded()) {
+                return dropdown;
+            }
+        }
+        return null;
+    }
+
+    private void closeSettingDropdowns() {
+        this.settingDropdowns.forEach(SettingDropdown::closeMenuIfOpen);
     }
 
     @Override
@@ -413,14 +429,15 @@ public class ClientConfigScreen extends MovementAllowedScreen {
 
     /** Gives the wheel to the list first, so it scrolls instead of changing a slider under the cursor. */
     private boolean scrollSettingsList(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
-        if (this.teleportMethodDropdown.isMouseOverPopup(mouseX, mouseY)) {
+        SettingDropdown<?> openDropdown = this.getExpandedSettingDropdown();
+        if (openDropdown != null && openDropdown.isMouseOverPopup(mouseX, mouseY)) {
             return true;
         }
         if (!this.settingsList.isMouseOver(mouseX, mouseY)
                 || !this.settingsList.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)) {
             return false;
         }
-        this.teleportMethodDropdown.closeMenuIfOpen();
+        this.closeSettingDropdowns();
         if (this.getFocused() instanceof AbstractWidget widget && !widget.visible) {
             this.setFocused(null);
         }
@@ -453,8 +470,10 @@ public class ClientConfigScreen extends MovementAllowedScreen {
 
     private SettingsListWidget.Row createSettingRow(ClientConfigSettings.Setting setting) {
         AbstractWidget widget;
-        if (setting == ClientConfigSettings.TELEPORT_METHOD) {
-            widget = this.teleportMethodDropdown;
+        if (setting instanceof ClientConfigSettings.EnumSetting<?> enumSetting) {
+            var dropdown = new SettingDropdown<>(enumSetting, this.config, this.font, this::refreshControlStates);
+            this.settingDropdowns.add(dropdown);
+            widget = dropdown;
         } else if (setting == ClientConfigSettings.TELEPORT_KEY) {
             widget = this.teleportKeyButton;
         } else if (setting instanceof ClientConfigSettings.IntSetting intSetting) {
@@ -711,7 +730,7 @@ public class ClientConfigScreen extends MovementAllowedScreen {
     }
 
     private void openDialog(ConfirmationDialog dialog, AbstractWidget opener) {
-        this.teleportMethodDropdown.closeMenuIfOpen();
+        this.closeSettingDropdowns();
         this.openDialog = dialog;
         this.dialogOpener = opener;
         this.refreshControlStates();
@@ -800,18 +819,18 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         }
     }
 
-    static final class TeleportMethodDropdown extends TextChoiceDropdown {
-        private static final ClientConfigSettings.TeleportMethodSetting METHOD = ClientConfigSettings.TELEPORT_METHOD;
-        private static final List<TeleportMethod> METHODS = List.of(TeleportMethod.values());
+    static final class SettingDropdown<E extends Enum<E>> extends TextChoiceDropdown {
+        private final ClientConfigSettings.EnumSetting<E> setting;
         private final ClientConfig config;
 
-        TeleportMethodDropdown(ClientConfig config, Font font, Runnable onChanged) {
-            super(triggerWidth(METHODS.stream().map(METHOD::valueText).mapToInt(font::width).max().orElseThrow()),
-                    METHOD.text().label(), font);
+        SettingDropdown(ClientConfigSettings.EnumSetting<E> setting, ClientConfig config, Font font, Runnable onChanged) {
+            super(triggerWidth(setting.choices().stream().map(setting::valueText).mapToInt(font::width).max().orElseThrow()),
+                    setting.text().label(), font);
+            this.setting = setting;
             this.config = config;
-            for (TeleportMethod method : METHODS) {
-                this.addMenuItem(new TextChoice(METHOD.valueText(method), () -> {
-                    METHOD.set(this.config, method);
+            for (E choice : setting.choices()) {
+                this.addMenuItem(new TextChoice(setting.valueText(choice), () -> {
+                    setting.set(this.config, choice);
                     onChanged.run();
                 }));
             }
@@ -820,12 +839,12 @@ public class ClientConfigScreen extends MovementAllowedScreen {
 
         @Override
         protected Component triggerLabel() {
-            return METHOD.valueText(this.config.getTeleportMethod());
+            return this.setting.valueText(this.setting.get(this.config));
         }
 
         @Override
         protected int getSelectedMenuItemIndex() {
-            return this.config.getTeleportMethod().ordinal();
+            return this.setting.get(this.config).ordinal();
         }
 
         void layoutPopup(int screenHeight) {

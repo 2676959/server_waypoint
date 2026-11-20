@@ -1,6 +1,7 @@
 package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.common.client.ClientConfig;
+import _959.server_waypoint.common.client.ClientConfig.SyncNotificationMode;
 import _959.server_waypoint.common.client.ClientConfig.TeleportMethod;
 import _959.server_waypoint.common.client.gui.TestFont;
 import _959.server_waypoint.core.network.upload.UploadTarget;
@@ -111,7 +112,8 @@ class ClientConfigSettingsTest {
     @Test
     void settingsOfMissingMapModsAreLeftOut() {
         var withoutMapMods = ClientConfigSettings.forScreen(Set.of());
-        assertEquals(Stream.concat(ClientConfigSettings.RENDERING.stream(), ClientConfigSettings.WAYPOINT_MANAGER.stream())
+        assertEquals(Stream.of(ClientConfigSettings.RENDERING, ClientConfigSettings.WAYPOINT_MANAGER,
+                        List.of(ClientConfigSettings.SYNC_NOTIFICATIONS)).flatMap(List::stream)
                 .toList(), withoutMapMods);
 
         List<ClientConfigSettings.Setting> withXaero = ClientConfigSettings.forScreen(Set.of(UploadTarget.XAERO));
@@ -119,6 +121,40 @@ class ClientConfigSettingsTest {
         assertEquals(withoutMapMods.size() + 2, withXaero.size());
         assertEquals("server_waypoint.map_mod.xaeros_minimap",
                 withXaero.get(withoutMapMods.size()).text().argumentKey());
+    }
+
+    @Test
+    void syncNotificationDropdownSelectsAllModesAndReflectsReset() {
+        ClientConfig config = GSON.fromJson("{}", ClientConfig.class);
+        var setting = ClientConfigSettings.SYNC_NOTIFICATIONS;
+        var dropdown = new ClientConfigScreen.SettingDropdown<>(setting, config, new TestFont(), () -> { });
+        String prefix = "server_waypoint.config.sync_notifications.";
+        int left = InputConstants.MOUSE_BUTTON_LEFT;
+        int rowHeight = dropdown.getHeight();
+        assertTranslation(dropdown.triggerLabel(), prefix + "chat");
+
+        var choices = List.of(SyncNotificationMode.TOAST, SyncNotificationMode.OFF, SyncNotificationMode.CHAT);
+        var keys = List.of("toast", "off", "chat");
+        int[] popupRows = {2, 1, 1};
+        for (int index = 0; index < choices.size(); index++) {
+            assertTrue(dropdown.mouseClicked(2, 2, left));
+            assertEquals(2, dropdown.getPopupItemCount());
+            assertTrue(dropdown.mouseClicked(2, popupRows[index] * rowHeight + 2, left));
+            assertFalse(dropdown.isExpanded());
+            assertTranslation(dropdown.triggerLabel(), prefix + keys.get(index));
+            ClientConfig restored = GSON.fromJson(GSON.toJson(config), ClientConfig.class);
+            assertEquals(choices.get(index), restored.getSyncNotificationMode());
+        }
+
+        assertTrue(dropdown.keyPressed(InputConstants.KEY_RETURN, 0, 0));
+        assertEquals(SyncNotificationMode.OFF.ordinal(), dropdown.getHighlightedItemIndex());
+        assertTrue(dropdown.keyPressed(InputConstants.KEY_RETURN, 0, 0));
+        assertEquals(SyncNotificationMode.OFF, config.getSyncNotificationMode());
+        var screenSettings = ClientConfigSettings.forScreen(Set.of());
+        assertFalse(ClientConfigSettings.allDefault(config, screenSettings));
+        setting.reset(config);
+        assertTrue(ClientConfigSettings.allDefault(config, screenSettings));
+        assertTranslation(dropdown.triggerLabel(), prefix + "chat");
     }
 
     @Test
@@ -168,7 +204,7 @@ class ClientConfigSettingsTest {
     @Test
     void teleportDropdownOmitsTheCurrentMethodAndReflectsReset() {
         ClientConfig config = GSON.fromJson("{}", ClientConfig.class);
-        var dropdown = new ClientConfigScreen.TeleportMethodDropdown(config, new TestFont(), () -> { });
+        var dropdown = new ClientConfigScreen.SettingDropdown<>(ClientConfigSettings.TELEPORT_METHOD, config, new TestFont(), () -> { });
         int left = InputConstants.MOUSE_BUTTON_LEFT;
         int rowHeight = dropdown.getHeight();
         assertTranslation(dropdown.triggerLabel(), "server_waypoint.config.teleport_method.key");
@@ -197,7 +233,7 @@ class ClientConfigSettingsTest {
     void teleportDropdownKeyboardNavigationSkipsTheCurrentMethod() {
         ClientConfig config = GSON.fromJson("{}", ClientConfig.class);
         config.setTeleportMethod(TeleportMethod.RIGHT_CLICK);
-        var dropdown = new ClientConfigScreen.TeleportMethodDropdown(config, new TestFont(), () -> { });
+        var dropdown = new ClientConfigScreen.SettingDropdown<>(ClientConfigSettings.TELEPORT_METHOD, config, new TestFont(), () -> { });
 
         assertTrue(dropdown.keyPressed(InputConstants.KEY_RETURN, 0, 0));
         assertEquals(TeleportMethod.KEY.ordinal(), dropdown.getHighlightedItemIndex());
@@ -211,7 +247,7 @@ class ClientConfigSettingsTest {
     @Test
     void teleportDropdownOpensAboveTheControlNearTheBottomOfTheScreen() {
         ClientConfig config = GSON.fromJson("{}", ClientConfig.class);
-        var dropdown = new ClientConfigScreen.TeleportMethodDropdown(config, new TestFont(), () -> { });
+        var dropdown = new ClientConfigScreen.SettingDropdown<>(ClientConfigSettings.TELEPORT_METHOD, config, new TestFont(), () -> { });
         int rowHeight = dropdown.getHeight();
         int y = 100 - rowHeight;
         int left = InputConstants.MOUSE_BUTTON_LEFT;

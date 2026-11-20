@@ -8,16 +8,15 @@ import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
 import _959.server_waypoint.core.network.data.DimensionWaypointData;
 import _959.server_waypoint.core.network.data.WaypointData;
 import _959.server_waypoint.core.network.upload.UploadStatus;
+import _959.server_waypoint.core.network.upload.UploadTarget;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
 import _959.server_waypoint.common.util.SyncedWaypointName;
 import _959.server_waypoint.common.util.XaerosWaypointHelper;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import xaero.hud.minimap.module.MinimapSession;
 import xaero.hud.minimap.waypoint.set.WaypointSet;
@@ -30,8 +29,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static _959.server_waypoint.common.client.WaypointClientMod.LOGGER;
-import static _959.server_waypoint.common.client.integrations.MapModChatHelper.displayClientMessage;
 import static _959.server_waypoint.common.client.integrations.MapModChatHelper.waypointText;
+import static _959.server_waypoint.common.client.integrations.MapModSyncNotifications.showSyncFailure;
+import static _959.server_waypoint.common.client.integrations.MapModSyncNotifications.showSyncSuccess;
 import static _959.server_waypoint.common.network.ModMessageSender.toVanillaText;
 import static _959.server_waypoint.common.util.DimensionKeyParser.getDimensionKey;
 import static _959.server_waypoint.common.util.TextHelper.getDimensionColor;
@@ -43,7 +43,6 @@ public final class XaerosMinimapWaypointHelper {
 
     public static void replaceAll(WaypointClientMod waypointClientMod) {
         MinimapSession session = getMinimapSession();
-        Player player = Minecraft.getInstance().player;
         boolean[] synced = {true};
         waypointClientMod.forEachWaypointFileManager(fileManager ->
                 synced[0] &= replaceDimension(session, fileManager));
@@ -51,10 +50,10 @@ public final class XaerosMinimapWaypointHelper {
             session.getWorldManagerIO().saveAllWorlds(session);
         } catch (IOException exception) {
             LOGGER.warn("Failed to save Xaero's Minimap worlds", exception);
-            displayClientMessage(player, Component.translatable("server_waypoint.save.failed.xaeros").withStyle(ChatFormatting.RED));
+            showSyncFailure(Component.translatable("server_waypoint.save.failed.xaeros").withStyle(ChatFormatting.RED));
             return;
         }
-        displaySyncResult(player, synced[0], Component.translatable("server_waypoint.all.added.xaeros"));
+        displaySyncResult(synced[0], Component.translatable("server_waypoint.all.added.xaeros"));
     }
 
     public static WaypointData collectUpload(UploadRequestBuffer request) {
@@ -137,39 +136,36 @@ public final class XaerosMinimapWaypointHelper {
 
     public static void replaceList(String dimensionName, WaypointList waypointList) {
         ResourceKey<Level> dimKey = getValidDimensionKey(dimensionName);
-        Player player = Minecraft.getInstance().player;
         if (dimKey == null) {
-            warnInvalidDimension(player, dimensionName);
+            warnInvalidDimension(dimensionName);
             return;
         }
         MinimapSession session = getMinimapSession();
         MinimapWorld minimapWorld = getMinimapWorld(session, dimKey);
         boolean synced = replaceWaypointList(minimapWorld, waypointList);
-        if (saveMinimapWorldWithFeedback(session, minimapWorld, player)) {
-            displaySyncResult(player, synced, Component.translatable("server_waypoint.list.added.xaeros", waypointList.name()));
+        if (saveMinimapWorldWithFeedback(session, minimapWorld)) {
+            displaySyncResult(synced, Component.translatable("server_waypoint.list.added.xaeros", waypointList.name()));
         }
     }
 
     public static void replaceDimension(String dimensionName, List<WaypointList> waypointLists) {
         ResourceKey<Level> dimKey = getValidDimensionKey(dimensionName);
-        Player player = Minecraft.getInstance().player;
         if (dimKey == null) {
-            warnInvalidDimension(player, dimensionName);
+            warnInvalidDimension(dimensionName);
             return;
         }
         MinimapSession session = getMinimapSession();
         MinimapWorld minimapWorld = getMinimapWorld(session, dimKey);
         boolean synced = replaceWaypointLists(minimapWorld, waypointLists);
-        if (saveMinimapWorldWithFeedback(session, minimapWorld, player)) {
-            displaySyncResult(player, synced, Component.translatable("server_waypoint.dimension.waypoint.added.xaeros", Component.literal(dimensionName).withStyle(getDimensionColor(dimensionName))));
+        if (saveMinimapWorldWithFeedback(session, minimapWorld)) {
+            displaySyncResult(synced, Component.translatable("server_waypoint.dimension.waypoint.added.xaeros", Component.literal(dimensionName).withStyle(getDimensionColor(dimensionName))));
         }
     }
 
     public static void applyModification(String dimensionName, String listName, WaypointModificationType type, SimpleWaypoint waypoint, String waypointName) {
-        Player player = Minecraft.getInstance().player;
         ResourceKey<Level> dimKey = getValidDimensionKey(dimensionName);
         if (dimKey == null) {
-            warnInvalidDimension(player, dimensionName);
+            warnInvalidDimension(dimensionName);
             return;
         }
 
@@ -229,15 +225,15 @@ public final class XaerosMinimapWaypointHelper {
                 }
             }
         }
-        if (saveMinimapWorldWithFeedback(session, minimapWorld, player) && feedback != null) {
-            displayClientMessage(player, feedback);
+        if (saveMinimapWorldWithFeedback(session, minimapWorld) && feedback != null) {
+            showSyncSuccess(UploadTarget.XAERO, feedback);
         }
     }
 
     private static boolean replaceDimension(MinimapSession session, WaypointFileManager fileManager) {
         ResourceKey<Level> dimKey = getValidDimensionKey(fileManager.getDimensionName());
         if (dimKey == null) {
-            warnInvalidDimension(Minecraft.getInstance().player, fileManager.getDimensionName());
+            warnInvalidDimension(fileManager.getDimensionName());
             return false;
         }
         return replaceWaypointLists(getMinimapWorld(session, dimKey), fileManager.getWaypointLists());
@@ -247,25 +243,29 @@ public final class XaerosMinimapWaypointHelper {
         return getDimensionKey(dimensionName);
     }
 
-    private static boolean saveMinimapWorldWithFeedback(MinimapSession session, MinimapWorld minimapWorld, Player player) {
+    private static boolean saveMinimapWorldWithFeedback(MinimapSession session, MinimapWorld minimapWorld) {
         try {
             saveMinimapWorld(session, minimapWorld);
             return true;
         } catch (IOException e) {
             LOGGER.warn("Failed to save waypoints", e);
-            displayClientMessage(player, Component.translatable("server_waypoint.save.failed.xaeros").withStyle(ChatFormatting.RED));
+            showSyncFailure(Component.translatable("server_waypoint.save.failed.xaeros").withStyle(ChatFormatting.RED));
             return false;
         }
     }
 
-    private static void displaySyncResult(Player player, boolean synced, Component successMessage) {
-        displayClientMessage(player, synced ? successMessage : Component.translatable(
-                "server_waypoint.sync.incomplete", "Xaero's minimap").withStyle(ChatFormatting.RED));
+    private static void displaySyncResult(boolean synced, Component successMessage) {
+        if (synced) {
+            showSyncSuccess(UploadTarget.XAERO, successMessage);
+        } else {
+            showSyncFailure(Component.translatable("server_waypoint.sync.incomplete", "Xaero's minimap")
+                    .withStyle(ChatFormatting.RED));
+        }
     }
 
-    private static void warnInvalidDimension(Player player, String dimensionName) {
+    private static void warnInvalidDimension(String dimensionName) {
         LOGGER.warn("Failed to decode dimension {}", dimensionName);
-        displayClientMessage(player, Component.translatable("server_waypoint.dimension.decode.fail",
+        showSyncFailure(Component.translatable("server_waypoint.dimension.decode.fail",
                 Component.literal(String.valueOf(dimensionName))).withStyle(ChatFormatting.RED));
     }
 }

@@ -1843,8 +1843,9 @@ The open choices use the same themed surfaces and outlines as combobox choices.
   choices.
 - **Preview dropdown:** `WidgetThemePreview.SampleDropdown` shows "Choice 1" to "Choice 3" and keeps the
   choice made.
-- **Teleport shortcut dropdown:** `ClientConfigScreen.TeleportMethodDropdown` shows the current method in
-  the trigger and the three alternatives in the popup. Both read the current setting after a reset.
+- **Client settings dropdowns:** `ClientConfigScreen.SettingDropdown` uses an `EnumSetting` for the
+  teleport shortcut and waypoint sync notifications. The trigger shows the selected value and the popup
+  shows the other choices. Both read the current setting after a reset.
   The popup opens above the control when there is more room there and the choices would be clipped below.
   The screen draws the popup outside the settings list's clipping bounds and gives it input priority
   over covered rows.

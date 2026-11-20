@@ -9,6 +9,7 @@ import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
 import _959.server_waypoint.core.network.data.DimensionWaypointData;
 import _959.server_waypoint.core.network.data.WaypointData;
 import _959.server_waypoint.core.network.upload.UploadStatus;
+import _959.server_waypoint.core.network.upload.UploadTarget;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
@@ -37,8 +38,9 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static _959.server_waypoint.common.client.WaypointClientMod.LOGGER;
-import static _959.server_waypoint.common.client.integrations.MapModChatHelper.displayClientMessage;
 import static _959.server_waypoint.common.client.integrations.MapModChatHelper.waypointText;
+import static _959.server_waypoint.common.client.integrations.MapModSyncNotifications.showSyncFailure;
+import static _959.server_waypoint.common.client.integrations.MapModSyncNotifications.showSyncSuccess;
 import static _959.server_waypoint.common.network.ModMessageSender.toVanillaText;
 import static _959.server_waypoint.common.util.DimensionKeyParser.getDimensionKey;
 import static _959.server_waypoint.common.util.TextHelper.getDimensionColor;
@@ -250,26 +252,23 @@ public final class VoxelMapWaypointHelper {
         switch (type) {
             case ADD, UPDATE -> {
                 removeSyncedWaypoint(manager, dimensionName, listName, waypointName);
-                boolean synced = addWaypoint(manager, dimensionName, listName, waypoint);
-                if (synced) {
-                    var player = Minecraft.getInstance().player;
-                    if (player != null) {
-                        String messageKey = type == WaypointModificationType.ADD
-                                ? "server_waypoint.modification.add.voxelmap"
-                                : "server_waypoint.modification.update.voxelmap";
-                        displayClientMessage(player, Component.translatable(messageKey, toVanillaText(waypointText(waypoint, dimensionName, listName))));
-                    }
+                if (addWaypoint(manager, dimensionName, listName, waypoint)) {
+                    String messageKey = type == WaypointModificationType.ADD
+                            ? "server_waypoint.modification.add.voxelmap"
+                            : "server_waypoint.modification.update.voxelmap";
+                    showSyncSuccess(UploadTarget.VOXELMAP, Component.translatable(messageKey,
+                            toVanillaText(waypointText(waypoint, dimensionName, listName))));
                 }
             }
             case REMOVE -> {
                 if (removeSyncedWaypoint(manager, dimensionName, listName, waypointName)) {
-                    displayMessage(Component.translatable("server_waypoint.modification.remove.voxelmap",
+                    showSyncSuccess(UploadTarget.VOXELMAP, Component.translatable("server_waypoint.modification.remove.voxelmap",
                             Component.literal(waypointName)));
                 }
             }
             case REMOVE_LIST -> {
                 if (removeList(dimensionName, listName)) {
-                    displayMessage(Component.translatable("server_waypoint.list.removed.voxelmap", listName));
+                    showSyncSuccess(UploadTarget.VOXELMAP, Component.translatable("server_waypoint.list.removed.voxelmap", listName));
                 }
             }
             case ADD_LIST -> {
@@ -386,18 +385,18 @@ public final class VoxelMapWaypointHelper {
             return true;
         }
         LOGGER.warn("Failed to decode VoxelMap dimension {}", dimensionName);
-        displayMessage(Component.translatable("server_waypoint.dimension.decode.fail",
+        showSyncFailure(Component.translatable("server_waypoint.dimension.decode.fail",
                 Component.literal(String.valueOf(dimensionName))).withStyle(ChatFormatting.RED));
         return false;
     }
 
     private static void displaySyncResult(boolean synced, Component successMessage) {
-        displayMessage(synced ? successMessage : Component.translatable(
-                "server_waypoint.sync.incomplete", "VoxelMap").withStyle(ChatFormatting.RED));
-    }
-
-    private static void displayMessage(Component message) {
-        displayClientMessage(Minecraft.getInstance().player, message);
+        if (synced) {
+            showSyncSuccess(UploadTarget.VOXELMAP, successMessage);
+        } else {
+            showSyncFailure(Component.translatable("server_waypoint.sync.incomplete", "VoxelMap")
+                    .withStyle(ChatFormatting.RED));
+        }
     }
 
     private static boolean waypointInDimension(Waypoint waypoint, String dimensionName) {

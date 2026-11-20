@@ -1,6 +1,7 @@
 package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.common.client.ClientConfig;
+import _959.server_waypoint.common.client.ClientConfig.SyncNotificationMode;
 import _959.server_waypoint.common.client.ClientConfig.TeleportMethod;
 import _959.server_waypoint.core.network.upload.UploadTarget;
 import java.util.ArrayList;
@@ -8,6 +9,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.function.ObjIntConsumer;
 import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
@@ -21,7 +23,12 @@ import org.jetbrains.annotations.Nullable;
 final class ClientConfigSettings {
     private static final String KEY_PREFIX = "server_waypoint.config.";
 
-    static final TeleportMethodSetting TELEPORT_METHOD = new TeleportMethodSetting(SettingText.of("teleport_method"));
+    static final EnumSetting<TeleportMethod> TELEPORT_METHOD = new EnumSetting<>(
+            SettingText.of("teleport_method"),
+            ClientConfig.DEFAULT_TELEPORT_METHOD,
+            ClientConfig::getTeleportMethod,
+            ClientConfig::setTeleportMethod
+    );
     static final TeleportKeySetting TELEPORT_KEY = new TeleportKeySetting(SettingText.of("teleport_key"));
     static final BooleanSetting CLOSE_AFTER_TELEPORT = new BooleanSetting(
             SettingText.of("close_waypoint_manager_after_teleport"),
@@ -85,6 +92,12 @@ final class ClientConfigSettings {
             ClientConfig::isXaeroDefaultListDirectSync,
             ClientConfig::setXaeroDefaultListDirectSync
     );
+    static final EnumSetting<SyncNotificationMode> SYNC_NOTIFICATIONS = new EnumSetting<>(
+            SettingText.of("sync_notifications"),
+            ClientConfig.DEFAULT_SYNC_NOTIFICATION_MODE,
+            ClientConfig::getSyncNotificationMode,
+            ClientConfig::setSyncNotificationMode
+    );
     /** The Waypoint rendering section, in screen order. */
     static final List<Setting> RENDERING = List.of(
             SHOW_WAYPOINTS, RENDER_UNDER_F1, SCALE, VERTICAL_OFFSET, BACKGROUND_OPACITY, LOCAL_WAYPOINT_RANGE);
@@ -115,6 +128,7 @@ final class ClientConfigSettings {
     static List<Setting> forScreen(Set<UploadTarget> installedMapMods) {
         List<Setting> settings = new ArrayList<>(RENDERING);
         settings.addAll(WAYPOINT_MANAGER);
+        settings.add(SYNC_NOTIFICATIONS);
         for (UploadTarget target : MAP_MODS) {
             if (installedMapMods.contains(target)) {
                 settings.add(autoSync(target));
@@ -146,7 +160,7 @@ final class ClientConfigSettings {
     }
 
     /** A setting shown as one row. */
-    sealed interface Setting permits IntSetting, BooleanSetting, TeleportMethodSetting, TeleportKeySetting {
+    sealed interface Setting permits IntSetting, BooleanSetting, EnumSetting, TeleportKeySetting {
         SettingText text();
 
         /** The default as the row shows it, such as "100%", "12 chunks" or "On". */
@@ -210,28 +224,37 @@ final class ClientConfigSettings {
         }
     }
 
-    record TeleportMethodSetting(SettingText text) implements Setting {
-        void set(ClientConfig config, TeleportMethod method) {
-            config.setTeleportMethod(method);
+    record EnumSetting<E extends Enum<E>>(SettingText text, E defaultValue, Function<ClientConfig, E> getter,
+                                          BiConsumer<ClientConfig, E> setter) implements Setting {
+        List<E> choices() {
+            return List.of(this.defaultValue.getDeclaringClass().getEnumConstants());
         }
 
-        Component valueText(TeleportMethod method) {
-            return Component.translatable(this.text.labelKey() + "." + method.name().toLowerCase(Locale.ROOT));
+        E get(ClientConfig config) {
+            return this.getter.apply(config);
+        }
+
+        void set(ClientConfig config, E choice) {
+            this.setter.accept(config, choice);
+        }
+
+        Component valueText(E choice) {
+            return Component.translatable(this.text.labelKey() + "." + choice.name().toLowerCase(Locale.ROOT));
         }
 
         @Override
         public Component defaultText() {
-            return this.valueText(ClientConfig.DEFAULT_TELEPORT_METHOD);
+            return this.valueText(this.defaultValue);
         }
 
         @Override
         public boolean isDefault(ClientConfig config) {
-            return config.getTeleportMethod() == ClientConfig.DEFAULT_TELEPORT_METHOD;
+            return this.get(config) == this.defaultValue;
         }
 
         @Override
         public void reset(ClientConfig config) {
-            this.set(config, ClientConfig.DEFAULT_TELEPORT_METHOD);
+            this.set(config, this.defaultValue);
         }
     }
 

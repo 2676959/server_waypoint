@@ -24,3 +24,9 @@ Server entries placed in the default set carry hidden `sw␟` name markers for h
 server editing, uploads, and cleanup. Removing the server list or syncing the complete list in separate mode
 removes those marked entries while retaining the default set and any later personal additions.
 Syncing the complete list in direct mode removes the previous separate server-owned default-list set.
+
+**Waypoint sync notifications** applies to Xaero's Minimap and VoxelMap. Open its dropdown under
+**Map mods** to choose **Off**, **Chat message** (the default), or **Vanilla toast**.
+The selection applies immediately and is saved as `syncNotificationMode`.
+**Vanilla toast** uses Minecraft's advancement style with a compass icon. Longer messages are
+shown a page at a time inside the toast.

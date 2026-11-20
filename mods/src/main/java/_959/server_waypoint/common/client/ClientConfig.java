@@ -15,6 +15,7 @@ public class ClientConfig {
     public static final boolean DEFAULT_AUTO_SYNC_TO_XAEROS_MINIMAP = true;
     public static final boolean DEFAULT_XAERO_DEFAULT_LIST_DIRECT_SYNC = false;
     public static final boolean DEFAULT_AUTO_SYNC_TO_VOXELMAP = true;
+    public static final SyncNotificationMode DEFAULT_SYNC_NOTIFICATION_MODE = SyncNotificationMode.CHAT;
     public static final TeleportMethod DEFAULT_TELEPORT_METHOD = TeleportMethod.KEY;
     public static final InputConstants.Key DEFAULT_TELEPORT_KEY = InputConstants.getKey("key.keyboard.t");
     public static final boolean DEFAULT_CLOSE_WAYPOINT_MANAGER_AFTER_TELEPORT = true;
@@ -28,6 +29,7 @@ public class ClientConfig {
     @Expose private boolean autoSyncToXaerosMinimap = DEFAULT_AUTO_SYNC_TO_XAEROS_MINIMAP;
     @Expose private boolean xaeroDefaultListDirectSync = DEFAULT_XAERO_DEFAULT_LIST_DIRECT_SYNC;
     @Expose private boolean autoSyncToVoxelMap = DEFAULT_AUTO_SYNC_TO_VOXELMAP;
+    @Expose private SyncNotificationMode syncNotificationMode = DEFAULT_SYNC_NOTIFICATION_MODE;
     @Expose private WaypointSorting.SortMode waypointManagerSortMode = WaypointSorting.SortMode.DEFAULT;
     @Expose private boolean waypointManagerSortReversed = false;
     @Expose private boolean waypointManagerGroupByLists = true;
@@ -87,6 +89,14 @@ public class ClientConfig {
 
     public void setAutoSyncToVoxelMap(boolean autoSyncToVoxelMap) {
         this.autoSyncToVoxelMap = autoSyncToVoxelMap;
+    }
+
+    public SyncNotificationMode getSyncNotificationMode() {
+        return syncNotificationMode == null ? DEFAULT_SYNC_NOTIFICATION_MODE : syncNotificationMode;
+    }
+
+    public void setSyncNotificationMode(SyncNotificationMode mode) {
+        this.syncNotificationMode = java.util.Objects.requireNonNull(mode);
     }
 
     public int getViewDistance() {
@@ -212,5 +222,11 @@ public class ClientConfig {
         DOUBLE_CLICK,
         RIGHT_CLICK,
         MIDDLE_CLICK
+    }
+
+    public enum SyncNotificationMode {
+        OFF,
+        CHAT,
+        TOAST
     }
 }
