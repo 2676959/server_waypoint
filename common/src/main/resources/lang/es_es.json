@@ -1,6 +1,6 @@
 {
   "waypoint.updates.sent": "Se han enviado las actualizaciones de los waypoints",
-  "waypoint.incompatible.client": "Protocolo de Server Waypoint incompatible. Instala un cliente compatible con el protocolo {0}.",
+  "waypoint.incompatible.client": "Versión incompatible del mod Server Waypoint. Instala la versión {0} en tu cliente.",
   "waypoint.remove.list.success": "La lista de waypoints \"{0}\" se ha eliminado",
   "waypoint.remove.list.nonempty": "No se puede eliminar la lista de waypoints no vacía: \"{0}\"",
 

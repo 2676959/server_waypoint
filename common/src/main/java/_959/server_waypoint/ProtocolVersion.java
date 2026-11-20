@@ -6,6 +6,6 @@ public final class ProtocolVersion {
     // reusing either lets a 3.0.4 peer pass the version check.
     public static final int PROTOCOL_VERSION = 3;
     // For the Forge and NeoForge channel APIs that take the version as a string.
-    // No feature release version is assigned yet; compatibility feedback reports this protocol.
     public static final String PROTOCOL_VERSION_STRING = Integer.toString(PROTOCOL_VERSION);
+    public static final String COMPATIBLE_VERSION = "4.1.x";
 }

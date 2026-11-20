@@ -1,6 +1,6 @@
 {
   "waypoint.updates.sent": "已將路徑點傳送至用戶端",
-  "waypoint.incompatible.client": "Server Waypoint 協定不相容。請安裝支援協定 {0} 的用戶端。",
+  "waypoint.incompatible.client": "Server Waypoint 模組版本不相容。請在用戶端安裝 {0} 版本。",
   "waypoint.remove.list.success": "路徑點清單「{0}」已被移除",
   "waypoint.remove.list.nonempty": "無法移除非空列表「{0}」",
 

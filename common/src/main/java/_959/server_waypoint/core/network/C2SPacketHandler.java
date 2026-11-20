@@ -93,7 +93,7 @@ public class C2SPacketHandler<S, K, P> {
             ));
         } else {
             this.sender.sendPlayerMessage(player, translatable("waypoint.incompatible.client",
-                    text(ProtocolVersion.PROTOCOL_VERSION_STRING).color(NamedTextColor.GREEN).decorate(TextDecoration.UNDERLINED).clickEvent(ClickEvent.openUrl(ModInfo.DOWNLOAD_URL))));
+                    text(ProtocolVersion.COMPATIBLE_VERSION).color(NamedTextColor.GREEN).decorate(TextDecoration.UNDERLINED).clickEvent(ClickEvent.openUrl(ModInfo.DOWNLOAD_URL))));
             this.sender.sendPlayerPacket(player, new ServerHandshakeBuffer(
                     CONFIG.getServerId(),
                     CONFIG.Features().compressChunkedMessages()
