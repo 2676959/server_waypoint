@@ -4,6 +4,7 @@ import _959.server_waypoint.core.collection.WaypointScope;
 import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.command.permission.PermissionKeys;
 import _959.server_waypoint.command.permission.PermissionManager;
+import _959.server_waypoint.config.Config;
 import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.edit.EditTarget;
 import _959.server_waypoint.core.edit.EditResultStatus;
@@ -35,13 +36,21 @@ import _959.server_waypoint.navigation.NavigationTarget;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.text.chat.ChatAssert;
+import _959.server_waypoint.text.chat.ChatIcons;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
+import java.io.StringReader;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -55,6 +64,95 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class C2SPacketHandlerTest {
     @TempDir
     private Path tempDir;
+
+    @ParameterizedTest
+    @ValueSource(strings = {"all", "ops", "off"})
+    void sharedGuiEditAnnouncesToEligiblePlayersAfterQueueingTheUpdate(String mode) {
+        List<String> events = new ArrayList<>();
+        Map<String, Component> messages = new LinkedHashMap<>();
+        String dimension = "test:deep_mines";
+        NamespacedId bell = NamespacedId.parse("minecraft:bell");
+        List<String> online = List.of("Alice", "Pat", "Sam");
+        TestSender sender = new TestSender() {
+            @Override
+            public Iterable<String> getBroadcastPlayersFromPlayer(String player) {
+                return online;
+            }
+
+            @Override
+            public boolean isBroadcastOperator(String player) {
+                return !player.equals("Sam");
+            }
+
+            @Override
+            public Map<String, String> broadcastDimensionTypes(String player) {
+                return Map.of(dimension, "minecraft:the_nether");
+            }
+
+            @Override
+            public ChatIcons broadcastChatIcons() {
+                UUID actorId = playerActor("Alice").playerId();
+                return new ChatIcons() {
+                    @Override
+                    public Component playerHead(UUID id) {
+                        return actorId.equals(id) ? Component.text("[head]") : null;
+                    }
+
+                    @Override
+                    public Component item(NamespacedId id) {
+                        return bell.equals(id) ? Component.text("[bell]") : null;
+                    }
+                };
+            }
+
+            @Override
+            public ChunkedMessageSendResult sendPlayerPreparedChunkedMessage(String player, PreparedMessage message) {
+                events.add("update " + player);
+                return ChunkedMessageSendResult.DELIVERED;
+            }
+
+            @Override
+            public void sendPlayerMessage(String player, Component component) {
+                events.add("chat " + player);
+                assertNull(messages.put(player, component));
+            }
+        };
+        TestPermissionManager permissions = new TestPermissionManager(true);
+        permissions.teleportDeniedPlayer = "Sam";
+        WaypointServerCore server = new WaypointServerCore(this.tempDir) { };
+        server.putWaypointList(dimension, new WaypointList("list", 1, List.of(
+                new SimpleWaypoint("old", "Gate", "G", new WaypointPos(0, 64, 0), 0, 0, true, List.of(), "", bell))));
+        var handler = new C2SPacketHandler<>(sender, server, permissions, navigationService(), uploadCoordinator(server));
+        var patch = new WaypointPatch(PatchField.set("gate"), PatchField.unchanged(), PatchField.unchanged(),
+                PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
+                PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged());
+        var request = new WaypointEditRequestMessage(WaypointScope.SHARED, 17L, dimension, "list", "old", 1, patch);
+
+        Config originalConfig = WaypointServerCore.CONFIG;
+        try {
+            server.loadConfig(new StringReader("{\"Features\":{\"broadcastFeedback\":\"" + mode + "\"}}"));
+            handler.onWaypointEditRequest("Alice", request);
+        } finally {
+            WaypointServerCore.CONFIG = originalConfig;
+        }
+
+        assertEquals(EditResultStatus.SUCCESS, sender.lastResult().status());
+        assertEquals(List.of("update Alice", "update Pat", "update Sam"), events.subList(0, 3));
+        assertEquals(switch (mode) {
+            case "all" -> List.of("chat Pat", "chat Sam");
+            case "ops" -> List.of("chat Pat");
+            default -> List.of();
+        }, events.subList(3, events.size()));
+        for (var message : messages.entrySet()) {
+            Component line = message.getValue();
+            assertEquals("[head] Alice updated [bell] [G] Gate", ChatAssert.render(line));
+            assertEquals("/wp details waypoint test:deep_mines list gate", ChatAssert.clickOf(line, "Gate"));
+            assertEquals(message.getKey().equals("Pat") ? "/wp tp test:deep_mines list gate" : null,
+                    ChatAssert.clickOf(line, "[G]"));
+            var hover = ChatAssert.find(line, "Gate").style().hoverEvent();
+            assertEquals(NamedTextColor.RED, ChatAssert.colorOf((Component) hover.value(), "Deep Mines"));
+        }
+    }
 
     @Test
     void privateSnapshotsAndEditsResolveOnlyTheAuthenticatedOwner() throws Exception {
@@ -669,6 +767,7 @@ class C2SPacketHandlerTest {
 
     private static final class TestPermissionManager extends PermissionManager<String, String, String> {
         private boolean allowed;
+        private String teleportDeniedPlayer;
 
         private TestPermissionManager(boolean allowed) {
             super(new TestPermissionKeys());
@@ -682,7 +781,7 @@ class C2SPacketHandlerTest {
 
         @Override
         public boolean checkPlayerPermission(String player, PermissionKeys<String>.PermissionKey key, int defaultLevel) {
-            return this.allowed;
+            return this.allowed && (key != this.keys.tp() || !player.equals(this.teleportDeniedPlayer));
         }
     }
 

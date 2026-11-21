@@ -1,5 +1,14 @@
 # Server Waypoint Update Notifications Implementation Plan
 
+## Follow-up — Cover all seven server announcements
+
+- [x] Carry waypoint restore as its own modification type on protocol 4. Apply it through the existing add path and keep its action for client feedback. Round-trip the packet in both collection scopes.
+- [x] Report applied list creates, edits, and removals in Chat and Toast. Show the updated display name after edits and the cached display name after removals. Link only lists that still exist. Exercise replayed packets through the real chunk receiver and verify all six locales.
+- [x] Route successful Shared GUI edits through the command announcement formatter and recipient policy. Exercise `all`, `ops`, and `off` and confirm that the editor still receives their acknowledgement.
+- [x] Run the common and Fabric 26.1.2 tests, compile the touched adapters, and use two Fabric 26.1.2 clients to verify all seven actions and the Shared GUI edit. Record the state and chat observed by both clients in the validation document.
+
+## Initial implementation
+
 > **For agentic workers:** Use `superpowers:executing-plans` for inline execution or `superpowers:subagent-driven-development` when the user chooses delegated execution. Steps use checkbox syntax for tracking.
 
 **Goal**  Let players choose **Off**, **Chat**, or **Toast** for successful incremental server waypoint updates.

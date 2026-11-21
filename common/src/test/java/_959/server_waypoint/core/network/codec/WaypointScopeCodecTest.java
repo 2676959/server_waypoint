@@ -18,8 +18,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class WaypointScopeCodecTest {
     @Test
     void everyWaypointMessageRetainsItsScope() {
-        assertEquals(3, ProtocolVersion.PROTOCOL_VERSION);
-        assertEquals("3", ProtocolVersion.PROTOCOL_VERSION_STRING);
+        assertEquals(4, ProtocolVersion.PROTOCOL_VERSION);
+        assertEquals("4", ProtocolVersion.PROTOCOL_VERSION_STRING);
         for (WaypointScope scope : WaypointScope.values()) {
             var list = WaypointList.build("Homes", 7);
             List<ChunkedMessage> messages = List.of(

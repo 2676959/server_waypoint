@@ -57,6 +57,7 @@ public class C2SPacketHandler<S, K, P> {
     private final _959.server_waypoint.crossserver.catalog.ClientCatalogSync<P> remoteCatalogSync =
             new _959.server_waypoint.crossserver.catalog.ClientCatalogSync<>();
     private final PlatformMessageSender<S, P> sender;
+    private final WaypointBroadcast<S, K, P> waypointBroadcast;
     private final WaypointServerCore waypointServer;
     private final PermissionManager<S, K, P> permissionManager;
     private final NavigationService<P> navigationService;
@@ -73,6 +74,7 @@ public class C2SPacketHandler<S, K, P> {
             UploadCoordinator<P> uploadCoordinator
     ) {
         this.sender = messageSender;
+        this.waypointBroadcast = new WaypointBroadcast<>(messageSender, permissionManager);
         this.waypointServer = waypointServerCore;
         this.permissionManager = permissionManager;
         this.navigationService = navigationService;
@@ -267,7 +269,7 @@ public class C2SPacketHandler<S, K, P> {
                                 "scope", "private", "dimension", request.dimensionName(), "list", request.listIdentifier());
                         this.delivery().sendPrivate(player, this.toModificationMessage(request, result));
                     } else {
-                        this.sender.broadcastChunkedMessageFromPlayer(player, this.toModificationMessage(request, result));
+                        this.waypointBroadcast.sendEditFromPlayer(player, this.toModificationMessage(request, result), list);
                     }
                 }
                 this.sendEditResult(player, request, result.status(), result.afterSnapshot(), result.syncNum());

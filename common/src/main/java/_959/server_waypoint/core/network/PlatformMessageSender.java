@@ -8,9 +8,11 @@ import _959.server_waypoint.core.network.codec.ChunkedMessageManager.PreparedMes
 import _959.server_waypoint.core.network.codec.ChunkedMessageManager.ReceiveFailure;
 import _959.server_waypoint.core.network.codec.ChunkedMessageManager.ReceiveLimits;
 import _959.server_waypoint.text.chat.Chat;
+import _959.server_waypoint.text.chat.ChatIcons;
 import net.kyori.adventure.text.Component;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
@@ -65,6 +67,15 @@ public interface PlatformMessageSender<S, P> {
     Iterable<? extends P> getBroadcastPlayers(S source);
     default Iterable<? extends P> getBroadcastPlayersFromPlayer(P player) {
         return List.of(player);
+    }
+    default boolean isBroadcastOperator(P player) {
+        return false;
+    }
+    default Map<String, String> broadcastDimensionTypes(P player) {
+        return Map.of();
+    }
+    default ChatIcons broadcastChatIcons() {
+        return ChatIcons.NONE;
     }
     Component getSenderName(S source);
     PlayerActionLog.Actor playerActor(P player);
@@ -287,7 +298,4 @@ public interface PlatformMessageSender<S, P> {
         return ChunkedMessageManagerRegistry.get(this);
     }
 
-    default void broadcastChunkedMessageFromPlayer(P player, ChunkedMessage message) {
-        this.broadcastChunkedMessage(this.getBroadcastPlayersFromPlayer(player), message);
-    }
 }

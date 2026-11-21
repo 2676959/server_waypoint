@@ -13,10 +13,13 @@ import _959.server_waypoint.core.network.SinglePacketMessageEncoder;
 import _959.server_waypoint.core.network.buffer.MessageChunkBuffer;
 import _959.server_waypoint.server.command.CommandChatIcons;
 import _959.server_waypoint.text.chat.Chat;
+import _959.server_waypoint.text.chat.ChatIcons;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.translation.GlobalTranslator;
 import org.bukkit.Bukkit;
+import org.bukkit.Server;
+import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
@@ -25,6 +28,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -173,6 +177,34 @@ public class PaperMessageSender implements PlatformMessageSender<CommandSourceSt
     @Override
     public Collection<? extends Player> getBroadcastPlayersFromPlayer(Player player) {
         return player.getServer().getOnlinePlayers();
+    }
+
+    @Override
+    public boolean isBroadcastOperator(Player player) {
+        return player.isOp();
+    }
+
+    @Override
+    public Map<String, String> broadcastDimensionTypes(Player player) {
+        return dimensionTypes(player.getServer());
+    }
+
+    public static Map<String, String> dimensionTypes(Server server) {
+        Map<String, String> types = new LinkedHashMap<>();
+        for (World world : server.getWorlds()) {
+            types.put(world.getKey().asString(), switch (world.getEnvironment()) {
+                case NORMAL -> "minecraft:overworld";
+                case NETHER -> "minecraft:the_nether";
+                case THE_END -> "minecraft:the_end";
+                default -> "custom";
+            });
+        }
+        return types;
+    }
+
+    @Override
+    public ChatIcons broadcastChatIcons() {
+        return CommandChatIcons.INSTANCE;
     }
 
     @Override

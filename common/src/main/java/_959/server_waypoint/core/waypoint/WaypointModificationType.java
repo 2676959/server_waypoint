@@ -5,10 +5,12 @@ public enum WaypointModificationType {
     ADD,
     /** add an empty waypoint list */
     ADD_LIST,
-    /** remove a waypoint list */
+    /** remove a waypoint */
     REMOVE,
     /** remove an empty waypoint list */
     REMOVE_LIST,
     /** update a waypoint */
-    UPDATE
+    UPDATE,
+    /** restore a removed waypoint */
+    RESTORE
 }

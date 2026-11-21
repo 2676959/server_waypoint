@@ -73,20 +73,56 @@ class WaypointUpdateFeedbackTest {
     }
 
     @Test
-    void toastKeepsItsOriginalKeysAndSingleDisplayNameArgument() {
-        for (var entry : List.of(java.util.Map.entry(ADD, "added"), java.util.Map.entry(UPDATE, "updated"),
-                java.util.Map.entry(REMOVE, "removed"))) {
+    void restoreUsesItsOwnTranslationAndLiveWaypointActions() {
+        var line = line(WaypointScope.SHARED, RESTORE, true);
+        assertEquals("server_waypoint.update_notification.chat.restored", line.key());
+        assertEquals(2, line.arguments().size());
+        assertEquals(ClickEvent.runCommand("/wp tp minecraft:overworld \"test list\" home"),
+                line.arguments().get(0).asComponent().children().get(0).clickEvent());
+    }
+
+    @Test
+    void listChatLinksOnlyListsThatStillExist() {
+        for (var action : List.of(WaypointUpdateFeedback.Action.ADD_LIST, WaypointUpdateFeedback.Action.UPDATE_LIST,
+                WaypointUpdateFeedback.Action.REMOVE_LIST)) {
+            var update = new WaypointUpdateFeedback.Update(WaypointScope.PRIVATE, DIMENSION, action, LIST, null);
+            var line = assertInstanceOf(TranslatableComponent.class,
+                    TextHelper.toAdventure(WaypointUpdateFeedback.chat(update, false)));
+            var link = line.arguments().get(0).asComponent();
+            if (action == WaypointUpdateFeedback.Action.REMOVE_LIST) {
+                assertNull(link.clickEvent());
+                assertNull(link.hoverEvent());
+            } else {
+                assertEquals(ClickEvent.runCommand("/wp private list minecraft:overworld \"test list\""), link.clickEvent());
+                assertNotNull(link.hoverEvent());
+            }
+        }
+    }
+
+    @Test
+    void eachToastUsesItsOwnKeyAndOneDisplayNameArgument() {
+        for (var entry : List.of(java.util.Map.entry(WaypointUpdateFeedback.Action.ADD, "added"),
+                java.util.Map.entry(WaypointUpdateFeedback.Action.UPDATE, "updated"),
+                java.util.Map.entry(WaypointUpdateFeedback.Action.REMOVE, "removed"),
+                java.util.Map.entry(WaypointUpdateFeedback.Action.RESTORE, "restored"),
+                java.util.Map.entry(WaypointUpdateFeedback.Action.ADD_LIST, "created_list"),
+                java.util.Map.entry(WaypointUpdateFeedback.Action.UPDATE_LIST, "updated_list"),
+                java.util.Map.entry(WaypointUpdateFeedback.Action.REMOVE_LIST, "removed_list"))) {
+            boolean list = entry.getValue().endsWith("_list");
+            var update = new WaypointUpdateFeedback.Update(WaypointScope.SHARED, DIMENSION, entry.getKey(),
+                    LIST, list ? null : WAYPOINT);
             var contents = assertInstanceOf(TranslatableContents.class,
-                    WaypointUpdateFeedback.toast(entry.getKey(), WAYPOINT.displayName()).getContents());
+                    WaypointUpdateFeedback.toast(update).getContents());
             assertEquals("server_waypoint.update_notification." + entry.getValue(), contents.getKey());
-            assertArrayEquals(new Object[]{"Home Base"}, contents.getArgs());
+            assertArrayEquals(new Object[]{list ? "Farms" : "Home Base"}, contents.getArgs());
         }
     }
 
     private static TranslatableComponent line(WaypointScope scope, WaypointModificationType type, boolean canTeleport) {
         var update = new WaypointModificationMessage(scope, DIMENSION, LIST.name(), LIST.displayName(),
                 WAYPOINT.name(), type == REMOVE ? null : WAYPOINT, type, 8);
-        Component line = TextHelper.toAdventure(WaypointUpdateFeedback.chat(update, LIST, WAYPOINT, canTeleport));
+        var feedback = WaypointUpdateFeedback.Update.fromDelta(update, LIST, WAYPOINT);
+        Component line = TextHelper.toAdventure(WaypointUpdateFeedback.chat(feedback, canTeleport));
         return assertInstanceOf(TranslatableComponent.class, line);
     }
 }

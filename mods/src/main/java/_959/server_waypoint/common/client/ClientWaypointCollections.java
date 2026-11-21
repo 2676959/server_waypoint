@@ -174,7 +174,7 @@ public final class ClientWaypointCollections {
         return applyWithResult(message, receivedGeneration).applied();
     }
 
-    record ApplyResult(boolean applied, @Nullable SimpleWaypoint modifiedWaypoint) {
+    record ApplyResult(boolean applied, @Nullable WaypointUpdateFeedback.Update notification) {
         private static final ApplyResult APPLIED = new ApplyResult(true, null);
         private static final ApplyResult REJECTED = new ApplyResult(false, null);
     }
@@ -196,7 +196,7 @@ public final class ClientWaypointCollections {
         if (source == ClientWaypointSource.PRIVATE && (!privateReadable || account == null || backend == null)) return ApplyResult.REJECTED;
         WaypointFilesManagerCore files = files(source);
         ClientSynchronizationTracker tracker = trackers.get(source);
-        SimpleWaypoint modifiedWaypoint = null;
+        WaypointUpdateFeedback.Update notification = null;
         if (message instanceof WaypointData data) {
             if (data.type() == WaypointData.Type.UPLOAD || data.type() == WaypointData.Type.WAYPOINT) return ApplyResult.REJECTED;
             if (data.type() == WaypointData.Type.WORLD) {
@@ -235,12 +235,32 @@ public final class ClientWaypointCollections {
                     return ApplyResult.REJECTED;
                 }
             } else if (!tracker.shouldApplyIncremental(delta.dimensionName(), delta.listName(), list.getSyncNum(), delta.syncId())) return ApplyResult.REJECTED;
+            var dimension = delta.dimensionName();
+            var listName = delta.listName();
             switch (delta.type()) {
-                case ADD -> modifiedWaypoint = files.addWaypointFromRemoteServer(delta.dimensionName(), delta.listName(), delta.listDisplayName(), delta.waypoint(), delta.syncId());
-                case UPDATE -> modifiedWaypoint = files.updateWaypointFromRemoteServer(delta.dimensionName(), delta.listName(), delta.waypointName(), delta.waypoint(), delta.syncId());
-                case REMOVE -> modifiedWaypoint = files.removeWaypointFromRemoteServer(delta.dimensionName(), delta.listName(), delta.waypointName(), delta.syncId());
-                case ADD_LIST -> files.putWaypointList(delta.dimensionName(), WaypointList.buildByServer(delta.listName(), delta.listDisplayName()));
-                case REMOVE_LIST -> files.removeWaypointListImmediately(delta.dimensionName(), delta.listName());
+                case ADD, RESTORE -> {
+                    var waypoint = files.addWaypointFromRemoteServer(dimension, listName, delta.listDisplayName(), delta.waypoint(), delta.syncId());
+                    var appliedList = files.getWaypointFileManager(dimension).getWaypointListByName(listName);
+                    notification = WaypointUpdateFeedback.Update.fromDelta(delta, appliedList, waypoint);
+                }
+                case UPDATE, REMOVE -> {
+                    var waypoint = delta.type() == WaypointModificationType.UPDATE
+                            ? files.updateWaypointFromRemoteServer(dimension, listName, delta.waypointName(), delta.waypoint(), delta.syncId())
+                            : files.removeWaypointFromRemoteServer(dimension, listName, delta.waypointName(), delta.syncId());
+                    if (waypoint != null) {
+                        notification = WaypointUpdateFeedback.Update.fromDelta(delta, list, waypoint);
+                    }
+                }
+                case ADD_LIST -> {
+                    if (list != null) return ApplyResult.REJECTED;
+                    var created = WaypointList.buildByServer(listName, delta.listDisplayName());
+                    files.putWaypointList(dimension, created);
+                    notification = WaypointUpdateFeedback.Update.fromDelta(delta, created, null);
+                }
+                case REMOVE_LIST -> {
+                    files.removeWaypointListImmediately(dimension, listName);
+                    notification = WaypointUpdateFeedback.Update.fromDelta(delta, list, null);
+                }
             }
         } else if (message instanceof WaypointListUpdateMessage update) {
             if (!ready(source)) return ApplyResult.REJECTED;
@@ -250,6 +270,10 @@ public final class ClientWaypointCollections {
             boolean recovery = tracker.isOutOfSync(update.dimensionName(), update.previousListIdentifier())
                     || tracker.isOutOfSync(update.dimensionName(), update.waypointList().name());
             if (!recovery && current != null && update.waypointList().getSyncNum() <= current.getSyncNum()) return ApplyResult.REJECTED;
+            if (current != null && update.waypointList().getSyncNum() > current.getSyncNum()) {
+                notification = new WaypointUpdateFeedback.Update(update.scope(), update.dimensionName(),
+                        WaypointUpdateFeedback.Action.UPDATE_LIST, update.waypointList(), null);
+            }
             files.removeWaypointListImmediately(update.dimensionName(), update.previousListIdentifier());
             files.putWaypointList(update.dimensionName(), update.waypointList());
             tracker.clearList(update.dimensionName(), update.previousListIdentifier());
@@ -259,7 +283,7 @@ public final class ClientWaypointCollections {
         } else return ApplyResult.REJECTED;
         files.saveAllWaypointFiles();
         changed(source);
-        return modifiedWaypoint == null ? ApplyResult.APPLIED : new ApplyResult(true, modifiedWaypoint);
+        return notification == null ? ApplyResult.APPLIED : new ApplyResult(true, notification);
     }
 
     private record EditRequestKey(ClientWaypointSource source, long requestId) { }

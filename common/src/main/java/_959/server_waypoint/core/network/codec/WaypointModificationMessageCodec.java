@@ -20,7 +20,7 @@ public final class WaypointModificationMessageCodec {
         UtfStringCodec.encode(buf, modification.listName(), context);
         UtfStringCodec.encode(buf, modification.listDisplayName(), context);
         switch (type) {
-            case ADD -> {
+            case ADD, RESTORE -> {
                 // only needs a waypoint object
                 SimpleWaypointCodec.encode(buf, modification.waypoint(), context);
             }
@@ -53,7 +53,7 @@ public final class WaypointModificationMessageCodec {
         String waypointName = null;
         SimpleWaypoint waypoint = null;
         switch (type) {
-            case ADD -> {
+            case ADD, RESTORE -> {
                 // only needs a waypoint object
                 waypoint = SimpleWaypointCodec.decode(buf, context);
             }

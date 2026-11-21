@@ -16,7 +16,6 @@ import _959.server_waypoint.crossserver.pairing.StaticKeyGenerator;
 
 import _959.server_waypoint.command.permission.PermissionKeys;
 import _959.server_waypoint.command.permission.PermissionManager;
-import _959.server_waypoint.config.BroadcastFeedback;
 import _959.server_waypoint.config.Config;
 import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointServerCore;
@@ -26,6 +25,7 @@ import _959.server_waypoint.core.edit.PatchField;
 import _959.server_waypoint.core.edit.WaypointListPatch;
 import _959.server_waypoint.core.edit.WaypointPatch;
 import _959.server_waypoint.core.network.ChunkedMessage;
+import _959.server_waypoint.core.network.WaypointBroadcast;
 import _959.server_waypoint.core.network.WaypointScopedMessage;
 import _959.server_waypoint.core.network.WaypointCollectionDelivery;
 import _959.server_waypoint.core.network.ChunkedMessageSendResult;
@@ -133,6 +133,7 @@ import static net.kyori.adventure.text.Component.translatable;
 
 public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     protected final PlatformMessageSender<S, P> sender;
+    private final WaypointBroadcast<S, K, P> waypointBroadcast;
     private final WaypointServerCore waypointServer;
     // Brigadier handlers are synchronous. These bindings bridge the shared registration helpers;
     // queued commands capture their authenticated collection before scheduling and borrow on execution.
@@ -234,6 +235,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     ) {
         this.waypointServer = waypointServer;
         this.sender = sender;
+        this.waypointBroadcast = new WaypointBroadcast<>(sender, permissionManager);
         var remotePermissions = new RemotePermissions<>(permissionManager, () -> CONFIG.CommandPermission(), this::getPlayer);
         this.remoteCommand = new RemoteWaypointCommand<>(waypointServer::remoteCatalogStore, sender::sendMessage,
                 sender::sendError, () -> CONFIG.defaultPageLimit(),
@@ -378,8 +380,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
 
     /** The name after the player's head where the platform draws heads; the space belongs to the head. */
     private Component playerName(P player, Component name) {
-        Component head = chatIcons().playerHead(this.sender.playerActor(player).playerId());
-        return head == null ? name : Component.empty().append(head.color(NamedTextColor.WHITE).appendSpace()).append(name);
+        return WaypointBroadcast.playerName(chatIcons(), this.sender.playerActor(player).playerId(), name);
     }
 
     /** Who made a change, as broadcasts name them: the player by account name, otherwise the sender. */
@@ -1431,10 +1432,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
 
     /** A player who reads a broadcast: whether they may teleport is known, where they stand isn't. */
     private Viewer recipientViewer(P player) {
-        boolean teleport = this.permissionManager.checkPlayerPermission(player,
-                isPrivate() ? this.permissionKeys.privateTp() : this.permissionKeys.tp(),
-                isPrivate() ? CONFIG.CommandPermission().privateTp() : CONFIG.CommandPermission().tp());
-        return new Viewer(teleport ? Set.of(Viewer.Permission.TP) : Set.of(), false, false, null, null, 0F, chatIcons(), commandMode.get());
+        return this.waypointBroadcast.recipientViewer(player, commandMode.get(), chatIcons());
     }
 
     /**
@@ -1448,34 +1446,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                     .sendPrivate(owner, update));
             return;
         }
-        Iterable<? extends P> recipients = this.sender.getBroadcastPlayers(source);
-        this.sender.broadcastChunkedMessage(recipients, update);
-        BroadcastFeedback feedback = CONFIG.Features().broadcastFeedback();
-        if (feedback == BroadcastFeedback.OFF) {
-            return;
-        }
-
-        P actor = getPlayer(source);
-        Map<String, String> types = getDimensionTypes(source);
-        for (P player : recipients) {
-            if (player.equals(actor)) {
-                continue;
-            }
-            try {
-                if (feedback == BroadcastFeedback.OPS && !isOperator(source, player)) {
-                    continue;
-                }
-                sendPlayerMessage(player, line.apply(DimensionStyle.local(recipientViewer(player), types)));
-            } catch (RuntimeException exception) {
-                PlayerActionLog.Actor recipient = this.sender.playerActor(player);
-                WaypointServerCore.LOGGER.warn(
-                        "Failed to send waypoint broadcast chat to {} ({})",
-                        recipient.name(),
-                        recipient.playerId(),
-                        exception
-                );
-            }
-        }
+        this.waypointBroadcast.send(this.sender.getBroadcastPlayers(source), getPlayer(source), update,
+                player -> isOperator(source, player), () -> getDimensionTypes(source), chatIcons(), line);
     }
 
     private boolean validateTextInputs(
@@ -1777,7 +1749,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                                             list.displayName(),
                                             waypoint.name(),
                                             waypoint,
-                                            WaypointModificationType.ADD,
+                                            WaypointModificationType.RESTORE,
                                             result.syncNum()
                                     ), dims -> Broadcasts.restored(dims, actor, entry.dimensionName(), list, waypoint));
                                     sendMessage(source, Results.restored(dimensions(source),

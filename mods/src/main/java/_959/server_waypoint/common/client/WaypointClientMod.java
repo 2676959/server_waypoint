@@ -60,7 +60,6 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import static _959.server_waypoint.ModInfo.MOD_ID;
@@ -88,7 +87,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     private final LocalWaypointProfiles localProfiles;
     private final ClientWaypointAccess access;
     private final ClientWaypointScene scene;
-    private final BiConsumer<WaypointModificationMessage, SimpleWaypoint> waypointUpdateNotification;
+    private final Consumer<WaypointUpdateFeedback.Update> waypointUpdateNotification;
 
     public void refreshCollectionScene(ClientWaypointSource source) {
         if (scene != null) scene.refresh(source, currentDimensionName);
@@ -148,7 +147,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     }
 
     WaypointClientMod(Minecraft mc, Path gameRoot, Path configDir,
-                      BiConsumer<WaypointModificationMessage, SimpleWaypoint> waypointUpdateNotification) {
+                      Consumer<WaypointUpdateFeedback.Update> waypointUpdateNotification) {
         super();
         this.mc = mc;
         this.gameRoot = gameRoot;
@@ -725,27 +724,28 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
             LOGGER.warn("Cannot apply client collection message", exception);
             return;
         }
-        if (message instanceof WaypointModificationMessage delta && result.modifiedWaypoint() != null) {
-            this.waypointUpdateNotification.accept(delta, result.modifiedWaypoint());
+        if (result.notification() != null) {
+            this.waypointUpdateNotification.accept(result.notification());
         }
     }
 
-    private void showWaypointUpdateNotification(WaypointModificationMessage update, SimpleWaypoint waypoint) {
+    private void showWaypointUpdateNotification(WaypointUpdateFeedback.Update update) {
         var mode = clientConfig.getWaypointUpdateNotificationMode();
         if (mode == ClientConfig.SyncNotificationMode.OFF || this.mc.player == null) {
             return;
         }
         if (mode == ClientConfig.SyncNotificationMode.TOAST) {
-            var toast = WaypointUpdateFeedback.toast(update.type(), waypoint.displayName());
+            var toast = WaypointUpdateFeedback.toast(update);
             ClientNotifications.show(this.mc, mode, toast, toast);
             return;
         }
-        var source = ClientWaypointSource.fromScope(update.scope());
-        var selection = this.collections.selection(source, update.dimensionName(), update.listName(), waypoint.name());
-        var manager = this.collections.files(source).getWaypointFileManager(update.dimensionName());
-        var list = manager.getWaypointListByName(update.listName());
-        boolean canTeleport = this.access.allowed(selection, ClientWaypointAccess.Action.TELEPORT);
-        var chat = WaypointUpdateFeedback.chat(update, list, waypoint, canTeleport);
+        boolean canTeleport = false;
+        if (update.waypoint() != null && update.action() != WaypointUpdateFeedback.Action.REMOVE) {
+            var source = ClientWaypointSource.fromScope(update.scope());
+            var selection = this.collections.selection(source, update.dimensionName(), update.list().name(), update.waypoint().name());
+            canTeleport = this.access.allowed(selection, ClientWaypointAccess.Action.TELEPORT);
+        }
+        var chat = WaypointUpdateFeedback.chat(update, canTeleport);
         ClientNotifications.show(this.mc, mode, chat, chat);
     }
 
@@ -986,7 +986,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
         try {
             final SimpleWaypoint waypoint = buffer.waypoint();
             switch (modificationType) {
-                case ADD -> {
+                case ADD, RESTORE -> {
                     int syncId = buffer.syncId();
                     SimpleWaypoint liveWaypoint = this.addWaypointFromRemoteServer(
                             dimensionName,
@@ -998,8 +998,10 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
                     fileManager = this.getWaypointFileManager(dimensionName);
                     this.saveWaypointFile(fileManager);
                     updateWaypointManagerView(dimensionName, dimensionListChanged);
-                    this.waypointUpdateNotification.accept(buffer, liveWaypoint);
-                    MapModIntegrations.onClientWaypointSync(ClientWaypointSyncEvent.waypointModified(dimensionName, listName, modificationType, liveWaypoint, liveWaypoint.name()), this);
+                    var list = fileManager.getWaypointListByName(listName);
+                    this.waypointUpdateNotification.accept(WaypointUpdateFeedback.Update.fromDelta(buffer, list, liveWaypoint));
+                    MapModIntegrations.onClientWaypointSync(ClientWaypointSyncEvent.waypointModified(
+                            dimensionName, listName, WaypointModificationType.ADD, liveWaypoint, liveWaypoint.name()), this);
                 }
                 case REMOVE -> {
                     if (fileManager == null) {
@@ -1018,7 +1020,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
                             refreshCollectionScene(ClientWaypointSource.SHARED);
                         }
                         WaypointManagerScreen.updateWaypointWidget(dimensionName);
-                        this.waypointUpdateNotification.accept(buffer, wpToRemove);
+                        this.waypointUpdateNotification.accept(WaypointUpdateFeedback.Update.fromDelta(buffer, currentList, wpToRemove));
                         MapModIntegrations.onClientWaypointSync(ClientWaypointSyncEvent.waypointModified(dimensionName, listName, modificationType, null, waypointName), this);
                     }
                 }
@@ -1041,20 +1043,21 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
                     }
                     this.saveWaypointFile(fileManager);
                     WaypointManagerScreen.updateWaypointWidget(dimensionName);
-                    this.waypointUpdateNotification.accept(buffer, waypointFound);
+                    this.waypointUpdateNotification.accept(WaypointUpdateFeedback.Update.fromDelta(buffer, currentList, waypointFound));
                     MapModIntegrations.onClientWaypointSync(ClientWaypointSyncEvent.waypointModified(dimensionName, listName, modificationType, waypointFound, buffer.waypointName()), this);
                 }
                 case ADD_LIST -> {
+                    if (currentList != null) {
+                        return;
+                    }
                     if (fileManager == null) {
                         fileManager = this.addWaypointFileManager(dimensionName);
                     }
-                    WaypointList waypointList = fileManager.getWaypointListByName(listName);
-                    if (waypointList == null) {
-                        waypointList = WaypointList.buildByServer(listName, listDisplayName);
-                        fileManager = this.putWaypointList(dimensionName, waypointList);
-                    }
+                    WaypointList waypointList = WaypointList.buildByServer(listName, listDisplayName);
+                    fileManager = this.putWaypointList(dimensionName, waypointList);
                     updateWaypointManagerView(dimensionName, dimensionListChanged);
                     this.saveWaypointFile(fileManager);
+                    this.waypointUpdateNotification.accept(WaypointUpdateFeedback.Update.fromDelta(buffer, waypointList, null));
                     MapModIntegrations.onClientWaypointSync(ClientWaypointSyncEvent.waypointModified(dimensionName, listName, modificationType, null, null), this);
                 }
                 case REMOVE_LIST -> {
@@ -1070,6 +1073,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
                     refreshCollectionScene(ClientWaypointSource.SHARED);
                     WaypointManagerScreen.updateWaypointWidget(dimensionName);
                     this.saveWaypointFile(fileManager);
+                    this.waypointUpdateNotification.accept(WaypointUpdateFeedback.Update.fromDelta(buffer, waypointList, null));
                     MapModIntegrations.onClientWaypointSync(ClientWaypointSyncEvent.waypointModified(dimensionName, listName, modificationType, null, null), this);
                 }
             }
@@ -1147,6 +1151,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
                 && updated.getSyncNum() <= current.getSyncNum()) {
             return;
         }
+        boolean notify = current != null && updated.getSyncNum() > current.getSyncNum();
         if (previous != null) {
             this.removeWaypointListImmediately(dimensionName, buffer.previousListIdentifier());
         }
@@ -1155,6 +1160,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
             this.saveWaypointFile(fileManager);
         } catch (IOException exception) {
             LOGGER.error("Failed to save updated waypoint list in {}", dimensionName, exception);
+            notify = false;
         }
         refreshCollectionScene(ClientWaypointSource.SHARED);
         this.synchronizationTracker.clearList(
@@ -1163,6 +1169,10 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
         );
         this.synchronizationTracker.clearList(dimensionName, updated.name());
         WaypointManagerScreen.updateWidgetsForDimensionListChange(dimensionName);
+        if (notify) {
+            this.waypointUpdateNotification.accept(new WaypointUpdateFeedback.Update(buffer.scope(), dimensionName,
+                    WaypointUpdateFeedback.Action.UPDATE_LIST, updated, null));
+        }
         MapModIntegrations.onClientWaypointSync(
                 ClientWaypointSyncEvent.listReplaced(dimensionName, updated),
                 this

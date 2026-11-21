@@ -57,7 +57,7 @@ public record ClientWaypointSyncEvent(
 
     private static Type typeFromModification(WaypointModificationType modificationType) {
         return switch (modificationType) {
-            case ADD -> Type.WAYPOINT_ADDED;
+            case ADD, RESTORE -> Type.WAYPOINT_ADDED;
             case REMOVE -> Type.WAYPOINT_REMOVED;
             case UPDATE -> Type.WAYPOINT_UPDATED;
             case ADD_LIST -> Type.LIST_ADDED;

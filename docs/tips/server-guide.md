@@ -481,7 +481,7 @@ This example allows VoxelMap uploads only. Save the change to `config.json` and 
 
 #### broadcastFeedback
 
-Controls who sees chat announcements when a command creates, edits, removes or restores Shared waypoints or creates, edits or removes their lists. In every mode, the command sender gets their own result and eligible clients receive waypoint updates.
+Controls who sees chat announcements when a command creates, edits, removes or restores Shared waypoints or creates, edits or removes their lists. Shared waypoint edits from the GUI follow the same policy. In every mode, the person making the change gets their result and eligible clients receive waypoint updates.
 
 | Value | Chat announcement recipients |
 | --- | --- |

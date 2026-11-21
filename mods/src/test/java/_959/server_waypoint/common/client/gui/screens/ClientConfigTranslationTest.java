@@ -141,7 +141,8 @@ class ClientConfigTranslationTest {
     void waypointUpdateMessagesTakeOneNameInEveryLocale() throws Exception {
         for (String locale : LOCALES) {
             JsonObject translated = read(locale);
-            for (String operation : List.of("added", "updated", "removed")) {
+            for (String operation : List.of("added", "updated", "removed", "restored",
+                    "created_list", "updated_list", "removed_list")) {
                 String key = "server_waypoint.update_notification." + operation;
                 assertTrue(translated.has(key), locale + ": " + key);
                 assertEquals(List.of(1), arguments(translated.get(key).getAsString()), locale + ": " + key);
@@ -153,10 +154,11 @@ class ClientConfigTranslationTest {
     void waypointUpdateChatTranslationsContainAllReferences() throws Exception {
         for (String locale : LOCALES) {
             JsonObject translated = read(locale);
-            for (String operation : List.of("added", "updated", "removed")) {
+            for (String operation : List.of("added", "updated", "removed", "restored",
+                    "created_list", "updated_list", "removed_list")) {
                 String key = "server_waypoint.update_notification.chat." + operation;
                 assertTrue(translated.has(key), locale + ": " + key);
-                assertEquals(operation.equals("updated") ? List.of(1) : List.of(1, 2),
+                assertEquals(List.of("added", "removed", "restored").contains(operation) ? List.of(1, 2) : List.of(1),
                         arguments(translated.get(key).getAsString()), locale + ": " + key);
             }
             for (String key : List.of("wp.count.waypoint.one", "wp.count.waypoint.other", "wp.coordinates.nether",

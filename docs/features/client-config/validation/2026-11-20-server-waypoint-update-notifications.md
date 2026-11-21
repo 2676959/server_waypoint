@@ -60,3 +60,39 @@ head. With broadcasts disabled, the observer still saw the styled rename and rem
 A broadcast-style `/tellraw` produced only its own line. The owner saw the Private confirmation, and
 Toast still rendered “Waypoint added: Vista.” The captures and native chat evidence are under
 `/tmp/sw-update-chat-style.JKrNfm`.
+
+## List changes, restore, and Shared GUI edits
+
+Two native Fabric 26.1.2 clients connected to a dedicated server on loopback and negotiated protocol 4.
+With both clients in Chat and `broadcastFeedback=all`, each applied the seven Shared command
+mutations and displayed one client confirmation per action. The actor received command feedback
+and the observer received the server announcement.
+
+| Action | Client confirmation observed on both clients |
+| --- | --- |
+| Create list | Created list NotificationProbe |
+| Edit list display name | Updated list SharedReview |
+| Add waypoint | Added [M] Mountain to SharedReview |
+| Edit waypoint display name | Updated [M] CommandPeak |
+| Remove waypoint | Removed [M] CommandPeak from SharedReview |
+| Restore waypoint using the command result's Restore link | Restored [M] CommandPeak to SharedReview |
+| Remove empty list | Removed list SharedReview |
+
+The probe invoked Save on the native Shared waypoint edit form. Both clients applied the GUI edit
+and displayed one confirmation. The observer's server announcement matched the command edit in
+component colors, tooltip, and click action after accounting for the new display name.
+The probe exercised the form handler directly and inspected the live client state, chat components,
+and toast manager.
+
+With `broadcastFeedback=off`, both clients continued to apply updates. The observer in Toast mode
+received the waypoint and list messages, including `Waypoint restored: PolicyPeak` and the GUI
+edit's `Waypoint edited: PolicyPeak`. The actor in Off mode received zero client notifications, and
+the server announcements were absent.
+
+The common suite passed 748 tests and Fabric 26.1.2 passed 1,147 tests. Paper 26.2, Forge 1.20.1,
+and NeoForge 26.3 compiled. Active Stonecutter targets stayed at Fabric 26.1.2 and Paper 26.2.
+The six client locales passed the Chat and Toast argument checks.
+
+The native evidence is `/tmp/sw-shared-operations.B6ODyY/candidate/evidence.log`. The same
+production JAR ran on all three processes with SHA-256
+`ef898d676d03e4709dfaadf7f418828432b54c66c2d95f6c623ccfbbf366ae52`.
