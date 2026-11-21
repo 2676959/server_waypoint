@@ -1,6 +1,6 @@
 //~ gui_graphics_26
 //~ resource_location_import
-package _959.server_waypoint.common.client.integrations;
+package _959.server_waypoint.common.client;
 
 import _959.server_waypoint.common.client.gui.render.DrawContextHelper;
 import java.util.List;
@@ -27,7 +27,7 @@ import net.minecraft.world.item.Items;
 
 import static _959.server_waypoint.common.util.ResourceLocationHelper.mcId;
 
-/** Uses vanilla's advancement background and layout for a client-side sync message. */
+/** Uses vanilla's advancement background and layout for a client-side waypoint notification. */
 final class WaypointSyncToast implements Toast {
     //? if >1.20.1 {
     private static final

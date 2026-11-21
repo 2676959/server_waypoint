@@ -11,10 +11,18 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.level.Level;
 import _959.server_waypoint.common.server.LocalWaypointUpload;
 import _959.server_waypoint.common.server.WaypointServerMod;
+import _959.server_waypoint.core.edit.EditResultStatus;
+import _959.server_waypoint.core.edit.WaypointPatch;
+import _959.server_waypoint.core.network.ChunkedMessage;
 import _959.server_waypoint.core.network.codec.ChunkedMessageManager;
 import _959.server_waypoint.core.network.data.DimensionWaypointData;
 import _959.server_waypoint.core.network.data.WaypointData;
+import _959.server_waypoint.core.network.message.WaypointCollectionStateMessage;
+import _959.server_waypoint.core.network.message.WaypointEditRequestMessage;
+import _959.server_waypoint.core.network.message.WaypointEditResultMessage;
+import _959.server_waypoint.core.network.message.WaypointModificationMessage;
 import _959.server_waypoint.core.waypoint.WaypointList;
+import _959.server_waypoint.core.waypoint.WaypointModificationType;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import net.minecraft.client.Minecraft;
@@ -23,22 +31,31 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import sun.misc.Unsafe;
 
 import java.lang.reflect.Field;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 
+import static _959.server_waypoint.core.waypoint.WaypointModificationType.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ClientManualDownloadTest {
     private static final String DIMENSION = "minecraft:overworld";
     private final Map<Field, Object> previousValues = new LinkedHashMap<>();
+    private final List<Map.Entry<WaypointModificationType, String>> updateNotifications = new ArrayList<>();
     @TempDir Path directory;
     private WaypointClientMod client;
     private Unsafe unsafe;
@@ -85,9 +102,8 @@ class ClientManualDownloadTest {
         renderer.setAccessible(true);
         renderer.set(minecraft, unsafe.allocateInstance(GameRenderer.class));
         setStatic(Minecraft.class, "instance", minecraft);
-        var constructor = WaypointClientMod.class.getDeclaredConstructor(Minecraft.class, Path.class, Path.class);
-        constructor.setAccessible(true);
-        client = constructor.newInstance(minecraft, directory, directory);
+        client = new WaypointClientMod(minecraft, directory, directory,
+                (update, waypoint) -> updateNotifications.add(Map.entry(update.type(), waypoint.displayName())));
         client.changeWaypointFilesDir(directory.resolve("cached"));
         client.putWaypointList(DIMENSION, WaypointList.build("cached", 7));
     }
@@ -331,6 +347,133 @@ class ClientManualDownloadTest {
         assertEquals(8, client.getWaypointFileManager(DIMENSION).getWaypointListByName("cached").getSyncNum());
     }
 
+    @ParameterizedTest
+    @EnumSource(WaypointScope.class)
+    void appliedWaypointDeltasNotifyOncePerMutation(WaypointScope scope) throws Exception {
+        syncNotificationFixture(scope, List.of());
+        var lastMapEvent = xaero.lastEvent;
+        receive(delta(scope, ADD, null, namedWaypoint("home", "Home Base"), 8));
+        receive(delta(scope, UPDATE, "home", namedWaypoint("camp", "Camp Alpha"), 9));
+        receive(delta(scope, REMOVE, "camp", null, 10));
+
+        assertEquals(List.of(Map.entry(ADD, "Home Base"), Map.entry(UPDATE, "Camp Alpha"),
+                Map.entry(REMOVE, "Camp Alpha")), updateNotifications);
+        assertEquals(10, notificationList(scope).getSyncNum());
+        assertTrue(notificationList(scope).isEmpty());
+        assertSame(lastMapEvent, xaero.lastEvent);
+    }
+
+    @ParameterizedTest
+    @EnumSource(WaypointScope.class)
+    void replayedOrUnappliedWaypointDeltasStaySilent(WaypointScope scope) throws Exception {
+        syncNotificationFixture(scope, List.of());
+        var add = delta(scope, ADD, null, namedWaypoint("home", "Home Base"), 8);
+        receive(add);
+        receive(add);
+        receive(delta(scope, UPDATE, "missing", namedWaypoint("camp", "Camp Alpha"), 9));
+        receive(delta(scope, REMOVE, "missing", null, 9));
+        receive(delta(scope, REMOVE, "home", null, 10));
+
+        assertEquals(List.of(Map.entry(ADD, "Home Base")), updateNotifications);
+        assertEquals(8, notificationList(scope).getSyncNum());
+        assertNotNull(notificationList(scope).getWaypointByName("home"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void editResultAndDeltaNotifyOnlyOnceInEitherOrder(boolean resultFirst) throws Exception {
+        syncNotificationFixture(WaypointScope.PRIVATE, List.of(namedWaypoint("home", "Home Base")));
+        var request = new AtomicReference<WaypointEditRequestMessage>();
+        var access = new ClientWaypointAccess(client.collections(), client.localProfiles(), new ClientWaypointAccess.Transport() {
+            public boolean connected() { return true; }
+            public String currentDimension() { return DIMENSION; }
+            public int commandLimit() { return 32767; }
+            public List<String> dimensions() { return List.of(DIMENSION); }
+            public boolean allowed(ClientWaypointSource source, ClientWaypointAccess.Action action) { return true; }
+            public boolean command(String command) { throw new AssertionError("Unexpected command"); }
+            public boolean edit(WaypointEditRequestMessage message) {
+                request.set(message);
+                return true;
+            }
+        });
+        Field accessField = WaypointClientMod.class.getDeclaredField("access");
+        accessField.setAccessible(true);
+        accessField.set(client, access);
+        var selection = access.capture(ClientWaypointSource.PRIVATE, DIMENSION, "cached", "home");
+        var completion = client.access().edit(selection, 7, WaypointPatch.empty());
+        var edited = namedWaypoint("camp", "Camp Alpha");
+        var result = new WaypointEditResultMessage(WaypointScope.PRIVATE, request.get().requestId(),
+                EditResultStatus.SUCCESS, DIMENSION, "cached", "home", edited, 8);
+        var update = delta(WaypointScope.PRIVATE, UPDATE, "home", edited, 8);
+
+        if (resultFirst) {
+            receive(result);
+            assertTrue(updateNotifications.isEmpty());
+            receive(update);
+        } else {
+            receive(update);
+            receive(result);
+        }
+        assertTrue(completion.isDone());
+        assertEquals(ClientWaypointAccess.Status.SAVED, completion.join().status());
+        assertEquals(List.of(Map.entry(UPDATE, "Camp Alpha")), updateNotifications);
+    }
+
+    @Test
+    void snapshotsListsAndStalePrivatePacketsStaySilent() throws Exception {
+        syncNotificationFixture(WaypointScope.SHARED, List.of());
+        syncNotificationFixture(WaypointScope.PRIVATE, List.of(namedWaypoint("home", "Home Base")));
+        receive(delta(WaypointScope.SHARED, REMOVE_LIST, null, null, 8));
+        assertNull(notificationList(WaypointScope.SHARED));
+        var lastMapEvent = xaero.lastEvent;
+
+        var lateUpdate = delta(WaypointScope.PRIVATE, ADD, null, namedWaypoint("camp", "Camp Alpha"), 8);
+        receive(new WaypointCollectionStateMessage(WaypointScope.PRIVATE, false));
+        receive(lateUpdate);
+        long oldGeneration = client.collections().generation();
+        bindPrivateNotificationFixture(2, List.of());
+        for (var frame : ChunkedMessageManager.createTransfer(lateUpdate, false)) {
+            client.onMessageChunk(frame, oldGeneration);
+        }
+        assertTrue(notificationList(WaypointScope.PRIVATE).isEmpty());
+        assertTrue(updateNotifications.isEmpty());
+        assertSame(lastMapEvent, xaero.lastEvent);
+    }
+
+    private void syncNotificationFixture(WaypointScope scope, List<SimpleWaypoint> waypoints) throws Exception {
+        prepareWorld();
+        setStatic(WaypointClientMod.class, "networkState", WaypointClientMod.ClientNetworkState.SYNC_FINISHED);
+        if (scope == WaypointScope.PRIVATE) {
+            client.collections().beginConnection(UUID.randomUUID(), "test");
+            bindPrivateNotificationFixture(1, waypoints);
+        } else {
+            receive(WaypointData.world(scope, List.of(new DimensionWaypointData(DIMENSION,
+                    List.of(new WaypointList("cached", 7, waypoints))))));
+        }
+    }
+
+    private void bindPrivateNotificationFixture(int backend, List<SimpleWaypoint> waypoints) {
+        client.collections().bindServer(directory, backend);
+        receive(new WaypointCollectionStateMessage(WaypointScope.PRIVATE, true));
+        receive(WaypointData.world(WaypointScope.PRIVATE, List.of(new DimensionWaypointData(DIMENSION,
+                List.of(new WaypointList("cached", 7, waypoints))))));
+    }
+
+    private WaypointList notificationList(WaypointScope scope) {
+        return client.collections().files(ClientWaypointSource.fromScope(scope))
+                .getWaypointFileManager(DIMENSION).getWaypointListByName("cached");
+    }
+
+    private static WaypointModificationMessage delta(WaypointScope scope, WaypointModificationType type,
+                                                      String previousName, SimpleWaypoint waypoint, int revision) {
+        return new WaypointModificationMessage(scope, DIMENSION, "cached", "cached", previousName, waypoint, type, revision);
+    }
+
+    private static SimpleWaypoint namedWaypoint(String name, String displayName) {
+        return new SimpleWaypoint(name, displayName, "S", new WaypointPos(10, 64, 0), 0xFFFFFF, 0,
+                false, List.of(), "");
+    }
+
     private void assertRefreshed(ClientWaypointSyncEvent.Type type) {
         assertNotNull(xaero.lastEvent);
         assertNotNull(voxelMap.lastEvent);
@@ -338,8 +481,8 @@ class ClientManualDownloadTest {
         assertEquals(type, voxelMap.lastEvent.type());
     }
 
-    private void receive(WaypointData data) {
-        for (var frame : ChunkedMessageManager.createTransfer(data, false)) {
+    private void receive(ChunkedMessage message) {
+        for (var frame : ChunkedMessageManager.createTransfer(message, false)) {
             client.onMessageChunk(frame);
         }
     }

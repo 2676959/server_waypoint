@@ -1,5 +1,6 @@
 package _959.server_waypoint.common.client.integrations;
 
+import _959.server_waypoint.common.client.ClientNotifications;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.core.network.upload.UploadTarget;
 import net.minecraft.client.Minecraft;
@@ -22,25 +23,7 @@ final class MapModSyncNotifications {
     }
 
     private static void showSyncNotification(Component chatMessage, Component toastMessage) {
-        Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.player == null) {
-            return;
-        }
-        switch (WaypointClientMod.getClientConfig().getSyncNotificationMode()) {
-            case OFF -> { }
-            case CHAT -> MapModChatHelper.displayClientMessage(minecraft.player, chatMessage);
-            case TOAST -> showToast(minecraft, toastMessage);
-        }
-    }
-
-    private static void showToast(Minecraft minecraft, Component message) {
-        WaypointSyncToast toast = new WaypointSyncToast(minecraft.font, message);
-        //? if >=26.3 {
-        /*minecraft.gui.toastManager().addToast(toast);
-        *///?} elif >=1.21.2 {
-        minecraft.getToastManager().addToast(toast);
-        //?} else {
-        /*minecraft.getToasts().addToast(toast);
-        *///?}
+        ClientNotifications.show(Minecraft.getInstance(), WaypointClientMod.getClientConfig().getSyncNotificationMode(),
+                chatMessage, toastMessage);
     }
 }

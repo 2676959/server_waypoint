@@ -42,6 +42,11 @@ class ClientConfigTranslationTest {
             "server_waypoint.config.confirm_sync",
             "server_waypoint.config.section.rendering",
             "server_waypoint.config.section.waypoint_manager",
+            "server_waypoint.config.waypoint_update_notifications",
+            "server_waypoint.config.waypoint_update_notifications.tooltip",
+            "server_waypoint.config.waypoint_update_notifications.off",
+            "server_waypoint.config.waypoint_update_notifications.chat",
+            "server_waypoint.config.waypoint_update_notifications.toast",
             "server_waypoint.config.teleport_method",
             "server_waypoint.config.teleport_method.tooltip",
             "server_waypoint.config.teleport_method.key",
@@ -128,6 +133,41 @@ class ClientConfigTranslationTest {
                 assertTrue(translated.has(key), locale + ": " + key);
                 assertEquals(arguments(english.get(key).getAsString()),
                         arguments(translated.get(key).getAsString()), locale + ": " + key);
+            }
+        }
+    }
+
+    @Test
+    void waypointUpdateMessagesTakeOneNameInEveryLocale() throws Exception {
+        for (String locale : LOCALES) {
+            JsonObject translated = read(locale);
+            for (String operation : List.of("added", "updated", "removed")) {
+                String key = "server_waypoint.update_notification." + operation;
+                assertTrue(translated.has(key), locale + ": " + key);
+                assertEquals(List.of(1), arguments(translated.get(key).getAsString()), locale + ": " + key);
+            }
+        }
+    }
+
+    @Test
+    void waypointUpdateChatTranslationsContainAllReferences() throws Exception {
+        for (String locale : LOCALES) {
+            JsonObject translated = read(locale);
+            for (String operation : List.of("added", "updated", "removed")) {
+                String key = "server_waypoint.update_notification.chat." + operation;
+                assertTrue(translated.has(key), locale + ": " + key);
+                assertEquals(operation.equals("updated") ? List.of(1) : List.of(1, 2),
+                        arguments(translated.get(key).getAsString()), locale + ": " + key);
+            }
+            for (String key : List.of("wp.count.waypoint.one", "wp.count.waypoint.other", "wp.coordinates.nether",
+                    "wp.coordinates.overworld", "wp.teleport.to", "wp.where.in")) {
+                assertTrue(translated.has(key), locale + ": " + key);
+                assertEquals(List.of(1), arguments(translated.get(key).getAsString()), locale + ": " + key);
+            }
+            for (String key : List.of("wp.hint.details", "wp.hint.open", "wp.dimension.overworld",
+                    "wp.dimension.nether", "wp.dimension.end")) {
+                assertTrue(translated.has(key), locale + ": " + key);
+                assertEquals(List.of(), arguments(translated.get(key).getAsString()), locale + ": " + key);
             }
         }
     }

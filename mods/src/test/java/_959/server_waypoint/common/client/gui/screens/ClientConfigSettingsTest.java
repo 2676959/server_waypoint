@@ -124,6 +124,40 @@ class ClientConfigSettingsTest {
     }
 
     @Test
+    void waypointUpdateNotificationDropdownPersistsIndependentlyAndResetsToOff() {
+        ClientConfig config = GSON.fromJson("{}", ClientConfig.class);
+        var setting = ClientConfigSettings.WAYPOINT_UPDATE_NOTIFICATIONS;
+        var settings = ClientConfigSettings.forScreen(Set.of());
+        var dropdown = new ClientConfigScreen.SettingDropdown<>(setting, config, new TestFont(), () -> { });
+        String prefix = "server_waypoint.config.waypoint_update_notifications.";
+        assertTrue(settings.contains(setting));
+        assertEquals(SyncNotificationMode.OFF, config.getWaypointUpdateNotificationMode());
+        assertEquals(SyncNotificationMode.CHAT, config.getSyncNotificationMode());
+        assertTranslation(dropdown.triggerLabel(), prefix + "off");
+
+        config.setSyncNotificationMode(SyncNotificationMode.TOAST);
+        var choices = List.of(SyncNotificationMode.CHAT, SyncNotificationMode.TOAST,
+                SyncNotificationMode.OFF, SyncNotificationMode.TOAST);
+        var keys = List.of("chat", "toast", "off", "toast");
+        int[] popupRows = {1, 2, 1, 2};
+        for (int index = 0; index < choices.size(); index++) {
+            int left = InputConstants.MOUSE_BUTTON_LEFT;
+            assertTrue(dropdown.mouseClicked(2, 2, left));
+            assertTrue(dropdown.mouseClicked(2, popupRows[index] * dropdown.getHeight() + 2, left));
+            assertTranslation(dropdown.triggerLabel(), prefix + keys.get(index));
+            ClientConfig restored = GSON.fromJson(GSON.toJson(config), ClientConfig.class);
+            assertEquals(choices.get(index), restored.getWaypointUpdateNotificationMode());
+            assertEquals(SyncNotificationMode.TOAST, restored.getSyncNotificationMode());
+        }
+
+        ClientConfigSettings.resetAll(config, ClientConfigSettings.WAYPOINT_MANAGER);
+        assertEquals(SyncNotificationMode.OFF, config.getWaypointUpdateNotificationMode());
+        assertEquals(SyncNotificationMode.OFF,
+                GSON.fromJson(GSON.toJson(config), ClientConfig.class).getWaypointUpdateNotificationMode());
+        assertTranslation(dropdown.triggerLabel(), prefix + "off");
+    }
+
+    @Test
     void syncNotificationDropdownSelectsAllModesAndReflectsReset() {
         ClientConfig config = GSON.fromJson("{}", ClientConfig.class);
         var setting = ClientConfigSettings.SYNC_NOTIFICATIONS;

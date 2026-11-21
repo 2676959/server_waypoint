@@ -36,7 +36,14 @@ final class ClientConfigSettings {
             ClientConfig::isCloseWaypointManagerAfterTeleport,
             ClientConfig::setCloseWaypointManagerAfterTeleport
     );
-    static final List<Setting> WAYPOINT_MANAGER = List.of(TELEPORT_METHOD, TELEPORT_KEY, CLOSE_AFTER_TELEPORT);
+    static final EnumSetting<SyncNotificationMode> WAYPOINT_UPDATE_NOTIFICATIONS = new EnumSetting<>(
+            SettingText.of("waypoint_update_notifications"),
+            ClientConfig.DEFAULT_WAYPOINT_UPDATE_NOTIFICATION_MODE,
+            ClientConfig::getWaypointUpdateNotificationMode,
+            ClientConfig::setWaypointUpdateNotificationMode
+    );
+    static final List<Setting> WAYPOINT_MANAGER = List.of(
+            TELEPORT_METHOD, TELEPORT_KEY, CLOSE_AFTER_TELEPORT, WAYPOINT_UPDATE_NOTIFICATIONS);
 
     static final BooleanSetting SHOW_WAYPOINTS = new BooleanSetting(
             SettingText.of("enable_waypoint_render"),

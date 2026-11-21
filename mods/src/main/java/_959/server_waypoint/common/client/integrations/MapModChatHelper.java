@@ -7,8 +7,6 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.player.Player;
 
 import static _959.server_waypoint.util.StringCommandBuilder.tpCmd;
 
@@ -34,15 +32,5 @@ public final class MapModChatHelper {
                 .append(net.kyori.adventure.text.Component.empty().color(NamedTextColor.WHITE)
                         .hoverEvent(HoverEvent.showText(where))
                         .append(FormattedTextHelper.parse(waypoint.displayName())));
-    }
-
-    public static void displayClientMessage(Player player, Component message) {
-        if (player == null) {
-            return;
-        }
-        //? if >=26
-        player.sendSystemMessage(message);
-        //? if <26
-        /*player.displayClientMessage(message, false);*/
     }
 }

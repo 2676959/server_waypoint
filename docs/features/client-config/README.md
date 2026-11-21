@@ -7,7 +7,17 @@ Under **Waypoint rendering**, **Render waypoints under F1** controls whether in-
 waypoints remain visible when F1 hides the HUD. It defaults to off, applies immediately,
 and is saved as `renderWaypointsUnderF1` in the client config. Loading screens always hide waypoints.
 
+Under **Waypoint Manager**, **Waypoint update notifications** offers **Off** (default),
+**Chat**, and **Toast**. The client confirms a Shared or Private waypoint add, edit, or removal
+after it applies the server's update. The selection applies immediately and is saved as
+`waypointUpdateNotificationMode`. Chat uses the same waypoint markers and interactive references
+as server announcements and omits the actor, since the update packet carries only the change.
+Server announcements and errors follow their existing settings and display paths.
+
 - [Screen design](specs/2026-09-28-client-config-screen-design.md)
+- [Server waypoint update notifications design](specs/2026-11-20-server-waypoint-update-notifications-design.md)
+- [Server waypoint update notifications implementation plan](plans/2026-11-20-server-waypoint-update-notifications.md)
+- [Server waypoint update notifications validation](validation/2026-11-20-server-waypoint-update-notifications.md)
 - [Implementation plan](plans/2026-09-28-client-config-screen.md)
 - [Validation results](validation/2026-09-28-results.md)
 - [Loading-screen and F1 waypoint visibility validation](validation/2026-09-29-waypoint-visibility.md)
