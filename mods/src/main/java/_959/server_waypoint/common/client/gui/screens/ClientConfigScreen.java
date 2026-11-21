@@ -8,6 +8,7 @@ import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Direction;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Orientation;
 import _959.server_waypoint.common.client.gui.layout.SettingsListLayout;
+import _959.server_waypoint.common.client.gui.layout.VerticalAlignment;
 import _959.server_waypoint.common.client.gui.layout.WidgetPack;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
 import _959.server_waypoint.common.client.gui.render.WidgetTextures;
@@ -819,13 +820,14 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         }
     }
 
-    static final class SettingDropdown<E extends Enum<E>> extends TextChoiceDropdown {
+    static final class SettingDropdown<E extends Enum<E>> extends TextChoiceDropdown implements VerticalAlignment {
         private final ClientConfigSettings.EnumSetting<E> setting;
         private final ClientConfig config;
 
         SettingDropdown(ClientConfigSettings.EnumSetting<E> setting, ClientConfig config, Font font, Runnable onChanged) {
-            super(triggerWidth(setting.choices().stream().map(setting::valueText).mapToInt(font::width).max().orElseThrow()),
-                    setting.text().label(), font);
+            super(triggerWidth((int) Math.ceil(setting.choices().stream().map(setting::valueText)
+                            .mapToInt(font::width).max().orElseThrow() * ROW_CONTROL_SCALE)),
+                    setting.text().label(), font, ROW_CONTROL_SCALE);
             this.setting = setting;
             this.config = config;
             for (E choice : setting.choices()) {
@@ -835,6 +837,11 @@ public class ClientConfigScreen extends MovementAllowedScreen {
                 }));
             }
             this.setRenderPopupSeparately(true);
+        }
+
+        @Override
+        public float getVerticalAlignmentCenter() {
+            return this.getLabelAlignmentCenter();
         }
 
         @Override

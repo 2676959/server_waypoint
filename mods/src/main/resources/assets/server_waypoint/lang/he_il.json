@@ -156,7 +156,7 @@
   "server_waypoint.config.sync_notifications": "התראות סנכרון נקודות ציון",
   "server_waypoint.config.sync_notifications.tooltip": "בחרו איך יוצגו התראות על סנכרון עם מודי מפות.",
   "server_waypoint.config.sync_notifications.off": "כבוי",
-  "server_waypoint.config.sync_notifications.chat": "הודעה בצ׳אט",
+  "server_waypoint.config.sync_notifications.chat": "צ׳אט",
   "server_waypoint.config.sync_notifications.toast": "התראה קופצת",
   "server_waypoint.config.waypoint_update_notifications": "התראות על עדכוני נקודות ציון",
   "server_waypoint.config.waypoint_update_notifications.tooltip": "בחירת האופן שבו הלקוח מאשר שינויים בנקודות ציון וברשימות שהתקבלו מהשרת.",

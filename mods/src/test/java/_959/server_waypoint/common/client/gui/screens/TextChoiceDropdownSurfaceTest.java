@@ -5,11 +5,16 @@ package _959.server_waypoint.common.client.gui.screens;
 import _959.server_waypoint.common.client.gui.TestFont;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
+import _959.server_waypoint.common.client.gui.widgets.AbstractDropdownMenuWidget;
+import _959.server_waypoint.common.client.gui.widgets.ComboBoxWidget;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.FormattedCharSequence;
 import org.joml.Matrix3x2fStack;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -98,6 +103,29 @@ class TextChoiceDropdownSurfaceTest {
     }
 
     @Test
+    void dropdownArrowKeepsItsRightPaddingAtBothTextScales() throws Exception {
+        assertArrowRightPadding(new Dropdown());
+        assertArrowRightPadding(new Dropdown(0.85F));
+    }
+
+    @Test
+    void comboBoxArrowUsesTheSameRightPadding() throws Exception {
+        ComboBoxWidget combo = new ComboBoxWidget(10, 20, 60, Component.empty(), new TestFont(),
+                List.of("One"), "", value -> { });
+        assertArrowRightPadding(combo);
+    }
+
+    private static void assertArrowRightPadding(AbstractDropdownMenuWidget dropdown) throws Exception {
+        dropdown.setRenderPopupSeparately(true);
+        assertEquals(dropdown.getX() + dropdown.getWidth() - 4,
+                render(dropdown, AWAY, AWAY).textRightEdges.get("⏷"), 0.5F);
+        dropdown.setWidth(80);
+        dropdown.setExpanded(true);
+        assertEquals(dropdown.getX() + dropdown.getWidth() - 4,
+                render(dropdown, AWAY, AWAY).textRightEdges.get("⏶"), 0.5F);
+    }
+
+    @Test
     void theChoicesKeepThePopupFill() throws Exception {
         Dropdown dropdown = new Dropdown();
         dropdown.setExpanded(true);
@@ -137,7 +165,7 @@ class TextChoiceDropdownSurfaceTest {
         assertEquals(FOCUS_RING, graphics.colorAt(INSIDE_X, row.getY()));
     }
 
-    private static RecordingGraphics render(Dropdown dropdown, int mouseX, int mouseY) throws Exception {
+    private static RecordingGraphics render(AbstractDropdownMenuWidget dropdown, int mouseX, int mouseY) throws Exception {
         RecordingGraphics graphics = RecordingGraphics.create();
         dropdown.extractRenderState(graphics, mouseX, mouseY, 0);
         return graphics;
@@ -145,7 +173,11 @@ class TextChoiceDropdownSurfaceTest {
 
     private static final class Dropdown extends TextChoiceDropdown {
         private Dropdown() {
-            super(60, Component.literal("Choices"), new TestFont());
+            this(1.0F);
+        }
+
+        private Dropdown(float textScale) {
+            super(60, Component.literal("Choices"), new TestFont(), textScale);
             this.setPosition(10, 20);
             this.addMenuItem(new TextChoice(Component.literal("One"), () -> { }));
         }
@@ -162,6 +194,7 @@ class TextChoiceDropdownSurfaceTest {
     /** Records actual rectangle drawing without needing the Minecraft atlas or a GPU. */
     private static final class RecordingGraphics extends GuiGraphicsExtractor {
         private List<Fill> fills;
+        private Map<String, Float> textRightEdges;
         private Matrix3x2fStack matrices;
 
         private RecordingGraphics() {
@@ -175,6 +208,7 @@ class TextChoiceDropdownSurfaceTest {
             RecordingGraphics graphics = (RecordingGraphics) unsafeClass.getMethod("allocateInstance", Class.class)
                     .invoke(field.get(null), RecordingGraphics.class);
             graphics.fills = new ArrayList<>();
+            graphics.textRightEdges = new HashMap<>();
             graphics.matrices = new Matrix3x2fStack(16);
             return graphics;
         }
@@ -221,6 +255,11 @@ class TextChoiceDropdownSurfaceTest {
 
         @Override
         public void text(Font font, Component text, int x, int y, int color, boolean shadow) {
+            this.textRightEdges.put(text.getString(), this.matrices.m20() + (x + font.width(text)) * this.matrices.m00());
+        }
+
+        @Override
+        public void text(Font font, FormattedCharSequence text, int x, int y, int color, boolean shadow) {
         }
     }
 }

@@ -75,7 +75,7 @@ public class ComboBoxWidget extends AbstractDropdownMenuWidget implements Vertic
             }
         });
         this.setY(y);
-        this.arrow = new ScalableText(0, 0, Component.literal("⏷"), () -> WidgetThemeState.text(this.active), font);
+        this.arrow = this.createDropdownArrow(font, 1.0F);
         this.setValues(values);
         this.setValue(initialValue);
     }
@@ -239,7 +239,7 @@ public class ComboBoxWidget extends AbstractDropdownMenuWidget implements Vertic
         if (this.input.mouseClickedSuggestion(mouseX, mouseY)) {
             return true;
         }
-        if (mouseX >= this.getX() && mouseX < this.getX() + this.width - 14
+        if (mouseX >= this.getX() && mouseX < this.getX() + this.width - ARROW_COLUMN_WIDTH
                 && mouseY >= this.getY() && mouseY < this.getY() + this.height) {
             this.closeMenuIfOpen();
             this.setFocused(true);
@@ -344,9 +344,7 @@ public class ComboBoxWidget extends AbstractDropdownMenuWidget implements Vertic
         //$ render_method_swap
         extractRenderState
                 (context, mouseX, mouseY, deltaTicks);
-        this.arrow.setText(this.isExpanded() ? "⏶" : "⏷");
-        renderLabel(context, this.arrow, this.getX() + this.width - 12, this.getY(),
-                9, this.height, mouseX, mouseY, deltaTicks);
+        this.renderDropdownArrow(context, this.arrow, TEXT_INSET, mouseX, mouseY, deltaTicks);
     }
 
     private static void renderLabel(GuiGraphicsExtractor context, ScalableText text, int x, int y,

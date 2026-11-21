@@ -446,6 +446,9 @@ Enter for anything else.
 An exact matching choice is omitted from the popup when other choices exist. A sole choice remains
 in the popup even when it matches the current text or resolved resource ID, so the arrow still opens
 the list. Resizing also resizes the field and choice rows.
+`AbstractDropdownMenuWidget.createDropdownArrow(...)` and `renderDropdownArrow(...)` supply the themed
+arrow for both comboboxes and text choice dropdowns. Rendering reserves the final 14 GUI pixels and
+positions the arrow's scaled advance width 4 GUI pixels from the right edge of the trigger.
 Comboboxes and text choice dropdowns call `AbstractDropdownMenuWidget.renderTextChoiceSurface(...)`
 for their triggers and popup rows. Resting rows use `POPUP_BACKGROUND` and share one edge with
 the preceding control or row. Active rows under the pointer or highlighted by the keyboard use
@@ -1823,10 +1826,11 @@ content, as the waypoint form does:
 #### Text choice dropdowns
 
 `TextChoiceDropdown` extends `AbstractDropdownMenuWidget` for a trigger and choices that are lines of text.
-The trigger shows `triggerLabel()`, read each time it is drawn, and an open/closed arrow; each `TextChoice`
-shows its label and runs a `Runnable` when chosen. The trigger and the choices are `font.lineHeight + 2` high
-with the text 2 px in, like text fields and comboboxes; labels are clipped inside the outline, and the
-trigger reserves a 14-pixel column for the arrow (`triggerWidth(labelWidth)` adds it). A resting popup row
+The trigger shows `triggerLabel()`, read each time it is drawn, and an open/closed arrow. Each `TextChoice`
+shows its label and runs a `Runnable` when chosen. At the default scale the trigger and choices are
+`font.lineHeight + 2` high, like text fields and comboboxes. An optional constructor scale applies to
+the label, arrow and row height. Labels are clipped inside the outline with a 2-pixel horizontal inset.
+`triggerWidth(labelWidth)` includes the shared arrow column. A resting popup row
 shares its top edge with the preceding row or trigger, or its bottom edge after `setExpansionDirection(REVERSE)`.
 A subclass supplies `triggerLabel()` and, to
 leave the selected choice out of the popup, `getSelectedMenuItemIndex()`. `setWidth` resizes the choices with
@@ -1844,7 +1848,9 @@ The open choices use the same themed surfaces and outlines as combobox choices.
 - **Preview dropdown:** `WidgetThemePreview.SampleDropdown` shows "Choice 1" to "Choice 3" and keeps the
   choice made.
 - **Client settings dropdowns:** `ClientConfigScreen.SettingDropdown` uses an `EnumSetting` for the
-  teleport shortcut, waypoint update notifications, and map sync notifications. The trigger shows
+  teleport shortcut, waypoint update notifications, and map sync notifications. The trigger and choices
+  use the same text scale as the row label, and the trigger aligns its text with that label.
+  The width fits the widest scaled choice. The trigger shows
   the selected value and the popup shows the other choices. Both read the current setting after a reset.
   The popup opens above the control when there is more room there and the choices would be clipped below.
   The screen draws the popup outside the settings list's clipping bounds and gives it input priority

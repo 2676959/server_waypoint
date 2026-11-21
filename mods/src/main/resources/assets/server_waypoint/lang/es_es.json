@@ -156,7 +156,7 @@
   "server_waypoint.config.sync_notifications": "Avisos de sincronización",
   "server_waypoint.config.sync_notifications.tooltip": "Elige cómo se muestran los avisos de sincronización con los mods de mapas.",
   "server_waypoint.config.sync_notifications.off": "Desactivados",
-  "server_waypoint.config.sync_notifications.chat": "Mensaje de chat",
+  "server_waypoint.config.sync_notifications.chat": "Chat",
   "server_waypoint.config.sync_notifications.toast": "Aviso emergente",
   "server_waypoint.config.waypoint_update_notifications": "Avisos de cambios en puntos de ruta",
   "server_waypoint.config.waypoint_update_notifications.tooltip": "Elige cómo confirma tu cliente los cambios en puntos de ruta y listas que recibe del servidor.",

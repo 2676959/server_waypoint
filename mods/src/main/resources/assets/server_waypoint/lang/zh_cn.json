@@ -147,7 +147,7 @@
   "server_waypoint.config.sync_notifications.tooltip": "选择地图模组同步通知的显示方式。",
   "server_waypoint.config.sync_notifications.off": "关闭",
   "server_waypoint.config.sync_notifications.chat": "聊天消息",
-  "server_waypoint.config.sync_notifications.toast": "原版弹窗",
+  "server_waypoint.config.sync_notifications.toast": "弹窗",
   "server_waypoint.config.waypoint_update_notifications": "路径点更新通知",
   "server_waypoint.config.waypoint_update_notifications.tooltip": "选择客户端如何确认从服务器收到的路径点和列表变更。",
   "server_waypoint.config.waypoint_update_notifications.off": "关闭",

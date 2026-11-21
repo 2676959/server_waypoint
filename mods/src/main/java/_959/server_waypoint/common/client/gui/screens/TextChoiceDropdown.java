@@ -16,27 +16,30 @@ import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.
 /**
  * A dropdown of text choices that opens downward, or upward after {@code setExpansionDirection(REVERSE)}:
  * the trigger shows {@link #triggerLabel()} and an open/closed arrow, and each {@link TextChoice} shows
- * its label. The trigger and its choices are a line of text plus 2 pixels high, with the text 2 pixels
- * in, like text fields and comboboxes. Labels are clipped inside the outline; the trigger keeps a
- * column on the right for the arrow.
+ * its label. The trigger and its choices scale together. Labels are clipped inside the outline;
+ * the trigger keeps a column on the right for the arrow.
  */
 abstract class TextChoiceDropdown extends AbstractDropdownMenuWidget {
     private static final int TEXT_INSET = 2;
-    private static final int ARROW_COLUMN = 14;
-    private static final int ARROW_X = 12;
     private final ScalableText label;
     private final ScalableText arrow;
+    private final int textTop;
 
     protected TextChoiceDropdown(int width, Component message, Font font) {
-        super(0, 0, width, font.lineHeight + 2, message,
+        this(width, message, font, 1.0F);
+    }
+
+    protected TextChoiceDropdown(int width, Component message, Font font, float textScale) {
+        super(0, 0, width, Math.round((font.lineHeight + 2) * textScale), message,
                 LayoutFlow.Orientation.VERTICAL, LayoutFlow.Direction.FORWARD);
-        this.label = new ScalableText(0, 0, Component.empty(), TEXT_PRIMARY, font);
-        this.arrow = new ScalableText(0, 0, Component.literal("⏷"), TEXT_PRIMARY, font);
+        this.label = new ScalableText(0, 0, Component.empty(), textScale, TEXT_PRIMARY, font);
+        this.arrow = this.createDropdownArrow(font, textScale);
+        this.textTop = (this.getHeight() - this.label.getHeight()) / 2 + 1;
     }
 
     /** The width a trigger needs to show a label {@code labelWidth} wide: the text inset and the arrow's column. */
     static int triggerWidth(int labelWidth) {
-        return TEXT_INSET + labelWidth + ARROW_COLUMN;
+        return TEXT_INSET + labelWidth + ARROW_COLUMN_WIDTH;
     }
 
     /** What the trigger shows, read each time it is drawn. */
@@ -51,18 +54,17 @@ abstract class TextChoiceDropdown extends AbstractDropdownMenuWidget {
         super.setWidth(width);
     }
 
+    /** The trigger label's visible center, relative to the top of the control. */
+    protected final float getLabelAlignmentCenter() {
+        return this.textTop + this.label.getVerticalAlignmentCenter();
+    }
+
     @Override
     protected void renderDropdownControl(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
         Component message = this.triggerLabel();
         this.setMessage(message);
         this.renderChoice(context, this, message, false, mouseX, mouseY, deltaTicks);
-        this.arrow.setText(this.isExpanded() ? "⏶" : "⏷");
-        this.arrow.setColor(this.active ? TEXT_PRIMARY : TEXT_DISABLED);
-        this.arrow.setPosition(this.getX() + this.getWidth() - ARROW_X, this.getY() + TEXT_INSET);
-        this.arrow.
-        //$ render_method_swap
-        extractRenderState
-                (context, mouseX, mouseY, deltaTicks);
+        this.renderDropdownArrow(context, this.arrow, this.textTop, mouseX, mouseY, deltaTicks);
     }
 
     private void renderChoice(GuiGraphicsExtractor context, ShiftableClickableWidget widget,
@@ -70,9 +72,9 @@ abstract class TextChoiceDropdown extends AbstractDropdownMenuWidget {
         this.renderTextChoiceSurface(context, widget, popup);
         this.label.setText(message);
         this.label.setColor(widget.active ? TEXT_PRIMARY : TEXT_DISABLED);
-        this.label.setPosition(widget.getX() + TEXT_INSET, widget.getY() + TEXT_INSET);
+        this.label.setPosition(widget.getX() + TEXT_INSET, widget.getY() + this.textTop);
         int labelRight = popup ? Math.min(widget.getWidth(), this.getPopupContentWidth()) - TEXT_INSET
-                : widget.getWidth() - ARROW_COLUMN;
+                : widget.getWidth() - ARROW_COLUMN_WIDTH;
         context.enableScissor(widget.getX() + TEXT_INSET, widget.getY() + 1,
                 widget.getX() + Math.max(TEXT_INSET, labelRight),
                 widget.getY() + widget.getHeight() - 1);

@@ -4,6 +4,7 @@ import _959.server_waypoint.common.client.ClientConfig;
 import _959.server_waypoint.common.client.ClientConfig.SyncNotificationMode;
 import _959.server_waypoint.common.client.ClientConfig.TeleportMethod;
 import _959.server_waypoint.common.client.gui.TestFont;
+import _959.server_waypoint.common.client.gui.widgets.SettingsListWidget;
 import _959.server_waypoint.core.network.upload.UploadTarget;
 import _959.server_waypoint.core.waypoint.WaypointSorting;
 import com.google.gson.Gson;
@@ -233,6 +234,23 @@ class ClientConfigSettingsTest {
         assertTrue(setting.isDefault(config));
         assertEquals(InputConstants.KEY_T, config.getTeleportKey().getValue());
         assertEquals(TeleportMethod.DOUBLE_CLICK, config.getTeleportMethod());
+    }
+
+    @Test
+    void teleportDropdownAndPopupChoicesUseTheSettingsRowScale() {
+        ClientConfig config = GSON.fromJson("{}", ClientConfig.class);
+        var setting = ClientConfigSettings.TELEPORT_METHOD;
+        var font = new TestFont();
+        var dropdown = new ClientConfigScreen.SettingDropdown<>(setting, config, font, () -> { });
+        int widestLabel = setting.choices().stream().map(setting::valueText).mapToInt(font::width).max().orElseThrow();
+        int width = TextChoiceDropdown.triggerWidth((int) Math.ceil(widestLabel * SettingsListWidget.ROW_TEXT_SCALE));
+
+        assertEquals(width, dropdown.getWidth());
+        assertEquals(9, dropdown.getHeight());
+        for (var choice : dropdown.getMenuItems()) {
+            assertEquals(width, choice.getWidth());
+            assertEquals(9, choice.getHeight());
+        }
     }
 
     @Test
