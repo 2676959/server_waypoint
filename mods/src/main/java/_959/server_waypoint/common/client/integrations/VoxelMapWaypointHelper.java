@@ -4,12 +4,12 @@ package _959.server_waypoint.common.client.integrations;
 import _959.server_waypoint.core.collection.WaypointScope;
 import _959.server_waypoint.common.client.ClientConfig;
 import _959.server_waypoint.common.client.WaypointClientMod;
+import _959.server_waypoint.common.client.integrations.MapModIntegration.SyncSuccess;
 import _959.server_waypoint.core.WaypointFilesManagerCore;
 import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
 import _959.server_waypoint.core.network.data.DimensionWaypointData;
 import _959.server_waypoint.core.network.data.WaypointData;
 import _959.server_waypoint.core.network.upload.UploadStatus;
-import _959.server_waypoint.core.network.upload.UploadTarget;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
@@ -40,7 +40,6 @@ import java.util.function.Predicate;
 import static _959.server_waypoint.common.client.WaypointClientMod.LOGGER;
 import static _959.server_waypoint.common.client.integrations.MapModChatHelper.waypointText;
 import static _959.server_waypoint.common.client.integrations.MapModSyncNotifications.showSyncFailure;
-import static _959.server_waypoint.common.client.integrations.MapModSyncNotifications.showSyncSuccess;
 import static _959.server_waypoint.common.network.ModMessageSender.toVanillaText;
 import static _959.server_waypoint.common.util.DimensionKeyParser.getDimensionKey;
 import static _959.server_waypoint.common.util.TextHelper.getDimensionColor;
@@ -208,7 +207,7 @@ public final class VoxelMapWaypointHelper {
         return new DimensionWaypointData(dimensionName, uploadedLists);
     }
 
-    public static void replaceAll(WaypointClientMod waypointClientMod) {
+    static SyncSuccess replaceAll(WaypointClientMod waypointClientMod) {
         WaypointManager manager = getWaypointManager();
         removeSyncedWaypoints(manager, (waypoint, parsedName) -> true);
         boolean[] synced = {true};
@@ -219,34 +218,35 @@ public final class VoxelMapWaypointHelper {
                 synced[0] = false;
             }
         });
-        displaySyncResult(synced[0], Component.translatable("server_waypoint.all.added.voxelmap"));
+        return reportSyncResult(synced[0], SyncSuccess.FULL_SYNC);
     }
 
-    public static void replaceDimension(String dimensionName, List<WaypointList> waypointLists) {
+    static SyncSuccess replaceDimension(String dimensionName, List<WaypointList> waypointLists) {
         if (!isValidDimension(dimensionName)) {
-            return;
+            return null;
         }
         WaypointManager manager = getWaypointManager();
         removeSyncedWaypoints(manager, (waypoint, parsedName) -> waypointInDimension(waypoint, dimensionName));
-        displaySyncResult(addLists(manager, dimensionName, waypointLists), Component.translatable(
-                "server_waypoint.dimension.waypoint.added.voxelmap",
+        return reportSyncResult(addLists(manager, dimensionName, waypointLists), new SyncSuccess(
+                "server_waypoint.dimension.waypoint.added",
                 Component.literal(dimensionName).withStyle(getDimensionColor(dimensionName))));
     }
 
-    public static void replaceList(String dimensionName, WaypointList waypointList) {
+    static SyncSuccess replaceList(String dimensionName, WaypointList waypointList) {
         if (!isValidDimension(dimensionName)) {
-            return;
+            return null;
         }
         WaypointManager manager = getWaypointManager();
         removeSyncedWaypoints(manager, (waypoint, parsedName) ->
                 waypointList.name().equals(parsedName.listName()) && waypointInDimension(waypoint, dimensionName));
-        displaySyncResult(addList(manager, dimensionName, waypointList), Component.translatable(
-                "server_waypoint.list.added.voxelmap", waypointList.name()));
+        return reportSyncResult(addList(manager, dimensionName, waypointList),
+                new SyncSuccess("server_waypoint.list.added", waypointList.name()));
     }
 
-    public static void applyModification(String dimensionName, String listName, WaypointModificationType type, SimpleWaypoint waypoint, String waypointName) {
+    static SyncSuccess applyModification(String dimensionName, String listName, WaypointModificationType type,
+                                         SimpleWaypoint waypoint, String waypointName) {
         if (!isValidDimension(dimensionName)) {
-            return;
+            return null;
         }
         WaypointManager manager = getWaypointManager();
         switch (type) {
@@ -254,26 +254,25 @@ public final class VoxelMapWaypointHelper {
                 removeSyncedWaypoint(manager, dimensionName, listName, waypointName);
                 if (addWaypoint(manager, dimensionName, listName, waypoint)) {
                     String messageKey = type == WaypointModificationType.ADD
-                            ? "server_waypoint.modification.add.voxelmap"
-                            : "server_waypoint.modification.update.voxelmap";
-                    showSyncSuccess(UploadTarget.VOXELMAP, Component.translatable(messageKey,
-                            toVanillaText(waypointText(waypoint, dimensionName, listName))));
+                            ? "server_waypoint.modification.add"
+                            : "server_waypoint.modification.update";
+                    return new SyncSuccess(messageKey, toVanillaText(waypointText(waypoint, dimensionName, listName)));
                 }
             }
             case REMOVE -> {
                 if (removeSyncedWaypoint(manager, dimensionName, listName, waypointName)) {
-                    showSyncSuccess(UploadTarget.VOXELMAP, Component.translatable("server_waypoint.modification.remove.voxelmap",
-                            Component.literal(waypointName)));
+                    return new SyncSuccess("server_waypoint.modification.remove", Component.literal(waypointName));
                 }
             }
             case REMOVE_LIST -> {
                 if (removeList(dimensionName, listName)) {
-                    showSyncSuccess(UploadTarget.VOXELMAP, Component.translatable("server_waypoint.list.removed.voxelmap", listName));
+                    return new SyncSuccess("server_waypoint.list.removed", listName);
                 }
             }
             case ADD_LIST -> {
             }
         }
+        return null;
     }
 
     private static boolean removeList(String dimensionName, String listName) {
@@ -390,13 +389,13 @@ public final class VoxelMapWaypointHelper {
         return false;
     }
 
-    private static void displaySyncResult(boolean synced, Component successMessage) {
+    private static SyncSuccess reportSyncResult(boolean synced, SyncSuccess success) {
         if (synced) {
-            showSyncSuccess(UploadTarget.VOXELMAP, successMessage);
-        } else {
-            showSyncFailure(Component.translatable("server_waypoint.sync.incomplete", "VoxelMap")
-                    .withStyle(ChatFormatting.RED));
+            return success;
         }
+        showSyncFailure(Component.translatable("server_waypoint.sync.incomplete", "VoxelMap")
+                .withStyle(ChatFormatting.RED));
+        return null;
     }
 
     private static boolean waypointInDimension(Waypoint waypoint, String dimensionName) {

@@ -34,13 +34,8 @@ public final class VoxelMapIntegration implements MapModIntegration {
     }
 
     @Override
-    public void syncAll(WaypointClientMod waypointClientMod) {
-        VoxelMapWaypointHelper.replaceAll(waypointClientMod);
-    }
-
-    @Override
-    public void onClientWaypointSync(ClientWaypointSyncEvent event, WaypointClientMod waypointClientMod) {
-        switch (event.type()) {
+    public SyncSuccess onClientWaypointSync(ClientWaypointSyncEvent event, WaypointClientMod waypointClientMod) {
+        return switch (event.type()) {
             case ALL_SYNCED, WORLD_REPLACED -> VoxelMapWaypointHelper.replaceAll(waypointClientMod);
             case DIMENSION_REPLACED -> VoxelMapWaypointHelper.replaceDimension(event.dimensionName(), event.waypointLists());
             case LIST_REPLACED -> VoxelMapWaypointHelper.replaceList(event.dimensionName(), event.waypointList());
@@ -52,7 +47,7 @@ public final class VoxelMapIntegration implements MapModIntegration {
                             event.waypoint(),
                             event.waypointName()
                     );
-        }
+        };
     }
 }
 //?}

@@ -33,13 +33,8 @@ public final class XaerosMinimapIntegration implements MapModIntegration {
     }
 
     @Override
-    public void syncAll(WaypointClientMod waypointClientMod) {
-        XaerosMinimapWaypointHelper.replaceAll(waypointClientMod);
-    }
-
-    @Override
-    public void onClientWaypointSync(ClientWaypointSyncEvent event, WaypointClientMod waypointClientMod) {
-        switch (event.type()) {
+    public SyncSuccess onClientWaypointSync(ClientWaypointSyncEvent event, WaypointClientMod waypointClientMod) {
+        return switch (event.type()) {
             case ALL_SYNCED, WORLD_REPLACED -> XaerosMinimapWaypointHelper.replaceAll(waypointClientMod);
             case DIMENSION_REPLACED -> XaerosMinimapWaypointHelper.replaceDimension(event.dimensionName(), event.waypointLists());
             case LIST_REPLACED -> XaerosMinimapWaypointHelper.replaceList(event.dimensionName(), event.waypointList());
@@ -51,6 +46,6 @@ public final class XaerosMinimapIntegration implements MapModIntegration {
                             event.waypoint(),
                             event.waypointName()
                     );
-        }
+        };
     }
 }

@@ -14,7 +14,8 @@ public interface MapModIntegration {
     /** Automatic-sync preference, independent of whether the map's world is ready. */
     boolean isEnabled(ClientConfig clientConfig);
 
-    void onClientWaypointSync(ClientWaypointSyncEvent event, WaypointClientMod waypointClientMod);
+    /** Applies the sync and returns its success message, or null if there is no success to report. */
+    SyncSuccess onClientWaypointSync(ClientWaypointSyncEvent event, WaypointClientMod waypointClientMod);
 
     /** Whether the map mod is installed in this game. */
     boolean isInstalled();
@@ -23,5 +24,12 @@ public interface MapModIntegration {
     boolean isReady();
 
     /** Rewrites the waypoints this mod added to the map mod so they match the synced waypoints. */
-    void syncAll(WaypointClientMod waypointClientMod);
+    default void syncAll(WaypointClientMod waypointClientMod) {
+        MapModSyncNotifications.showSyncSuccess(uploadTarget(),
+                onClientWaypointSync(ClientWaypointSyncEvent.allSynced(), waypointClientMod));
+    }
+
+    record SyncSuccess(String messageKey, Object subject) {
+        static final SyncSuccess FULL_SYNC = new SyncSuccess("server_waypoint.all.added", null);
+    }
 }

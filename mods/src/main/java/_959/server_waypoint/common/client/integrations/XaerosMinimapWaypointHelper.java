@@ -3,12 +3,12 @@ package _959.server_waypoint.common.client.integrations;
 import _959.server_waypoint.core.collection.WaypointScope;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.ClientConfig;
+import _959.server_waypoint.common.client.integrations.MapModIntegration.SyncSuccess;
 import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
 import _959.server_waypoint.core.network.data.DimensionWaypointData;
 import _959.server_waypoint.core.network.data.WaypointData;
 import _959.server_waypoint.core.network.upload.UploadStatus;
-import _959.server_waypoint.core.network.upload.UploadTarget;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
@@ -31,7 +31,6 @@ import java.util.List;
 import static _959.server_waypoint.common.client.WaypointClientMod.LOGGER;
 import static _959.server_waypoint.common.client.integrations.MapModChatHelper.waypointText;
 import static _959.server_waypoint.common.client.integrations.MapModSyncNotifications.showSyncFailure;
-import static _959.server_waypoint.common.client.integrations.MapModSyncNotifications.showSyncSuccess;
 import static _959.server_waypoint.common.network.ModMessageSender.toVanillaText;
 import static _959.server_waypoint.common.util.DimensionKeyParser.getDimensionKey;
 import static _959.server_waypoint.common.util.TextHelper.getDimensionColor;
@@ -41,7 +40,7 @@ public final class XaerosMinimapWaypointHelper {
     private XaerosMinimapWaypointHelper() {
     }
 
-    public static void replaceAll(WaypointClientMod waypointClientMod) {
+    static SyncSuccess replaceAll(WaypointClientMod waypointClientMod) {
         MinimapSession session = getMinimapSession();
         boolean[] synced = {true};
         waypointClientMod.forEachWaypointFileManager(fileManager ->
@@ -51,9 +50,9 @@ public final class XaerosMinimapWaypointHelper {
         } catch (IOException exception) {
             LOGGER.warn("Failed to save Xaero's Minimap worlds", exception);
             showSyncFailure(Component.translatable("server_waypoint.save.failed.xaeros").withStyle(ChatFormatting.RED));
-            return;
+            return null;
         }
-        displaySyncResult(synced[0], Component.translatable("server_waypoint.all.added.xaeros"));
+        return reportSyncResult(synced[0], SyncSuccess.FULL_SYNC);
     }
 
     public static WaypointData collectUpload(UploadRequestBuffer request) {
@@ -134,39 +133,41 @@ public final class XaerosMinimapWaypointHelper {
         return new WaypointList(listName, WaypointList.SERVER_N, uploadedWaypoints);
     }
 
-    public static void replaceList(String dimensionName, WaypointList waypointList) {
+    static SyncSuccess replaceList(String dimensionName, WaypointList waypointList) {
         ResourceKey<Level> dimKey = getValidDimensionKey(dimensionName);
         if (dimKey == null) {
             warnInvalidDimension(dimensionName);
-            return;
+            return null;
         }
         MinimapSession session = getMinimapSession();
         MinimapWorld minimapWorld = getMinimapWorld(session, dimKey);
         boolean synced = replaceWaypointList(minimapWorld, waypointList);
-        if (saveMinimapWorldWithFeedback(session, minimapWorld)) {
-            displaySyncResult(synced, Component.translatable("server_waypoint.list.added.xaeros", waypointList.name()));
-        }
+        return saveMinimapWorldWithFeedback(session, minimapWorld)
+                ? reportSyncResult(synced, new SyncSuccess("server_waypoint.list.added", waypointList.name()))
+                : null;
     }
 
-    public static void replaceDimension(String dimensionName, List<WaypointList> waypointLists) {
+    static SyncSuccess replaceDimension(String dimensionName, List<WaypointList> waypointLists) {
         ResourceKey<Level> dimKey = getValidDimensionKey(dimensionName);
         if (dimKey == null) {
             warnInvalidDimension(dimensionName);
-            return;
+            return null;
         }
         MinimapSession session = getMinimapSession();
         MinimapWorld minimapWorld = getMinimapWorld(session, dimKey);
         boolean synced = replaceWaypointLists(minimapWorld, waypointLists);
-        if (saveMinimapWorldWithFeedback(session, minimapWorld)) {
-            displaySyncResult(synced, Component.translatable("server_waypoint.dimension.waypoint.added.xaeros", Component.literal(dimensionName).withStyle(getDimensionColor(dimensionName))));
-        }
+        return saveMinimapWorldWithFeedback(session, minimapWorld)
+                ? reportSyncResult(synced, new SyncSuccess("server_waypoint.dimension.waypoint.added",
+                        Component.literal(dimensionName).withStyle(getDimensionColor(dimensionName))))
+                : null;
     }
 
-    public static void applyModification(String dimensionName, String listName, WaypointModificationType type, SimpleWaypoint waypoint, String waypointName) {
+    static SyncSuccess applyModification(String dimensionName, String listName, WaypointModificationType type,
+                                         SimpleWaypoint waypoint, String waypointName) {
         ResourceKey<Level> dimKey = getValidDimensionKey(dimensionName);
         if (dimKey == null) {
             warnInvalidDimension(dimensionName);
-            return;
+            return null;
         }
 
         MinimapSession session = getMinimapSession();
@@ -174,12 +175,12 @@ public final class XaerosMinimapWaypointHelper {
         String syncedListName = getSyncedWaypointSetName(listName);
         if (syncedListName == null) {
             LOGGER.warn("Skipping Xaero's Minimap sync for list {} because its generated name would be ambiguous.", listName);
-            return;
+            return null;
         }
         if (DEFAULT_WAYPOINT_SET.equals(syncedListName) && waypoint != null
                 && SyncedWaypointName.formatSyncedName(waypoint.name()) == null) {
             LOGGER.warn("Skipping Xaero's Minimap sync for waypoint {} because its generated name would be ambiguous.", waypoint.name());
-            return;
+            return null;
         }
         WaypointSet waypointSet = minimapWorld.getWaypointSet(syncedListName);
 
@@ -188,46 +189,46 @@ public final class XaerosMinimapWaypointHelper {
             LOGGER.info("Waypoint set {} not found in dimension {}, creating new one.", listName, dimKey);
         }
 
-        Component feedback = null;
+        SyncSuccess feedback = null;
         switch (type) {
             case ADD -> {
                 if (waypoint == null) {
-                    return;
+                    return null;
                 }
                 replaceSyncedWaypoint(waypointSet, waypoint);
-                feedback = Component.translatable("server_waypoint.modification.add.xaeros", toVanillaText(waypointText(waypoint, dimensionName, listName)));
+                feedback = new SyncSuccess("server_waypoint.modification.add",
+                        toVanillaText(waypointText(waypoint, dimensionName, listName)));
             }
             case REMOVE -> {
                 if (waypointSet == null) {
-                    return;
+                    return null;
                 }
                 if (removeSyncedWaypoint(waypointSet, waypointName)) {
-                    feedback = Component.translatable("server_waypoint.modification.remove.xaeros",
+                    feedback = new SyncSuccess("server_waypoint.modification.remove",
                             Component.literal(waypointName));
                 }
             }
             case UPDATE -> {
                 if (waypoint == null) {
-                    return;
+                    return null;
                 }
                 if (waypointName != null && !waypointName.equals(waypoint.name())) {
                     removeSyncedWaypoint(waypointSet, waypointName);
                 }
                 replaceSyncedWaypoint(waypointSet, waypoint);
-                feedback = Component.translatable("server_waypoint.modification.update.xaeros", toVanillaText(waypointText(waypoint, dimensionName, listName)));
+                feedback = new SyncSuccess("server_waypoint.modification.update",
+                        toVanillaText(waypointText(waypoint, dimensionName, listName)));
             }
             case ADD_LIST -> {
             }
             case REMOVE_LIST -> {
                 if (waypointSet != null || DEFAULT_WAYPOINT_SET.equals(listName)) {
                     removeSyncedWaypointSet(minimapWorld, syncedListName);
-                    feedback = Component.translatable("server_waypoint.list.removed.xaeros", listName);
+                    feedback = new SyncSuccess("server_waypoint.list.removed", listName);
                 }
             }
         }
-        if (saveMinimapWorldWithFeedback(session, minimapWorld) && feedback != null) {
-            showSyncSuccess(UploadTarget.XAERO, feedback);
-        }
+        return saveMinimapWorldWithFeedback(session, minimapWorld) ? feedback : null;
     }
 
     private static boolean replaceDimension(MinimapSession session, WaypointFileManager fileManager) {
@@ -254,13 +255,13 @@ public final class XaerosMinimapWaypointHelper {
         }
     }
 
-    private static void displaySyncResult(boolean synced, Component successMessage) {
+    private static SyncSuccess reportSyncResult(boolean synced, SyncSuccess success) {
         if (synced) {
-            showSyncSuccess(UploadTarget.XAERO, successMessage);
-        } else {
-            showSyncFailure(Component.translatable("server_waypoint.sync.incomplete", "Xaero's minimap")
-                    .withStyle(ChatFormatting.RED));
+            return success;
         }
+        showSyncFailure(Component.translatable("server_waypoint.sync.incomplete", "Xaero's minimap")
+                .withStyle(ChatFormatting.RED));
+        return null;
     }
 
     private static void warnInvalidDimension(String dimensionName) {
