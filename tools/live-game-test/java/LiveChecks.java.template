@@ -1463,6 +1463,33 @@ public class LiveChecks {
         } else if (op.equals("map")) {
             client(
                     () -> {
+                        var support = xaero.map.mods.SupportMods.xaeroMinimap;
+                        String longInitials = "WWWWWWWWWW";
+                        var waypoint = new xaero.common.minimap.waypoints.Waypoint(
+                                0, 64, 0, "atlas-fixture", longInitials, 1);
+                        String syncedSet = _959.server_waypoint.common.util.SyncedWaypointName
+                                .formatSyncedName("Bases");
+                        String symbol = support.convertWaypoint(waypoint, true, syncedSet, 1.0).getSymbol();
+                        require(longInitials.startsWith(symbol) && !symbol.isEmpty()
+                                        && mc.font.width(symbol) * 3 + 4 <= 64,
+                                "Synced symbol overflows Xaero's atlas tile: " + symbol);
+                        waypoint.setName(_959.server_waypoint.common.util.SyncedWaypointName
+                                .formatSyncedName("atlas-fixture"));
+                        require(support.convertWaypoint(waypoint, true, DEFAULT_SET, 1.0)
+                                        .getSymbol().equals(symbol),
+                                "Synced symbol in Xaero's default set was not shortened");
+                        waypoint.setName("atlas-fixture");
+                        require(waypoint.getInitials().equals(longInitials),
+                                "World Map changed the saved initials");
+                        require(support.convertWaypoint(waypoint, true, "Personal", 1.0)
+                                        .getSymbol().equals(longInitials),
+                                "World Map changed a personal marker");
+                        var shortWaypoint = new xaero.common.minimap.waypoints.Waypoint(
+                                0, 64, 0, "short-atlas-fixture", "基地", 1);
+                        require(support.convertWaypoint(shortWaypoint, true, syncedSet, 1.0)
+                                        .getSymbol().equals("基地"),
+                                "World Map shortened a symbol that fits");
+
                         GameApi.syncVoxel();
                         _959.server_waypoint.common.client.util.MinecraftClientHelper.setScreen(
                                 mc,
