@@ -382,8 +382,9 @@ class ClientHandshakeMapSyncTest {
         @Override public boolean isReady() {
             return target == UploadTarget.VOXELMAP ? ready : WaypointClientMod.isXaerosMinimapReady;
         }
-        @Override public void onClientWaypointSync(ClientWaypointSyncEvent event, WaypointClientMod client) {
+        @Override public SyncSuccess onClientWaypointSync(ClientWaypointSyncEvent event, WaypointClientMod client) {
             syncAll(client);
+            return null;
         }
         @Override public void syncAll(WaypointClientMod client) {
             rewrites++;

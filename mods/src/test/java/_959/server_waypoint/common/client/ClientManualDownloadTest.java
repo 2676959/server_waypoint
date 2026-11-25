@@ -541,8 +541,9 @@ class ClientManualDownloadTest {
         @Override public boolean isInstalled() { return installed; }
         @Override public boolean isReady() { return ready; }
         @Override public void syncAll(WaypointClientMod client) { throw new UnsupportedOperationException(); }
-        @Override public void onClientWaypointSync(ClientWaypointSyncEvent event, WaypointClientMod client) {
+        @Override public SyncSuccess onClientWaypointSync(ClientWaypointSyncEvent event, WaypointClientMod client) {
             lastEvent = event;
+            return null;
         }
     }
 
