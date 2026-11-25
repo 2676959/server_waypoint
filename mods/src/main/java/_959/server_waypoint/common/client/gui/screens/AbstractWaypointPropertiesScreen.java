@@ -747,8 +747,13 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         Component pending = this.pendingMessage();
         boolean locked = modal || pending != null;
         WaypointFormCheck.Problem problem = WaypointFormCheck.firstProblem(this.checkInput(), this.data);
-        boolean changed = this.hasChanges();
-        boolean canSubmit = this.destinationAvailable() && !locked && !(problem != null && problem.blocks()) && changed;
+        boolean xValid = CoordinateInputParser.isCoordinateExpression(this.xEditBox.getValue());
+        boolean yValid = CoordinateInputParser.isCoordinateExpression(this.yEditBox.getValue());
+        boolean zValid = CoordinateInputParser.isCoordinateExpression(this.zEditBox.getValue());
+        boolean coordinatesValid = xValid && yValid && zValid;
+        boolean changed = !coordinatesValid || this.hasChanges();
+        boolean canSubmit = this.destinationAvailable() && !locked && coordinatesValid
+                && !(problem != null && problem.blocks()) && changed;
 
         for (AbstractWidget control : this.fieldControls) {
             setControlActive(control, !locked);
@@ -762,6 +767,9 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         this.displayNameEditBox.setInvalid(this.marks(WaypointFormCheck.Field.DISPLAY_NAME, errorField));
         this.keywordsEditBox.setInvalid(this.marks(WaypointFormCheck.Field.KEYWORDS, errorField));
         this.descriptionEditBox.setInvalid(this.marks(WaypointFormCheck.Field.DESCRIPTION, errorField));
+        this.xEditBox.setInvalid(!xValid);
+        this.yEditBox.setInvalid(!yValid);
+        this.zEditBox.setInvalid(!zValid);
 
         if (pending != null) {
             this.showStatus(pending, TEXT_MUTED);
@@ -892,6 +900,9 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     }
 
     private void coordinateEdited(CoordinateField editedField) {
+        if (this.enforcingCoordinateMode) {
+            return;
+        }
         this.enforceCoordinateMode(editedField);
         this.onFormEdited();
     }
@@ -912,9 +923,6 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     }
 
     private void enforceCoordinateMode(CoordinateField editedField) {
-        if (this.enforcingCoordinateMode) {
-            return;
-        }
         this.enforcingCoordinateMode = true;
         try {
             if (isLocalCoordinateField(editedField)) {
@@ -946,7 +954,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     }
 
     private boolean isLocalCoordinateField(CoordinateField field) {
-        return CoordinateInputParser.isLocalCoordinateExpression(field.getValue());
+        return field.getValue().startsWith("^");
     }
 
     private void setLocalIfNeeded(CoordinateField field) {

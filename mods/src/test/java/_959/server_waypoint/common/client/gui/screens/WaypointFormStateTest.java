@@ -5,6 +5,7 @@ import _959.server_waypoint.common.client.gui.widgets.TranslucentButton;
 import _959.server_waypoint.common.client.gui.widgets.TranslucentTextField;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import com.mojang.blaze3d.platform.InputConstants;
 import java.lang.reflect.Field;
 import java.util.List;
 import net.minecraft.SharedConstants;
@@ -19,6 +20,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class WaypointFormStateTest {
     @BeforeAll
@@ -99,6 +101,58 @@ class WaypointFormStateTest {
             org.junit.jupiter.api.Assertions.assertTrue(first.getFileManagerMap().isEmpty());
             org.junit.jupiter.api.Assertions.assertTrue(replacement.getFileManagerMap().isEmpty());
         } finally { instance.set(null,previous); }
+    }
+
+    @Test
+    void tabCompletesLocalCoordinatesBeforeTheEditFormChecksForChanges() throws Exception {
+        WaypointFormTestForm.withClient(new TestFont(), () -> {
+            var form = readyEditForm();
+            assertTrue(form.xEditBox.keyPressed(InputConstants.KEY_TAB, 0, 0));
+            assertEquals(List.of("^", "^", "^"),
+                    List.of(form.xEditBox.getValue(), form.yEditBox.getValue(), form.zEditBox.getValue()));
+            assertEquals(new WaypointPos(1, 2, 3), form.resolveCoordinateFields());
+
+            assertTrue(form.xEditBox.keyPressed(InputConstants.KEY_TAB, 0, 0));
+            assertEquals(List.of("~", "2", "3"),
+                    List.of(form.xEditBox.getValue(), form.yEditBox.getValue(), form.zEditBox.getValue()));
+        });
+    }
+
+    @Test
+    void signingALocalCoordinateKeepsTheOtherAxesLocalDuringValidation() throws Exception {
+        WaypointFormTestForm.withClient(new TestFont(), () -> {
+            var form = readyEditForm();
+            assertTrue(form.xEditBox.acceptHighlightedSuggestion());
+
+            form.xEditBox.insertText("-");
+            form.refreshControlStates();
+            assertEquals(List.of("^-", "^", "^"),
+                    List.of(form.xEditBox.getValue(), form.yEditBox.getValue(), form.zEditBox.getValue()));
+
+            form.xEditBox.insertText("4");
+            form.xEditBox.setFocused(false);
+            assertEquals("^-4", form.xEditBox.getValue());
+        });
+    }
+
+    private static WaypointEditScreen readyEditForm() throws ReflectiveOperationException {
+        var saved = new SimpleWaypoint("Base", "Base", "B", new WaypointPos(1, 2, 3),
+                0x123456, 0, true, List.of(), "");
+        var form = new WaypointEditScreen(null, WaypointFormTestAccess.ACCESS,
+                WaypointFormTestAccess.selection(), "Base", saved);
+        form.width = 480;
+        form.height = 360;
+        var buildForm = AbstractWaypointPropertiesScreen.class.getDeclaredMethod("buildForm");
+        buildForm.setAccessible(true);
+        buildForm.invoke(form);
+        var formReady = AbstractWaypointPropertiesScreen.class.getDeclaredField("formReady");
+        formReady.setAccessible(true);
+        formReady.setBoolean(form, true);
+
+        // Suggestions work without editable focus, which needs the native text input manager.
+        form.xEditBox.setEditable(false);
+        form.xEditBox.setFocused(true);
+        return form;
     }
 
     @Test

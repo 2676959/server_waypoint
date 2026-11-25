@@ -6,64 +6,53 @@ import net.minecraft.network.chat.Component;
 
 import java.util.function.Consumer;
 
-public class CoordinateField extends IntegerField {
+/** A coordinate expression with an optional relative or local prefix. */
+public class CoordinateField extends TranslucentTextField {
+    private int defaultValue;
+    private String lastAcceptedValue = "";
     private Consumer<CoordinateField> valueChangedCallback;
 
     public CoordinateField(int x, int y, int width, Component text, Font textRenderer) {
         super(x, y, width, text, textRenderer);
+        this.setResponder(ignored -> this.notifyValueChanged());
     }
 
     public void setValueChangedCallback(Consumer<CoordinateField> valueChangedCallback) {
         this.valueChangedCallback = valueChangedCallback;
     }
 
-    @Override
-    public void setValue(String value) {
-        String previousValue = super.getValue();
-        super.setValue(value);
-        if (!previousValue.equals(super.getValue())) {
-            this.notifyValueChanged();
-        }
+    public void setDefaultValue(int defaultValue) {
+        this.defaultValue = defaultValue;
     }
 
     @Override
     public void setFocused(boolean focused) {
-        String value = super.getValue();
         super.setFocused(focused);
-        if (!focused && CoordinateInputParser.isCoordinateExpression(value)) {
-            this.setValue(value.trim());
+        if (!focused) {
+            String value = this.getValue().trim();
+            if (value.isEmpty() || !CoordinateInputParser.isCoordinateExpression(value)) {
+                if (value.startsWith("^") || value.startsWith("~")) {
+                    value = value.substring(0, 1);
+                } else {
+                    value = Integer.toString(this.defaultValue);
+                }
+            }
+            if (!value.equals(this.getValue())) {
+                this.setValue(value);
+            }
         }
     }
 
     @Override
     public void insertText(String text) {
-        String previousValue = super.getValue();
+        String previousValue = this.getValue();
+        int previousCursor = this.getCursorPosition();
         super.insertText(text);
-        if (!isPartialCoordinateExpression(super.getValue())) {
+        if (!isPartialCoordinateExpression(this.getValue())) {
             this.setValue(previousValue);
-        } else if (!previousValue.equals(super.getValue())) {
-            this.notifyValueChanged();
+            this.setCursorPosition(previousCursor);
+            this.setHighlightPos(previousCursor);
         }
-    }
-
-    @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        String previousValue = super.getValue();
-        boolean handled = super.keyPressed(keyCode, scanCode, modifiers);
-        if (handled && !previousValue.equals(super.getValue())) {
-            this.notifyValueChanged();
-        }
-        return handled;
-    }
-
-    @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        String previousValue = super.getValue();
-        boolean handled = super.mouseClicked(mouseX, mouseY, button);
-        if (handled && !previousValue.equals(super.getValue())) {
-            this.notifyValueChanged();
-        }
-        return handled;
     }
 
     @Override
@@ -71,20 +60,52 @@ public class CoordinateField extends IntegerField {
         if (!this.canConsumeInput()) {
             return false;
         }
-        switch (chr) {
-            case '~', '^' -> {
-                return insertCharacter(chr);
-            }
-            case '-' -> {
-                return insertCharacter(chr);
-            }
-            case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' -> {
-                return insertCharacter(chr);
-            }
-            default -> {
-                return false;
-            }
+        return switch (chr) {
+            case '-' -> this.insertMinus();
+            case '+' -> this.removeMinus();
+            case '~', '^', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' -> this.insertCharacter(chr);
+            default -> false;
+        };
+    }
+
+    private boolean insertMinus() {
+        if (!this.getHighlighted().isEmpty()) {
+            return this.insertCharacter('-');
         }
+
+        String value = this.getValue();
+        int signPosition = signPosition(value);
+        if (value.startsWith("-", signPosition)) {
+            return false;
+        }
+
+        int cursor = this.getCursorPosition();
+        this.setCursorPosition(signPosition);
+        this.setHighlightPos(signPosition);
+        boolean inserted = this.insertCharacter('-');
+        int updatedCursor = inserted ? Math.max(cursor, signPosition) + 1 : cursor;
+        this.setCursorPosition(updatedCursor);
+        this.setHighlightPos(updatedCursor);
+        return inserted;
+    }
+
+    private boolean removeMinus() {
+        String value = this.getValue();
+        int signPosition = signPosition(value);
+        if (!value.startsWith("-", signPosition)) {
+            return false;
+        }
+
+        int cursor = this.getCursorPosition();
+        this.setValue(value.substring(0, signPosition) + value.substring(signPosition + 1));
+        int updatedCursor = cursor > signPosition ? cursor - 1 : cursor;
+        this.setCursorPosition(updatedCursor);
+        this.setHighlightPos(updatedCursor);
+        return true;
+    }
+
+    private static int signPosition(String value) {
+        return value.startsWith("~") || value.startsWith("^") ? 1 : 0;
     }
 
     private boolean insertCharacter(char chr) {
@@ -103,6 +124,11 @@ public class CoordinateField extends IntegerField {
     }
 
     private void notifyValueChanged() {
+        String value = this.getValue();
+        if (value.equals(this.lastAcceptedValue) || !isPartialCoordinateExpression(value)) {
+            return;
+        }
+        this.lastAcceptedValue = value;
         if (this.valueChangedCallback != null) {
             this.valueChangedCallback.accept(this);
         }

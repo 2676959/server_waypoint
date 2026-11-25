@@ -97,7 +97,7 @@
   "waypoint.form.icon.tooltip": "标记使用的物品或 VoxelMap 图标。移除后显示缩写。",
   "waypoint.form.color.tooltip": "标记的颜色。点击色块进行选择。",
   "waypoint.form.visibility.tooltip": "全局路径点始终绘制。局部路径点只在你的局部路径点范围（%s 区块）内绘制。",
-  "waypoint.form.position.tooltip": "方块坐标。~ 相对于你的位置，^ 相对于你的视线方向（右、上、前）。",
+  "waypoint.form.position.tooltip": "方块坐标。~ 相对于你的位置，^ 相对于你的视线方向（右、上、前）。\n- 加负号，+ 去负号。",
   "waypoint.form.yaw.tooltip": "传送后面朝的方向，单位为度。",
   "waypoint.form.keywords.tooltip": "用逗号分隔的词语，搜索时也会匹配。",
   "waypoint.form.description.tooltip": "显示在路径点详情中的格式化文本。",

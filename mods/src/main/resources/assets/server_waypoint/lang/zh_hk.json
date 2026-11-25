@@ -93,7 +93,7 @@
   "waypoint.form.icon.tooltip": "標記使用的物品或 VoxelMap 圖示。移除後顯示縮寫。",
   "waypoint.form.color.tooltip": "標記的顏色。點擊色塊進行選擇。",
   "waypoint.form.visibility.tooltip": "全域路徑點始終繪製。區域路徑點只在你的區域路徑點範圍（%s 區塊）內繪製。",
-  "waypoint.form.position.tooltip": "方塊座標。~ 相對於你的位置，^ 相對於你的視線方向（右、上、前）。",
+  "waypoint.form.position.tooltip": "方塊座標。~ 相對於你的位置，^ 相對於你的視線方向（右、上、前）。\n- 加負號，+ 移除負號。",
   "waypoint.form.yaw.tooltip": "傳送後面朝的方向，單位為度。",
   "waypoint.form.keywords.tooltip": "用逗號分隔的詞語，搜尋時也會匹配。",
   "waypoint.form.description.tooltip": "顯示在路徑點詳情中的格式化文字。",

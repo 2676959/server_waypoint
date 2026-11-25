@@ -97,7 +97,7 @@
   "waypoint.form.icon.tooltip": "An item or VoxelMap icon for the marker. Remove it to show the initials.",
   "waypoint.form.color.tooltip": "The marker's color. Click the swatch to pick one.",
   "waypoint.form.visibility.tooltip": "Global waypoints are always drawn. Local ones only within your local waypoint range (%s chunks).",
-  "waypoint.form.position.tooltip": "Block coordinates. ~ is relative to you. ^ is relative to where you look (right, up, forward).",
+  "waypoint.form.position.tooltip": "Block coordinates. ~ is relative to you. ^ is relative to where you look (right, up, forward).\n- adds a minus sign. + removes it.",
   "waypoint.form.yaw.tooltip": "The direction you face after teleporting, in degrees.",
   "waypoint.form.keywords.tooltip": "Comma-separated words that searches also match.",
   "waypoint.form.description.tooltip": "Formatted text shown in the waypoint's details.",

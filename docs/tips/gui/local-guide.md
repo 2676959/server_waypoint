@@ -855,6 +855,15 @@ translations still fit. Dialog and footer buttons use it. `setFittedText(label)`
 button's label and refits its width, and `fittedLabelWidth(width)` is the widest label a fitted button
 that wide shows in full; the manager's Local profile button uses both to cut a long profile name.
 
+`CoordinateField` extends `TranslucentTextField` and accepts signed integers with optional `~` or
+`^` prefixes. Its value-change callback includes suggestion acceptance. With no text selected,
+typing `-` adds the sign before the digits regardless of the caret position. Typing `+` removes
+an existing minus sign and keeps the prefix and digits. A minus sign can remain without digits during
+editing, and the waypoint form disables submission until the value is complete.
+On blur, an incomplete absolute value reverts to the field's `setDefaultValue(int)` value, and an
+incomplete offset reverts to the bare prefix. The form switches all three axes to or from local mode
+before checking the resulting coordinates.
+
 `ColorHexCodeField` edits an opaque RGB color by default: six digits after the `#`, the placeholder
 `RRGGBB`, and `getColor()` and `setColor(int)` use RGB (`setColor` ignores the alpha). The waypoint
 form uses it that way. `ColorHexCodeField.argb(x, y, text, font)` makes an ARGB field for a color

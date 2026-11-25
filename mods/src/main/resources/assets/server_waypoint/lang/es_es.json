@@ -93,7 +93,7 @@
   "waypoint.form.icon.tooltip": "Un icono de objeto o de VoxelMap para el marcador. Quítalo para mostrar las iniciales.",
   "waypoint.form.color.tooltip": "El color del marcador. Haz clic en la muestra para elegir uno.",
   "waypoint.form.visibility.tooltip": "Los waypoints globales se dibujan siempre. Los locales solo dentro de tu alcance de waypoints locales (%s chunks).",
-  "waypoint.form.position.tooltip": "Coordenadas de bloque. ~ es relativo a ti. ^ es relativo a hacia dónde miras (derecha, arriba, adelante).",
+  "waypoint.form.position.tooltip": "Coordenadas de bloque. ~ es relativo a ti. ^ es relativo a hacia dónde miras (derecha, arriba, adelante).\n- añade el signo menos. + lo quita.",
   "waypoint.form.yaw.tooltip": "La dirección hacia la que miras tras teletransportarte, en grados.",
   "waypoint.form.keywords.tooltip": "Palabras separadas por comas que las búsquedas también reconocen.",
   "waypoint.form.description.tooltip": "Texto con formato que se muestra en los detalles del waypoint.",
