@@ -49,11 +49,24 @@ class LocalWaypointProfilesScreenInteractionTest {
         renderer.setAccessible(true);
         renderer.set(minecraft, unsafe.allocateInstance(GameRenderer.class));
         //? if >=26.1 {
-        // From 26.1 a focused text field starts the client's text input.
         Field textInput = Minecraft.class.getDeclaredField("textInputManager");
         textInput.setAccessible(true);
-        textInput.set(minecraft, unsafe.allocateInstance(com.mojang.blaze3d.platform.TextInputManager.class));
+        textInput.set(minecraft, new com.mojang.blaze3d.platform.TextInputManager(null) {
+            @Override
+            //? if >=26.3 {
+            /*public void onTextInputFocusChange(Object owner, boolean focused) {
+            *///?} else {
+            public void onTextInputFocusChange(boolean focused) {
+            //?}
+                // The headless fixture has no native window to receive text input.
+            }
+        });
         //?}
+        //? if >=26.2 {
+        /*Field gui = Minecraft.class.getDeclaredField("gui");
+        gui.setAccessible(true);
+        gui.set(minecraft, unsafe.allocateInstance(net.minecraft.client.gui.Gui.class));
+        *///?}
         setStatic(Minecraft.class, "instance", minecraft);
         setStatic(WaypointClientMod.class, "INSTANCE", null);
         setStatic(WaypointClientMod.class, "currentDimensionName", null);

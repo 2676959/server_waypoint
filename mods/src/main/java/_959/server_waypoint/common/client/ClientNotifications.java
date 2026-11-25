@@ -29,7 +29,7 @@ public final class ClientNotifications {
 
     private static void showToast(Minecraft minecraft, Component message) {
         WaypointSyncToast toast = new WaypointSyncToast(minecraft.font, message);
-        //? if >=26.3 {
+        //? if >=26.2 {
         /*minecraft.gui.toastManager().addToast(toast);
         *///?} elif >=1.21.2 {
         minecraft.getToastManager().addToast(toast);

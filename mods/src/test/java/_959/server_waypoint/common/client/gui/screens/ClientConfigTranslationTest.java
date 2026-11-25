@@ -138,6 +138,25 @@ class ClientConfigTranslationTest {
     }
 
     @Test
+    void mapSyncMessagesUseTheArgumentsSuppliedByTheClient() throws Exception {
+        for (String locale : LOCALES) {
+            JsonObject translated = read(locale);
+            for (String destination : List.of("xaeros", "voxelmap", "both_maps")) {
+                assertTranslationArguments(translated, locale, "server_waypoint.all.added." + destination, List.of());
+                for (String operation : List.of("dimension.waypoint.added", "list.added", "list.removed",
+                        "modification.add", "modification.update", "modification.remove")) {
+                    assertTranslationArguments(translated, locale,
+                            "server_waypoint." + operation + "." + destination, List.of(1));
+                }
+            }
+            for (String destination : List.of("xaero", "voxelmap", "both_maps")) {
+                assertTranslationArguments(translated, locale,
+                        "server_waypoint.sync.toast.synced." + destination, List.of());
+            }
+        }
+    }
+
+    @Test
     void waypointUpdateMessagesTakeOneNameInEveryLocale() throws Exception {
         for (String locale : LOCALES) {
             JsonObject translated = read(locale);
@@ -202,6 +221,11 @@ class ClientConfigTranslationTest {
                 assertFalse(label.contains("(") || label.contains("（"), locale + ": " + key);
             }
         }
+    }
+
+    private static void assertTranslationArguments(JsonObject translated, String locale, String key, List<Integer> expected) {
+        assertTrue(translated.has(key), locale + ": " + key);
+        assertEquals(expected, arguments(translated.get(key).getAsString()), locale + ": " + key);
     }
 
     private JsonObject read(String locale) throws Exception {

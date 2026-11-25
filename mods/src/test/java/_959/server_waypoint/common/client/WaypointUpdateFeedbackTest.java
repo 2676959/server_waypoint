@@ -12,7 +12,9 @@ import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
+import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.server.Bootstrap;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -86,8 +88,7 @@ class WaypointUpdateFeedbackTest {
         for (var action : List.of(WaypointUpdateFeedback.Action.ADD_LIST, WaypointUpdateFeedback.Action.UPDATE_LIST,
                 WaypointUpdateFeedback.Action.REMOVE_LIST)) {
             var update = new WaypointUpdateFeedback.Update(WaypointScope.PRIVATE, DIMENSION, action, LIST, null);
-            var line = assertInstanceOf(TranslatableComponent.class,
-                    TextHelper.toAdventure(WaypointUpdateFeedback.chat(update, false)));
+            var line = chatLine(update, false);
             var link = line.arguments().get(0).asComponent();
             if (action == WaypointUpdateFeedback.Action.REMOVE_LIST) {
                 assertNull(link.clickEvent());
@@ -122,7 +123,23 @@ class WaypointUpdateFeedbackTest {
         var update = new WaypointModificationMessage(scope, DIMENSION, LIST.name(), LIST.displayName(),
                 WAYPOINT.name(), type == REMOVE ? null : WAYPOINT, type, 8);
         var feedback = WaypointUpdateFeedback.Update.fromDelta(update, LIST, WAYPOINT);
-        Component line = TextHelper.toAdventure(WaypointUpdateFeedback.chat(feedback, canTeleport));
+        return chatLine(feedback, canTeleport);
+    }
+
+    private static TranslatableComponent chatLine(WaypointUpdateFeedback.Update update, boolean canTeleport) {
+        //? if >=1.21.6 {
+        // Including the dialog click-event codec initializes the vanilla registries.
+        //? if neoforge && >=1.21.9 {
+        /*org.junit.jupiter.api.Assumptions.assumeTrue(net.neoforged.fml.loading.FMLLoader.getCurrentOrNull() != null,
+                "Minecraft registries require a running NeoForge loader");
+        *///?} elif neoforge {
+        /*org.junit.jupiter.api.Assumptions.assumeTrue(net.neoforged.fml.loading.LoadingModList.get() != null,
+                "Minecraft registries require a running NeoForge loader");
+        *///?}
+        SharedConstants.tryDetectVersion();
+        Bootstrap.bootStrap();
+        //?}
+        Component line = TextHelper.toAdventure(WaypointUpdateFeedback.chat(update, canTeleport));
         return assertInstanceOf(TranslatableComponent.class, line);
     }
 }
