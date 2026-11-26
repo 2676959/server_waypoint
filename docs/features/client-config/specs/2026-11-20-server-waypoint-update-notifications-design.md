@@ -44,7 +44,7 @@ applies produce no confirmation.
 
 Shared GUI waypoint edits use the same announcement and `broadcastFeedback` recipient
 rules as Shared command edits. If both broadcast chat and a corresponding update arrive,
-**Chat** mode can display the server announcement and the client confirmation. Protocol 4
+**Chat** mode can display the server announcement and the client confirmation. Protocol 3
 carries waypoint restore as a distinct modification so the client can display “Restored.”
 The remaining actions use the existing update packets.
 
