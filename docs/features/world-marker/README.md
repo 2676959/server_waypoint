@@ -2,7 +2,7 @@
 
 Server-only navigation using a private, unmounted marker made from two text displays and an optional item display per player. A vanilla client needs no mod or resource pack. The display is sent only to its owner, never inserted into the server world, and never loads the destination chunk.
 
-`world_marker` is a regular navigation method in 4.0.1. It points toward the selected Shared or Private waypoint. The client mod's independently rendered waypoint markers remain a separate feature.
+`world_marker` is a regular navigation method in 4.1.0. It points toward the selected Shared or Private waypoint. The client mod's independently rendered waypoint markers remain a separate feature.
 
 ## Feature documents
 
@@ -74,7 +74,7 @@ The subsequent [ten-display comparison](validation/2026-11-03-interpolation-comp
 rtk proxy ./gradlew :paper:1.21.11-paper:shadowJar :paper:1.21.11-paper:performanceProbeJar --console=plain
 rtk proxy python3 tools/server-performance/bots/world_marker_smoke.py \
     --root /absolute/path/to/new-disposable-directory \
-    --artifact paper/versions/1.21.11-paper/build/libs/server_waypoint-4.0.1-paper-mc1.21.11-26.1.2.jar \
+    --artifact paper/versions/1.21.11-paper/build/libs/server_waypoint-4.1.0-paper-mc1.21.11-26.1.2.jar \
     --count 10
 ```
 

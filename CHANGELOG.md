@@ -1,8 +1,69 @@
 # Changelog
 
+## Server Waypoint 4.1.0
+
+A feature release: private waypoints saved on the server, local waypoints saved on the client, a server-side world marker, configurable teleport shortcuts, waypoint update notifications and server settings for announcements and uploads.
+
+### Before you update
+
+- **Update servers and clients together.** 4.1.0 changes the network protocol between the client mod and the server, so it doesn't sync with 4.0.x. If the server and the client both run Forge, or both run NeoForge, the loader refuses the connection with a channel version mismatch until the client mod matches. In other combinations, the client gets a chat message naming the version to install and receives no waypoint sync, while commands and chat menus keep working. The Velocity plugin's cross-server protocol is unchanged, so a 4.0.x proxy still links 4.1.0 backends.
+- **Navigation starts over once.** 4.1.0 doesn't load navigation sessions saved by 4.0.x. Players who were navigating start again with `/wp navigate`.
+- **The waypoint manager closes after teleporting.** Turn off **Close after teleport** under **Client Settings → Waypoint Manager** to keep it open, as in 4.0.x.
+- **NeoForge 1.21–1.21.1 needs NeoForge 21.0.106-beta or newer.** The text-field theming relies on a field that NeoForge added in that build.
+- Waypoint files, `config.json` and client settings from 4.0.x load as they are. New settings start at the defaults listed below.
+
+### Private waypoints
+
+- Each player can keep their own lists and waypoints on the server, visible only to them. `/wp private` opens your private menu. Add `private` after `/wp` to use `add`, `list`, `details`, `edit`, `remove`, `restore`, `navigate`, `tp` and `help` on your own collection. They work without the client mod.
+- Private changes are sent only to their owner. They aren't announced, aren't offered to other servers through Velocity and aren't part of map-mod uploads or downloads.
+- New `CommandPermission` levels: `privateList`, `privateAdd`, `privateEdit`, `privateRemove` and `privateNavigate` (default 0), and `privateTp` (default 2), with matching `server_waypoint.command.private.*` permission nodes. Shared permissions don't grant private actions.
+- `privateWaypoints.maxWaypointsPerPlayer` (default 1000) and `privateWaypoints.maxListsPerPlayer` (default 100) in `config.json` limit each player's collection; 0 means unlimited. Lowering a limit keeps existing waypoints.
+- Private files are saved in `private-waypoints/<player-uuid>/` beside `config.json`, or in the world save for singleplayer and LAN worlds. Backups of `waypoints/` don't include them.
+- See [Shared, Private and Local waypoints](docs/tips/server-guide.md#shared-private-and-local-waypoints) for the commands, permissions and storage.
+
+### Local waypoints
+
+- With the client mod, you can keep your own waypoints on your client, separately for each account and server or singleplayer world. They render on any server, including servers without Server Waypoint, and need no map mod.
+- **Local waypoint profiles**, above the manager's panels, creates, selects, renames and deletes profiles. On a server running 4.1.0, your client picks that server's profile automatically. You can choose another one yourself, and the choice is remembered.
+- Each profile has its own teleport command for Local waypoints, by default `/execute in {dimension} run tp @s {x} {y} {z} {yaw} ~`. The server decides whether you can run it.
+
+### Waypoint manager
+
+- A collection dropdown shows **Combined** (the default, with each entry's source labelled), **Shared**, **Private** or **Local**. Search, sorting and selection keep each entry's source.
+- **Add** saves to Local in the Combined view, or to the collection shown; the form's **Collection** field changes the destination. **Copy** creates an independent copy of a waypoint in any collection.
+- **Teleport shortcut** under **Client Settings → Waypoint Manager** chooses **Keyboard key** (the default), **Double-click**, **Right-click** or **Middle-click** on a waypoint row. **Teleport key** changes the key from `T` ([#36](https://github.com/2676959/server_waypoint/issues/36)).
+- **Close after teleport** (on by default) closes the manager when it sends a teleport command.
+- In the add and edit forms, typing `-` in a coordinate field adds a minus sign wherever the cursor is, and `+` removes it.
+
+### Navigation
+
+- New `world_marker` navigation method: a private in-world marker pointing toward the selected Shared or Private waypoint, without a client mod or resource pack. It shows a coloured initials badge, distance and an optional registered item icon. VoxelMap images are omitted. It can run alongside the separate `text_display` HUD.
+- Use `/wp navigate <dimension> <list> <waypoint> world_marker` or `/wp navigate use world_marker`. The navigation panel includes a World marker toggle, `all` includes it, and administrators can add it to `defaultNavigationMethods`; the built-in default remains `actionbar`.
+- `/wp navigate config world_marker size [<multiplier>]` reads or sets size (`0.25`–`4`, default `1`); `distance [<blocks>]` reads or sets the projection radius (`1`–`32`, default `12`). Both settings persist with the session across target changes and reconnects. Near targets stay at the waypoint block centre; markers hide outside the target dimension. See the [feature guide](docs/features/world-marker/README.md) for rendering limits, diagnostics, packet costs and validation status.
+- Private waypoints navigate with `/wp private navigate`. Shared and Private navigation share one session per player, so starting either replaces the current target.
+
+### Notifications
+
+- **Waypoint update notifications** under **Client Settings → Waypoint Manager** confirms Shared or Private waypoint and list changes after your client applies them: **Off** (the default), **Chat** or **Toast**. Chat lines use the same clickable references as server announcements.
+- **Waypoint sync notifications** under **Map mods** shows Xaero's Minimap and VoxelMap sync results as **Chat** (the default), **Toast** or **Off**. When both map mods are synced, one message covers both.
+- Edits to Shared waypoints made in the waypoint manager are announced like command edits.
+
+### Server settings
+
+- `Features.broadcastFeedback` chooses who sees chat announcements of Shared waypoint and list changes: `all` (the default), `ops` or `off`. The player making the change always sees the result.
+- `Features.waypointUploadPlatforms` lists the map mods players can upload from: `["xaero", "voxelmap"]` by default, and `[]` disables `/wp upload`. Reloading with a platform removed cancels its pending uploads.
+- `/wp reload` applies `privateWaypoints`, `waypointUploadPlatforms` and `broadcastFeedback` immediately.
+
+### Fixes
+
+- NeoForge: fixed a startup crash alongside MiniMOTD and other mods that bundle their own Adventure library ([#37](https://github.com/2676959/server_waypoint/issues/37)). The NeoForge JARs now relocate their Adventure classes.
+- NeoForge 1.21–1.21.5: fixed a crash when a text field appeared.
+- Xaero's World Map: long initials on synced waypoints are shortened to fit the map icon.
+- Switching a coordinate to or from local (`^`) mode in the add and edit forms switches all three axes before checking them, so the form no longer reports a false error.
+
 ## Server Waypoint 4.0.1
 
-A maintenance release: server-side in-world navigation markers, less server lag when players join or change dimension, cheaper navigation-item checks, and map-mod waypoints that reappear after you reconnect.
+A patch release: less server lag when players join or change dimension, cheaper navigation-item checks, and map-mod waypoints that reappear after you reconnect.
 
 ### Before you update
 
@@ -18,9 +79,6 @@ A maintenance release: server-side in-world navigation markers, less server lag 
 
 ### Navigation
 
-- New `world_marker` navigation method: a private in-world marker pointing toward the selected Shared or Private waypoint, without a client mod or resource pack. It shows a coloured initials badge, distance and an optional registered item icon. VoxelMap images are omitted. It can run alongside the separate `text_display` HUD.
-- Use `/wp navigate <dimension> <list> <waypoint> world_marker` or `/wp navigate use world_marker`. The navigation panel includes a World marker toggle, `all` includes it, and administrators can add it to `defaultNavigationMethods`; the built-in default remains `actionbar`.
-- `/wp navigate config world_marker size [<multiplier>]` reads or sets size (`0.25`–`4`, default `1`); `distance [<blocks>]` reads or sets the projection radius (`1`–`32`, default `12`). Both settings persist with the session across target changes and reconnects. Near targets stay at the waypoint block centre; markers hide outside the target dimension. See the [feature guide](docs/features/world-marker/README.md) for rendering limits, diagnostics, packet costs and validation status.
 - Item protection now checks only the navigation compass or map itself. Bundles, shulker boxes and other containers are no longer searched for them, and anything already inside stays. Putting a navigation item into a bundle or an open shulker box is still blocked.
 - On Paper and Folia, items that hoppers and other blocks move between containers are no longer checked for navigation items.
 - On Fabric, Forge and NeoForge, allays and dropped items are no longer scanned every tick. Giving a navigation item to an allay is still blocked, and dropped navigation items are still removed.

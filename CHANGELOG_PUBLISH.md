@@ -1,10 +1,23 @@
 # Changelog
 
-## Server Waypoint 4.0.1
+## Server Waypoint 4.1.0
 
-A maintenance update with in-world navigation markers, smoother server performance and more reliable waypoint syncing with Xaero's Minimap and VoxelMap.
+Private waypoints on the server, local waypoints on your client, an in-world navigation marker that needs no mod, and more ways to teleport from the waypoint manager.
 
-### In-world navigation
+### Before you update
+
+- Update the server and the client mod together: 4.1.0 doesn't sync with 4.0.x. If both run Forge, or both run NeoForge, players with the old client mod can't join until they update it. Velocity proxies on 4.0.x keep working.
+- Players who were navigating when the server updates need to start navigation again.
+- The waypoint manager now closes after you teleport. Turn off **Close after teleport** in the client settings to keep it open.
+- NeoForge 1.21–1.21.1 needs NeoForge 21.0.106-beta or newer.
+
+### Private and local waypoints
+
+- Keep your own waypoints on the server with `/wp private`, visible only to you and usable without the client mod. Server owners can set limits and permissions.
+- With the client mod, keep local waypoints on your client for any server or world, even servers without Server Waypoint. Profiles keep separate sets, and your client picks the right one for each server.
+- The waypoint manager shows Shared, Private and Local waypoints together or one collection at a time, and can copy a waypoint between them.
+
+### In-world navigation marker
 
 - Find your selected waypoint with a marker visible only to you, showing its initials, distance and optional item icon. No client mod or resource pack is required.
 - Start with `/wp navigate <dimension> <list> <waypoint> world_marker`, or add it to your current navigation with `/wp navigate use world_marker`. Private waypoints support it through `/wp private navigate` too.
@@ -12,23 +25,15 @@ A maintenance update with in-world navigation markers, smoother server performan
 
 ### Improvements
 
-- Reduced command-related pauses when players join, change dimensions or have their permissions updated. Existing command options and suggestions remain available.
-- Reduced the server load from navigation compasses and maps, especially during inventory interactions and on servers with many active containers.
-- Reduced memory usage when searching large waypoint collections and showing command suggestions.
-- Xaero's Minimap avoids unnecessary waypoint refreshes when you respawn or change dimensions.
+- Teleport from the waypoint manager with a key of your choice, a double-click, a right-click or a middle-click.
+- Optional chat or toast notifications when waypoints or lists change on the server.
+- Choose whether Xaero's Minimap and VoxelMap sync messages appear in chat, as a toast or not at all. Syncing to both map mods shows one message.
+- Server owners can limit waypoint change announcements to operators or turn them off, and choose which map mods players can upload from.
+- Typing `-` or `+` in a coordinate field adds or removes the minus sign.
 
 ### Bug fixes
 
-- Fixed server waypoints sometimes missing from Xaero's Minimap or VoxelMap after reconnecting when no waypoints had changed. You no longer need to use **Sync now** to make them reappear.
-- Automatic map syncing now waits until the map mod has loaded the current world.
-- Fixed navigation compasses and maps being placed into empty bundles on Paper and Folia.
-
-### Navigation item changes
-
-- Navigation items already stored inside bundles, shulker boxes or other containers are left in place. Putting them into a bundle or an open shulker box is still blocked.
-- Paper and Folia no longer check navigation items during hopper or other automatic container transfers.
-- Fabric, Forge and NeoForge no longer repeatedly scan allays and dropped items. Giving navigation items to allays is still blocked, and dropped navigation items are still removed.
-
-### Updating
-
-- Compatible with 4.0.0 clients, servers and Velocity proxies. Update the client mod for the map-sync fixes and the server mod or plugin for the server improvements.
+- Fixed a NeoForge startup crash when MiniMOTD is installed.
+- Fixed a crash on NeoForge 1.21–1.21.5 when a text field appears.
+- Long waypoint initials no longer overflow their icons in Xaero's World Map.
+- Fixed false coordinate errors when switching to local (`^`) coordinates in the waypoint form.
