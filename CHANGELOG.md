@@ -60,6 +60,7 @@ A feature release: private waypoints saved on the server, local waypoints saved 
 - NeoForge 1.21–1.21.5: fixed a crash when a text field appeared.
 - Xaero's World Map: long initials on synced waypoints are shortened to fit the map icon.
 - Switching a coordinate to or from local (`^`) mode in the add and edit forms switches all three axes before checking them, so the form no longer reports a false error.
+- The game log no longer shows startup warnings about mixin targets that the Minecraft version doesn't have, or about Xaero's Minimap, Xaero's World Map and VoxelMap when they aren't installed ([#38](https://github.com/2676959/server_waypoint/issues/38)).
 
 ## Server Waypoint 4.0.1
 

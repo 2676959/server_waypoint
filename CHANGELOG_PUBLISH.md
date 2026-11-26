@@ -37,3 +37,4 @@ Private waypoints on the server, local waypoints on your client, an in-world nav
 - Fixed a crash on NeoForge 1.21–1.21.5 when a text field appears.
 - Long waypoint initials no longer overflow their icons in Xaero's World Map.
 - Fixed false coordinate errors when switching to local (`^`) coordinates in the waypoint form.
+- Removed harmless startup warnings in the game log, including when VoxelMap or Xaero's mods aren't installed.

@@ -49,6 +49,7 @@ Projects "paper" and "mods" are independent projects to each other.
 - When adding or changing a Stonecutter swap or replacement, update the inventory below in the same change. Keep identifiers in `snake_case` and reuse existing identifiers when they already describe the fragment.
 - Replacement tokens such as `//~ id` must stay before any non-empty, non-comment line in a file. Do not move or delete them as ordinary comments.
 - After editing Stonecutter comments, check the touched file for balanced `//? if`, `//?}`, `/*?`, `/*?}*/`, and `*//*?` markers, then run the relevant Stonecutter/Gradle check when practical.
+- A mixin whose target class exists only in some versions or loaders gets a whole-file `//? if`, and its name joins the `uncompiledMixins` filter in every `mods/*.gradle.kts`. Never keep an empty `@Pseudo` stub for the other targets: Mixin still logs a warning for every target class it cannot load. Map-mod mixins belong in their mod's sub-package of `_959.server_waypoint.mixin`, which `MapModMixinPlugin` skips unless that mod is installed; register any new sub-package there.
 
 # Stonecutter Swaps And Replacements
 

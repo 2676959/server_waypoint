@@ -142,9 +142,18 @@ tasks.processResources {
     inputs.property("version", mod_version)
     inputs.property("java_version", targetJavaVersion)
 
+    // Mixins this target doesn't compile (each class's `//? if` sets where it exists) must leave the config too.
+    val uncompiledMixins = buildSet<String> {
+        if (stonecutter.eval(stonecutter.current.version, "<1.20.5")) add("CustomDataAccessor")
+        if (stonecutter.eval(stonecutter.current.version, "<1.21.6")) {
+            addAll(listOf("GuiItemRenderStateMixin", "GuiRendererItemAlphaMixin", "OversizedWaypointItemAlphaMixin"))
+        }
+        if (stonecutter.eval(stonecutter.current.version, ">1.21")) add("WaypointBlockItemAlphaMixin")
+    }
+    inputs.property("uncompiled_mixins", uncompiledMixins.sorted())
     filesMatching(listOf("*.mixins.json")) {
         filter { line: String ->
-            if (line.trim() == "\"CustomDataAccessor\"," && stonecutter.eval(stonecutter.current.version, "<1.20.5")) "" else line
+            if (line.trim().removeSurrounding("\"", "\",") in uncompiledMixins) "" else line
         }
         expand("java_version" to targetJavaVersion)
         filter { line: String ->
