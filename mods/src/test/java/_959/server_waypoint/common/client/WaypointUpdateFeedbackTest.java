@@ -127,18 +127,15 @@ class WaypointUpdateFeedbackTest {
     }
 
     private static TranslatableComponent chatLine(WaypointUpdateFeedback.Update update, boolean canTeleport) {
-        //? if >=1.21.6 {
-        // Including the dialog click-event codec initializes the vanilla registries.
-        //? if neoforge && >=1.21.9 {
-        /*org.junit.jupiter.api.Assumptions.assumeTrue(net.neoforged.fml.loading.FMLLoader.getCurrentOrNull() != null,
-                "Minecraft registries require a running NeoForge loader");
-        *///?} elif neoforge {
-        /*org.junit.jupiter.api.Assumptions.assumeTrue(net.neoforged.fml.loading.LoadingModList.get() != null,
-                "Minecraft registries require a running NeoForge loader");
-        *///?}
+        // Converting the line reaches vanilla's style and hover-event codecs, which need the registries on every
+        // version. Plain JUnit can't bootstrap them on every Forge-family target, and a failed or skipped bootstrap
+        // breaks later test classes in the same JVM, so only Fabric runs these checks.
+        //? if fabric {
         SharedConstants.tryDetectVersion();
         Bootstrap.bootStrap();
-        //?}
+        //?} else {
+        /*org.junit.jupiter.api.Assumptions.abort("Minecraft registries need the Fabric test runtime");
+        *///?}
         Component line = TextHelper.toAdventure(WaypointUpdateFeedback.chat(update, canTeleport));
         return assertInstanceOf(TranslatableComponent.class, line);
     }
