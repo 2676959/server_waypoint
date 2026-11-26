@@ -6,12 +6,12 @@ import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import _959.server_waypoint.common.client.gui.widgets.SuggestingTextInput;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-//? if >= 1.21.6
+//? if >= 1.21.6 || (neoforge && >= 1.21)
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
-//? if < 1.21.6
+//? if < 1.21.6 && !(neoforge && >= 1.21)
 /*import net.minecraft.util.FormattedCharSequence;*/
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -22,7 +22,9 @@ import net.minecraft.client.gui.components.EditBox;
 /** Applies the runtime text-shadow theme only to Server Waypoint's text-input family. */
 @Mixin(EditBox.class)
 public abstract class EditBoxTextShadowMixin {
-    //? if >= 1.21.6 {
+    // Vanilla 1.21.6+ passes its textShadow field to the text, suggestion and cursor draws. NeoForge patches the
+    // same field into 1.21-1.21.5 (from 21.0.106-beta) and passes it to the placeholder draw as well.
+    //? if >= 1.21.6 || (neoforge && >= 1.21) {
     @ModifyExpressionValue(
             method = /*? >= 26 {*/ "extractWidgetRenderState" /*?} else {*//* "renderWidget" *//*?}*/,
             at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/components/EditBox;textShadow:Z", opcode = Opcodes.GETFIELD))
@@ -49,7 +51,7 @@ public abstract class EditBoxTextShadowMixin {
             original.call(graphics, font, text, x, y, color);
         }
     }
-    //?} else {
+    //?} else if !(neoforge && >= 1.21) {
     /*@WrapOperation(method = "renderWidget", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)I"))
     private int sw$themePlaceholder(GuiGraphics graphics, Font font, Component text,
@@ -61,7 +63,7 @@ public abstract class EditBoxTextShadowMixin {
     *///?}
 
     // Older EditBox renderers use the always-shadowed overload for text and the append cursor.
-    //? if < 1.21.6 {
+    //? if < 1.21.6 && !(neoforge && >= 1.21) {
     /*@WrapOperation(method = "renderWidget", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/util/FormattedCharSequence;III)I"))
     private int sw$themeFormattedText(GuiGraphics graphics, Font font, FormattedCharSequence text,

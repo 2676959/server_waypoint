@@ -10,6 +10,8 @@ val minecraft = stonecutter.current.version
 val loader = "neoforge"
 // VoxelMap-Updated publishes NeoForge builds only for some Minecraft versions; a pinned build enables the integration.
 val voxelmapSupported = project.hasProperty("voxelmap_neoforge")
+// Optional NeoForge version range for targets whose code needs a later build of their NeoForge line.
+val neoforgeVersionForge = findProperty("neoforgeVersionForge")?.toString().orEmpty()
 val targetJavaVersion = 17
 val mcVersionRange: String by project
 val mod_id: String by project
@@ -137,6 +139,7 @@ tasks.processResources {
 
     val mcVersionForge: String by project
     inputs.property("minecraft_dependency", mcVersionForge)
+    inputs.property("neoforge_dependency", neoforgeVersionForge)
     inputs.property("voxelmap", voxelmapSupported)
     filesMatching("META-INF/neoforge.mods.toml") {
         expand(mapOf(
@@ -145,6 +148,7 @@ tasks.processResources {
             "description" to mod_description,
             "version" to mod_version,
             "minecraft_dependency" to mcVersionForge,
+            "neoforge_dependency" to neoforgeVersionForge,
             "voxelmap" to voxelmapSupported,
         ))
     }

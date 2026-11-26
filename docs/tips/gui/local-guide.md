@@ -567,8 +567,13 @@ explicit `shadow=false` stays false; `shadow=true` is enabled only while the the
 and its subclasses, including `TranslucentTextField`, numeric/hex fields, search bars and the combobox
 input. It covers typed text, placeholders and the append cursor, while vanilla and other mods' EditBox
 instances retain their original shadow setting. On Minecraft 1.21.6 and newer the hook filters reads of
-vanilla's `textShadow` field and wraps the placeholder call; older versions wrap the text calls that
-implicitly enable shadows. Suggestion popup and inline-completion text use the drawing helper.
+vanilla's `textShadow` field and wraps the placeholder call. NeoForge 1.21 to 1.21.5 patch the same field
+into `EditBox` and pass it to every draw call, placeholder included, so there the hook only filters the
+field reads. NeoForge added that field in 21.0.106-beta, so the 1.21 NeoForge build requires that build or
+newer through its `neoforgeVersionForge` property, which `neoforge.mods.toml` renders as a `neoforge`
+dependency. Other older versions wrap the text calls that implicitly enable shadows. Suggestion popup and
+inline-completion text use the drawing helper. `EditBoxTextShadowMixinTargetsTest` checks these hooks
+against each target's patched `EditBox`.
 
 `WidgetThemeVariable.getJsonName()` is the stable external name for a role. Use it in JSON. The theme editor shows it raw, so theme keys have no translations. Do not persist enum names or introduce a raw color constant when an existing semantic role already fits.
 
