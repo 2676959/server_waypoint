@@ -80,6 +80,21 @@ repositories {
     }
 }
 
+// Loom pins every org.lwjgl module to Maven Central (its "MavenCentralLWJGL" repository) when a Minecraft version
+// lists no plain org.lwjgl:lwjgl:3.x library, as 26.2 does. Mojang's 2026-11-25 update of the 26.2 version manifest
+// switched lwjgl-freetype to Mojang's own 3.4.1-mojang-2.15.0.3 build, which Maven Central doesn't have. While Loom
+// pins LWJGL there, use the upstream release the Mojang build is based on.
+configurations.configureEach {
+    resolutionStrategy.dependencySubstitution.all {
+        val module = requested as? org.gradle.api.artifacts.component.ModuleComponentSelector ?: return@all
+        if (module.group == "org.lwjgl" && "-mojang" in module.version
+            && project.repositories.findByName("MavenCentralLWJGL") != null) {
+            useTarget("org.lwjgl:${module.module}:${module.version.substringBefore("-mojang")}",
+                "Loom resolves LWJGL from Maven Central, which has no Mojang builds")
+        }
+    }
+}
+
 dependencies {
     minecraft("com.mojang:minecraft:$minecraft")
 
