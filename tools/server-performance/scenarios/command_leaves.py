@@ -59,6 +59,10 @@ def console_feedback(transcript, run_id, attempt_id):
             continue
         output = re.search(r"\[Server thread/INFO\]: (.*)",line)
         if output:
+            message = re.sub(r"\x1b\[[0-9;]*m", "", output.group(1))
+            if message.startswith(("[server_waypoint.actions]", "[server_waypoint_core]", "[server_waypoint_plugin]", "[ServerWaypointPerformanceProbe]")):
+                owner_output = False
+                continue
             owner_output = current is not None
             if owner_output and output.group(1).strip():
                 current["feedback"].append(output.group(1))
@@ -74,16 +78,17 @@ def console_feedback(transcript, run_id, attempt_id):
 SUGGESTION_ARGUMENTS = {**ARGUMENTS,"position":"12 -61 -16","initials":"P","color":"112233",
     "yaw":"0","global":"true","keywords":"perf","description":"description","source":"xaero",
     "translation x":"0","translation y":"0","translation z":"0",
-    "rotation x":"0","rotation y":"0","rotation z":"0","scale x":"1","scale y":"1","scale z":"1"}
+    "rotation x":"0","rotation y":"0","rotation z":"0","scale x":"1","scale y":"1","scale z":"1",
+    "remote server":"missing-server","remote dimension":"minecraft:overworld","remote list":"perf_00","remote waypoint":"wp_00000"}
 
 
-def suggestion_cases(tree):
+def suggestion_cases(tree, include_remote=False):
     if tree.get("origin") != "native-minecraft-command-dispatcher":
         raise ValueError("native registered suggestion tree required")
     cases=[]
     for node in tree.get("nodes",[]):
         path=node["path"]
-        if not node.get("suggestions") or path.startswith("wp remote "):
+        if not node.get("suggestions") or (path.startswith("wp remote ") and not include_remote):
             continue
         if type(node.get("providerId")) is not int or node["providerId"] <= 0:
             raise ValueError("native suggestion provider identity missing")
@@ -97,6 +102,25 @@ def suggestion_cases(tree):
             return SUGGESTION_ARGUMENTS[name]
         cases.append({"path":path,"input":re.sub(r"<([^>]+)>",argument,match.group(1)),"providerId":node["providerId"]})
     return cases
+
+
+def boundary_cases(tree):
+    from scenarios.storage_commands import leaf_ownership
+    owners = leaf_ownership(tree)
+    required = set(owners["task11"] + owners["task12"] + owners["task15"])
+    result = []
+    for node in tree["nodes"]:
+        path = node["path"]
+        if path not in required:
+            continue
+        def argument(match):
+            name = match.group(1)
+            if name not in SUGGESTION_ARGUMENTS:
+                raise ValueError("unmapped native feature-boundary argument: " + name)
+            return SUGGESTION_ARGUMENTS[name]
+        behavior = "console-keygen" if path == "sw-cross-server-keygen" else "unpaired-remote" if path.startswith("wp remote") else "console-no-client" if path.startswith("wp download") else "console-player-required"
+        result.append({"path":path,"command":re.sub(r"<([^>]+)>",argument,path),"behavior":behavior})
+    return result
 
 
 def verify_suggestions(cases,reports):

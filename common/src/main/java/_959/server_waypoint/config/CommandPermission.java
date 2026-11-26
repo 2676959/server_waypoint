@@ -2,6 +2,12 @@ package _959.server_waypoint.config;
 
 import _959.server_waypoint.crossserver.CrossServerProtocol;
 public class CommandPermission {
+    int privateList = 0;
+    int privateAdd = 0;
+    int privateEdit = 0;
+    int privateRemove = 0;
+    int privateNavigate = 0;
+    int privateTp = 2;
     int add = 0;
     int edit = 0;
     int remove = 0;
@@ -56,10 +62,40 @@ public class CommandPermission {
         return this.remoteTp;
     }
 
+    public int privateList() {
+        return this.privateList;
+    }
+
+    public int privateAdd() {
+        return this.privateAdd;
+    }
+
+    public int privateEdit() {
+        return this.privateEdit;
+    }
+
+    public int privateRemove() {
+        return this.privateRemove;
+    }
+
+    public int privateNavigate() {
+        return this.privateNavigate;
+    }
+
+    public int privateTp() {
+        return this.privateTp;
+    }
+
    @Override
    public String toString() {
       return "CommandPermission{" +
-              "add=" + add +
+              "privateList=" + privateList +
+              ", privateAdd=" + privateAdd +
+              ", privateEdit=" + privateEdit +
+              ", privateRemove=" + privateRemove +
+              ", privateNavigate=" + privateNavigate +
+              ", privateTp=" + privateTp +
+              ", add=" + add +
               ", edit=" + edit +
               ", remove=" + remove +
               ", navigate=" + navigate +

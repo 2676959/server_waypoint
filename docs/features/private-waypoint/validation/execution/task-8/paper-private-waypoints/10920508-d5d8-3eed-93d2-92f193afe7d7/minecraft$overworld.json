@@ -1,0 +1,18 @@
+[
+  {
+    "list_name": "Homes",
+    "n": 6,
+    "waypoints": [
+      {
+        "name": "Base",
+        "initials": "BA",
+        "pos": [12, 80, -30],
+        "color": "#8BD267",
+        "yaw": 0,
+        "global": true,
+        "keywords": [],
+        "description": "RetainedAboveQuota"
+      }
+    ]
+  }
+]

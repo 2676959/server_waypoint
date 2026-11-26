@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 /** A dialog with Cancel on the right and a confirm button to its left, each sized to fit its text. */
 public class ConfirmationDialog extends DialogWidget {
     private final TranslucentButton cancelButton;
+    private final TranslucentButton confirmButton;
 
     public ConfirmationDialog(int x, int y, Component title, WidgetStack content,
                               @NotNull Runnable confirm, @NotNull Runnable cancel, Font textRenderer) {
@@ -28,10 +29,16 @@ public class ConfirmationDialog extends DialogWidget {
                                TranslucentButton cancelButton, TranslucentButton confirmButton, Font textRenderer) {
         super(x, y, title, content, List.<AbstractWidget>of(cancelButton, confirmButton), textRenderer);
         this.cancelButton = cancelButton;
+        this.confirmButton = confirmButton;
     }
 
     /** The Cancel button, so a screen can focus it when the dialog opens. */
     public TranslucentButton getCancelButton() {
         return this.cancelButton;
+    }
+
+    /** The confirm button, so a screen can turn it off while the dialog's input is invalid. */
+    public TranslucentButton getConfirmButton() {
+        return this.confirmButton;
     }
 }

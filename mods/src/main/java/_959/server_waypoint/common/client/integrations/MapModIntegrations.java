@@ -1,5 +1,6 @@
 package _959.server_waypoint.common.client.integrations;
 
+import _959.server_waypoint.core.collection.WaypointScope;
 import _959.server_waypoint.common.client.ClientConfig;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.server.WaypointServerMod;
@@ -54,10 +55,16 @@ public final class MapModIntegrations {
 
     /** Manual recovery ignores auto-sync preferences and always rewrites installed, ready maps. */
     public static void onClientWaypointDownload(ClientWaypointSyncEvent event, WaypointClientMod waypointClientMod) {
-        for (MapModIntegration integration : INTEGRATIONS) {
-            if (integration.isInstalled() && integration.isReady()) {
-                integration.onClientWaypointSync(event, waypointClientMod);
+        MapModSyncNotifications notifications = new MapModSyncNotifications();
+        try {
+            for (MapModIntegration integration : INTEGRATIONS) {
+                if (integration.isInstalled() && integration.isReady()) {
+                    notifications.recordSuccess(integration.uploadTarget(),
+                            integration.onClientWaypointSync(event, waypointClientMod));
+                }
             }
+        } finally {
+            notifications.flush();
         }
     }
 
@@ -72,7 +79,7 @@ public final class MapModIntegrations {
     public static WaypointData collectUpload(UploadRequestBuffer request) {
         return find(request.target())
                 .map(integration -> integration.collectUpload(request))
-                .orElseGet(() -> WaypointData.upload(request.requestId(), switch (request.target()) {
+                .orElseGet(() -> WaypointData.upload(WaypointScope.SHARED, request.requestId(), switch (request.target()) {
                     case XAERO -> UploadStatus.XAERO_NOT_INSTALLED;
                     case VOXELMAP -> UploadStatus.VOXELMAP_NOT_INSTALLED;
                 }, List.of()));

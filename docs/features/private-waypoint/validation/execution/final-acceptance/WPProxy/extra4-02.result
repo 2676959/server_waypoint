@@ -1,0 +1,6 @@
+FAIL
+java.lang.AssertionError: client did not join
+	at LiveChecks.require(LiveChecks.java:34)
+	at LiveChecks.run(LiveChecks.java:54)
+	at LiveChecks.lambda$start$0(LiveChecks.java:18)
+	at java.base/java.lang.Thread.run(Thread.java:1474)

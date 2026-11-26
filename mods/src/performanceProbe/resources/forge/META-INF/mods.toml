@@ -1,0 +1,31 @@
+modLoader = "javafml"
+loaderVersion = "[47,)"
+license = "MIT"
+
+[[mods]]
+modId = "server_waypoint_performance_probe"
+version = "1.0.0"
+displayName = "Server Waypoint Performance Probe"
+description = "Test-only native probe. Not a release mod."
+displayTest = "IGNORE_SERVER_VERSION"
+
+[[dependencies.server_waypoint_performance_probe]]
+modId = "forge"
+mandatory = true
+versionRange = "[47,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.server_waypoint_performance_probe]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[1.21.11,1.22)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.server_waypoint_performance_probe]]
+modId = "server_waypoint"
+mandatory = false
+versionRange = "[0,)"
+ordering = "AFTER"
+side = "BOTH"

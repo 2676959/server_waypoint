@@ -1,0 +1,62 @@
+{
+    "schemaVersion": 1,
+    "permission": "server_waypoint.command.tp",
+    "operatorLevel": 4,
+    "config": {
+        "serverId": 959202611,
+        "CommandPermission": {
+            "privateList": 0,
+            "privateAdd": 0,
+            "privateEdit": 0,
+            "privateRemove": 0,
+            "privateNavigate": 0,
+            "privateTp": 2,
+            "add": 0,
+            "edit": 0,
+            "remove": 0,
+            "navigate": 0,
+            "tp": 2,
+            "reload": 2,
+            "upload": 2,
+            "uploadDelete": 4,
+            "remoteList": 0,
+            "remoteTp": 2
+        }
+    },
+    "baseBranches": {
+        "ordinary": [
+            "add",
+            "details",
+            "download",
+            "edit",
+            "help",
+            "list",
+            "navigate",
+            "private",
+            "remote",
+            "remove",
+            "restore"
+        ],
+        "operator": [
+            "add",
+            "details",
+            "download",
+            "edit",
+            "help",
+            "list",
+            "navigate",
+            "private",
+            "reload",
+            "remote",
+            "remove",
+            "restore",
+            "upload"
+        ]
+    },
+    "proposalForReview": {
+        "nativeElapsedMs": 1000,
+        "serverThreadPhasesMs": 50,
+        "clientRefreshMs": 1000,
+        "rationale": "One 20 TPS tick of owner-thread work and one second of interactive response; proposal only, never an acceptance verdict."
+    }
+}

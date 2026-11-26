@@ -1,0 +1,59 @@
+▌Bob joined the game
+▌✔ Added [BA] Base to Homes   Details · Navigate · Undo
+▌Overworld ⏷  1 list · 1 waypoint · All Homes  +   [BA] Base · 144 m Lists · Tree · Flat · Search · New list Sort Default · Name · Distance · Color 
+▌Overworld › Homes › [BA] Base [✎] Display name: Base [✎] Identifier: Base [✎] Initials: BA [✎] Icon: none [✎] Position: 12, 80, -30 [Here] [✎] Color: █ #68D126 [✎] Yaw: 0° (south) [✎] Visibility: Global [✎] Keywords: none [✎] Description: none [Navigate] [Remove] [Back] 
+▌Incorrect argument for command ...p private tp minecraft:overworld Homes Base<--[HERE]
+[MCC] Disconnected by Server :
+[MCC] Server closed
+
+Not connected to any server. Use '/help' for help.
+Or press Enter to exit Minecraft Console Client.
+Restarting Minecraft Console Client...
+Settings have been loaded from MinecraftClient.ini
+You chose to run in offline mode.
+Retrieving Server Info...
+Server version: Paper 1.21 (protocol v767)
+
+--------------------------------------------------
+Disposable Task 8 validation
+Server: 127.0.0.1:25638
+Version: Paper 1.21 (Protocol: 767)
+Connecting as: 1.21 (Protocol: 767)
+Ping: 1 ms
+Players: 0/20
+--------------------------------------------------
+[MCC] Version is supported.
+Logging in...
+[MCC] Server is in offline mode.
+[MCC] Server was successfully joined.
+Type '/quit' to leave the server.
+▌Alice joined the game
+▌Bob joined the game
+▌✔ Added [BA] Base to Homes   Details · Navigate · Undo
+▌[Server: Made Alice a server operator]
+▌Overworld ⏷  1 list · 1 waypoint · All Homes  +   [BA] Base · 144 m Lists · Tree · Flat · Search · New list Sort Default · Name · Distance · Color 
+▌✔ Teleported Alice to [BA] Base
+▌[Server] TASK8_PRIVATE_ARRIVAL_OK
+▌✔ Added [NB] NetherBase to Homes   Details · Navigate · Undo
+Warning: truncated output (original token count: 1698)
+Total output lines: 6
+
+▌✔ Teleported Alice to [NB] NetherBase
+▌Alice has made the advancement [We Need to Go Deeper]
+▌✔ Updated the description Overworld › Homes › [BA] Base [✎] Display name: Base [✎] Identifier: Base [✎] Initials: BA [✎] Icon: none [✎] Position: 12, 80, -30 [✎] Color: █ #68D126 …198 tokens truncated…m[✎] Keywords: none [✎] Description: AliceOnly [×] [Navigate] [Teleport] [Remove] [Back] 
+▌[Server] TASK8_NETHER_ARRIVAL_OK
+▌✔ Started navigating Navigating to [BA] Base · Overworld Compass · Map · Bossbar · ✔ Actionbar · Text display Stop · Change target 
+▌✔ Removed [BA] Base from Homes   Restore
+▌✔ Added [BA] Base to Homes   Details · Navigate · Undo
+▌✘ Your private waypoint limit has been reached.
+▌All dimensions ⏷ Nether · 1 ●   Homes · 1 Overworld · 1   Homes · 1 Search 
+▌Alice suffocated in a wall
+[MCC] You are dead. Type '/respawn' to respawn.
+▌Your game mode has been updated to Spectator Mode
+▌[Server: Set Alice's game mode to Spectator Mode]
+[MCC] You have respawned.
+▌Chat disabled in client options.
+▌All dimensions ⏷ Overworld · 1 ●   Homes · 1 Nether · 1   Homes · 1 Search 
+▌✔ Updated the description Overworld › Homes › [BA] Base [✎] Display name: Base [✎] Identifier: Base [✎] Initials: BA [✎] Icon: none [✎] Position: 12, 80, -30 [Here] [✎] Color: █ #8BD267 [✎] Yaw: 0° (south) [✎] Visibility: Global [✎] Keywords: none [✎] Description: RetainedAboveQuota [×] [Navigate] [Teleport] [Remove] [Back] 
+The current setting is saved as MinecraftClient.ini
+

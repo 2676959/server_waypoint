@@ -1,6 +1,7 @@
 package _959.server_waypoint.navigation;
 
 import _959.server_waypoint.core.WaypointFilesManagerCore;
+import _959.server_waypoint.core.collection.WaypointCollectionKey;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import org.jetbrains.annotations.Nullable;
@@ -137,6 +138,7 @@ class NavigationServiceTest {
             handler.seenSessions.clear();
         }
         NavigationTarget updatedTarget = new NavigationTarget(
+                WaypointCollectionKey.shared(),
                 oldTarget.dimensionName(),
                 oldTarget.listName(),
                 oldTarget.listDisplayName(),
@@ -145,7 +147,7 @@ class NavigationServiceTest {
                 "Updated description",
                 List.of(),
                 new WaypointPos(80, 75, -40),
-                0xABCDEF
+                0xABCDEF, _959.server_waypoint.util.WaypointInitials.getDefaultInitials("Renamed"), null
         );
 
         this.service.refreshTarget(oldTarget, updatedTarget);
@@ -194,6 +196,7 @@ class NavigationServiceTest {
         this.service.disableAll(this.firstPlayer);
         this.platform.findPlayerRequests.clear();
         NavigationTarget renamedAgain = new NavigationTarget(
+                WaypointCollectionKey.shared(),
                 updatedTarget.dimensionName(),
                 updatedTarget.listName(),
                 updatedTarget.listDisplayName(),
@@ -202,7 +205,7 @@ class NavigationServiceTest {
                 updatedTarget.waypointDescription(),
                 updatedTarget.waypointKeywords(),
                 updatedTarget.position(),
-                updatedTarget.rgb()
+                updatedTarget.rgb(), _959.server_waypoint.util.WaypointInitials.getDefaultInitials("Renamed Again"), null
         );
         this.service.refreshTarget(updatedTarget, renamedAgain);
         assertEquals(List.of(this.secondPlayer.uuid()), this.platform.findPlayerRequests);
@@ -217,7 +220,7 @@ class NavigationServiceTest {
         this.service.navigate(this.firstPlayer, original);
 
         this.service.refreshListIdentity(
-                original.dimensionName(),
+                WaypointCollectionKey.shared(), original.dimensionName(),
                 original.listName(),
                 "renamed-list",
                 "{\"text\":\"Renamed list\"}"
@@ -589,6 +592,8 @@ class NavigationServiceTest {
                 target("Target", 10, 64, 0),
                 Set.of(NavigationMethod.COMPASS, NavigationMethod.BOSSBAR)
         );
+        this.service.updateWorldMarkerSize(this.firstPlayer, 1.75F);
+        this.service.updateWorldMarkerDistance(this.firstPlayer, 8.5F);
         this.service.updateTextDisplayTranslation(
                 this.firstPlayer,
                 new Vector3f(1.0F, 2.0F, 3.0F)
@@ -613,7 +618,7 @@ class NavigationServiceTest {
 
         NavigationResult result = this.service.restorePersistedSession(
                 this.firstPlayer,
-                waypointServer
+                key -> key.equals(WaypointCollectionKey.shared()) ? waypointServer : null
         );
 
         assertEquals(NavigationResult.Code.NAVIGATION_STARTED, result.code());
@@ -625,6 +630,8 @@ class NavigationServiceTest {
                 restored.enabledMethods()
         );
         assertEquals(storedTransformation, restored.textDisplayTransformation());
+        assertEquals(1.75F, restored.worldMarkerSize());
+        assertEquals(8.5F, restored.worldMarkerDistance());
         assertEquals(2, this.handlers.get(NavigationMethod.COMPASS).enableCount);
         assertEquals(2, this.handlers.get(NavigationMethod.BOSSBAR).enableCount);
     }
@@ -637,7 +644,7 @@ class NavigationServiceTest {
 
         NavigationResult result = this.service.restorePersistedSession(
                 this.firstPlayer,
-                waypointServer("Target", new WaypointPos(10, 64, 0), 0x39C5BB)
+                key -> key.equals(WaypointCollectionKey.shared()) ? waypointServer("Target", new WaypointPos(10, 64, 0), 0x39C5BB) : null
         );
 
         assertEquals(NavigationResult.Code.NAVIGATION_STARTED, result.code());
@@ -650,7 +657,7 @@ class NavigationServiceTest {
 
         NavigationResult malformed = this.service.restorePersistedSession(
                 this.firstPlayer,
-                waypointServer("Target", new WaypointPos(10, 64, 0), 0x39C5BB)
+                key -> key.equals(WaypointCollectionKey.shared()) ? waypointServer("Target", new WaypointPos(10, 64, 0), 0x39C5BB) : null
         );
 
         assertEquals(NavigationResult.Code.TARGET_UNAVAILABLE, malformed.code());
@@ -660,7 +667,7 @@ class NavigationServiceTest {
         this.service.removePlayer(this.firstPlayer);
         NavigationResult missing = this.service.restorePersistedSession(
                 this.firstPlayer,
-                waypointServer("Other", new WaypointPos(10, 64, 0), 0x39C5BB)
+                key -> key.equals(WaypointCollectionKey.shared()) ? waypointServer("Other", new WaypointPos(10, 64, 0), 0x39C5BB) : null
         );
 
         assertEquals(NavigationResult.Code.TARGET_UNAVAILABLE, missing.code());
@@ -702,7 +709,7 @@ class NavigationServiceTest {
     }
 
     @Test
-    void tickSharesOneSnapshotAcrossLiveDisplayHandlersEveryFiveTicks() {
+    void worldMarkerTicksEveryTickWhileOtherLiveDisplaysShareTheFifthSnapshot() {
         this.service.navigate(
                 this.firstPlayer,
                 target("Target", 10, 64, 0),
@@ -717,17 +724,21 @@ class NavigationServiceTest {
         for (int i = 0; i < 4; i++) {
             this.service.tickPlayer(this.firstPlayer);
         }
-        assertEquals(0, this.platform.snapshotCount);
+        assertEquals(4, this.platform.snapshotCount);
+        assertEquals(4, this.handlers.get(NavigationMethod.WORLD_MARKER).updateCount);
+        assertEquals(0, this.handlers.get(NavigationMethod.ACTIONBAR).updateCount);
 
         this.service.tickPlayer(this.firstPlayer);
 
-        assertEquals(1, this.platform.snapshotCount);
+        assertEquals(5, this.platform.snapshotCount);
+        assertEquals(5, this.handlers.get(NavigationMethod.WORLD_MARKER).updateCount);
         NavigationSnapshot sharedSnapshot = this.handlers.get(NavigationMethod.ACTIONBAR).lastSnapshot;
         assertEquals(0, this.handlers.get(NavigationMethod.COMPASS).updateCount);
         assertEquals(0, this.handlers.get(NavigationMethod.MAP).updateCount);
         assertEquals(1, this.handlers.get(NavigationMethod.BOSSBAR).updateCount);
         assertEquals(1, this.handlers.get(NavigationMethod.ACTIONBAR).updateCount);
         assertSame(sharedSnapshot, this.handlers.get(NavigationMethod.BOSSBAR).lastSnapshot);
+        assertSame(sharedSnapshot, this.handlers.get(NavigationMethod.WORLD_MARKER).lastSnapshot);
     }
 
     @Test
@@ -900,8 +911,85 @@ class NavigationServiceTest {
         assertEquals(1, this.handlers.get(NavigationMethod.ACTIONBAR).disableCount);
     }
 
+    @Test
+    void equalNamesRefreshRenameAndRemovalStayInTheirCollection() {
+        TestPlayer sharedPlayer = this.platform.addPlayer();
+        WaypointCollectionKey alice = WaypointCollectionKey.privateFor(this.firstPlayer.uuid());
+        WaypointCollectionKey bob = WaypointCollectionKey.privateFor(this.secondPlayer.uuid());
+        NavigationTarget shared = scopedTarget(WaypointCollectionKey.shared(), "Base", 1);
+        NavigationTarget aliceTarget = scopedTarget(alice, "Base", 2);
+        NavigationTarget bobTarget = scopedTarget(bob, "Base", 3);
+        this.service.navigate(sharedPlayer, shared);
+        this.service.navigate(this.firstPlayer, aliceTarget);
+        this.service.navigate(this.secondPlayer, bobTarget);
+
+        NavigationTarget renamed = scopedTarget(alice, "Renamed", 4);
+        this.service.refreshTarget(aliceTarget, renamed);
+        this.service.refreshListIdentity(alice, "minecraft:overworld", "Homes", "New homes", "New homes");
+
+        NavigationTarget updated = this.service.findSession(this.firstPlayer.uuid()).orElseThrow().target();
+        assertEquals("New homes", updated.listName());
+        assertEquals("Renamed", updated.waypointName());
+        assertEquals(alice, updated.collectionKey());
+        assertEquals(shared, this.service.findSession(sharedPlayer.uuid()).orElseThrow().target());
+        assertEquals(bobTarget, this.service.findSession(this.secondPlayer.uuid()).orElseThrow().target());
+        assertEquals(alice, NavigationSessionCodec.decode(this.platform.persistedSessions.get(this.firstPlayer.uuid()))
+                .orElseThrow().collectionKey());
+
+        this.service.removeTarget(updated);
+        assertTrue(this.service.findSession(this.firstPlayer.uuid()).isEmpty());
+        assertEquals(shared, this.service.findSession(sharedPlayer.uuid()).orElseThrow().target());
+        assertEquals(bobTarget, this.service.findSession(this.secondPlayer.uuid()).orElseThrow().target());
+        assertFalse(this.platform.persistedSessions.containsKey(this.firstPlayer.uuid()));
+    }
+
+    @Test
+    void privateRestoreUsesOnlyTheOwnersResolvedManagerAndRejectsAnotherPlayer() {
+        WaypointCollectionKey alice = WaypointCollectionKey.privateFor(this.firstPlayer.uuid());
+        this.service.navigate(this.firstPlayer, scopedTarget(alice, "Base", 1));
+        String encoded = this.platform.persistedSessions.get(this.firstPlayer.uuid());
+        this.service.removePlayer(this.firstPlayer);
+        TestWaypointServer privateFiles = new TestWaypointServer();
+        privateFiles.addWaypoint("minecraft:overworld", "Homes",
+                new SimpleWaypoint("Base", "B", new WaypointPos(90, 70, 30), 0x123456, 0, false), ignored -> {});
+        List<WaypointCollectionKey> resolutions = new ArrayList<>();
+        NavigationResult restored = this.service.restorePersistedSession(this.firstPlayer, key -> {
+            resolutions.add(key);
+            return privateFiles;
+        });
+        assertEquals(NavigationResult.Code.NAVIGATION_STARTED, restored.code());
+        assertEquals(List.of(alice), resolutions);
+        assertEquals(new WaypointPos(90, 70, 30), restored.session().target().position());
+        this.platform.persistedSessions.put(this.secondPlayer.uuid(), encoded);
+        NavigationResult rejected = this.service.restorePersistedSession(this.secondPlayer, key -> {
+            throw new AssertionError("Must reject owner before resolving storage");
+        });
+        assertEquals(NavigationResult.Code.TARGET_UNAVAILABLE, rejected.code());
+        assertTrue(this.service.findSession(this.secondPlayer.uuid()).isEmpty());
+        privateFiles.removeWaypoint("minecraft:overworld", "Homes", "Base", ignored -> {});
+        this.service.removePlayer(this.firstPlayer);
+        assertEquals(NavigationResult.Code.TARGET_UNAVAILABLE,
+                this.service.restorePersistedSession(this.firstPlayer, key -> privateFiles).code());
+    }
+
+    @Test
+    void anotherPlayersPrivateTargetCannotBeStartedOrUsedToRetarget() {
+        NavigationTarget foreign = scopedTarget(WaypointCollectionKey.privateFor(this.secondPlayer.uuid()), "Base", 1);
+        assertEquals(NavigationResult.Code.TARGET_UNAVAILABLE, this.service.navigate(this.firstPlayer, foreign).code());
+        NavigationTarget shared = target("Shared", 1, 2, 3);
+        this.service.navigate(this.firstPlayer, shared);
+        assertEquals(NavigationResult.Code.TARGET_UNAVAILABLE, this.service.retarget(this.firstPlayer, foreign).code());
+        assertEquals(shared, this.service.findSession(this.firstPlayer.uuid()).orElseThrow().target());
+    }
+
+    private static NavigationTarget scopedTarget(WaypointCollectionKey key, String name, int x) {
+        return new NavigationTarget(key, "minecraft:overworld", "Homes", "Homes", name, name, "", List.of(),
+                new WaypointPos(x, 64, 0), 0x123456, _959.server_waypoint.util.WaypointInitials.getDefaultInitials(name), null);
+    }
+
     private static NavigationTarget target(String name, int x, int y, int z) {
         return new NavigationTarget(
+                WaypointCollectionKey.shared(),
                 "minecraft:overworld",
                 "test-list",
                 "test-list",
@@ -910,7 +998,7 @@ class NavigationServiceTest {
                 "",
                 List.of(),
                 new WaypointPos(x, y, z),
-                0x39C5BB
+                0x39C5BB, _959.server_waypoint.util.WaypointInitials.getDefaultInitials(name), null
         );
     }
 

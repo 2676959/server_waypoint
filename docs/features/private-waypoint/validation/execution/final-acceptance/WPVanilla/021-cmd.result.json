@@ -1,0 +1,23 @@
+{
+  "chat": [
+    {
+      "commands": [
+        "/wp private",
+        "/wp private help list",
+        "/wp private help details",
+        "/wp private help add",
+        "/wp private help edit",
+        "/wp private help remove",
+        "/wp private help navigate"
+      ],
+      "text": "Server Waypoint help\nMost things are a click away: open the menu.\nCommands  List · Details · Add · Edit · Remove\n  Navigate\n"
+    }
+  ],
+  "position": [
+    1.5,
+    73.0,
+    9.5,
+    "minecraft:overworld"
+  ],
+  "screen": "null"
+}

@@ -62,6 +62,41 @@ class SettingsListWidgetTest {
     }
 
     @Test
+    void aCompositeActionIsShownWithItsConditionAndKeepsTheRowTooltipOffItsWidgets() {
+        AtomicBoolean shown = new AtomicBoolean(false);
+        IconButton rename = button(true);
+        IconButton delete = button(true);
+        SettingsListWidget.Row row = row(button(false), null).action(composite(rename, delete), shown::get);
+        SettingsListWidget list = new SettingsListWidget(new TestFont());
+        list.setWidth(200);
+        list.setHeight(80);
+        list.setEntries(List.of(row));
+
+        assertTrue(row.owns(delete));
+        assertFalse(rename.visible);
+        assertFalse(delete.visible);
+        assertFalse(row.isInteractive());
+
+        shown.set(true);
+        list.refreshWidgetVisibility();
+        assertTrue(rename.visible);
+        assertTrue(delete.visible);
+        assertTrue(row.isInteractive());
+        assertTrue(row.isOverAction(delete.getX(), delete.getY()));
+    }
+
+    @Test
+    void aControlAsWideAsTheRowNeedsExactlyTheListsWidth() {
+        SettingsListWidget list = new SettingsListWidget(new TestFont());
+        list.setWidth(200);
+        IconButton control = button(true);
+        control.setWidth(list.getRowWidth());
+        list.setEntries(List.of(new SettingsListWidget.WideRow(control)));
+
+        assertEquals(200, list.getPreferredWidth());
+    }
+
+    @Test
     void aRowWithAnActiveControlCanTakeFocus() {
         assertTrue(row(button(true), null).isInteractive());
     }

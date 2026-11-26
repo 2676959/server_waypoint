@@ -1,0 +1,54 @@
+--- a/java/LiveChecks.java.template
++++ b/java/LiveChecks.java.template
+@@ -449,6 +449,32 @@
+                 require(WaypointClientMod.getClientConfig().isXaeroDefaultListDirectSync(),
+                         "Reload lost the saved direct-sync setting");
+                 log("DEFAULT_SET world reload retained personal default contents, other personal set, mode cleanup, and saved setting");
++            });
++        } else if (op.equals("collection-isolation")) {
++            var mod=WaypointClientMod.getInstance();
++            client(() -> {
++                for (var source : List.of(_959.server_waypoint.common.client.ClientWaypointSource.LOCAL, _959.server_waypoint.common.client.ClientWaypointSource.PRIVATE)) {
++                    var dest=mod.access().capture(source,"minecraft:overworld","HiddenCollections",null);
++                    var result=mod.access().add(dest,new SimpleWaypoint("Hidden"+source.name(),"H",new WaypointPos(25,80,26),0x336699,0,false));
++                    require(result.status() == (source == _959.server_waypoint.common.client.ClientWaypointSource.LOCAL
++                            ? _959.server_waypoint.common.client.ClientWaypointAccess.Status.SAVED : _959.server_waypoint.common.client.ClientWaypointAccess.Status.AWAITING_SERVER),"hidden add "+result);
++                }
++            });
++            Thread.sleep(2500);
++            client(() -> {
++                var entry=mod.access().capture(_959.server_waypoint.common.client.ClientWaypointSource.PRIVATE,"minecraft:overworld","HiddenCollections","HiddenPRIVATE");
++                require(mod.access().waypoint(entry)!=null,"Private entry not synchronized");
++                for (var target : _959.server_waypoint.core.network.upload.UploadTarget.values()) {
++                    require(_959.server_waypoint.common.client.integrations.MapModIntegrations.syncNow(target,mod),"map not ready "+target);
++                    var exported=_959.server_waypoint.common.client.integrations.MapModIntegrations.collectUpload(
++                            new _959.server_waypoint.core.network.buffer.UploadRequestBuffer(UUID.randomUUID(),List.of("minecraft:overworld"),null,null,target));
++                    require(exported.uploadData().status()==_959.server_waypoint.core.network.upload.UploadStatus.SUCCESS,"export failed "+target);
++                    var lists=exported.dimensions().stream().flatMap(d -> d.waypointLists().stream()).toList();
++                    require(lists.stream().flatMap(l -> l.simpleWaypoints().stream()).anyMatch(w -> w.name().equals("map-fixture")),"Shared fixture missing from "+target);
++                    require(lists.stream().noneMatch(l -> l.name().equals("HiddenCollections")),"hidden list exported into "+target);
++                    require(lists.stream().flatMap(l -> l.simpleWaypoints().stream()).noneMatch(w -> w.name().startsWith("Hidden")),"hidden marker exported into "+target);
++                    log("COLLECTION_ISOLATION "+target+" native upload contains Shared fixture, excludes live Local/Private entries");
++                }
+             });
+         } else if (op.equals("create")) {
+             client(() -> GameApi.create(mc, screen()));
+--- a/runner.py
++++ b/runner.py
+@@ -281,6 +281,7 @@
+                 if row["voxelmap"]:
+                     steps += ["voxel-clear"]
+                 steps += ["map-cancel-add", "map-add-save", "map-stale", "default-set", "close", "load", "persisted", "default-persisted", "close"]
++                steps = ["create", "seed", "collection-isolation", "close"]
+                 if suite == "core":
+                     steps = ["create", "core-form", "close"]
+                 for index, name in enumerate(steps, 1):
+@@ -293,7 +294,7 @@
+                     state = wait_result(process, proof, max(step_timeout, 240) if name in ("create", "load") else step_timeout)
+                     result["steps"].append({"name": name, "result": proof.name, "state": state})
+                     write_json(home / "result.json", result)
+-                if suite == "editor":
++                if suite == "full-editor":
+                     store = game / "saves/live-editor-verification/server_waypoint/waypoints"
+                     verify_store(store, row["voxelmap"])
+                     from persistence import verify_default_set

@@ -44,6 +44,10 @@ public final class DimensionStyle {
                 viewer.yaw(), viewer.icons()), null);
     }
 
+    public DimensionStyle withScope(_959.server_waypoint.core.collection.WaypointScope scope) {
+        return new DimensionStyle(viewer.withScope(scope), loadedTypes);
+    }
+
     public Viewer viewer() {
         return this.viewer;
     }

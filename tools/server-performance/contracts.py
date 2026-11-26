@@ -67,12 +67,15 @@ def atomic_write(path, value):
 
 def load_release(path):
     document = read_document(path)
+    provenance = document.get("provenance", "published")
+    if provenance not in ("published", "candidate"):
+        raise ValueError("invalid artifact provenance")
     artifacts = []
     for asset in document["assets"]:
         digest = asset["digest"]
         if not re.fullmatch(r"sha256:[0-9a-f]{64}", digest) or asset["size"] <= 0:
             raise ValueError("invalid artifact identity")
-        artifacts.append(ArtifactSpec(safe_name(asset["name"]), digest[7:], asset["size"], asset["downloadUrl"], document["tag"], document["releaseTarget"]))
+        artifacts.append(ArtifactSpec(safe_name(asset["name"]), digest[7:], asset["size"], asset["downloadUrl"], document["tag"], document["releaseTarget"], provenance))
     if len({a.name for a in artifacts}) != len(artifacts):
         raise ValueError("duplicate artifact")
     return tuple(artifacts)

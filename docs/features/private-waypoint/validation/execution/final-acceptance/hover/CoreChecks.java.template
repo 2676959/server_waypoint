@@ -1,0 +1,463 @@
+import _959.server_waypoint.common.client.WaypointClientMod;
+import _959.server_waypoint.common.client.ClientWaypointAccess;
+import _959.server_waypoint.common.client.ClientWaypointQuery;
+import _959.server_waypoint.common.client.ClientWaypointSource;
+import _959.server_waypoint.common.client.gui.layout.VisualPositioning;
+import _959.server_waypoint.common.client.gui.screens.LocalWaypointProfilesScreen;
+import _959.server_waypoint.common.client.gui.screens.WaypointAddScreen;
+import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
+import _959.server_waypoint.common.client.gui.widgets.TooltipLayer;
+import _959.server_waypoint.common.client.util.MinecraftClientHelper;
+import net.minecraft.client.gui.layouts.LayoutElement;
+import net.minecraft.client.gui.screens.Screen;
+import _959.server_waypoint.core.waypoint.*;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.EditBox;
+import java.nio.file.*;
+import java.lang.reflect.Field;
+import java.util.concurrent.*;
+
+/** World and form checks for a target whose optional map mods have no matching loader release. */
+public class LiveChecks {
+    static Minecraft mc;
+    static Path result;
+
+    public static void start(String home, String op, String output) {
+        mc = Minecraft.getInstance();
+        result = Path.of(output);
+        Thread worker = new Thread(() -> {
+            try {
+                run(op);
+                write("PASS\n");
+            } catch (Throwable failure) {
+                java.io.StringWriter trace = new java.io.StringWriter();
+                failure.printStackTrace(new java.io.PrintWriter(trace));
+                try { write("FAIL\n" + trace); } catch (Exception ignored) {}
+            }
+        }, "SW core live verification");
+        worker.setDaemon(true);
+        worker.start();
+    }
+
+    static void write(String text) throws Exception {
+        Path temp = result.resolveSibling(result.getFileName() + ".writing");
+        Files.writeString(temp, text);
+        Files.move(temp, result, StandardCopyOption.ATOMIC_MOVE);
+    }
+
+    public static void quit() {
+        Minecraft.getInstance().execute(Minecraft.getInstance()::stop);
+    }
+
+    interface Task { void run() throws Exception; }
+
+    static void client(Task task) throws Exception {
+        CompletableFuture<Void> done = new CompletableFuture<>();
+        mc.execute(() -> {
+            try { task.run(); done.complete(null); }
+            catch (Throwable failure) { done.completeExceptionally(failure); }
+        });
+        done.get(120, TimeUnit.SECONDS);
+    }
+
+    static Object field(Object owner, String name) throws Exception {
+        for (Class<?> type = owner.getClass(); type != null; type = type.getSuperclass()) {
+            try {
+                Field field = type.getDeclaredField(name);
+                field.setAccessible(true);
+                return field.get(owner);
+            } catch (NoSuchFieldException ignored) {}
+        }
+        throw new NoSuchFieldException(name);
+    }
+
+    static void require(boolean condition, String message) {
+        if (!condition) throw new AssertionError(message);
+    }
+
+    static String value(String name) throws Exception {
+        return ((EditBox) field(GameApi.screen(mc), name)).getValue();
+    }
+
+    static void cancel() throws Exception {
+        var button = (AbstractWidget) field(GameApi.screen(mc), "cancelButton");
+        require(button.active && GameApi.click(GameApi.screen(mc), button), "Cancel did not handle click");
+    }
+
+    // ---- Scratch: manager layout check ---------------------------------------------------------------
+
+    static final java.util.List<String> evidence = new java.util.ArrayList<>();
+    static Screen manager;
+
+    static void note(String line) throws Exception {
+        evidence.add(line);
+        System.out.println("SW_MANAGER_LAYOUT " + line);
+        Files.writeString(result.getParent().resolve("manager-layout-evidence.txt"), String.join("\n", evidence) + "\n");
+    }
+
+    static Object call(Object owner, String name, Object... args) throws Exception {
+        for (Class<?> type = owner.getClass(); type != null; type = type.getSuperclass()) {
+            for (java.lang.reflect.Method method : type.getDeclaredMethods()) {
+                if (method.getName().equals(name) && method.getParameterCount() == args.length) {
+                    method.setAccessible(true);
+                    return method.invoke(owner, args);
+                }
+            }
+        }
+        throw new NoSuchMethodException(name);
+    }
+
+    static int geometry(String name) throws Exception {
+        return (int) call(field(manager, "layoutGeometry"), name);
+    }
+
+    static AbstractWidget widget(String name) throws Exception {
+        return (AbstractWidget) field(manager, name);
+    }
+
+    static int vx(LayoutElement e) { return VisualPositioning.getVisualX(e); }
+    static int vy(LayoutElement e) { return VisualPositioning.getVisualY(e); }
+    static int vw(LayoutElement e) { return VisualPositioning.getVisualWidth(e); }
+    static int vh(LayoutElement e) { return VisualPositioning.getVisualHeight(e); }
+
+    static String rect(LayoutElement e) {
+        String state = e instanceof AbstractWidget w ? (w.visible ? "" : " hidden") + (w.active ? "" : " inactive") : "";
+        return "[" + vx(e) + "," + vy(e) + " " + vw(e) + "x" + vh(e) + state + "]";
+    }
+
+    /** The text of the tooltip one frame of the manager requests with the pointer here, or {@code <none>}. */
+    static String tooltipAt(int x, int y) throws Exception {
+        TooltipLayer.clear();
+        call(manager, "renderScreenContents", GameApi.graphics(mc, x, y), x, y, 0.0f);
+        java.lang.reflect.Method scheduled = TooltipLayer.class.getDeclaredMethod("scheduled");
+        scheduled.setAccessible(true);
+        Object request = scheduled.invoke(null);
+        TooltipLayer.clear();
+        return request == null ? "<none>" : ((net.minecraft.network.chat.Component) call(request, "text")).getString();
+    }
+
+    /** Lets a few frames draw the current state, then saves one with the game's own screenshot code. */
+    static void frame(String name) throws Exception {
+        Thread.sleep(1000);
+        Path file = mc.gameDirectory.toPath().resolve("screenshots").resolve(name);
+        Files.deleteIfExists(file);
+        client(() -> GameApi.screenshot(mc, name));
+        long deadline = System.currentTimeMillis() + 15000;
+        long size = -1;
+        while (System.currentTimeMillis() < deadline) {
+            Thread.sleep(250);
+            if (Files.exists(file)) {
+                long now = Files.size(file);
+                if (now > 0 && now == size) break;
+                size = now;
+            }
+        }
+        require(Files.exists(file) && Files.size(file) > 0, "screenshot not written: " + file);
+        Path copy = result.getParent().resolve(name);
+        Files.copy(file, copy, StandardCopyOption.REPLACE_EXISTING);
+        note("saved " + copy);
+    }
+
+    /** Logs the moved controls and checks they sit where the layout puts them. */
+    static void checkPlacement(String label, boolean copyExpected) throws Exception {
+        AbstractWidget profile = widget("profileButton");
+        AbstractWidget add = widget("addWaypointButton");
+        AbstractWidget search = widget("searchField");
+        AbstractWidget details = widget("waypointDetailsWidget");
+        AbstractWidget copy = widget("copyButton");
+        LayoutElement status = (LayoutElement) field(manager, "statusMessage");
+        int leftPanelX = geometry("leftPanelX");
+        int panelY = geometry("panelY");
+        int contentY = geometry("contentY");
+        int contentHeight = geometry("contentHeight");
+        int middleRight = geometry("middleX") + geometry("middlePartWidth");
+        int detailsRight = geometry("detailsContentX") + geometry("detailsContentWidth");
+        note(label + ": screen " + manager.width + "x" + manager.height + ", panels from x " + leftPanelX
+                + " y " + panelY + ", content y " + contentY + "-" + (contentY + contentHeight));
+        note("  profile " + rect(profile) + " '" + profile.getMessage().getString() + "', status " + rect(status));
+        note("  search " + rect(search) + ", add " + rect(add) + ", list column right edge " + middleRight);
+        note("  details [" + details.getX() + "," + details.getY() + " " + details.getWidth() + "x" + details.getHeight()
+                + "], copy " + rect(copy) + ", details right edge " + detailsRight);
+        require(profile.visible && vx(profile) == leftPanelX, "profile button not at the panels' left edge");
+        require(vy(profile) >= 0 && vy(profile) + vh(profile) <= panelY, "profile button not above the panels");
+        require(add.visible && vx(add) + vw(add) == middleRight, "add button not at the search row's right end");
+        require(vy(add) == vy(search) && vh(add) == vh(search), "add button not level with the search field");
+        require(vx(search) + vw(search) + 4 == vx(add), "search field does not stop one gap short of add");
+        require(details.getY() == contentY, "details do not start at the top of the content");
+        require(copy.visible == copyExpected, "copy visibility " + copy.visible + ", expected " + copyExpected);
+        if (copyExpected) {
+            require(vx(copy) + vw(copy) == detailsRight, "copy not flush with the details' right edge");
+            require(vy(copy) + vh(copy) == contentY + contentHeight, "copy not at the content bottom");
+            require(details.getY() + details.getHeight() + 4 == vy(copy), "details do not end one gap above copy");
+        } else {
+            require(details.getHeight() == contentHeight, "details do not fill the panel without copy");
+        }
+    }
+
+    static void openManager(int scale) throws Exception {
+        client(() -> {
+            if (manager == null) manager = new WaypointManagerScreen(WaypointClientMod.getInstance(), null);
+            MinecraftClientHelper.setScreen(mc, manager);
+            GameApi.guiScale(mc, scale);
+        });
+        Thread.sleep(1000);
+        client(() -> require(GameApi.screen(mc) == manager, "the manager is not open: " + GameApi.screen(mc)));
+    }
+
+    /** Clicks a control and checks which screen it opened, saving a frame of it, then reopens the manager. */
+    static void clickOpens(String name, Class<?> expected) throws Exception {
+        client(() -> {
+            AbstractWidget button = widget(name);
+            require(button.visible && button.active && GameApi.click(manager, button), name + " did not handle the click");
+        });
+        Thread.sleep(500);
+        client(() -> {
+            Screen opened = GameApi.screen(mc);
+            note(name + " opened " + (opened == null ? "nothing" : opened.getClass().getSimpleName()));
+            require(expected.isInstance(opened), name + " opened " + opened);
+        });
+        frame("opened-by-" + name + ".png");
+        client(() -> MinecraftClientHelper.setScreen(mc, manager));
+        Thread.sleep(500);
+    }
+
+    static void managerLayout() throws Exception {
+        WaypointClientMod mod = WaypointClientMod.getInstance();
+        client(() -> {
+            var config = WaypointClientMod.getClientConfig();
+            config.setWaypointManagerView(ClientWaypointQuery.View.LOCAL);
+            config.setWaypointManagerGroupByLists(false);
+            config.setWaypointManagerShowAllDimensions(false);
+            var access = mod.access();
+            var destination = access.capture(ClientWaypointSource.LOCAL, "minecraft:overworld", "Bases", null);
+            var outcome = access.add(destination,
+                    new SimpleWaypoint("Home base", "HB", new WaypointPos(120, 64, -38), 0x3366CC, 0, false));
+            require(outcome.status() == ClientWaypointAccess.Status.SAVED, "Local add: " + outcome);
+        });
+
+        openManager(4);
+        client(() -> checkPlacement("GUI scale 4, nothing selected", false));
+        frame("manager-scale4-no-selection.png");
+
+        client(() -> {
+            AbstractWidget list = widget("waypointListWidget");
+            int rowHeight = (int) call(list, "getRowHeight");
+            int row = -1;
+            for (int i = 0; i < 20 && row < 0; i++) {
+                Object entry = call(list, "getEntryAtRow", i);
+                if (entry != null && call(entry, "value").getClass().getSimpleName().equals("WaypointNode")) row = i;
+            }
+            note("waypoint row " + row + ", row height " + rowHeight + ", list " + rect(list));
+            require(row >= 0, "no waypoint row in the list");
+            require(GameApi.clickAt(manager, list.getX() + 40, list.getY() + row * rowHeight + rowHeight / 2.0),
+                    "the waypoint row did not take the click");
+        });
+        Thread.sleep(300);
+        client(() -> {
+            Object selected = call(widget("waypointListWidget"), "selectedWaypoint");
+            note("selected after clicking the waypoint row: " + selected);
+            require(selected != null, "clicking the waypoint row selected nothing");
+            checkPlacement("GUI scale 4, a waypoint selected", true);
+            AbstractWidget profile = widget("profileButton");
+            String tooltip = tooltipAt(profile.getX() + profile.getWidth() / 2, profile.getY() + profile.getHeight() / 2);
+            note("profile button tooltip: '" + tooltip + "'");
+            AbstractWidget add = widget("addWaypointButton");
+            note("add button tooltip: '" + tooltipAt(add.getX() + add.getWidth() / 2, add.getY() + add.getHeight() / 2) + "'");
+        });
+        frame("manager-scale4-selected.png");
+
+        clickOpens("profileButton", LocalWaypointProfilesScreen.class);
+        clickOpens("copyButton", WaypointAddScreen.class);
+        clickOpens("addWaypointButton", WaypointAddScreen.class);
+        client(() -> checkPlacement("GUI scale 4, back from the forms", true));
+
+        var active = mod.localProfiles().active();
+        String longName = "A very long profile name for the survival world we share with friends";
+        client(() -> mod.localProfiles().rename(active.id(), longName));
+        Thread.sleep(500);
+        client(() -> {
+            AbstractWidget profile = widget("profileButton");
+            String label = profile.getMessage().getString();
+            int lineRight = geometry("leftPanelX") + geometry("completeWidth");
+            note("long name: profile button " + rect(profile) + " '" + label + "', line right edge " + lineRight);
+            require(label.endsWith("…"), "a long profile name was not cut");
+            require(vx(profile) + vw(profile) <= lineRight, "the profile button runs past the panels");
+            String tooltip = tooltipAt(profile.getX() + profile.getWidth() / 2, profile.getY() + profile.getHeight() / 2);
+            note("long name tooltip: '" + tooltip + "'");
+            require(tooltip.contains(longName), "the tooltip does not give the whole name");
+        });
+        frame("manager-scale4-long-profile.png");
+        client(() -> mod.localProfiles().rename(active.id(), active.name()));
+
+        openManager(1);
+        client(() -> checkPlacement("GUI scale 1, a waypoint selected", true));
+        frame("manager-scale1-selected.png");
+        client(() -> GameApi.guiScale(mc, 0));
+    }
+
+    static void collections() throws Exception {
+        var mod = WaypointClientMod.getInstance();
+        client(() -> {
+            require(! _959.server_waypoint.common.client.ClientConfig.isXaerosMinimapLoaded, "unexpected map mod");
+            require(WaypointClientMod.getClientConfig().getWaypointManagerView() == ClientWaypointQuery.View.COMBINED, "initial view not Combined");
+            for (var source : ClientWaypointSource.values()) {
+                var destination = mod.access().capture(source, "minecraft:overworld", "Homes", null);
+                var outcome = mod.access().add(destination, new SimpleWaypoint("Base", "B", new WaypointPos(10 + source.ordinal() * 20, 80, -30), 0x3366CC, 90, false));
+                require(outcome.status() == (source == ClientWaypointSource.LOCAL ? ClientWaypointAccess.Status.SAVED : ClientWaypointAccess.Status.AWAITING_SERVER), "add " + source + " " + outcome);
+            }
+        });
+        Thread.sleep(3000);
+        client(() -> {
+            var query = new ClientWaypointQuery(mod.collections());
+            var opts = new WaypointQueryEngine.Query("Base", WaypointSorting.SortMode.NAME, new WaypointPos(0,80,0), "minecraft:overworld", false);
+            var result = query.query(ClientWaypointQuery.View.COMBINED, "minecraft:overworld", opts);
+            require(result.rows().size() == 3, "not three duplicate identities " + result);
+            require(result.rows().stream().map(ClientWaypointQuery.Row::selection).distinct().count() == 3, "merged selections");
+            note("Real integrated server: Shared/Private commands synchronized; Local saved; Combined retains 3 distinct Homes/Base selections");
+            for (var view : ClientWaypointQuery.View.values()) {
+                WaypointClientMod.getClientConfig().setWaypointManagerView(view);
+                Screen screen = new WaypointManagerScreen(mod, null);
+                MinecraftClientHelper.setScreen(mc, screen);
+                GameApi.guiScale(mc, 4);
+                require(screen.width >= 320, "unexpected viewport");
+                note("opened view " + view + " " + screen.width + "x" + screen.height);
+            }
+            var src = mod.access().capture(ClientWaypointSource.PRIVATE, "minecraft:overworld", "Homes", "Base");
+            var dest = mod.access().capture(ClientWaypointSource.LOCAL, "minecraft:overworld", "Copies", null);
+            var draft = mod.access().copyDraft(src, dest);
+            MinecraftClientHelper.setScreen(mc, WaypointAddScreen.fromCopy(null, mod.access(), draft));
+            cancel();
+            require(mod.access().list(dest) == null, "cancel created destination");
+            require(mod.access().addCopy(draft).status() == ClientWaypointAccess.Status.SAVED, "copy not saved");
+            require(mod.access().waypoint(src) != mod.access().waypoint(dest.at("minecraft:overworld", "Copies", "Base")), "copy alias");
+            note("Private-to-Local copy cancel creates nothing; explicit save makes independent destination");
+            var old = mod.access().capture(ClientWaypointSource.LOCAL, "minecraft:overworld", "Stale", null);
+            var original = mod.localProfiles().active();
+            var fresh = mod.localProfiles().create("Task 8 temporary profile");
+            require(mod.access().add(old, new SimpleWaypoint("obsolete", "O", new WaypointPos(0,80,0), 0,0,false)).status() == ClientWaypointAccess.Status.OBSOLETE, "stale form saved");
+            mod.localProfiles().select(original.id());
+            mod.localProfiles().delete(fresh.id());
+            note("Profile switch rejects captured old destination; original data retained after select/delete");
+        });
+        // Snapshot each view after actual render frames, with all three collections populated.
+        for (var view : ClientWaypointQuery.View.values()) {
+            client(() -> {
+                WaypointClientMod.getClientConfig().setWaypointManagerView(view);
+                MinecraftClientHelper.setScreen(mc, new WaypointManagerScreen(mod, null));
+            });
+            frame("task8-" + view.name().toLowerCase() + ".png");
+        }
+    }
+
+    static void inputAndTranslation() throws Exception {
+        var mod = WaypointClientMod.getInstance();
+        client(() -> {
+            mc.getTutorial().setStep(net.minecraft.client.tutorial.TutorialSteps.NONE);
+            mc.getToastManager().clear();
+            mc.options.hideGui = true;
+            mc.getLanguageManager().setSelected("es_es");
+            mc.options.languageCode = "es_es";
+        });
+        java.util.concurrent.atomic.AtomicReference<java.util.concurrent.CompletableFuture<Void>> reload = new java.util.concurrent.atomic.AtomicReference<>();
+        client(() -> reload.set(mc.reloadResourcePacks()));
+        reload.get().get(60, TimeUnit.SECONDS);
+        for (var view : ClientWaypointQuery.View.values()) {
+            client(() -> {
+                WaypointClientMod.getClientConfig().setWaypointManagerView(view);
+                manager = new WaypointManagerScreen(mod, null);
+                MinecraftClientHelper.setScreen(mc, manager);
+                GameApi.guiScale(mc, 4);
+                var dropdown = ( _959.server_waypoint.common.client.gui.widgets.IconDropdownMenu) field(manager, "collectionDropdown");
+                require(GameApi.click(manager, dropdown) && dropdown.isExpanded(), "collection popup did not open");
+                var popup = dropdown.getMenuItems().stream().filter(item -> item.visible && item.active).findFirst().orElseThrow();
+                String popupTooltip = tooltipAt(popup.getX() + popup.getWidth()/2, popup.getY() + popup.getHeight()/2);
+                note("Native expanded collection popup tooltip at item: " + popupTooltip);
+                require(!popupTooltip.equals("<none>") && !popupTooltip.equals("Add"), "popup did not own hovered tooltip");
+                manager.mouseScrolled(dropdown.getX()+2, dropdown.getY()+2, 0, -1);
+                require(((WaypointManagerScreen)manager).keyPressed(256,0,0), "Escape unhandled");
+                require(!dropdown.isExpanded() && GameApi.screen(mc) == manager, "Escape did not close popup first");
+                ((WaypointManagerScreen)manager).keyPressed(258,0,0);
+                require(manager.getFocused() != null, "Tab found no focus target");
+                note("Spanish " + view + ": popup/wheel/Escape/Tab native handlers passed at " + manager.width + "x" + manager.height);
+            });
+            frame("spanish-" + view.name().toLowerCase() + ".png");
+        }
+        client(() -> {
+            var profiles = new LocalWaypointProfilesScreen(manager, mod);
+            MinecraftClientHelper.setScreen(mc, profiles);
+            var newButton=(AbstractWidget)field(profiles,"newProfileButton");
+            call(field(profiles,"settings"),"reveal",newButton);
+            require(GameApi.click(profiles,newButton), "New profile click");
+            require(field(profiles,"dialog") != null && profiles.getFocused() == field(profiles,"name"), "New dialog focus");
+            profiles.keyPressed(256,0,0);
+            require(field(profiles,"dialog") == null, "Escape did not cancel New");
+            require(GameApi.click(profiles,newButton), "New again");
+            ((EditBox)field(profiles,"name")).setValue("Un perfil de supervivencia con un nombre muy largo para comprobar los controles");
+            profiles.keyPressed(257,0,0);
+            require(mod.localProfiles().profiles().size() == 2 && field(profiles,"dialog") == null, "Enter did not create profile");
+            var command=(EditBox)field(profiles,"command");
+            command.setValue("/tp @s {unknown}");
+            profiles.tick();
+            require(!((AbstractWidget)field(profiles,"saveButton")).active, "invalid command enabled Save");
+            command.setValue("/tp @s {x} {y} {z}");
+            profiles.setFocused(command);
+            profiles.keyPressed(257,0,0);
+            require(mod.localProfiles().active().teleportCommand().equals("/tp @s {x} {y} {z}"), "Enter did not save template");
+            note("Spanish profile New cancel/create/Enter focus and invalid/valid template controls passed");
+        });
+        frame("spanish-profiles.png");
+        client(() -> {
+            var profiles=(LocalWaypointProfilesScreen)GameApi.screen(mc);
+            var active=mod.localProfiles().active();
+            var rows=(java.util.Map<?,?>)field(profiles,"rows");
+            var delete=(AbstractWidget)call(rows.get(active.id()),"delete");
+            call(field(profiles,"settings"),"reveal",delete);
+            require(GameApi.click(profiles,delete), "Delete profile click");
+            profiles.keyPressed(256,0,0);
+            require(mod.localProfiles().profiles().size()==2, "Delete cancel removed profile");
+            require(GameApi.click(profiles,delete), "Delete again");
+            var confirm=(AbstractWidget)call(field(profiles,"dialogWidget"),"getConfirmButton");
+            require(GameApi.click(profiles,confirm), "Delete confirm click");
+            require(mod.localProfiles().profiles().size()==1, "Delete did not remove only target");
+            note("Spanish profile Delete cancel/confirm native handlers passed");
+        });
+    }
+
+    static void run(String op) throws Exception {
+        if (op.equals("create")) {
+            client(() -> GameApi.create(mc, GameApi.screen(mc)));
+            long deadline = System.currentTimeMillis() + 120000;
+            while ((mc.player == null || WaypointClientMod.getNetworkState()
+                    != WaypointClientMod.ClientNetworkState.SYNC_FINISHED || !WaypointClientMod.getInstance().collections().ready(ClientWaypointSource.PRIVATE))
+                    && System.currentTimeMillis() < deadline) Thread.sleep(250);
+            require(mc.player != null && WaypointClientMod.getNetworkState()
+                    == WaypointClientMod.ClientNetworkState.SYNC_FINISHED, "Integrated world did not sync");
+        } else if (op.equals("input-translations")) {
+            inputAndTranslation();
+        } else if (op.equals("collections")) {
+            collections();
+        } else if (op.equals("load")) {
+            client(() -> GameApi.load(mc));
+            Thread.sleep(10000);
+        } else if (op.equals("persisted")) {
+            client(() -> {
+                var access = WaypointClientMod.getInstance().access();
+                for (var source : ClientWaypointSource.values()) {
+                    var saved = access.capture(source, "minecraft:overworld", "Homes", "Base");
+                    require(access.waypoint(saved) != null, "missing after world reload: " + source);
+                }
+                note("Shared, Private and Local duplicate identifiers restored after world close/reload");
+            });
+        } else if (op.equals("manager-layout")) {
+            managerLayout();
+        } else if (op.equals("close")) {
+            client(() -> {
+                MinecraftClientHelper.setScreen(mc, null);
+                GameApi.disconnect(mc);
+            });
+        } else {
+            throw new IllegalArgumentException("Unknown core check: " + op);
+        }
+    }
+}

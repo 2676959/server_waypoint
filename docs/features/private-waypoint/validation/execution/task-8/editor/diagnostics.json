@@ -1,0 +1,1109 @@
+[
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_21 specified by fabric-api-lookup-api-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 63
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 63
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_17 specified by server_waypoint-common.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 65
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 65
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_17 specified by server_waypoint-voxelmap.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 66
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 66
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_17 specified by xaerohud.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 67
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 67
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_17 specified by xaerominimap.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 68
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 68
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_17 specified by xaeroworldmap.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 69
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 69
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_17 specified by xaeroworldmap.fabric.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 70
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 70
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Reference map 'server_waypoint-common.refmap.json' for server_waypoint-common.mixins.json could not be read. If this is a development environment you can ignore this message",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 130
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 130
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Reference map 'server_waypoint-common.refmap.json' for server_waypoint-voxelmap.mixins.json could not be read. If this is a development environment you can ignore this message",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 132
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 132
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Reference map 'voxelmap.refmap.json' for mixin.voxelmap.json could not be read. If this is a development environment you can ignore this message",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 134
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 134
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Reference map 'voxelmap.fabric.refmap.json' for mixin.voxelmap.fabric.json could not be read. If this is a development environment you can ignore this message",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 136
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 136
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: net/minecraft/client/gui/render/state/GuiItemRenderState (java.lang.ClassNotFoundException: net/minecraft/client/gui/render/state/GuiItemRenderState)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 199
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 199
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: net/minecraft/client/gui/render/GuiRenderer (java.lang.ClassNotFoundException: net/minecraft/client/gui/render/GuiRenderer)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 200
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 200
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: net/minecraft/client/gui/render/pip/PictureInPictureRenderer (java.lang.ClassNotFoundException: net/minecraft/client/gui/render/pip/PictureInPictureRenderer)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 201
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 201
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "xaerohud.mixins.json:MixinPlayerEntity from mod xaerominimap: Class version 65 required is higher than the class version supported by the current version of Mixin (JAVA_17 supports class version 61)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 254
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 254
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "xaeroworldmap.fabric.mixins.json:MixinFabricPlayerEntity from mod xaeroworldmap: Class version 65 required is higher than the class version supported by the current version of Mixin (JAVA_17 supports class version 61)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 257
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 257
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "xaeroworldmap.mixins.json:MixinServerWorld from mod xaeroworldmap: Class version 65 required is higher than the class version supported by the current version of Mixin (JAVA_17 supports class version 61)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 281
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 281
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "server_waypoint-common.mixins.json:ItemEntityNavigationMixin from mod server_waypoint: Class version 65 required is higher than the class version supported by the current version of Mixin (JAVA_17 supports class version 61)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 283
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 283
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "@Shadow target fabric-transfer-api-v1.mixins.json:ChiseledBookshelfBlockEntityMixin from mod fabric-transfer-api-v1::field_41314 is final but shadow is not decorated with @Final",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 306
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 306
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Write access to @Mutable @Final field field_19315:Ljava/util/Set; in fabric-object-builder-v1.mixins.json:BlockEntityTypeMixin from mod fabric-object-builder-api-v1::handler$zhk000$fabric-object-builder-api-v1$mutableBlocks",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 309
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 309
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Write access to @Mutable @Final field field_46095:Lcom/mojang/serialization/Codec; in fabric-recipe-api-v1.mixins.json:ingredient.IngredientMixin from mod fabric-recipe-api-v1::handler$zii000$fabric-recipe-api-v1$injectCodec",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 383
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 383
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Write access to @Mutable @Final field field_24730:Lcom/mojang/serialization/MapCodec; in fabric-biome-api-v1.mixins.json:TheEndBiomeSourceMixin from mod fabric-biome-api-v1::handler$zze000$fabric-biome-api-v1$modifyCodec",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 393
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 393
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Write access to @Mutable @Final field field_55454:Ljava/util/Map; in fabric-rendering-v1.mixins.json:SpecialModelTypesMixin from mod fabric-rendering-v1::handler$zlb001$fabric-rendering-v1$onReturnClinit",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 418
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 418
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "@Shadow field fabric-renderer-api-v1.mixins.json:client.SpriteAtlasTextureMixin from mod fabric-renderer-api-v1::field_5280 is decorated with @Final but target is not final",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 421
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 421
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "server_waypoint-voxelmap.mixins.json:VoxelMapWorldAccessor from mod server_waypoint: Class version 65 required is higher than the class version supported by the current version of Mixin (JAVA_17 supports class version 61)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 427
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 427
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "@Shadow target xaerohud.mixins.json:MixinCompositeState from mod xaerominimap::field_21422 is final but shadow is not decorated with @Final",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 435
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 435
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "@Shadow target xaerohud.mixins.json:MixinCompositeState from mod xaerominimap::field_57931 is final but shadow is not decorated with @Final",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 436
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 436
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Write access to @Mutable @Final field field_23730:Ljava/util/Map; in fabric-object-builder-v1.mixins.json:DefaultAttributeRegistryMixin from mod fabric-object-builder-api-v1::handler$zhl000$fabric-object-builder-api-v1$injectAttributes",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 456
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 456
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "Write access to @Mutable @Final field field_14227:Ljava/util/Set; in fabric-resource-loader-v0.mixins.json:ResourcePackManagerMixin from mod fabric-resource-loader-v0::handler$zln000$fabric-resource-loader-v0$construct",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 479
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 479
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "@Shadow field fabric-events-interaction-v0.mixins.json:ServerPlayNetworkHandlerMixin from mod fabric-events-interaction-v0::field_14140 is decorated with @Final but target is not final",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 494
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 494
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "Write access to @Mutable @Final field field_949:Lcom/google/common/collect/ImmutableList$Builder; in fabric-loot-api-v3.mixins.json:LootTableBuilderMixin from mod fabric-loot-api-v3::modifyPools",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 497
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 497
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "io exception while checking patreon: Online mod data expired! Date: Wed Oct 28 10:27:27 EDT 2026",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 536
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 536
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "ERROR",
+        "logger": "Render thread",
+        "message": "io exception while checking versions: Online mod data expired! Date: Wed Oct 28 10:27:27 EDT 2026",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 537
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 537
+            }
+        ],
+        "ignored": true,
+        "ignore_reason": "Optional map-mod update service data expired"
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "@Shadow field fabric-key-binding-api-v1.mixins.json:GameOptionsMixin from mod fabric-key-binding-api-v1::field_1839 is decorated with @Final but target is not final",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 540
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 540
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "Write access to @Mutable @Final field field_1839:[Lnet/minecraft/class_304; in fabric-key-binding-api-v1.mixins.json:GameOptionsMixin from mod fabric-key-binding-api-v1::handler$zeo000$fabric-key-binding-api-v1$loadHook",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 542
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 542
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "@At(\"STORE\" implicit List) has invalid IMPLICIT discriminator for opcode 6 in net/minecraft/class_3288::method_45274(Lnet/minecraft/class_9224;Lnet/minecraft/class_3288$class_7680;I)Lnet/minecraft/class_3288$class_7679;: Found 0 candidate variables but exactly 1 is required.",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 548
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 548
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "@At(\"STORE\" implicit List) has invalid IMPLICIT discriminator for opcode 13 in net/minecraft/class_3288::method_45274(Lnet/minecraft/class_9224;Lnet/minecraft/class_3288$class_7680;I)Lnet/minecraft/class_3288$class_7679;: Found 0 candidate variables but exactly 1 is required.",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 549
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 549
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "@At(\"STORE\" implicit List) has invalid IMPLICIT discriminator for opcode 28 in net/minecraft/class_3288::method_45274(Lnet/minecraft/class_9224;Lnet/minecraft/class_3288$class_7680;I)Lnet/minecraft/class_3288$class_7679;: Found 0 candidate variables but exactly 1 is required.",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 550
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 550
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "@At(\"STORE\" implicit List) has invalid IMPLICIT discriminator for opcode 47 in net/minecraft/class_3288::method_45274(Lnet/minecraft/class_9224;Lnet/minecraft/class_3288$class_7680;I)Lnet/minecraft/class_3288$class_7679;: Found 0 candidate variables but exactly 1 is required.",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 551
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 551
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "@At(\"STORE\" implicit List) has invalid IMPLICIT discriminator for opcode 60 in net/minecraft/class_3288::method_45274(Lnet/minecraft/class_9224;Lnet/minecraft/class_3288$class_7680;I)Lnet/minecraft/class_3288$class_7679;: Found 0 candidate variables but exactly 1 is required.",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 552
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 552
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "@At(\"STORE\" implicit List) has invalid IMPLICIT discriminator for opcode 67 in net/minecraft/class_3288::method_45274(Lnet/minecraft/class_9224;Lnet/minecraft/class_3288$class_7680;I)Lnet/minecraft/class_3288$class_7679;: Found 0 candidate variables but exactly 1 is required.",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 553
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 553
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "@At(\"STORE\" implicit List) has invalid IMPLICIT discriminator for opcode 73 in net/minecraft/class_3288::method_45274(Lnet/minecraft/class_9224;Lnet/minecraft/class_3288$class_7680;I)Lnet/minecraft/class_3288$class_7679;: Found 0 candidate variables but exactly 1 is required.",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 554
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 554
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "@At(\"STORE\" implicit List) has invalid IMPLICIT discriminator for opcode 80 in net/minecraft/class_3288::method_45274(Lnet/minecraft/class_9224;Lnet/minecraft/class_3288$class_7680;I)Lnet/minecraft/class_3288$class_7679;: Found 0 candidate variables but exactly 1 is required.",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 555
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 555
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "@At(\"STORE\" implicit List) has invalid IMPLICIT discriminator for opcode 120 in net/minecraft/class_3288::method_45274(Lnet/minecraft/class_9224;Lnet/minecraft/class_3288$class_7680;I)Lnet/minecraft/class_3288$class_7679;: Found 0 candidate variables but exactly 1 is required.",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 556
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 556
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "@At(\"STORE\" implicit List) has invalid IMPLICIT discriminator for opcode 131 in net/minecraft/class_3288::method_45274(Lnet/minecraft/class_9224;Lnet/minecraft/class_3288$class_7680;I)Lnet/minecraft/class_3288$class_7679;: Found 0 candidate variables but exactly 1 is required.",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 557
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 557
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "@At(\"STORE\" implicit List) has invalid IMPLICIT discriminator for opcode 143 in net/minecraft/class_3288::method_45274(Lnet/minecraft/class_9224;Lnet/minecraft/class_3288$class_7680;I)Lnet/minecraft/class_3288$class_7679;: Found 0 candidate variables but exactly 1 is required.",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 558
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 558
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "@Shadow target xaeroworldmap.mixins.json:MixinGlBuffer from mod xaeroworldmap::field_57842 is final but shadow is not decorated with @Final",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 565
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 565
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "Removed resource pack voxelmap from options because it is no longer compatible",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 568
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 568
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "Removed resource pack xaerominimap from options because it is no longer compatible",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 569
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 569
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "Removed resource pack xaeroworldmap from options because it is no longer compatible",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 570
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 570
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "@Shadow target xaerohud.mixins.json:MixinGameRenderer from mod xaerominimap::field_4015 is final but shadow is not decorated with @Final",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 617
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 617
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "@Shadow target xaeroworldmap.fabric.mixins.json:MixinFabricGameRenderer from mod xaeroworldmap::field_4015 is final but shadow is not decorated with @Final",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 619
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 619
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "ERROR",
+        "logger": "Download-2",
+        "message": "Failed to fetch Realms feature flags\nnet.minecraft.class_4355: Realms authentication error with message 'java.lang.RuntimeException: Failed to parse into SignedJWT: 0'\n\tat knot/net.minecraft.class_4341.method_20998(class_4341.java:495) ~[client-intermediary.jar:?]\n\tat knot/net.minecraft.class_4341.method_68466(class_4341.java:177) ~[client-intermediary.jar:?]\n\tat java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1768) ~[?:?]\n\tat java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144) ~[?:?]\n\tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642) ~[?:?]\n\tat java.base/java.lang.Thread.run(Thread.java:1583) [?:?]",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 632
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 632
+            }
+        ],
+        "ignored": true,
+        "ignore_reason": "Offline test identity cannot use Realms"
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "Unable to read property: level with value: \"0\" for blockstate: {Name:\"minecraft:water_cauldron\",Properties:{level:\"0\"}}",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 668
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 668
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "io exception while checking versions: Online mod data expired! Date: Wed Oct 28 10:27:27 EDT 2026",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 672
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 672
+            }
+        ],
+        "ignored": true,
+        "ignore_reason": "Optional map-mod update service data expired"
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "CATEGORY ORDER IS 10",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 693
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 693
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "Found unknown and unsupported uniform Sampler1 in minecraft:pipeline/armor_translucent",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 701
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 701
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "Found unknown and unsupported uniform Sampler1 in minecraft:pipeline/armor_decal_cutout_no_cull",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 702
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 702
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "Found unknown and unsupported uniform Sampler1 in minecraft:pipeline/entity_no_outline",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 703
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 703
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "Found unknown and unsupported uniform Sampler1 in minecraft:pipeline/breeze_wind",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 704
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 704
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "Found unknown and unsupported uniform Sampler2 in minecraft:pipeline/eyes",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 705
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 705
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "Found unknown and unsupported uniform Sampler1 in minecraft:pipeline/eyes",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 706
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 706
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "Found unknown and unsupported uniform Sampler1 in minecraft:pipeline/armor_cutout_no_cull",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 707
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 707
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "Found unknown and unsupported uniform Sampler2 in minecraft:pipeline/energy_swirl",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 708
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 708
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "Found unknown and unsupported uniform Sampler1 in minecraft:pipeline/energy_swirl",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 709
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 709
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Attach Listener",
+        "message": "Write access to @Mutable @Final field field_18984:Ljava/util/Map; in fabric-content-registries-v0.mixins.json:GiveGiftsToHeroTaskMixin from mod fabric-content-registries-v0::handler$zzp000$fabric-content-registries-v0$makeMutable",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 874
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 874
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Attach Listener",
+        "message": "@Shadow target xaerohud.mixins.json:MixinChunkDeltaUpdateS2CPacket from mod xaerominimap::field_26345 is final but shadow is not decorated with @Final",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 1022
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 1022
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Attach Listener",
+        "message": "@Shadow target xaeroworldmap.mixins.json:MixinChunkDeltaUpdateS2CPacketAccessor from mod xaeroworldmap::field_26345 is final but shadow is not decorated with @Final",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 1024
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 1024
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "Skipping Xaero's Minimap sync for list gui.xaero_default because waypoint ambiguous\u241fname would have an ambiguous generated name.",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 1268
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 1268
+            }
+        ],
+        "ignored": false
+    }
+]

@@ -1,6 +1,6 @@
 use azalea::protocol::packets::game::s_player_action::Action;
 use serde_json::json;
-use sw_performance_bots::action_input::{inventory_slots, player_action};
+use sw_performance_bots::action_input::{entity_interact, inventory_slots, player_action};
 
 #[test]
 fn inventory_accepts_actual_player_menu_bounds_without_silent_fallbacks() {
@@ -24,6 +24,18 @@ fn inventory_accepts_actual_player_menu_bounds_without_silent_fallbacks() {
 }
 
 #[test]
+fn entity_interact_requires_a_loaded_entity_id() {
+    assert_eq!(entity_interact(&json!({"entityId": 12})).unwrap(), 12);
+    assert_eq!(
+        entity_interact(&json!({"entityId": i32::MAX as i64})).unwrap(),
+        i32::MAX
+    );
+    assert!(entity_interact(&json!({"entityId": -1})).is_err());
+    assert!(entity_interact(&json!({"entityId": i32::MAX as i64 + 1})).is_err());
+    assert!(entity_interact(&json!({})).is_err());
+}
+
+#[test]
 fn physical_player_action_requires_known_operation_and_boolean_drop_mode() {
     assert_eq!(
         player_action(&json!({"operation":"drop"})).unwrap(),
@@ -39,4 +51,91 @@ fn physical_player_action_requires_known_operation_and_boolean_drop_mode() {
     );
     assert!(player_action(&json!({"operation":"drop","all":1})).is_err());
     assert!(player_action(&json!({"operation":"other"})).is_err());
+}
+
+#[test]
+fn container_position_requires_explicit_block_coordinates() {
+    use sw_performance_bots::action_input::container_position;
+    assert_eq!(
+        container_position(&json!({"x": 300, "y": -61, "z": 297})).unwrap(),
+        (300, -61, 297)
+    );
+    for value in [
+        json!({"x": 300, "y": -61}),
+        json!({"x": 30_000_001, "y": -61, "z": 0}),
+        json!({"x": 0, "y": 320, "z": 0}),
+        json!({"x": 0.5, "y": -61, "z": 0}),
+    ] {
+        assert!(container_position(&value).is_err());
+    }
+}
+
+#[test]
+fn waypoint_protocol_actions_bound_refresh_chat_and_upload() {
+    use sw_performance_bots::action_input::waypoint_action;
+    let refresh = waypoint_action(&json!({"operation":"refresh","forced":true})).unwrap();
+    assert_eq!(refresh.operation, "refresh");
+    assert!(refresh.forced);
+    assert!(waypoint_action(&json!({"operation":"refresh"})).is_err());
+    let chat = waypoint_action(&json!({"operation":"chat","text":"hello"})).unwrap();
+    assert_eq!(chat.text, "hello");
+    assert!(waypoint_action(&json!({"operation":"chat","text":""})).is_err());
+    assert!(waypoint_action(&json!({"operation":"chat","text":"y".repeat(257)})).is_err());
+    assert!(waypoint_action(&json!({"operation":"chat","text":"/wp list"})).is_err());
+    let upload = waypoint_action(&json!({"operation":"upload","compression":true,"waypoints":4096})).unwrap();
+    assert!(upload.compression);
+    assert_eq!(upload.waypoints, 4096);
+    assert!(waypoint_action(&json!({"operation":"upload","compression":false,"waypoints":4097})).is_err());
+    assert!(waypoint_action(&json!({"operation":"upload","compression":false,"waypoints":0})).is_err());
+    assert!(waypoint_action(&json!({"operation":"other"})).is_err());
+}
+
+#[test]
+fn inventory_drag_requires_explicit_source_slots_and_kind() {
+    use sw_performance_bots::action_input::inventory_drag;
+    assert_eq!(
+        inventory_drag(&json!({"from":36,"slots":[9],"kind":"left"})).unwrap(),
+        (36, vec![9], true)
+    );
+    assert_eq!(
+        inventory_drag(&json!({"from":54,"slots":[0,27],"kind":"right"})).unwrap(),
+        (54, vec![0, 27], false)
+    );
+    for value in [
+        json!({"slots":[9],"kind":"left"}),
+        json!({"from":36,"kind":"left"}),
+        json!({"from":36,"slots":[],"kind":"left"}),
+        json!({"from":36,"slots":[9,9],"kind":"left"}),
+        json!({"from":36,"slots":[63],"kind":"left"}),
+        json!({"from":36,"slots":[9]}),
+        json!({"from":36,"slots":[9],"kind":"middle"}),
+        json!({"from":36,"slots":[9],"kind":"left","x":300,"y":-61}),
+    ] {
+        assert!(inventory_drag(&value).is_err());
+    }
+}
+
+#[test]
+fn menu_click_requires_slot_and_button() {
+    use sw_performance_bots::action_input::{menu_click, MenuButton};
+    assert_eq!(
+        menu_click(&json!({"slot":5,"button":"left"})).unwrap(),
+        (5, MenuButton::Left)
+    );
+    assert_eq!(
+        menu_click(&json!({"slot":2,"button":"shift"})).unwrap(),
+        (2, MenuButton::Shift)
+    );
+    assert_eq!(
+        menu_click(&json!({"slot":1,"button":"right"})).unwrap(),
+        (1, MenuButton::Right)
+    );
+    for value in [
+        json!({"button":"left"}),
+        json!({"slot":5}),
+        json!({"slot":46,"button":"left"}),
+        json!({"slot":5,"button":"middle"}),
+    ] {
+        assert!(menu_click(&value).is_err());
+    }
 }

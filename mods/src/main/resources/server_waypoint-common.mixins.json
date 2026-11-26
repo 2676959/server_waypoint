@@ -2,6 +2,7 @@
   "minVersion": "0.8.5",
   "required": true,
   "package": "_959.server_waypoint.mixin",
+  "plugin": "_959.server_waypoint.common.client.integrations.MapModMixinPlugin",
   "compatibilityLevel": "JAVA_17",
   "refmap": "server_waypoint-common.refmap.json",
   "mixins": [
@@ -34,6 +35,7 @@
     "MinecraftClientMixin",
     "OversizedWaypointItemAlphaMixin",
     "WaypointBlockItemAlphaMixin",
+    "WaypointKeyboardHandlerMixin",
     "PlayerManagerMixin",
     "ServerPlayerEntityMixin",
     "WorldRendererMixin",

@@ -11,6 +11,8 @@ def required_capabilities(suite):
     base = {"fixture", "tick-processing", "zero-player-ticking", "profile"}
     if suite == "all":
         base |= {"bots", "wire-protocol"}
+    elif suite == "minimal-critical":
+        base |= {"bots"}
     elif suite != "zero-player":
         raise ValueError("unknown suite")
     return frozenset(base)

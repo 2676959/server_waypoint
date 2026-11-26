@@ -20,6 +20,15 @@ class WaypointFormPatchTest {
     private static final NamespacedId DIAMOND = new NamespacedId("minecraft", "diamond");
 
     @Test
+    void copyDraftKeepsEmptyOverridesAndClearsOnlyAnEditedOverride() {
+        SimpleWaypoint empty = new SimpleWaypoint("Base", "", "B", new WaypointPos(1,2,3), 0,0,true, List.of(), "");
+        assertEquals("", WaypointFormPatch.draftDisplayName(Saved.of(empty), "", "Copy"));
+        SimpleWaypoint named = new SimpleWaypoint("Base", "Shown", "B", new WaypointPos(1,2,3), 0,0,true, List.of(), "");
+        assertEquals("Copy", WaypointFormPatch.draftDisplayName(Saved.of(named), "", "Copy"));
+        assertEquals("Shown", WaypointFormPatch.draftDisplayName(Saved.of(named), "Shown", "Copy"));
+    }
+
+    @Test
     void anUntouchedFormChangesNothing() {
         WaypointPatch patch = WaypointFormPatch.build(saved(null, null), same());
 

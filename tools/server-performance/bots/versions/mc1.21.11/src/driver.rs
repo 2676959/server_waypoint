@@ -1,4 +1,10 @@
 use std::collections::HashSet;
+use serde_json::{Value, json};
+
+pub fn snapshot_report(include_wire: bool, wire: impl FnOnce() -> Value, effects: Value) -> Value {
+    let peers = if include_wire { wire() } else { json!([]) };
+    json!({"scope":if include_wire {"full"} else {"effects"},"peers":peers,"effects":effects})
+}
 
 pub struct ActionLedger {
     limit: usize,

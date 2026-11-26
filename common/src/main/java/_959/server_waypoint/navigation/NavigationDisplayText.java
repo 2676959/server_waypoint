@@ -1,6 +1,7 @@
 package _959.server_waypoint.navigation;
 
 import _959.server_waypoint.text.chat.DimensionStyle;
+import _959.server_waypoint.util.ColorUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -140,6 +141,16 @@ public final class NavigationDisplayText {
                 .append(meters(distance))
                 .append(text(" | "))
                 .append(verticalDifference(snapshot.verticalDifference()));
+    }
+
+    public static Component buildWorldMarkerBadge(NavigationTarget target) {
+        return text(target.waypointInitials(), TextColor.color(ColorUtils.getSafeTextColor(target.rgb())))
+                .decoration(TextDecoration.ITALIC, false);
+    }
+
+    public static Component buildWorldMarkerDistance(NavigationSnapshot snapshot) {
+        return meters(Math.round(Math.hypot(snapshot.horizontalDistance(), snapshot.verticalDifference())))
+                .color(NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false);
     }
 
     private static Component turnIndicator(double signedTurn) {

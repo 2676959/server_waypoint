@@ -23,6 +23,8 @@
 
 本指南适用于 **4.0.0**。新增功能和升级注意事项请参阅[更新日志（英文）](CHANGELOG.md)。
 
+**4.1.0 新增：** 使用 `/wp navigate <dimension> <list> <waypoint> world_marker`，无需客户端模组或资源包，即可显示指向当前目标的世界内标记。标记仅自己可见，包含路径点缩写、距离和可选的物品图标。使用 `/wp navigate config world_marker size 1.5` 调整大小，或使用 `/wp navigate config world_marker distance 8` 调整投影距离。默认值、范围及其与客户端标记的区别，请参阅[服务端世界内标记指南（英文）](docs/features/world-marker/README.md)。
+
 ## 主要功能
 
 - 将共享路径点保存在命名列表中，并设置颜色、图标和描述。

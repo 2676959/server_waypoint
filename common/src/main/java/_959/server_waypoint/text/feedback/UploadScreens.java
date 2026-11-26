@@ -11,7 +11,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 import static net.kyori.adventure.text.Component.text;
@@ -39,11 +38,11 @@ public final class UploadScreens {
     private UploadScreens() {
     }
 
-    /** /wp upload: every map mod with Merge, Prefer mine and (with the delete permission) Mirror. */
-    public static Component panel(Viewer viewer) {
+    /** /wp upload: enabled map mods with Merge, Prefer mine and (with the delete permission) Mirror. */
+    public static Component panel(Viewer viewer, Set<UploadTarget> platforms) {
         ChatLines lines = new ChatLines().add(translatable("wp.upload.title", GOLD));
-        for (UploadTarget target : UploadTarget.values()) {
-            String upload = "/wp upload " + target.name().toLowerCase(Locale.ROOT);
+        for (UploadTarget target : platforms) {
+            String upload = "/wp upload " + target.id();
             lines.line(Chat.colored(sourceName(target), WHITE), text("  "), Chat.join(
                     Chat.link(viewer, translatable("wp.upload.merge"), AQUA, Click.run(upload),
                             Tooltip.of("wp.upload.merge.tooltip").line("wp.upload.merge.detail")),
@@ -105,7 +104,11 @@ public final class UploadScreens {
     }
 
     public static Component sourceName(UploadTarget target) {
-        return translatable("wp.upload.source." + target.name().toLowerCase(Locale.ROOT));
+        return translatable("wp.upload.source." + target.id());
+    }
+
+    public static Component platformDisabled(UploadTarget target) {
+        return Errors.of("wp.error.upload.disabled", sourceName(target));
     }
 
     private static void count(List<Component> counts, int count, Component label, String kind) {

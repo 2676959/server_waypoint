@@ -7,6 +7,17 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 /** A version a 3.0.4 peer also sends lets it pass the version check while its packets mean something else. */
 class ProtocolVersionTest {
     @Test
+    void restoreDeltasRequireProtocolThreeAndTheSameChannelVersion() {
+        org.junit.jupiter.api.Assertions.assertEquals(3, ProtocolVersion.PROTOCOL_VERSION);
+        org.junit.jupiter.api.Assertions.assertEquals("3", ProtocolVersion.PROTOCOL_VERSION_STRING);
+    }
+
+    @Test
+    void handshakeVersionDiffersFromRelease40x() {
+        assertNotEquals(2, ProtocolVersion.PROTOCOL_VERSION, "4.0.x releases sent handshake version 2");
+    }
+
+    @Test
     void handshakeVersionDiffersFromRelease304() {
         assertNotEquals(0, ProtocolVersion.PROTOCOL_VERSION, "release 3.0.4 sent handshake version 0");
     }

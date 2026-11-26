@@ -1,6 +1,8 @@
 package _959.server_waypoint.text.feedback;
 
 import _959.server_waypoint.core.waypoint.WaypointList;
+import _959.server_waypoint.core.collection.WaypointCollectionKey;
+import java.util.UUID;
 import _959.server_waypoint.navigation.NavigationMethod;
 import _959.server_waypoint.navigation.NavigationResult;
 import _959.server_waypoint.navigation.TextDisplayTransformation;
@@ -28,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class NavigationScreensTest {
     private static final WaypointList HOME = Fixtures.homeBases();
-    private static final PlacedWaypoint MAIN_HOME = new PlacedWaypoint(OVERWORLD, HOME, HOME.getWaypointByName("Main Home"));
+    private static final PlacedWaypoint MAIN_HOME = new PlacedWaypoint(WaypointCollectionKey.shared(), OVERWORLD, HOME, HOME.getWaypointByName("Main Home"));
     private static final Set<NavigationMethod> ALL = EnumSet.allOf(NavigationMethod.class);
     private static final String TRANSFORMATION = "/wp navigate config text_display transformation ";
 
@@ -40,6 +42,7 @@ class NavigationScreensTest {
         assertEquals(List.of(
                 "Navigating to [MH] Main Home · 25 m",
                 "✔ Compass · Map · ✔ Bossbar · Actionbar · Text display",
+                "World marker",
                 "Stop · Change target"), lines(panel));
         assertEquals(NamedTextColor.GREEN, colorOf(panel, "✔ Compass"));
         assertEquals("/wp navigate disable compass", clickOf(panel, "✔ Compass"));
@@ -58,7 +61,7 @@ class NavigationScreensTest {
                 translatable("wp.navigation.turned_on", NavigationScreens.methodName(NavigationMethod.TEXT_DISPLAY)));
 
         assertEquals("✔ Text display on", lines(panel).get(0));
-        assertEquals("Stop · Change target · Adjust text display", lines(panel).get(3));
+        assertEquals("Stop · Change target · Adjust text display", lines(panel).get(4));
         assertEquals(NamedTextColor.YELLOW, colorOf(panel, "Adjust text display"));
         assertEquals("/wp navigate config text_display", clickOf(panel, "Adjust text display"));
     }
@@ -84,6 +87,29 @@ class NavigationScreensTest {
         assertEquals("✔ Stopped navigating", render(NavigationScreens.stopped(Fixtures.dims(Fixtures.player()), null)));
         assertEquals("✘ You aren't navigating. Browse waypoints", render(NavigationScreens.notNavigating(Fixtures.player())));
         assertEquals("/wp list", clickOf(NavigationScreens.notNavigating(Fixtures.player()), "Browse waypoints"));
+    }
+
+    @Test
+    void sharedTargetViewedFromPrivateKeepsSharedActions() {
+        var viewer = Fixtures.player().withScope(_959.server_waypoint.core.collection.WaypointScope.PRIVATE);
+        Component panel = NavigationScreens.panel(Fixtures.dims(viewer), MAIN_HOME,
+                EnumSet.of(NavigationMethod.ACTIONBAR), ALL, null);
+        assertTrue(runCommands(panel).stream().noneMatch(command -> command.startsWith("/wp private")));
+        assertEquals("/wp navigate minecraft:overworld \"Home Bases\" \"Main Home\"",
+                clickOf(NavigationScreens.stopped(Fixtures.dims(viewer), MAIN_HOME), "Resume"));
+    }
+
+    @Test
+    void privatePanelAndStoppedResumeKeepThePrivatePrefix() {
+        PlacedWaypoint target = new PlacedWaypoint(WaypointCollectionKey.privateFor(UUID.randomUUID()),
+                OVERWORLD, HOME, HOME.getWaypointByName("Main Home"));
+        Component panel = NavigationScreens.panel(Fixtures.dims(Fixtures.player()), target,
+                EnumSet.of(NavigationMethod.TEXT_DISPLAY), ALL, null);
+        assertTrue(runCommands(panel).stream().allMatch(command -> command.startsWith("/wp private ")));
+        assertTrue(runCommands(panel).size() >= 6);
+        assertEquals("/wp private list", clickOf(panel, "Change target"));
+        assertEquals("/wp private navigate minecraft:overworld \"Home Bases\" \"Main Home\"",
+                clickOf(NavigationScreens.stopped(Fixtures.dims(Fixtures.player()), target), "Resume"));
     }
 
     @Test

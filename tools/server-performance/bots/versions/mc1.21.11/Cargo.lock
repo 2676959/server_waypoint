@@ -248,8 +248,6 @@ dependencies = [
 [[package]]
 name = "azalea-chat"
 version = "0.15.1+mc1.21.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "029954005a5615d8ff3c9df2e4e2fc214b9159420cba53a85ebc27796b3df4ff"
 dependencies = [
  "azalea-buf",
  "azalea-language",
@@ -2507,10 +2505,13 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "azalea",
+ "azalea-buf",
+ "azalea-chat",
  "crc32fast",
  "flate2",
  "serde",
  "serde_json",
+ "simdnbt",
  "tokio",
 ]
 

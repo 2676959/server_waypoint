@@ -1,5 +1,6 @@
 package _959.server_waypoint.text.feedback;
 
+import _959.server_waypoint.core.collection.WaypointCollectionKey;
 import _959.server_waypoint.core.edit.EditResultStatus;
 import _959.server_waypoint.core.network.upload.UploadTarget;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
@@ -93,7 +94,7 @@ class ScreenAuditTest {
         SimpleWaypoint mainHome = home.getWaypointByName("Main Home");
         SimpleWaypoint iron = farms.getWaypointByName("Iron Farm");
         WaypointList storage = new WaypointList("Storage", 1, List.of());
-        PlacedWaypoint target = new PlacedWaypoint(OVERWORLD, home, mainHome);
+        PlacedWaypoint target = new PlacedWaypoint(WaypointCollectionKey.shared(), OVERWORLD, home, mainHome);
         Map<String, List<WaypointList>> overworld = Map.of(OVERWORLD, Fixtures.overworldLists());
         WaypointQueryEngine.Query all = new WaypointQueryEngine.Query("", SortMode.DEFAULT, viewer.position(), viewer.dimension(), false);
         WaypointQueryEngine.Query farm = new WaypointQueryEngine.Query("farm", SortMode.DEFAULT, viewer.position(), viewer.dimension(), false);
@@ -102,7 +103,7 @@ class ScreenAuditTest {
         screens.put("menu", MenuScreen.menu(viewer, dims, target, true));
         screens.put("help", HelpScreen.index(viewer));
         for (HelpTopics.Topic topic : HelpTopics.Topic.values()) {
-            screens.put("help " + topic.id(), HelpScreen.topic(viewer, topic, true));
+            screens.put("help " + topic.id(), HelpScreen.topic(viewer, topic, true, UploadTarget.supportedTargets()));
         }
         screens.put("tree", ListScreen.dimension(dims, OVERWORLD, totals, WaypointQueryEngine.queryLists(overworld, all),
                 ListQuery.DEFAULT, 10));
@@ -158,7 +159,7 @@ class ScreenAuditTest {
         screens.put("stopped", NavigationScreens.stopped(dims, target));
         screens.put("text display", NavigationScreens.textDisplay(viewer, TextDisplayTransformation.defaultValue(),
                 translatable("wp.text_display.updated")));
-        screens.put("upload", UploadScreens.panel(viewer));
+        screens.put("upload", UploadScreens.panel(viewer, UploadTarget.supportedTargets()));
         screens.put("upload result", UploadScreens.result(new UploadScreens.Outcome(UploadTarget.XAERO, 3, 1, 2, 9, 2, 1,
                 2, true, true, "/wp upload xaero force local", "/wp upload xaero")));
         Server survival = new Server(new RemoteServerId("survival"), "Survival", RemoteCatalogState.AVAILABLE,

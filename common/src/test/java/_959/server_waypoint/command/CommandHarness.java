@@ -30,6 +30,7 @@ import net.kyori.adventure.text.Component;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,6 +86,7 @@ final class CommandHarness {
 
     final WaypointServerCore server;
     final Sender sender = new Sender();
+    final Set<Source> operators = new HashSet<>();
     final Map<String, String> dimensionTypes = new LinkedHashMap<>();
     final List<Teleport> teleports = new ArrayList<>();
     /** Display names by account name; a player without one is shown by account name. */
@@ -97,6 +99,10 @@ final class CommandHarness {
     final CommandDispatcher<Source> dispatcher = new CommandDispatcher<>();
 
     CommandHarness(Path directory) {
+        this(directory, navigation());
+    }
+
+    CommandHarness(Path directory, NavigationService<Object> navigation) {
         this.server = new WaypointServerCore(directory) {
             @Override
             public void saveWaypointFile(_959.server_waypoint.core.WaypointFileManager manager) throws java.io.IOException {
@@ -112,7 +118,7 @@ final class CommandHarness {
         this.dimensionTypes.put("minecraft:overworld", "minecraft:overworld");
         this.dimensionTypes.put("minecraft:the_nether", "minecraft:the_nether");
         this.dimensionTypes.put("minecraft:the_end", "minecraft:the_end");
-        this.command = new TestCommand(this);
+        this.command = new TestCommand(this, navigation);
         this.command.register(this.dispatcher);
     }
 
@@ -148,6 +154,7 @@ final class CommandHarness {
         final List<Component> errors = new ArrayList<>();
         final List<Map.Entry<Object, Component>> toPlayers = new ArrayList<>();
         final List<Object> online = new ArrayList<>();
+        final List<Object> packetRecipients = new ArrayList<>();
         final Map<Source, Source> viewingSources = new LinkedHashMap<>();
         final Map<Source, Source> commandSenders = new LinkedHashMap<>();
         boolean handshake = true;
@@ -189,6 +196,7 @@ final class CommandHarness {
 
         @Override
         public void sendPlayerPacket(Object player, SinglePacketMessage message) {
+            this.packetRecipients.add(player);
         }
 
         @Override
@@ -236,8 +244,8 @@ final class CommandHarness {
             return this.harness.chatIcons;
         }
 
-        private TestCommand(CommandHarness harness) {
-            super(harness.server, harness.sender, permissions(), navigation(),
+        private TestCommand(CommandHarness harness, NavigationService<Object> navigation) {
+            super(harness.server, harness.sender, permissions(), navigation,
                     new UploadCoordinator<>(harness.server, (player, message) -> {
                     }, packet -> {
                     }, player -> true, player -> true, navigation(), harness.sender::playerActor),
@@ -310,6 +318,11 @@ final class CommandHarness {
         }
 
         @Override
+        protected boolean isOperator(Source source, Object player) {
+            return this.harness.operators.contains(player);
+        }
+
+        @Override
         protected boolean isServerConsoleWithHighestPermission(Source source) {
             return !source.player();
         }
@@ -373,6 +386,11 @@ final class CommandHarness {
 
     private static PermissionManager<Source, String, Object> permissions() {
         PermissionKeys<String> keys = new PermissionKeys<>() {
+            @Override
+            protected PermissionKey createPrivatePermissionKey(String action) {
+                return new PermissionKey("server_waypoint.command.private." + action);
+            }
+
             @Override
             protected PermissionKey createAddPermissionKey() {
                 return new PermissionKey("add");

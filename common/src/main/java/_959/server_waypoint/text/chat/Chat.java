@@ -111,7 +111,7 @@ public final class Chat {
         if (viewer.plainText()) {
             return piece;
         }
-        ClickEvent event = click.event();
+        ClickEvent event = new Click(click.kind(), viewer.command(click.command())).event();
         if (event != null) {
             piece = piece.clickEvent(event);
         }

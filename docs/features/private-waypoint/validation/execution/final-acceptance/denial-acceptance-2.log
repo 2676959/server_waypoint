@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/Volumes/ssd/sw-private-final-20261031/denial_acceptance.py", line 30, in <module>
+    config=root/'paper/plugins/ServerWaypoint/config.json';data=json.loads(config.read_text());data['privateWaypoints']['maxWaypointsPerPlayer']=1;config.write_text(json.dumps(data));console('wp reload');op('feature:copy-quota')
+                                                                                                                                                                                                            ~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/Volumes/ssd/sw-private-final-20261031/denial_acceptance.py", line 15, in op
+    n+=1;f=home/f'extra5-{n:02}.result';attach(data['java'],prep/'tools.jar',p,prep/'agent.jar',f'scenario|{f}|{action}|{root/"checks-4.jar"}',home/f'extra-{n:02}.attach.log');wait_result(p,f,180)
+                                               ~~~~^^^^^^^^
+KeyError: 'java'

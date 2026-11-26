@@ -4,6 +4,7 @@ import _959.server_waypoint.navigation.NavigationMethod;
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -57,6 +58,43 @@ class ConfigTest {
 
         assertTrue(defaultConfig.Features().compressChunkedMessages());
         assertFalse(disabledConfig.Features().compressChunkedMessages());
+    }
+
+    @Test
+    void uploadPlatformsRoundTripAsAnArrayOfCanonicalIds() {
+        for (String input : List.of("[\"VOXELMAP\"]", "[]")) {
+            Config config = GSON.fromJson("{\"Features\":{\"waypointUploadPlatforms\":" + input + "}}", Config.class);
+            assertEquals(JsonParser.parseString(input.toLowerCase(java.util.Locale.ROOT)),
+                    GSON.toJsonTree(config).getAsJsonObject().getAsJsonObject("Features").get("waypointUploadPlatforms"));
+        }
+        assertEquals(JsonParser.parseString("[\"xaero\",\"voxelmap\"]"),
+                GSON.toJsonTree(new Config()).getAsJsonObject().getAsJsonObject("Features").get("waypointUploadPlatforms"));
+    }
+
+    @Test
+    void invalidUploadPlatformListsAreRejected() {
+        for (String value : List.of("null", "\"xaero\"", "[null]", "[1]", "[\"unknown\"]", "[\"xaero\",\"XAERO\"]")) {
+            String json = "{\"Features\":{\"waypointUploadPlatforms\":" + value + "}}";
+            assertThrows(JsonParseException.class, () -> GSON.fromJson(json, Config.class), json);
+        }
+    }
+
+    @Test
+    void broadcastFeedbackDefaultsToAllAndSerializesItsConfiguredMode() {
+        assertEquals(new JsonPrimitive("all"), GSON.toJsonTree(GSON.fromJson("{}", Config.class))
+                .getAsJsonObject().getAsJsonObject("Features").get("broadcastFeedback"));
+
+        Config config = GSON.fromJson("{\"Features\":{\"broadcastFeedback\":\"ops\"}}", Config.class);
+        assertEquals(new JsonPrimitive("ops"), GSON.toJsonTree(config)
+                .getAsJsonObject().getAsJsonObject("Features").get("broadcastFeedback"));
+    }
+
+    @Test
+    void invalidBroadcastFeedbackValuesAreRejected() {
+        for (String value : List.of("null", "true", "1", "[]", "\"unknown\"")) {
+            String json = "{\"Features\":{\"broadcastFeedback\":" + value + "}}";
+            assertThrows(JsonParseException.class, () -> GSON.fromJson(json, Config.class), json);
+        }
     }
 
     @Test

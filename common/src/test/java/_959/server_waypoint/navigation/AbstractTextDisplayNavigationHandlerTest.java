@@ -1,5 +1,6 @@
 package _959.server_waypoint.navigation;
 
+import _959.server_waypoint.core.collection.WaypointCollectionKey;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import net.kyori.adventure.text.Component;
 import org.joml.Quaternionf;
@@ -69,6 +70,7 @@ final class AbstractTextDisplayNavigationHandlerTest {
         return new NavigationSession(
                 playerUuid,
                 new NavigationTarget(
+                        WaypointCollectionKey.shared(),
                         "minecraft:overworld",
                         "towns",
                         "towns",
@@ -77,10 +79,12 @@ final class AbstractTextDisplayNavigationHandlerTest {
                         "",
                         List.of(),
                         new WaypointPos(1, 2, 3),
-                        0x123456
+                        0x123456, _959.server_waypoint.util.WaypointInitials.getDefaultInitials("Village"), null
                 ),
                 Set.of(NavigationMethod.TEXT_DISPLAY),
-                TextDisplayTransformation.defaultValue()
+                TextDisplayTransformation.defaultValue(),
+                NavigationSession.DEFAULT_WORLD_MARKER_SIZE,
+                NavigationSession.DEFAULT_WORLD_MARKER_DISTANCE
         );
     }
 

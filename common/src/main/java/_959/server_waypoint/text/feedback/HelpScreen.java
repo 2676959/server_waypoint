@@ -1,5 +1,6 @@
 package _959.server_waypoint.text.feedback;
 
+import _959.server_waypoint.core.network.upload.UploadTarget;
 import _959.server_waypoint.text.chat.Chat;
 import _959.server_waypoint.text.chat.ChatFont;
 import _959.server_waypoint.text.chat.ChatLines;
@@ -12,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
@@ -31,7 +33,7 @@ public final class HelpScreen {
         ChatLines lines = new ChatLines().add(translatable("wp.help.title", GOLD));
         List<HelpTopics.Topic> topics = HelpTopics.readable(viewer);
         if (viewer.plainText()) {
-            lines.add(translatable("wp.help.plain_hint", GRAY, colorize("/wp help <topic>")));
+            lines.add(translatable("wp.help.plain_hint", GRAY, colorize(viewer.command("/wp help <topic>"))));
             lines.line(translatable("wp.help.commands", GRAY), text("  "),
                     Chat.join(topics.stream().map(topic -> (Component) text(topic.id(), AQUA)).toList()));
             return lines.buildScreen();
@@ -52,14 +54,14 @@ public final class HelpScreen {
         return lines.buildScreen();
     }
 
-    public static Component topic(Viewer viewer, HelpTopics.Topic topic, boolean textDisplay) {
-        HelpTopics.Content content = HelpTopics.content(topic, textDisplay);
+    public static Component topic(Viewer viewer, HelpTopics.Topic topic, boolean textDisplay, Set<UploadTarget> uploadPlatforms) {
+        HelpTopics.Content content = HelpTopics.content(topic, textDisplay, uploadPlatforms);
         ChatLines lines = new ChatLines();
         Component title = Chat.colored(topic.label(), GOLD);
         lines.add(viewer.plainText() ? title : Chat.concat(title, text("  "), translatable("wp.help.topic.hint", GRAY)));
         for (HelpTopics.Usage usage : content.usages()) {
             if (viewer.plainText()) {
-                lines.add(colorize(usage.syntax()));
+                lines.add(colorize(viewer.command(usage.syntax())));
                 for (Component line : usage.tooltip().textLines()) {
                     lines.line(text("  "), line);
                 }
@@ -67,7 +69,7 @@ public final class HelpScreen {
             }
             Click click = Click.suggest(usage.suggestion());
             Tooltip tooltip = usage.tooltip().hint("wp.hint.fill");
-            for (String line : wrap(usage.syntax(), "", "    ")) {
+            for (String line : wrap(viewer.command(usage.syntax()), "", "    ")) {
                 lines.add(Chat.link(viewer, colorize(line), AQUA, click, tooltip));
             }
         }
@@ -75,6 +77,7 @@ public final class HelpScreen {
             lines.add(translatable("wp.help.examples", GRAY));
         }
         for (HelpTopics.Example example : content.examples()) {
+            example = new HelpTopics.Example(viewer.command(example.markup()), example.descriptionKey());
             List<@Nullable String> arguments = example.arguments();
             if (viewer.plainText()) {
                 lines.add(Chat.colored(exampleLine("  " + example.command(), arguments, new int[]{0}), AQUA));

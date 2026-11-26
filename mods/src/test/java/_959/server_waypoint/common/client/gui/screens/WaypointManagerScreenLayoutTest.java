@@ -129,6 +129,48 @@ class WaypointManagerScreenLayoutTest {
     }
 
     @Test
+    void searchFieldStopsOneGapShortOfTheAddButton() {
+        WaypointManagerScreen.ManagerLayoutGeometry geometry =
+                WaypointManagerScreen.calculateLayoutGeometry(854, 480);
+
+        // The list column is 325 pixels wide; Add is an 11-pixel square at its right end.
+        assertEquals(310, geometry.searchFieldWidth(11, true));
+        assertEquals(325, geometry.searchFieldWidth(11, false));
+    }
+
+    @Test
+    void detailsFillTheirPanelUnlessAFooterButtonShows() {
+        WaypointManagerScreen.ManagerLayoutGeometry geometry =
+                WaypointManagerScreen.calculateLayoutGeometry(854, 480);
+
+        // The details content spans y 43 to 437 and x 471 to 744.
+        assertEquals(394, geometry.detailsHeight(0));
+        assertEquals(379, geometry.detailsHeight(11));
+        assertEquals(426, geometry.detailsFooterY(11));
+        assertEquals(43 + 379 + 4, geometry.detailsFooterY(11));
+        assertEquals(668, geometry.detailsFooterX(76));
+    }
+
+    @Test
+    void headerLineSitsJustAboveThePanels() {
+        assertEquals(4, WaypointManagerScreen.calculateLayoutGeometry(427, 240).headerY(11));
+        assertEquals(1, WaypointManagerScreen.calculateLayoutGeometry(854, 200).headerY(11));
+        // Panels start at y 12 here, so the line stops at the top of the screen.
+        assertEquals(0, WaypointManagerScreen.calculateLayoutGeometry(854, 140).headerY(11));
+    }
+
+    @Test
+    void profileButtonLeavesTheSourceStatusItsWidthUpToHalfTheLine() {
+        WaypointManagerScreen.ManagerLayoutGeometry geometry =
+                WaypointManagerScreen.calculateLayoutGeometry(427, 240);
+
+        // The panels are 374 pixels wide; the status follows the button 6 pixels after it.
+        assertEquals(374, geometry.profileButtonMaxWidth(0));
+        assertEquals(268, geometry.profileButtonMaxWidth(100));
+        assertEquals(181, geometry.profileButtonMaxWidth(300));
+    }
+
+    @Test
     void contentHeightUsesPercentageAndMaximumClamp() {
         WaypointManagerScreen.ManagerLayoutGeometry medium =
                 WaypointManagerScreen.calculateLayoutGeometry(854, 480);

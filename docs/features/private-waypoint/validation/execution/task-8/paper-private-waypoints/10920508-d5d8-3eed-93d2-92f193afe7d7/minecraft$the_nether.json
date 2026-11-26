@@ -1,0 +1,18 @@
+[
+  {
+    "list_name": "Homes",
+    "n": 2,
+    "waypoints": [
+      {
+        "name": "NetherBase",
+        "initials": "NB",
+        "pos": [-12, 80, 30],
+        "color": "#97E2E5",
+        "yaw": 0,
+        "global": true,
+        "keywords": [],
+        "description": ""
+      }
+    ]
+  }
+]

@@ -625,6 +625,15 @@ public class WaypointFilesManagerCore {
      * Read all waypoint files in waypointFilesDir, clears all previously loaded waypoints
     * */
     protected void initOrReadWaypointFiles() throws IOException {
+        this.initOrReadWaypointFiles(true);
+    }
+
+    /** Loads a newly introduced store without accepting or migrating legacy file formats. */
+    protected final void initOrReadCurrentWaypointFiles() throws IOException {
+        this.initOrReadWaypointFiles(false);
+    }
+
+    private void initOrReadWaypointFiles(boolean allowLegacy) throws IOException {
         try {
             this.runLifecycleTransition(() -> {
                 Path waypointDirectory = this.waypointFilesDir;
@@ -633,7 +642,7 @@ public class WaypointFilesManagerCore {
                     return;
                 }
                 try {
-                    this.publishLoadedManagers(this.loadWaypointFiles(waypointDirectory));
+                    this.publishLoadedManagers(this.loadWaypointFiles(waypointDirectory, allowLegacy));
                 } catch (IOException e) {
                     throw new UncheckedIOException(e);
                 }
@@ -643,7 +652,7 @@ public class WaypointFilesManagerCore {
         }
     }
 
-    private Map<String, WaypointFileManager> loadWaypointFiles(Path waypointDirectory) throws IOException {
+    private Map<String, WaypointFileManager> loadWaypointFiles(Path waypointDirectory, boolean allowLegacy) throws IOException {
         try {
             if (!Files.exists(waypointDirectory) || !Files.isDirectory(waypointDirectory)) {
                 Files.createDirectories(waypointDirectory);
@@ -660,6 +669,12 @@ public class WaypointFilesManagerCore {
                     continue;
                 }
                 String fileName = path.getFileName().toString();
+                if (!allowLegacy) {
+                    if (fileName.endsWith(".tmp")) continue;
+                    if (!fileName.endsWith(".json") || fileName.startsWith("dim%") || isFileNameInvalid(fileName)) {
+                        throw new IOException("Invalid waypoint file: " + path);
+                    }
+                }
                 // test for old version file name
                 if (fileName.startsWith("dim%")) {
                     fileName = convertToNewFileName(fileName);
@@ -688,7 +703,7 @@ public class WaypointFilesManagerCore {
                         fileManager.readDimensionFromTxt();
                         fileManager.saveDimension();
                     } else {
-                        fileManager.readDimension();
+                        fileManager.readDimension(!allowLegacy);
                     }
                     fileManagers.add(fileManager);
                 } catch (IOException e) {
@@ -772,7 +787,7 @@ public class WaypointFilesManagerCore {
     public void changeWaypointFilesDir(Path newPath) {
         this.runLifecycleTransition(() -> {
             try {
-                Map<String, WaypointFileManager> loadedManagers = this.loadWaypointFiles(newPath);
+                Map<String, WaypointFileManager> loadedManagers = this.loadWaypointFiles(newPath, true);
                 this.waypointFilesDir = newPath;
                 this.publishLoadedManagers(loadedManagers);
             } catch (IOException e) {
@@ -899,7 +914,7 @@ public class WaypointFilesManagerCore {
         }
     }
 
-    private <T> T mutateDimension(String dimensionName, Supplier<T> action) {
+    protected <T> T mutateDimension(String dimensionName, Supplier<T> action) {
         boolean admissionAcquired = this.acquireMutationAdmission();
         try {
             this.lifecycleLock.readLock().lock();
@@ -922,7 +937,7 @@ public class WaypointFilesManagerCore {
         }
     }
 
-    private <T> T mutateDimension(
+    protected <T> T mutateDimension(
             String dimensionName,
             Supplier<T> action,
             Consumer<T> resultAction

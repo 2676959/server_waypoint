@@ -1,8 +1,11 @@
 # Native Azalea driver
 
 First anchor: Azalea 0.15.1+mc1.21.11, crates.io revision
-`675e56fd9d9da084b8f923fdab6feda3ebd19568`. Use the committed lockfile and
-project-local `nightly-2026-07-15`; no global Rust default change is needed.
+`675e56fd9d9da084b8f923fdab6feda3ebd19568`. `azalea-chat` is patched locally at
+`versions/mc1.21.11/vendor/azalea-chat` so system chat can decode object
+components, including the player-head icon in teleport confirmations. Use the
+committed lockfile and project-local `nightly-2026-07-15`; no global Rust
+default change is needed.
 DER/PKCS prereleases match that revision's upstream lockfile because later
 resolution breaks the pinned RSA prerelease API.
 
@@ -25,7 +28,12 @@ valid upload traffic remain later native scenario adapters.
 The controller uses schema-1 JSON lines with run/attempt/sequence identities.
 Start declares count (1–50), address and mode. Actions declare unique actionId,
 bot name and operation (`walk`, `inventory`, `command`, `disconnect`). `barrier`
-and `quiesce` report client-issued accounting; native probe assertions must
+and `quiesce` produce `packet_summary.scope=full`, including retained wire bodies.
+`effects` drains the same action ledger and produces `scope=effects`, an empty
+`peers` array and client effects only. UI polling uses `effects` to avoid repeatedly
+copying multi-megabyte wire histories. Python keeps at most 1,024 recent events
+and one latest packet summary; the selected telemetry stream remains in JSONL.
+These barriers report client-issued accounting; native probe assertions must
 independently prove the action's effect. `stop` disconnects and exits. Reconnect
 is disabled. Inputs are bounded to 64 queued lines; each line is limited to
 64 KiB before allocation grows past that limit, and the action ledger limits pending actions to 256. Logs use stderr.
@@ -43,5 +51,17 @@ Writes have monotonic deadlines; abort can terminate the owned process without
 writing stdin. Failed/expired transfers release retained chunks, per-peer/global
 receive byte budgets are bounded, and handler failures become protocol errors.
 Reply batches retain unmatched events; a later error in a batch invalidates success.
+
+`task10_smoke.py` isolates functional storage/command checks from timed runs:
+
+```sh
+rtk proxy python3 tools/server-performance/bots/task10_smoke.py --root "$SW_PERF_BEHAVIOR_ROOT" --baseline "$SW_PERF_PREPARED/fixtures/navigation-terrain-small/frozen" --tier small --exhaustive
+```
+
+Use a new absolute output root and an already prepared native baseline. The
+`--exhaustive` option adds all leaf/provider/boundary and mutation checks;
+`--boundaries-only` is a separate diagnostic selection. The helper records the
+actual probe/bot hashes and missing feedback as failures. It is functional
+smoke evidence; use the prepared audit CLI for sealed 30/60-second repetitions.
 
 Pinned API reference: [Azalea 0.15.1 documentation](https://docs.rs/azalea/0.15.1+mc1.21.11/azalea/).

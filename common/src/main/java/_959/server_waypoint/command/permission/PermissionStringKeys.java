@@ -8,6 +8,11 @@ public class PermissionStringKeys extends PermissionKeys<String> {
         super();
     }
 
+    @Override
+    protected PermissionKey createPrivatePermissionKey(String action) {
+        return build("command.private." + action);
+    }
+
     private PermissionKeys<String>.PermissionKey build(String permission) {
         return new PermissionKey(ModInfo.MOD_ID + "." + permission);
     }

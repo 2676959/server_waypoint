@@ -6,6 +6,8 @@ import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.minecraft.world.level.saveddata.maps.MapId;
+import net.minecraft.world.entity.Display;
+import net.minecraft.core.registries.BuiltInRegistries;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.CraftWorld;
@@ -53,11 +55,17 @@ final class NavigationAssertions {
         result.addProperty("tick", Bukkit.getCurrentTick());
         result.add("supportedMethods", methods((Collection<?>) call(service, "supportedNavigationMethods")));
         int displayCount = 0;
+        int markerMotionTracks = 0;
         int bossbarCount = 0;
         int mapTargets = 0;
         for (var handler : handlers.entrySet()) {
             String method = call(handler.getKey(), "id").toString();
-            if (method.equals("text_display")) {
+            if (method.equals("world_marker")) {
+                markerMotionTracks += map(handler.getValue(), "motion").size();
+                for (Object state : map(handler.getValue(), "displays").values()) {
+                    displayCount += call(state, "item") == null ? 2 : 3;
+                }
+            } else if (method.equals("text_display")) {
                 displayCount += map(handler.getValue(), "displays").size();
             } else if (method.equals("bossbar")) {
                 bossbarCount += map(handler.getValue(), "bossbars").size();
@@ -168,6 +176,68 @@ final class NavigationAssertions {
                     if (bossbar != null) {
                         value.addProperty("bossbar", plain(bossbar.name()));
                     }
+                } else if (method.equals("world_marker")) {
+                    Object adapter = handler.getValue();
+                    JsonObject marker = new JsonObject();
+                    Optional<?> stats = (Optional<?>) adapter.getClass().getMethod("markerStatistics", UUID.class)
+                            .invoke(adapter, uuid);
+                    if (stats.isPresent()) {
+                        for (String counter : new String[]{"updates", "spawns", "moves", "metadata", "removals", "updateNanos"}) {
+                            marker.addProperty(counter, (Number) call(stats.get(), counter));
+                        }
+                    }
+                    Object state = map(adapter, "displays").get(uuid);
+                    if (state != null) {
+                        Object motion = map(adapter, "motion").get(uuid);
+                        if (motion != null) {
+                            JsonArray velocity = new JsonArray();
+                            velocity.add((Number) field(motion, "velocityX"));
+                            velocity.add(0.0D);
+                            velocity.add((Number) field(motion, "velocityZ"));
+                            marker.add("observedVelocity", velocity);
+                            Object eye = field(motion, "previousEye");
+                            JsonArray sampleEye = new JsonArray();
+                            for (String axis : new String[]{"x", "y", "z"}) sampleEye.add((Number) call(eye, axis));
+                            marker.add("sampleEye", sampleEye);
+                        }
+                        JsonArray displays = new JsonArray();
+                        for (String part : new String[]{"badge", "distance", "item"}) {
+                            Display display = (Display) call(state, part);
+                            if (display == null) continue;
+                            JsonObject sample = new JsonObject();
+                            sample.addProperty("part", part);
+                            sample.addProperty("entityId", display.getId());
+                            sample.addProperty("billboard", display.getBillboardConstraints().toString());
+                            sample.addProperty("teleportDuration", display.getEntityData()
+                                    .get(Display.DATA_POS_ROT_INTERPOLATION_DURATION_ID));
+                            sample.addProperty("inWorld", Bukkit.getEntity(display.getUUID()) != null);
+                            JsonArray coordinates = new JsonArray();
+                            coordinates.add(display.getX()); coordinates.add(display.getY()); coordinates.add(display.getZ());
+                            sample.add("position", coordinates);
+                            var transform = Display.createTransformation(display.getEntityData());
+                            JsonArray translation = new JsonArray();
+                            translation.add(transform.getTranslation().x());
+                            translation.add(transform.getTranslation().y());
+                            translation.add(transform.getTranslation().z());
+                            sample.add("translation", translation);
+                            JsonArray scale = new JsonArray();
+                            scale.add(transform.getScale().x()); scale.add(transform.getScale().y()); scale.add(transform.getScale().z());
+                            sample.add("scale", scale);
+                            if (display instanceof Display.TextDisplay text) {
+                                sample.addProperty("text", text.getText().getString());
+                                sample.addProperty("flags", (Number) call(text, "getFlags"));
+                                sample.addProperty("background", text.getEntityData().get(Display.TextDisplay.DATA_BACKGROUND_COLOR_ID));
+                                var color = text.getText().getStyle().getColor();
+                                if (color != null) sample.addProperty("textRgb", color.getValue());
+                            } else if (display instanceof Display.ItemDisplay item) {
+                                sample.addProperty("item", BuiltInRegistries.ITEM.getKey(item.getSlot(0).get().getItem()).toString());
+                                sample.addProperty("context", item.getItemTransform().toString());
+                            }
+                            displays.add(sample);
+                        }
+                        marker.add("displays", displays);
+                    }
+                    value.add("worldMarker", marker);
                 } else if (method.equals("text_display")) {
                     Object state = map(handler.getValue(), "displays").get(uuid);
                     if (state != null) {
@@ -185,6 +255,7 @@ final class NavigationAssertions {
         resources.addProperty("sessions", sessions.size());
         resources.addProperty("tasks", tasks);
         resources.addProperty("entities", displayCount);
+        resources.addProperty("markerMotionTracks", markerMotionTracks);
         resources.addProperty("bossbars", bossbarCount);
         resources.addProperty("items", itemCount);
         resources.addProperty("mapTargets", mapTargets);

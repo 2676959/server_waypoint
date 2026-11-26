@@ -38,6 +38,27 @@ class WaypointFormCheckTest {
     };
 
     @Test
+    void rejectedEditStillHighlightsItsRelevantField() {
+        org.junit.jupiter.api.Assertions.assertEquals(Field.NAME, WaypointFormCheck.fieldFor(_959.server_waypoint.core.edit.EditResultStatus.IDENTIFIER_COLLISION));
+        org.junit.jupiter.api.Assertions.assertEquals(Field.DISPLAY_NAME, WaypointFormCheck.fieldFor(_959.server_waypoint.core.edit.EditResultStatus.INVALID_DISPLAY_TEXT));
+        org.junit.jupiter.api.Assertions.assertEquals(Field.KEYWORDS, WaypointFormCheck.fieldFor(_959.server_waypoint.core.edit.EditResultStatus.DUPLICATE_KEYWORD));
+    }
+
+    @Test
+    void validationReadsOnlyCapturedCollectionAndDoesNotFollowRebinding() throws Exception {
+        var collections = new _959.server_waypoint.common.client.ClientWaypointCollections(new _959.server_waypoint.core.WaypointFilesManagerCore());
+        var source = _959.server_waypoint.common.client.ClientWaypointSource.LOCAL;
+        var files = new _959.server_waypoint.core.WaypointFilesManagerCore(java.nio.file.Path.of("build/form-check-test"));
+        collections.bindLocal(java.util.UUID.randomUUID(), files);
+        var selection = collections.selection(source, "minecraft:overworld", "Homes", null);
+        var lookup = WaypointFormCheck.lookup(WaypointFormTestAccess.access(collections), selection);
+        files.addWaypoint("minecraft:overworld", "Homes", new _959.server_waypoint.core.waypoint.SimpleWaypoint("Base", "B", new _959.server_waypoint.core.waypoint.WaypointPos(0,0,0), 0,0,true), ignored -> {});
+        org.junit.jupiter.api.Assertions.assertTrue(lookup.hasWaypoint("minecraft:overworld", "Homes", "Base"));
+        collections.bindLocal(java.util.UUID.randomUUID(), new _959.server_waypoint.core.WaypointFilesManagerCore());
+        org.junit.jupiter.api.Assertions.assertFalse(lookup.hasWaypoint("minecraft:overworld", "Homes", "Base"));
+    }
+
+    @Test
     void aValidAddHasNoProblem() {
         assertNull(WaypointFormCheck.firstProblem(add("Base", "Camp"), DATA));
     }
@@ -88,12 +109,13 @@ class WaypointFormCheckTest {
     }
 
     @Test
-    void aDisplayNameThatIsNotValidFormattedTextIsAnErrorOnEditOnly() {
+    void invalidDisplayNamesAreRejectedOnEditAndCopyAdd() {
         Problem problem = WaypointFormCheck.firstProblem(edit("Home", "{not valid json}", "", "Home"), DATA);
 
         assertProblem(problem, Message.INVALID_DISPLAY_NAME, Kind.ERROR, Field.DISPLAY_NAME, List.of());
         assertNull(WaypointFormCheck.firstProblem(edit("Home", "{\"text\":\"Home\"}", "", "Home"), DATA));
-        assertNull(WaypointFormCheck.firstProblem(new Input(true, OVERWORLD, "Base", "Camp", "{not valid json}", "", "", null), DATA));
+        assertProblem(WaypointFormCheck.firstProblem(new Input(true, OVERWORLD, "Base", "Camp", "{not valid json}", "", "", null), DATA),
+                Message.INVALID_DISPLAY_NAME, Kind.ERROR, Field.DISPLAY_NAME, List.of());
     }
 
     @Test

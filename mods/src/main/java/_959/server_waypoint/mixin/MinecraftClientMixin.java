@@ -14,6 +14,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Minecraft.class)
 public class MinecraftClientMixin {
 
+    @Inject(method = "close", at = @At("HEAD")/*? if >=26 {*/, remap = false/*?}*/)
+    private void sw$saveLocalProfilesOnShutdown(CallbackInfo ci) {
+        WaypointClientMod.ifPresent(WaypointClientMod::onShutdown);
+    }
+
     @Inject(
         method = "updateLevelInEngines",
         at = @At(value = "HEAD") /*? if >= 26 {*/,

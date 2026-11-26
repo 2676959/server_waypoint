@@ -21,6 +21,7 @@ import _959.server_waypoint.navigation.PaperNavigationItemManager;
 import _959.server_waypoint.navigation.PaperNavigationMapCache;
 import _959.server_waypoint.navigation.PaperNavigationPlatform;
 import _959.server_waypoint.navigation.PaperTextDisplayNavigationHandler;
+import _959.server_waypoint.navigation.PaperWorldMarkerNavigationHandler;
 import _959.server_waypoint.network.PaperChatMessageHandler;
 import _959.server_waypoint.network.PaperMessageSender;
 import _959.server_waypoint.network.XaeroCompatibilityPayloads;
@@ -112,7 +113,8 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
                 mapHandler,
                 bossbarHandler,
                 actionbarHandler,
-                textDisplayHandler
+                textDisplayHandler,
+                new PaperWorldMarkerNavigationHandler()
         );
         this.navigationService = new NavigationService<>(navigationPlatform, navigationHandlers);
         UploadCoordinator<Player> uploadCoordinator = new UploadCoordinator<>(

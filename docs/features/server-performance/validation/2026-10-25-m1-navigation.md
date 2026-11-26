@@ -325,3 +325,187 @@ servers/bots are stopped. No production or localization changes were made.
 These are functional observations, not timed navigation acceptance. Other
 protection hooks, carrier inputs, deletion/terrain boundaries and prepared CLI
 integration remain pending; Task 11 and M1 remain in progress.
+
+## Other-container open and dirty-close
+
+`/Volumes/ssd/sw-performance-m1-container-small/` and
+`/Volumes/ssd/sw-performance-m1-container-medium/` pass five chest cases for one
+and ten real Azalea owners. Bots use `open_container_at` on owned native chests
+and hold/close across the dirty-close cases. These are functional observations,
+not timed acceptance.
+
+1. Opening a chest that already holds a cloned compass plus ordinary diamonds/stone
+   removes the protected item and leaves the ordinary identities/counts exact.
+2. Opening a chest that holds a nested blue shulker/map sanitizes the carrier
+   in place: independent graphs change from 1 protected / 67 ordinary leaves to
+   0 / 67, and the chest reclassifies the shulker as ordinary.
+3. After an ordinary chest is open, injecting a cloned compass into the top
+   inventory and closing removes that extra tagged item and preserves ordinary
+   contents.
+4. Injecting a cloned compass onto the cursor while the chest is open and then
+   closing clears the cursor without changing the chest or owner method items.
+5. An ordinary-only chest survives open/close with exact contents.
+
+Native `InventoryOpenEvent` / `InventoryCloseEvent` receipts record `CHEST` and
+the cleaned top inventory after the installed HIGHEST handlers. Owner all-five
+method targets, map IDs and live client effects remain exact. Ten owners produce
+50 PASS decisions. Native logger health PASSes. Owned chests are removed after
+each case.
+
+This nested-in-chest PASS does not override the retained depth-nine world-spawn
+FAIL: published 4.0.0 inventory open/close sanitizes the shulker carrier, while
+`onItemSpawn` still stops at detector depth nine. No production repair was made.
+
+Current verification: 166 Python tests, 29 Rust tests and the Paper 1.21.11 probe
+build pass; probe/production archives have zero overlapping classes. Helper
+processes are stopped. Container assertions now require an independent expected
+carrier, open-receipt `topItems`, recipe-specific dirty before-counts, and zero
+protected world items; native one-/ten-owner container suites were not rerun
+against those tighter checks.
+
+## Inventory drag
+
+`/Volumes/ssd/sw-performance-m1-drag-small-5/` and
+`/Volumes/ssd/sw-performance-m1-drag-medium/` pass five left-drag cases for one
+and ten real Azalea owners. These are functional observations, not timed
+acceptance. Published 4.0.0 `onInventoryDrag` is the handler under test.
+
+Vanilla 1.21.11 `AbstractContainerMenu.doClick` only keeps QuickCraft Add slots
+when the carried count is greater than the current slot set (except creative
+middle) and converts a one-slot End into `PICKUP`. Session compasses and maps
+are unstackable, so a real method-item "drag" becomes `InventoryClickEvent`
+`PLACE_ALL` and never reaches this hook. The protected cases therefore inject a
+stack of 16 paper tagged with `server_waypoint:navigation_item`; the installed
+`isNavigationItem` / `containsNavigationItem` path treats that cursor as
+protected. Armor dests reject non-armor `mayPlace`, so the invalid player-menu
+dest is the crafting grid (raw 1, 2). Occupied chest dests also drop out of the
+QuickCraft set; denied chest dests are empty raw 3 and 4 beside the ordinary
+diamond/stone fixture.
+
+1. Dragging the tagged stack into own storage (raw 9, 10) is not cancelled.
+2. Dragging it into the crafting grid (raw 1, 2) is cancelled.
+3. Dragging it into empty chest dests (raw 3, 4) is cancelled; ordinary chest
+   identities/counts stay exact.
+4. Dragging it into mixed chest/player dests (raw 0, 27) is cancelled.
+5. Dragging 64 ordinary stone into an empty chest (raw 0, 1) is not cancelled;
+   the stone identities appear in the after-state chest. `InventoryDragEvent`
+   MONITOR `topItems` is the pre-place snapshot and is not the ordinary oracle.
+
+Native `InventoryDragEvent` receipts record view type, `EVEN` drag, sorted raw
+slots, old-cursor classification and cancellation. Owner all-five method
+targets, map IDs and live client effects remain exact. One owner produces 5
+PASS decisions; ten owners produce 50. Native logger health PASSes. Owned
+chests are removed after each chest case.
+
+Retained fixture RED roots, not product findings: `drag-small` and
+`drag-small-2` used a count-1 compass and only saw `PLACE_ALL`;
+`drag-small-3` dragged before the player menu was open; `drag-small-4` aimed
+at chest slot 1 already holding diamonds and collapsed to one-slot
+`PLACE_ALL`. No production repair was made.
+
+Current verification: 173 Python tests, 30 Rust tests and the Paper 1.21.11
+probe build pass; probe/production archives have zero overlapping classes.
+Helper processes are stopped. Artifact `0a1d2ddc…fa8ad57`, probe
+`8c0b49ef…dc0866c`, bot `89eca814…d955631`. Craft/cartography, pickup,
+entity/frame/equipment, deletion, remaining terrain boundaries and timed CLI
+integration remain open.
+
+## Crafting result and cartography
+
+`/Volumes/ssd/sw-performance-m1-station-small-3/` and
+`/Volumes/ssd/sw-performance-m1-station-ten/` pass four station cases for one
+and ten real Azalea owners. These are functional observations, not timed
+acceptance. Published 4.0.0 `onPrepareCraft`, `onPrepareResult`,
+`onCartographyItem` and the inventory-click slot filter are the handlers
+under test.
+
+A client click that moves a navigation item into a workbench or cartography
+slot is cancelled before the prepare handlers see it. Each protected case
+records that cancelled click, then the probe places the same session item
+into the open matrix: workbench center (matrix index 4, eight paper already
+in the ring) or cartography map slot 0 (paper already in slot 1).
+
+1. `protected-workbench-map-denied`: the click on raw slot 5 is cancelled
+   with a protected cursor. `PrepareItemCraftEvent` then reports recipe
+   `minecraft:map`, one protected matrix item and an empty result. Paper,
+   the session compass and empty-map counts stay unchanged.
+2. `ordinary-workbench-map`: a plain compass and eight paper craft
+   `minecraft:map`. The result shift-click is taken. Paper drops by eight,
+   the plain compass is consumed, and one empty map is gained. The session
+   compass and map stay at one.
+3. `protected-cartography-scale-denied`: the click on raw slot 0 is
+   cancelled with a protected cursor. A later `PrepareResultEvent` reports
+   the protected map and ordinary paper with an empty result. An uncancelled
+   `CartographyItemEvent` fails the case. `CartographyItemEvent` is
+   constructed only when that result slot is nonempty, so a cleared result
+   has no take receipt.
+4. `ordinary-cartography-scale`: a plain filled map and one paper scale.
+   The result shift-click is not cancelled. Paper drops by one and the plain
+   filled-map count stays unchanged because the input is consumed and the
+   scaled result is gained.
+
+Owner method targets, map IDs and live client effects remain exact after
+each case. One owner produces 4 PASS decisions; ten owners produce 40.
+Native logger health PASSes. Stations are removed after each case.
+
+Retained fixture RED roots, not product findings: `station-small` rejected
+`menu-click` because the linked bot binary predated that action;
+`station-small-2` cancelled the protected click and then blocked on a missing
+prepare receipt before the probe placed the session item. No production
+repair was made.
+
+Current verification: 195 Python tests and the Paper 1.21.11 probe build
+pass; probe/production archives have zero overlapping classes. Helper
+processes are stopped. Artifact `0a1d2ddc…fa8ad57`, probe
+`a0b57606…b4160854`, bot `b31f632c…5eddcf5c`. Pickup, entity/frame/equipment,
+deletion, remaining terrain boundaries and timed CLI integration remain open.
+
+## Entity protection and waypoint deletion
+
+One- and ten-owner entity cases pass at
+`/Volumes/ssd/sw-performance-m1-entity-small-3/` and
+`/Volumes/ssd/sw-performance-m1-entity-ten/`. The twelve cases are protected
+and ordinary entity pickup, protected and ordinary hopper pickup, denied and
+ordinary item-frame placement, rotation that clears a protected frame item,
+denied and ordinary armor-stand placement, armor-stand sanitizing, denied
+allay holding, and allay sanitizing.
+
+A protected world item starts as a stone drop. The probe then replaces the
+stack, because published `onItemSpawn` cancels a navigation item before an
+entity can exist. Hopper items are held off the hopper column until the
+lifecycle monitor is armed, then moved above the hopper with pickup delay 0.
+An empty hand on a filled frame produces `PlayerItemFrameChangeEvent` action
+`ROTATE`. The published handler cancels every non-place change and clears the
+frame. Session compass and map counts stay at one. Ordinary items are
+conserved. 12 decisions PASS for one owner and 120 for ten. Logger health
+PASSes.
+
+Waypoint deletion fails on published 4.0.0 at
+`/Volumes/ssd/sw-performance-m1-delete-small-2/` and
+`/Volumes/ssd/sw-performance-m1-delete-ten/`. The remove command deletes the
+waypoint and logs success. The owner who was navigating to it still has that
+target, both protected items, and a persisted `navigation_session`. The other
+nine owners remain on a different waypoint. This is retained as FAIL. No
+production repair.
+
+Probe `987f0f0d…905d0c9`, bot `3d33e868…050478`. Cross-dimension terrain,
+separate map viewers, and timed CLI integration remain open.
+
+## Cross-dimension terrain and separate viewers
+
+One- and ten-owner runs pass at
+`/Volumes/ssd/sw-performance-m1-dimension-small/` and
+`/Volumes/ssd/sw-performance-m1-dimension-ten/`. Nether generation is enabled
+and the probe builds the bedrock landing pad before any bot connects. Each
+owner navigates to overworld waypoint `dimension_fixture/overworld` with a
+map, then to nether waypoint `dimension_fixture/nether` at `[0, 80, 0]`.
+
+The map item ID is unchanged. The region becomes `minecraft:the_nether`,
+center 0,0, scale 2. The 16,384 pixels are blank because that region has not
+been explored, and the client map checksum matches those blanks. Ten owners
+receive ten different map IDs. Same-dimension save/restart coverage from the
+earlier terrain smoke is unchanged.
+
+Probe `987f0f0d…905d0c9`, bot `3d33e868…050478`. Timed CLI integration remains
+open: the prepared runner still has no navigation, map-terrain, or protection
+adapter for the 30s/60s three-repeat gate.

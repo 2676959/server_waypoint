@@ -1,0 +1,14 @@
+wait 60
+send /wp private add 12 80 -30 Homes Base
+wait 40
+send /wp private edit waypoint minecraft:overworld Homes Base set description AliceSecret
+wait 40
+send /wp private tp minecraft:overworld Homes Base
+wait 40
+send /wp private navigate minecraft:overworld Homes Base actionbar
+wait 40
+send /wp private navigate disable
+wait 40
+send /wp private remove minecraft:overworld Homes Base
+wait 40
+exit

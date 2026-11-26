@@ -1,0 +1,55 @@
+[
+  {
+    "list_name": "OnlyAlice",
+    "n": 2,
+    "waypoints": [
+      {
+        "name": "AliceSecret",
+        "initials": "AS",
+        "pos": [18, 80, 20],
+        "color": "#5150C1",
+        "yaw": 0,
+        "global": true,
+        "keywords": [],
+        "description": ""
+      }
+    ]
+  },
+  {
+    "list_name": "Copies",
+    "n": 2,
+    "waypoints": [
+      {
+        "name": "Rich",
+        "display_name": "Rich home",
+        "initials": "RH",
+        "pos": [-12, 80, 30],
+        "color": "#123456",
+        "yaw": 90,
+        "global": true,
+        "keywords": [
+          "home",
+          "test"
+        ],
+        "description": "Complete copy metadata",
+        "icon": "minecraft:diamond"
+      }
+    ]
+  },
+  {
+    "list_name": "Homes",
+    "n": 4,
+    "waypoints": [
+      {
+        "name": "Base",
+        "initials": "BA",
+        "pos": [12, 80, -30],
+        "color": "#D25526",
+        "yaw": 0,
+        "global": true,
+        "keywords": [],
+        "description": "Captured Private edit"
+      }
+    ]
+  }
+]

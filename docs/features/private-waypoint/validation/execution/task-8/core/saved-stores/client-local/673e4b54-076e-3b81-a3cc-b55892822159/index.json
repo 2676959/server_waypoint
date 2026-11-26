@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "fallback": "e7cf46f9-4a51-4647-b07f-ca874221fdfd",
+  "profiles": [
+    {
+      "id": "e7cf46f9-4a51-4647-b07f-ca874221fdfd",
+      "name": "Default",
+      "teleportCommand": "/execute in {dimension} run tp @s {x} {y} {z} {yaw} ~"
+    }
+  ],
+  "bindings": {
+    "-1877167887": "e7cf46f9-4a51-4647-b07f-ca874221fdfd"
+  }
+}

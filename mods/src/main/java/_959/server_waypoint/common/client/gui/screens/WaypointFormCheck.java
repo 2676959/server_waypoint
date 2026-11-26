@@ -1,5 +1,11 @@
 package _959.server_waypoint.common.client.gui.screens;
 
+import _959.server_waypoint.common.client.ClientWaypointAccess;
+import _959.server_waypoint.common.client.ClientWaypointSelection;
+import _959.server_waypoint.core.edit.EditResultStatus;
+import _959.server_waypoint.core.waypoint.WaypointList;
+import java.util.function.BiFunction;
+
 import _959.server_waypoint.text.FormattedTextHelper;
 import java.util.HashSet;
 import java.util.List;
@@ -63,7 +69,7 @@ final class WaypointFormCheck {
     }
 
     /**
-     * The values in the form. {@code displayName} matters only on Edit. {@code savedName} is the name
+     * The values in the form. {@code displayName} also validates a copied Add draft. {@code savedName} is the name
      * the edited waypoint has now, which it may keep; it is null on Add.
      */
     record Input(
@@ -96,6 +102,35 @@ final class WaypointFormCheck {
         }
     }
 
+    static Field fieldFor(@Nullable EditResultStatus status) {
+        if (status == null) return Field.NONE;
+        return switch (status) {
+            case IDENTIFIER_COLLISION -> Field.NAME;
+            case INVALID_DISPLAY_TEXT -> Field.DISPLAY_NAME;
+            case DUPLICATE_KEYWORD -> Field.KEYWORDS;
+            default -> Field.NONE;
+        };
+    }
+
+    static Lookup lookup(ClientWaypointAccess access,
+            ClientWaypointSelection selection) {
+        return lookup((dimension, list) -> access.list(selection.at(dimension, list, null)));
+    }
+
+    private static Lookup lookup(BiFunction<String, String, WaypointList> resolver) {
+        return new Lookup() {
+            public boolean listExists(String dimension, String list) { return resolver.apply(dimension, list) != null; }
+            public boolean hasWaypoint(String dimension, String list, String name) {
+                var found = resolver.apply(dimension, list);
+                return found != null && found.getWaypointByName(name) != null;
+            }
+            public String listDisplayName(String dimension, String list) {
+                var found = resolver.apply(dimension, list);
+                return found == null ? list : found.displayName();
+            }
+        };
+    }
+
     /**
      * The first hint or error, or else the note, or null when the form can be sent. Checks run on every
      * edit and every tick, because the synced data can change while the form is open.
@@ -116,7 +151,7 @@ final class WaypointFormCheck {
             return error(Message.NAME_TAKEN, Field.NAME,
                     data.listDisplayName(input.dimension(), input.list()), input.name());
         }
-        if (!input.add() && !FormattedTextHelper.isValidInput(input.displayName())) {
+        if (!FormattedTextHelper.isValidInput(input.displayName())) {
             return error(Message.INVALID_DISPLAY_NAME, Field.DISPLAY_NAME);
         }
         List<String> keywords = FormattedTextHelper.parseKeywords(input.keywords());

@@ -1,0 +1,21 @@
+{
+  "chat": [
+    {
+      "commands": [
+        "/wp details waypoint minecraft:overworld Homes Base",
+        "/wp list minecraft:overworld Homes",
+        "/wp details waypoint minecraft:overworld Homes Base",
+        "/wp navigate minecraft:overworld Homes Base",
+        "/wp remove minecraft:overworld Homes Base"
+      ],
+      "text": "✔ Added [BA] Base to Homes   Details · Navigate · Undo"
+    }
+  ],
+  "position": [
+    7.5,
+    76.0,
+    10.5,
+    "minecraft:overworld"
+  ],
+  "screen": "null"
+}

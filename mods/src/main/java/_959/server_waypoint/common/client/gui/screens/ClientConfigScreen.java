@@ -3,10 +3,12 @@ package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.ModInfo;
 import _959.server_waypoint.common.client.ClientConfig;
+import _959.server_waypoint.common.client.ClientConfig.TeleportMethod;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Direction;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Orientation;
 import _959.server_waypoint.common.client.gui.layout.SettingsListLayout;
+import _959.server_waypoint.common.client.gui.layout.VerticalAlignment;
 import _959.server_waypoint.common.client.gui.layout.WidgetPack;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
 import _959.server_waypoint.common.client.gui.render.WidgetTextures;
@@ -29,6 +31,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
@@ -49,11 +52,12 @@ import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.ne
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.previousLayer;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.DANGER;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.SUCCESS;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_DISABLED;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_MUTED;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_PRIMARY;
 
 /**
- * The client settings: waypoint rendering, map-mod sync and appearance in a
+ * The client settings: waypoint rendering, manager behavior, map-mod sync and appearance in a
  * {@link SettingsListWidget}, with per-row and global reset and confirmation dialogs.
  */
 public class ClientConfigScreen extends MovementAllowedScreen {
@@ -75,10 +79,13 @@ public class ClientConfigScreen extends MovementAllowedScreen {
     private final Screen parentScreen;
     private final ClientConfig config = WaypointClientMod.getClientConfig();
     private final List<SettingControl> settingControls = new ArrayList<>();
+    private final List<SettingDropdown<?>> settingDropdowns = new ArrayList<>();
     private final List<MapModControls> mapModControls = new ArrayList<>();
     private final WidgetPack footer = new WidgetPack(Orientation.HORIZONTAL);
     private final ScalableText titleText;
     private final SettingsListWidget settingsList;
+    private final TranslucentButton teleportKeyButton;
+    private final int teleportKeyButtonMinWidth;
     private final TranslucentButton themeButton;
     private final TranslucentButton resetAllButton;
     private final TranslucentButton doneButton;
@@ -88,6 +95,8 @@ public class ClientConfigScreen extends MovementAllowedScreen {
     private @Nullable ConfirmationDialog openDialog;
     private @Nullable AbstractWidget dialogOpener;
     private @Nullable GuiEventListener pendingFocus;
+    private boolean capturingTeleportKey;
+    private @Nullable InputConstants.Key capturedTeleportKey;
     // True while the constructor builds the controls and while they're refreshed from the config,
     // so their change callbacks don't write the values straight back.
     private boolean updatingControls = true;
@@ -100,6 +109,11 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         this.parentScreen = parentScreen;
         this.titleText = new ScalableText(0, 0, this.title, TITLE_SCALE, TEXT_PRIMARY, this.font);
         this.settingsList = new SettingsListWidget(this.font);
+        this.teleportKeyButton = TranslucentButton.fitted(Component.translatable("server_waypoint.config.teleport_key.capture"),
+                () -> this.setCapturingTeleportKey(!this.capturingTeleportKey));
+        scaleRowButton(this.teleportKeyButton);
+        this.teleportKeyButtonMinWidth = this.teleportKeyButton.getWidth();
+        this.updateTeleportKeyButton();
         this.themeButton = TranslucentButton.fitted(Component.translatable("server_waypoint.config.theme.open"),
                 this::openThemeConfigScreen);
         scaleRowButton(this.themeButton);
@@ -125,7 +139,12 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         for (ClientConfigSettings.Setting setting : ClientConfigSettings.RENDERING) {
             entries.add(this.createSettingRow(setting));
         }
+        entries.add(new SettingsListWidget.Header(Component.translatable("server_waypoint.config.section.waypoint_manager")));
+        for (ClientConfigSettings.Setting setting : ClientConfigSettings.WAYPOINT_MANAGER) {
+            entries.add(this.createSettingRow(setting));
+        }
         entries.add(new SettingsListWidget.Header(Component.translatable("server_waypoint.config.section.map_mods")));
+        entries.add(this.createSettingRow(ClientConfigSettings.SYNC_NOTIFICATIONS));
         for (UploadTarget target : ClientConfigSettings.MAP_MODS) {
             if (this.addMapModRows(entries, target)) {
                 installedMapMods.add(target);
@@ -147,6 +166,8 @@ public class ClientConfigScreen extends MovementAllowedScreen {
     @Override
     protected void init() {
         super.init();
+        this.closeSettingDropdowns();
+        this.setCapturingTeleportKey(false);
         // Row widgets first and the list last, so the list can't take clicks meant for its rows.
         this.settingsList.visitWidgets(this::addRenderableWidget);
         this.addRenderableWidget(this.resetAllButton);
@@ -216,9 +237,15 @@ public class ClientConfigScreen extends MovementAllowedScreen {
 
     @Override
     protected void renderScreenContents(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
-        // Under an open dialog, nothing reacts to the mouse or shows a tooltip.
-        int contentMouseX = this.openDialog != null ? NO_MOUSE : mouseX;
-        int contentMouseY = this.openDialog != null ? NO_MOUSE : mouseY;
+        SettingDropdown<?> openDropdown = this.getExpandedSettingDropdown();
+        if (openDropdown != null) {
+            openDropdown.layoutPopup(this.height);
+        }
+        // A dialog or the open dropdown owns hover and tooltips above the settings list.
+        boolean suppressHover = this.openDialog != null
+                || openDropdown != null && openDropdown.isMouseOver(mouseX, mouseY);
+        int contentMouseX = suppressHover ? NO_MOUSE : mouseX;
+        int contentMouseY = suppressHover ? NO_MOUSE : mouseY;
         this.titleText.
         //$ render_method_swap
         extractRenderState
@@ -246,24 +273,111 @@ public class ClientConfigScreen extends MovementAllowedScreen {
             extractRenderState
                     (context, mouseX, mouseY, deltaTicks);
             previousLayer(context);
+        } else if (openDropdown != null) {
+            openDropdown.renderPopup(context, mouseX, mouseY, deltaTicks);
         }
     }
 
     //? if >= 1.21.9 {
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        boolean handled = super.mouseClicked(event, doubleClick);
+        boolean handled = this.handleSettingsClick(event.x(), event.y(), event.button())
+                || super.mouseClicked(event, doubleClick);
         this.applyPendingFocus();
         return handled;
     }
     //?} else {
     /*@Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        boolean handled = super.mouseClicked(mouseX, mouseY, button);
+        boolean handled = this.handleSettingsClick(mouseX, mouseY, button)
+                || super.mouseClicked(mouseX, mouseY, button);
         this.applyPendingFocus();
         return handled;
     }
     *///?}
+
+    private boolean handleSettingsClick(double mouseX, double mouseY, int button) {
+        if (this.capturingTeleportKey && !this.teleportKeyButton.isMouseOver(mouseX, mouseY)) {
+            this.setCapturingTeleportKey(false);
+        }
+        SettingDropdown<?> openDropdown = this.getExpandedSettingDropdown();
+        if (openDropdown != null) {
+            if (openDropdown.isMouseOverPopup(mouseX, mouseY)) {
+                openDropdown.mouseClicked(mouseX, mouseY, button);
+                return true;
+            }
+            openDropdown.closeMenuIfOutside(mouseX, mouseY);
+        }
+        return false;
+    }
+
+    private @Nullable SettingDropdown<?> getExpandedSettingDropdown() {
+        for (SettingDropdown<?> dropdown : this.settingDropdowns) {
+            if (dropdown.isExpanded()) {
+                return dropdown;
+            }
+        }
+        return null;
+    }
+
+    private void closeSettingDropdowns() {
+        this.settingDropdowns.forEach(SettingDropdown::closeMenuIfOpen);
+    }
+
+    @Override
+    public void setFocused(GuiEventListener focused) {
+        super.setFocused(focused);
+        if (this.capturingTeleportKey && focused != this.teleportKeyButton) {
+            this.setCapturingTeleportKey(false);
+        }
+    }
+
+    /** Captures a key before Minecraft dispatches its global and screen shortcuts. */
+    public boolean captureTeleportKey(InputConstants.Key key, int action) {
+        if (action == InputConstants.RELEASE) {
+            if (key.equals(this.capturedTeleportKey)) {
+                this.capturedTeleportKey = null;
+            }
+            return false;
+        }
+        if (action == InputConstants.REPEAT) {
+            return this.capturingTeleportKey || key.equals(this.capturedTeleportKey);
+        }
+        if (key.equals(this.capturedTeleportKey)) {
+            this.capturedTeleportKey = null;
+        }
+        if (!this.capturingTeleportKey) {
+            return false;
+        }
+        if (!key.equals(InputConstants.UNKNOWN)) {
+            this.config.setTeleportKey(key);
+            this.capturedTeleportKey = key;
+            this.setCapturingTeleportKey(false);
+            this.refreshControlStates();
+        }
+        return true;
+    }
+
+    private void setCapturingTeleportKey(boolean capturing) {
+        if (this.capturingTeleportKey != capturing) {
+            this.capturingTeleportKey = capturing;
+            if (this.updateTeleportKeyButton()) {
+                this.layoutContent();
+            }
+        }
+    }
+
+    private boolean updateTeleportKeyButton() {
+        if (this.capturingTeleportKey) {
+            this.teleportKeyButton.setText(Component.translatable("server_waypoint.config.teleport_key.capture"));
+            return false;
+        }
+        int previousWidth = this.teleportKeyButton.getWidth();
+        this.teleportKeyButton.setFittedText(this.config.getTeleportKey().getDisplayName());
+        int width = Math.max(this.teleportKeyButtonMinWidth, Math.round(this.teleportKeyButton.getWidth() * ROW_CONTROL_SCALE));
+        this.teleportKeyButton.setWidth(width);
+        return width != previousWidth;
+    }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
@@ -316,10 +430,15 @@ public class ClientConfigScreen extends MovementAllowedScreen {
 
     /** Gives the wheel to the list first, so it scrolls instead of changing a slider under the cursor. */
     private boolean scrollSettingsList(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        SettingDropdown<?> openDropdown = this.getExpandedSettingDropdown();
+        if (openDropdown != null && openDropdown.isMouseOverPopup(mouseX, mouseY)) {
+            return true;
+        }
         if (!this.settingsList.isMouseOver(mouseX, mouseY)
                 || !this.settingsList.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)) {
             return false;
         }
+        this.closeSettingDropdowns();
         if (this.getFocused() instanceof AbstractWidget widget && !widget.visible) {
             this.setFocused(null);
         }
@@ -352,7 +471,13 @@ public class ClientConfigScreen extends MovementAllowedScreen {
 
     private SettingsListWidget.Row createSettingRow(ClientConfigSettings.Setting setting) {
         AbstractWidget widget;
-        if (setting instanceof ClientConfigSettings.IntSetting intSetting) {
+        if (setting instanceof ClientConfigSettings.EnumSetting<?> enumSetting) {
+            var dropdown = new SettingDropdown<>(enumSetting, this.config, this.font, this::refreshControlStates);
+            this.settingDropdowns.add(dropdown);
+            widget = dropdown;
+        } else if (setting == ClientConfigSettings.TELEPORT_KEY) {
+            widget = this.teleportKeyButton;
+        } else if (setting instanceof ClientConfigSettings.IntSetting intSetting) {
             widget = new IntegerSlider(0, 0, SLIDER_TRACK_WIDTH, SLIDER_FIELD_WIDTH, intSetting.min(), intSetting.max(),
                     intSetting.get(this.config), value -> this.onIntChanged(intSetting, value), this.font, ROW_CONTROL_SCALE);
         } else {
@@ -372,13 +497,14 @@ public class ClientConfigScreen extends MovementAllowedScreen {
                 .withIconPadding(2)
                 .withIconRegion(9, 9, 46, 43, 64, 64);
         resetButton.setTooltip(resetLabel);
-        this.settingControls.add(new SettingControl(setting, widget, resetButton));
-        return new SettingsListWidget.Row(setting.text().label(), widget)
+        SettingsListWidget.Row row = new SettingsListWidget.Row(setting.text().label(), widget)
                 .action(resetButton, () -> !setting.isDefault(this.config))
-                .tooltip(() -> Component.empty()
+                .tooltip(() -> widget.active ? Component.empty()
                         .append(setting.text().description())
                         .append("\n")
-                        .append(Component.translatable("server_waypoint.config.default", setting.defaultText())));
+                        .append(Component.translatable("server_waypoint.config.default", setting.defaultText())) : null);
+        this.settingControls.add(new SettingControl(setting, widget, resetButton, row));
+        return row;
     }
 
     /** Adds the rows of one map mod and reports whether it's installed. */
@@ -522,10 +648,19 @@ public class ClientConfigScreen extends MovementAllowedScreen {
     /** Sets every control's {@code active} flag from the dialog, the values and sync availability. */
     private void refreshControlStates() {
         boolean modal = this.openDialog != null;
+        boolean keyboardShortcut = this.config.getTeleportMethod() == TeleportMethod.KEY;
+        if (modal || !keyboardShortcut) {
+            this.setCapturingTeleportKey(false);
+        }
         this.settingsList.active = !modal;
         for (SettingControl control : this.settingControls) {
-            control.widget().active = !modal;
-            control.resetButton().active = !modal && !control.setting().isDefault(this.config);
+            boolean teleportKey = control.setting() == ClientConfigSettings.TELEPORT_KEY;
+            boolean active = !modal && (!teleportKey || keyboardShortcut);
+            control.widget().active = active;
+            control.resetButton().active = active && !control.setting().isDefault(this.config);
+            if (teleportKey) {
+                control.row().labelColor(keyboardShortcut ? TEXT_PRIMARY : TEXT_DISABLED);
+            }
         }
         this.settingsList.refreshWidgetVisibility();
         for (MapModControls controls : this.mapModControls) {
@@ -546,6 +681,9 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         try {
             for (SettingControl control : this.settingControls) {
                 control.readFrom(this.config);
+            }
+            if (this.updateTeleportKeyButton()) {
+                this.layoutContent();
             }
         } finally {
             this.updatingControls = false;
@@ -593,6 +731,7 @@ public class ClientConfigScreen extends MovementAllowedScreen {
     }
 
     private void openDialog(ConfirmationDialog dialog, AbstractWidget opener) {
+        this.closeSettingDropdowns();
         this.openDialog = dialog;
         this.dialogOpener = opener;
         this.refreshControlStates();
@@ -668,7 +807,8 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         }
     }
 
-    private record SettingControl(ClientConfigSettings.Setting setting, AbstractWidget widget, IconButton resetButton) {
+    private record SettingControl(ClientConfigSettings.Setting setting, AbstractWidget widget, IconButton resetButton,
+                                  SettingsListWidget.Row row) {
         void readFrom(ClientConfig config) {
             if (this.setting instanceof ClientConfigSettings.IntSetting intSetting
                     && this.widget instanceof IntegerSlider slider) {
@@ -677,6 +817,48 @@ public class ClientConfigScreen extends MovementAllowedScreen {
                     && this.widget instanceof OnOffToggleButton toggle) {
                 toggle.setState(booleanSetting.get(config));
             }
+        }
+    }
+
+    static final class SettingDropdown<E extends Enum<E>> extends TextChoiceDropdown implements VerticalAlignment {
+        private final ClientConfigSettings.EnumSetting<E> setting;
+        private final ClientConfig config;
+
+        SettingDropdown(ClientConfigSettings.EnumSetting<E> setting, ClientConfig config, Font font, Runnable onChanged) {
+            super(triggerWidth((int) Math.ceil(setting.choices().stream().map(setting::valueText)
+                            .mapToInt(font::width).max().orElseThrow() * ROW_CONTROL_SCALE)),
+                    setting.text().label(), font, ROW_CONTROL_SCALE);
+            this.setting = setting;
+            this.config = config;
+            for (E choice : setting.choices()) {
+                this.addMenuItem(new TextChoice(setting.valueText(choice), () -> {
+                    setting.set(this.config, choice);
+                    onChanged.run();
+                }));
+            }
+            this.setRenderPopupSeparately(true);
+        }
+
+        @Override
+        public float getVerticalAlignmentCenter() {
+            return this.getLabelAlignmentCenter();
+        }
+
+        @Override
+        protected Component triggerLabel() {
+            return this.setting.valueText(this.setting.get(this.config));
+        }
+
+        @Override
+        protected int getSelectedMenuItemIndex() {
+            return this.setting.get(this.config).ordinal();
+        }
+
+        void layoutPopup(int screenHeight) {
+            int spaceBelow = screenHeight - this.getY() - this.getHeight();
+            int popupHeight = this.getPopupItemCount() * this.getHeight();
+            this.setExpansionDirection(spaceBelow < popupHeight && this.getY() > spaceBelow
+                    ? Direction.REVERSE : Direction.FORWARD);
         }
     }
 

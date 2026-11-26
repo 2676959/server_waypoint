@@ -3,6 +3,7 @@ package _959.server_waypoint.common.client;
 import _959.server_waypoint.common.client.render.OptimizedWaypointRenderer;
 import _959.server_waypoint.core.waypoint.WaypointSorting;
 import com.google.gson.annotations.Expose;
+import com.mojang.blaze3d.platform.InputConstants;
 
 public class ClientConfig {
     public static final boolean DEFAULT_ENABLE_WAYPOINT_RENDER = true;
@@ -14,6 +15,11 @@ public class ClientConfig {
     public static final boolean DEFAULT_AUTO_SYNC_TO_XAEROS_MINIMAP = true;
     public static final boolean DEFAULT_XAERO_DEFAULT_LIST_DIRECT_SYNC = false;
     public static final boolean DEFAULT_AUTO_SYNC_TO_VOXELMAP = true;
+    public static final SyncNotificationMode DEFAULT_SYNC_NOTIFICATION_MODE = SyncNotificationMode.CHAT;
+    public static final SyncNotificationMode DEFAULT_WAYPOINT_UPDATE_NOTIFICATION_MODE = SyncNotificationMode.OFF;
+    public static final TeleportMethod DEFAULT_TELEPORT_METHOD = TeleportMethod.KEY;
+    public static final InputConstants.Key DEFAULT_TELEPORT_KEY = InputConstants.getKey("key.keyboard.t");
+    public static final boolean DEFAULT_CLOSE_WAYPOINT_MANAGER_AFTER_TELEPORT = true;
 
     @Expose private boolean enableWaypointRender = DEFAULT_ENABLE_WAYPOINT_RENDER;
     @Expose private boolean renderWaypointsUnderF1 = DEFAULT_RENDER_WAYPOINTS_UNDER_F1;
@@ -24,10 +30,23 @@ public class ClientConfig {
     @Expose private boolean autoSyncToXaerosMinimap = DEFAULT_AUTO_SYNC_TO_XAEROS_MINIMAP;
     @Expose private boolean xaeroDefaultListDirectSync = DEFAULT_XAERO_DEFAULT_LIST_DIRECT_SYNC;
     @Expose private boolean autoSyncToVoxelMap = DEFAULT_AUTO_SYNC_TO_VOXELMAP;
+    @Expose private SyncNotificationMode syncNotificationMode = DEFAULT_SYNC_NOTIFICATION_MODE;
+    @Expose private SyncNotificationMode waypointUpdateNotificationMode = DEFAULT_WAYPOINT_UPDATE_NOTIFICATION_MODE;
     @Expose private WaypointSorting.SortMode waypointManagerSortMode = WaypointSorting.SortMode.DEFAULT;
     @Expose private boolean waypointManagerSortReversed = false;
     @Expose private boolean waypointManagerGroupByLists = true;
     @Expose private boolean waypointManagerShowAllDimensions = false;
+    @Expose private ClientWaypointQuery.View waypointManagerView = ClientWaypointQuery.View.COMBINED;
+    @Expose private TeleportMethod teleportMethod = DEFAULT_TELEPORT_METHOD;
+    @Expose private String teleportKey = DEFAULT_TELEPORT_KEY.getName();
+    @Expose private boolean closeWaypointManagerAfterTeleport = DEFAULT_CLOSE_WAYPOINT_MANAGER_AFTER_TELEPORT;
+
+    public ClientWaypointQuery.View getWaypointManagerView() {
+        return waypointManagerView == null ? ClientWaypointQuery.View.COMBINED : waypointManagerView;
+    }
+
+    public void setWaypointManagerView(ClientWaypointQuery.View view) { this.waypointManagerView = java.util.Objects.requireNonNull(view); }
+
     public static boolean isXaerosMinimapLoaded = false;
     public static boolean isVoxelMapLoaded = false;
 
@@ -72,6 +91,23 @@ public class ClientConfig {
 
     public void setAutoSyncToVoxelMap(boolean autoSyncToVoxelMap) {
         this.autoSyncToVoxelMap = autoSyncToVoxelMap;
+    }
+
+    public SyncNotificationMode getSyncNotificationMode() {
+        return syncNotificationMode == null ? DEFAULT_SYNC_NOTIFICATION_MODE : syncNotificationMode;
+    }
+
+    public void setSyncNotificationMode(SyncNotificationMode mode) {
+        this.syncNotificationMode = java.util.Objects.requireNonNull(mode);
+    }
+
+    public SyncNotificationMode getWaypointUpdateNotificationMode() {
+        return waypointUpdateNotificationMode == null
+                ? DEFAULT_WAYPOINT_UPDATE_NOTIFICATION_MODE : waypointUpdateNotificationMode;
+    }
+
+    public void setWaypointUpdateNotificationMode(SyncNotificationMode mode) {
+        this.waypointUpdateNotificationMode = java.util.Objects.requireNonNull(mode);
     }
 
     public int getViewDistance() {
@@ -152,5 +188,56 @@ public class ClientConfig {
 
     public void setWaypointManagerShowAllDimensions(boolean waypointManagerShowAllDimensions) {
         this.waypointManagerShowAllDimensions = waypointManagerShowAllDimensions;
+    }
+
+    public TeleportMethod getTeleportMethod() {
+        return teleportMethod == null ? DEFAULT_TELEPORT_METHOD : teleportMethod;
+    }
+
+    public void setTeleportMethod(TeleportMethod teleportMethod) {
+        this.teleportMethod = java.util.Objects.requireNonNull(teleportMethod);
+    }
+
+    public InputConstants.Key getTeleportKey() {
+        if (teleportKey != null && (teleportKey.startsWith("key.keyboard.") || teleportKey.startsWith("scancode."))) {
+            try {
+                InputConstants.Key key = InputConstants.getKey(teleportKey);
+                if (!key.equals(InputConstants.UNKNOWN)) {
+                    return key;
+                }
+            } catch (IllegalArgumentException ignored) {
+                // Fall back to the default if the saved key name is invalid on this version.
+            }
+        }
+        return DEFAULT_TELEPORT_KEY;
+    }
+
+    public void setTeleportKey(InputConstants.Key key) {
+        this.teleportKey = key.getName();
+    }
+
+    public boolean matchesTeleportKey(InputConstants.Key key) {
+        return getTeleportMethod() == TeleportMethod.KEY && getTeleportKey().equals(key);
+    }
+
+    public boolean isCloseWaypointManagerAfterTeleport() {
+        return closeWaypointManagerAfterTeleport;
+    }
+
+    public void setCloseWaypointManagerAfterTeleport(boolean closeWaypointManagerAfterTeleport) {
+        this.closeWaypointManagerAfterTeleport = closeWaypointManagerAfterTeleport;
+    }
+
+    public enum TeleportMethod {
+        KEY,
+        DOUBLE_CLICK,
+        RIGHT_CLICK,
+        MIDDLE_CLICK
+    }
+
+    public enum SyncNotificationMode {
+        OFF,
+        CHAT,
+        TOAST
     }
 }

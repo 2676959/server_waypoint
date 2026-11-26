@@ -1,0 +1,5 @@
+FAIL 26.1.2-Fabric errors=4 warnings=47 complete: Runtime errors or crash reports; see diagnostics.json
+  ERROR Failed to fetch user properties (game/logs/latest.log:546)
+  ERROR Couldn't connect to realms (game/logs/latest.log:850)
+  ERROR Failed to retrieve profile key pair (game/logs/latest.log:1250)
+Report: /Volumes/ssd/sw-private-task8-20261031/multiplayer-results-3/report.md

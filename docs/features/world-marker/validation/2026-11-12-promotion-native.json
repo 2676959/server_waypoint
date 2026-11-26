@@ -1,0 +1,1520 @@
+{
+    "schemaVersion": 1,
+    "scope": "paper-1.21.11-native-marker-acceptance",
+    "passed": true,
+    "sourceRevision": "55d0dd6c",
+    "implementationUncommitted": true,
+    "actors": 2,
+    "rawEvidence": "/Volumes/ssd/sw-world-marker-promotion-2026-11-12-c/world-marker.json",
+    "rawEvidenceSha256": "577e5c0070fffbfd0b576e6435a4b351343aa53a8b147e3bdb6926f0ed7fb9f8",
+    "runnerSha256": "aa73ee5854798f966113ec10efc2cfdbd80c4227621922e36d1b73ea02c3d0e8",
+    "hashes": {
+        "artifactSha256": "a9b21e37d2deaddcea29c22e8763e6ac5b8ab65abf946b201fd50c3602c77915",
+        "serverSha256": "82a487ab8c2d0f6f072b8dbaedc9218c85ae3a7d167808124462b248955beec3",
+        "probeSha256": "987f0f0d827a3ee6b126db430c6b087d54cc967523256389fddc42366905d0c9",
+        "botSha256": "95f5bb03dde1b4b6efe7c6275572be0d1f47c25398e4c4a4b97c62bfc41bf887"
+    },
+    "settings": {
+        "minimum": {
+            "requestedSize": 0.25,
+            "requestedRadius": 1,
+            "target": {
+                "dimension": "minecraft:overworld",
+                "list": "marker_fixture",
+                "waypoint": "a",
+                "displayName": "Target A",
+                "rgb": 4508927,
+                "position": [
+                    320,
+                    -61,
+                    320
+                ]
+            },
+            "sampleEye": [
+                300.5,
+                -59.37999999523163,
+                300.5
+            ],
+            "rows": [
+                {
+                    "part": "badge",
+                    "entityId": 3,
+                    "position": [
+                        301.20655306055585,
+                        -59.41956696679121,
+                        301.20655306055585
+                    ],
+                    "translation": [
+                        0.0,
+                        0.075,
+                        0.0
+                    ],
+                    "scale": [
+                        0.25,
+                        0.25,
+                        0.25
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                },
+                {
+                    "part": "distance",
+                    "entityId": 4,
+                    "position": [
+                        301.20655306055585,
+                        -59.41956696679121,
+                        301.20655306055585
+                    ],
+                    "translation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        0.2,
+                        0.2,
+                        0.2
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                },
+                {
+                    "part": "item",
+                    "entityId": 9,
+                    "position": [
+                        301.20655306055585,
+                        -59.41956696679121,
+                        301.20655306055585
+                    ],
+                    "translation": [
+                        0.0,
+                        0.2,
+                        0.0
+                    ],
+                    "scale": [
+                        0.1,
+                        0.1,
+                        0.1
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                }
+            ],
+            "queryBoundarySequence": 44,
+            "readback": [
+                {
+                    "sequence": 45,
+                    "text": "World marker size \u00d70.25"
+                },
+                {
+                    "sequence": 46,
+                    "text": "World marker distance: 1.0 blocks"
+                }
+            ],
+            "clientEntityIds": {
+                "swp_reader_00": [
+                    "3",
+                    "4",
+                    "9"
+                ],
+                "swp_reader_01": [
+                    "6",
+                    "7",
+                    "8"
+                ]
+            }
+        },
+        "maximum": {
+            "requestedSize": 4,
+            "requestedRadius": 32,
+            "target": {
+                "dimension": "minecraft:overworld",
+                "list": "marker_fixture",
+                "waypoint": "far",
+                "displayName": "Far target",
+                "rgb": 4508927,
+                "position": [
+                    620,
+                    -61,
+                    300
+                ]
+            },
+            "sampleEye": [
+                300.5,
+                -59.37999999523163,
+                300.5
+            ],
+            "rows": [
+                {
+                    "part": "badge",
+                    "entityId": 3,
+                    "position": [
+                        332.4998040017991,
+                        -59.49199930971476,
+                        300.5
+                    ],
+                    "translation": [
+                        0.0,
+                        1.2,
+                        0.0
+                    ],
+                    "scale": [
+                        4.0,
+                        4.0,
+                        4.0
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                },
+                {
+                    "part": "distance",
+                    "entityId": 4,
+                    "position": [
+                        332.4998040017991,
+                        -59.49199930971476,
+                        300.5
+                    ],
+                    "translation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        3.2,
+                        3.2,
+                        3.2
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                },
+                {
+                    "part": "item",
+                    "entityId": 9,
+                    "position": [
+                        332.4998040017991,
+                        -59.49199930971476,
+                        300.5
+                    ],
+                    "translation": [
+                        0.0,
+                        3.2,
+                        0.0
+                    ],
+                    "scale": [
+                        1.6,
+                        1.6,
+                        1.6
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                }
+            ],
+            "queryBoundarySequence": 52,
+            "readback": [
+                {
+                    "sequence": 53,
+                    "text": "World marker size \u00d74.0"
+                },
+                {
+                    "sequence": 54,
+                    "text": "World marker distance: 32.0 blocks"
+                }
+            ],
+            "clientEntityIds": {
+                "swp_reader_00": [
+                    "3",
+                    "4",
+                    "9"
+                ],
+                "swp_reader_01": [
+                    "6",
+                    "7",
+                    "8"
+                ]
+            }
+        },
+        "fractional": {
+            "requestedSize": 1.75,
+            "requestedRadius": 8.5,
+            "target": {
+                "dimension": "minecraft:overworld",
+                "list": "marker_fixture",
+                "waypoint": "a",
+                "displayName": "Target A",
+                "rgb": 4508927,
+                "position": [
+                    320,
+                    -61,
+                    320
+                ]
+            },
+            "sampleEye": [
+                300.5,
+                -59.37999999523163,
+                300.5
+            ],
+            "rows": [
+                {
+                    "part": "badge",
+                    "entityId": 3,
+                    "position": [
+                        306.5057010147245,
+                        -59.716319253488074,
+                        306.5057010147245
+                    ],
+                    "translation": [
+                        0.0,
+                        0.52500004,
+                        0.0
+                    ],
+                    "scale": [
+                        1.75,
+                        1.75,
+                        1.75
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                },
+                {
+                    "part": "distance",
+                    "entityId": 4,
+                    "position": [
+                        306.5057010147245,
+                        -59.716319253488074,
+                        306.5057010147245
+                    ],
+                    "translation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        1.4,
+                        1.4,
+                        1.4
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                },
+                {
+                    "part": "item",
+                    "entityId": 9,
+                    "position": [
+                        306.5057010147245,
+                        -59.716319253488074,
+                        306.5057010147245
+                    ],
+                    "translation": [
+                        0.0,
+                        1.4,
+                        0.0
+                    ],
+                    "scale": [
+                        0.7,
+                        0.7,
+                        0.7
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                }
+            ],
+            "queryBoundarySequence": 60,
+            "readback": [
+                {
+                    "sequence": 61,
+                    "text": "World marker size \u00d71.75"
+                },
+                {
+                    "sequence": 62,
+                    "text": "World marker distance: 8.5 blocks"
+                }
+            ],
+            "clientEntityIds": {
+                "swp_reader_00": [
+                    "3",
+                    "4",
+                    "9"
+                ],
+                "swp_reader_01": [
+                    "6",
+                    "7",
+                    "8"
+                ]
+            }
+        },
+        "retarget-near": {
+            "requestedSize": 1.75,
+            "requestedRadius": 8.5,
+            "target": {
+                "dimension": "minecraft:overworld",
+                "list": "marker_fixture",
+                "waypoint": "near",
+                "displayName": "Near target",
+                "rgb": 4508927,
+                "position": [
+                    300,
+                    -61,
+                    300
+                ]
+            },
+            "sampleEye": [
+                300.5,
+                -59.37999999523163,
+                300.5
+            ],
+            "rows": [
+                {
+                    "part": "badge",
+                    "entityId": 3,
+                    "position": [
+                        300.5,
+                        -60.5,
+                        300.5
+                    ],
+                    "translation": [
+                        0.0,
+                        0.52500004,
+                        0.0
+                    ],
+                    "scale": [
+                        1.75,
+                        1.75,
+                        1.75
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                },
+                {
+                    "part": "distance",
+                    "entityId": 4,
+                    "position": [
+                        300.5,
+                        -60.5,
+                        300.5
+                    ],
+                    "translation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        1.4,
+                        1.4,
+                        1.4
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                },
+                {
+                    "part": "item",
+                    "entityId": 9,
+                    "position": [
+                        300.5,
+                        -60.5,
+                        300.5
+                    ],
+                    "translation": [
+                        0.0,
+                        1.4,
+                        0.0
+                    ],
+                    "scale": [
+                        0.7,
+                        0.7,
+                        0.7
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                }
+            ],
+            "queryBoundarySequence": 66,
+            "readback": [
+                {
+                    "sequence": 67,
+                    "text": "World marker size \u00d71.75"
+                },
+                {
+                    "sequence": 68,
+                    "text": "World marker distance: 8.5 blocks"
+                }
+            ],
+            "clientEntityIds": {
+                "swp_reader_00": [
+                    "3",
+                    "4",
+                    "9"
+                ],
+                "swp_reader_01": [
+                    "6",
+                    "7",
+                    "8"
+                ]
+            }
+        },
+        "retarget-far": {
+            "requestedSize": 1.75,
+            "requestedRadius": 8.5,
+            "target": {
+                "dimension": "minecraft:overworld",
+                "list": "marker_fixture",
+                "waypoint": "a",
+                "displayName": "Target A",
+                "rgb": 4508927,
+                "position": [
+                    320,
+                    -61,
+                    320
+                ]
+            },
+            "sampleEye": [
+                300.5,
+                -59.37999999523163,
+                300.5
+            ],
+            "rows": [
+                {
+                    "part": "badge",
+                    "entityId": 3,
+                    "position": [
+                        306.5057010147245,
+                        -59.716319253488074,
+                        306.5057010147245
+                    ],
+                    "translation": [
+                        0.0,
+                        0.52500004,
+                        0.0
+                    ],
+                    "scale": [
+                        1.75,
+                        1.75,
+                        1.75
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                },
+                {
+                    "part": "distance",
+                    "entityId": 4,
+                    "position": [
+                        306.5057010147245,
+                        -59.716319253488074,
+                        306.5057010147245
+                    ],
+                    "translation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        1.4,
+                        1.4,
+                        1.4
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                },
+                {
+                    "part": "item",
+                    "entityId": 9,
+                    "position": [
+                        306.5057010147245,
+                        -59.716319253488074,
+                        306.5057010147245
+                    ],
+                    "translation": [
+                        0.0,
+                        1.4,
+                        0.0
+                    ],
+                    "scale": [
+                        0.7,
+                        0.7,
+                        0.7
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                }
+            ],
+            "queryBoundarySequence": 72,
+            "readback": [
+                {
+                    "sequence": 73,
+                    "text": "World marker size \u00d71.75"
+                },
+                {
+                    "sequence": 74,
+                    "text": "World marker distance: 8.5 blocks"
+                }
+            ],
+            "clientEntityIds": {
+                "swp_reader_00": [
+                    "3",
+                    "4",
+                    "9"
+                ],
+                "swp_reader_01": [
+                    "6",
+                    "7",
+                    "8"
+                ]
+            }
+        },
+        "reenabled-preserves-settings": {
+            "requestedSize": 1.75,
+            "requestedRadius": 8.5,
+            "target": {
+                "dimension": "minecraft:overworld",
+                "list": "marker_fixture",
+                "waypoint": "a",
+                "displayName": "Target A",
+                "rgb": 4508927,
+                "position": [
+                    320,
+                    -61,
+                    320
+                ]
+            },
+            "sampleEye": [
+                300.5,
+                -59.37999999523163,
+                300.5
+            ],
+            "rows": [
+                {
+                    "part": "badge",
+                    "entityId": 10,
+                    "position": [
+                        306.5057010147245,
+                        -59.716319253488074,
+                        306.5057010147245
+                    ],
+                    "translation": [
+                        0.0,
+                        0.52500004,
+                        0.0
+                    ],
+                    "scale": [
+                        1.75,
+                        1.75,
+                        1.75
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                },
+                {
+                    "part": "distance",
+                    "entityId": 11,
+                    "position": [
+                        306.5057010147245,
+                        -59.716319253488074,
+                        306.5057010147245
+                    ],
+                    "translation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        1.4,
+                        1.4,
+                        1.4
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                },
+                {
+                    "part": "item",
+                    "entityId": 12,
+                    "position": [
+                        306.5057010147245,
+                        -59.716319253488074,
+                        306.5057010147245
+                    ],
+                    "translation": [
+                        0.0,
+                        1.4,
+                        0.0
+                    ],
+                    "scale": [
+                        0.7,
+                        0.7,
+                        0.7
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                }
+            ],
+            "queryBoundarySequence": 82,
+            "readback": [
+                {
+                    "sequence": 83,
+                    "text": "World marker size \u00d71.75"
+                },
+                {
+                    "sequence": 84,
+                    "text": "World marker distance: 8.5 blocks"
+                }
+            ],
+            "clientEntityIds": {
+                "swp_reader_00": [
+                    "10",
+                    "11",
+                    "12"
+                ],
+                "swp_reader_01": [
+                    "6",
+                    "7",
+                    "8"
+                ]
+            }
+        },
+        "configured-while-disabled": {
+            "requestedSize": 0.5,
+            "requestedRadius": 6.5,
+            "target": {
+                "dimension": "minecraft:overworld",
+                "list": "marker_fixture",
+                "waypoint": "a",
+                "displayName": "Target A",
+                "rgb": 4508927,
+                "position": [
+                    320,
+                    -61,
+                    320
+                ]
+            },
+            "sampleEye": [
+                300.5,
+                -59.37999999523163,
+                300.5
+            ],
+            "rows": [
+                {
+                    "part": "badge",
+                    "entityId": 13,
+                    "position": [
+                        305.09259489361284,
+                        -59.637185310368906,
+                        305.09259489361284
+                    ],
+                    "translation": [
+                        0.0,
+                        0.15,
+                        0.0
+                    ],
+                    "scale": [
+                        0.5,
+                        0.5,
+                        0.5
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                },
+                {
+                    "part": "distance",
+                    "entityId": 14,
+                    "position": [
+                        305.09259489361284,
+                        -59.637185310368906,
+                        305.09259489361284
+                    ],
+                    "translation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        0.4,
+                        0.4,
+                        0.4
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                },
+                {
+                    "part": "item",
+                    "entityId": 15,
+                    "position": [
+                        305.09259489361284,
+                        -59.637185310368906,
+                        305.09259489361284
+                    ],
+                    "translation": [
+                        0.0,
+                        0.4,
+                        0.0
+                    ],
+                    "scale": [
+                        0.2,
+                        0.2,
+                        0.2
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                }
+            ],
+            "queryBoundarySequence": 94,
+            "readback": [
+                {
+                    "sequence": 95,
+                    "text": "World marker size \u00d70.5"
+                },
+                {
+                    "sequence": 96,
+                    "text": "World marker distance: 6.5 blocks"
+                }
+            ],
+            "clientEntityIds": {
+                "swp_reader_00": [
+                    "13",
+                    "14",
+                    "15"
+                ],
+                "swp_reader_01": [
+                    "6",
+                    "7",
+                    "8"
+                ]
+            }
+        },
+        "reset-defaults": {
+            "requestedSize": 1,
+            "requestedRadius": 12,
+            "target": {
+                "dimension": "minecraft:overworld",
+                "list": "marker_fixture",
+                "waypoint": "a",
+                "displayName": "Target A",
+                "rgb": 4508927,
+                "position": [
+                    320,
+                    -61,
+                    320
+                ]
+            },
+            "sampleEye": [
+                300.5,
+                -59.37999999523163,
+                300.5
+            ],
+            "rows": [
+                {
+                    "part": "badge",
+                    "entityId": 13,
+                    "position": [
+                        308.9786367266699,
+                        -59.854803653946604,
+                        308.9786367266699
+                    ],
+                    "translation": [
+                        0.0,
+                        0.3,
+                        0.0
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                },
+                {
+                    "part": "distance",
+                    "entityId": 14,
+                    "position": [
+                        308.9786367266699,
+                        -59.854803653946604,
+                        308.9786367266699
+                    ],
+                    "translation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        0.8,
+                        0.8,
+                        0.8
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                },
+                {
+                    "part": "item",
+                    "entityId": 15,
+                    "position": [
+                        308.9786367266699,
+                        -59.854803653946604,
+                        308.9786367266699
+                    ],
+                    "translation": [
+                        0.0,
+                        0.8,
+                        0.0
+                    ],
+                    "scale": [
+                        0.4,
+                        0.4,
+                        0.4
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                }
+            ],
+            "queryBoundarySequence": 99,
+            "readback": [
+                {
+                    "sequence": 100,
+                    "text": "World marker size \u00d71.0"
+                },
+                {
+                    "sequence": 101,
+                    "text": "World marker distance: 12.0 blocks"
+                }
+            ],
+            "clientEntityIds": {
+                "swp_reader_00": [
+                    "13",
+                    "14",
+                    "15"
+                ],
+                "swp_reader_01": [
+                    "6",
+                    "7",
+                    "8"
+                ]
+            }
+        },
+        "saved-before-reconnect": {
+            "requestedSize": 1.75,
+            "requestedRadius": 8.5,
+            "target": {
+                "dimension": "minecraft:overworld",
+                "list": "marker_fixture",
+                "waypoint": "a",
+                "displayName": "Target A",
+                "rgb": 4508927,
+                "position": [
+                    320,
+                    -61,
+                    320
+                ]
+            },
+            "sampleEye": [
+                300.5,
+                -59.37999999523163,
+                300.5
+            ],
+            "rows": [
+                {
+                    "part": "badge",
+                    "entityId": 13,
+                    "position": [
+                        306.5057010147245,
+                        -59.716319253488074,
+                        306.5057010147245
+                    ],
+                    "translation": [
+                        0.0,
+                        0.52500004,
+                        0.0
+                    ],
+                    "scale": [
+                        1.75,
+                        1.75,
+                        1.75
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                },
+                {
+                    "part": "distance",
+                    "entityId": 14,
+                    "position": [
+                        306.5057010147245,
+                        -59.716319253488074,
+                        306.5057010147245
+                    ],
+                    "translation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        1.4,
+                        1.4,
+                        1.4
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                },
+                {
+                    "part": "item",
+                    "entityId": 15,
+                    "position": [
+                        306.5057010147245,
+                        -59.716319253488074,
+                        306.5057010147245
+                    ],
+                    "translation": [
+                        0.0,
+                        1.4,
+                        0.0
+                    ],
+                    "scale": [
+                        0.7,
+                        0.7,
+                        0.7
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                }
+            ],
+            "queryBoundarySequence": 104,
+            "readback": [
+                {
+                    "sequence": 105,
+                    "text": "World marker size \u00d71.75"
+                },
+                {
+                    "sequence": 106,
+                    "text": "World marker distance: 8.5 blocks"
+                }
+            ],
+            "clientEntityIds": {
+                "swp_reader_00": [
+                    "13",
+                    "14",
+                    "15"
+                ],
+                "swp_reader_01": [
+                    "6",
+                    "7",
+                    "8"
+                ]
+            }
+        },
+        "restored-after-reconnect": {
+            "requestedSize": 1.75,
+            "requestedRadius": 8.5,
+            "target": {
+                "dimension": "minecraft:overworld",
+                "list": "marker_fixture",
+                "waypoint": "a",
+                "displayName": "Target A",
+                "rgb": 4508927,
+                "position": [
+                    320,
+                    -61,
+                    320
+                ]
+            },
+            "sampleEye": [
+                300.5,
+                -59.37999999523163,
+                300.5
+            ],
+            "rows": [
+                {
+                    "part": "badge",
+                    "entityId": 17,
+                    "position": [
+                        306.5057010147245,
+                        -59.716319253488074,
+                        306.5057010147245
+                    ],
+                    "translation": [
+                        0.0,
+                        0.52500004,
+                        0.0
+                    ],
+                    "scale": [
+                        1.75,
+                        1.75,
+                        1.75
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                },
+                {
+                    "part": "distance",
+                    "entityId": 18,
+                    "position": [
+                        306.5057010147245,
+                        -59.716319253488074,
+                        306.5057010147245
+                    ],
+                    "translation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        1.4,
+                        1.4,
+                        1.4
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                },
+                {
+                    "part": "item",
+                    "entityId": 19,
+                    "position": [
+                        306.5057010147245,
+                        -59.716319253488074,
+                        306.5057010147245
+                    ],
+                    "translation": [
+                        0.0,
+                        1.4,
+                        0.0
+                    ],
+                    "scale": [
+                        0.7,
+                        0.7,
+                        0.7
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                }
+            ],
+            "queryBoundarySequence": 10,
+            "readback": [
+                {
+                    "sequence": 11,
+                    "text": "World marker size \u00d71.75"
+                },
+                {
+                    "sequence": 12,
+                    "text": "World marker distance: 8.5 blocks"
+                }
+            ],
+            "clientEntityIds": {
+                "swp_reader_00": [
+                    "17",
+                    "18",
+                    "19"
+                ],
+                "swp_reader_01": [
+                    "21",
+                    "22",
+                    "23"
+                ]
+            }
+        },
+        "new-session-defaults": {
+            "requestedSize": 1,
+            "requestedRadius": 12,
+            "target": {
+                "dimension": "minecraft:overworld",
+                "list": "marker_fixture",
+                "waypoint": "a",
+                "displayName": "Target A",
+                "rgb": 4508927,
+                "position": [
+                    320,
+                    -61,
+                    320
+                ]
+            },
+            "sampleEye": [
+                300.5,
+                -59.37999999523163,
+                300.5
+            ],
+            "rows": [
+                {
+                    "part": "badge",
+                    "entityId": 24,
+                    "position": [
+                        308.9786367266699,
+                        -59.854803653946604,
+                        308.9786367266699
+                    ],
+                    "translation": [
+                        0.0,
+                        0.3,
+                        0.0
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                },
+                {
+                    "part": "distance",
+                    "entityId": 25,
+                    "position": [
+                        308.9786367266699,
+                        -59.854803653946604,
+                        308.9786367266699
+                    ],
+                    "translation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        0.8,
+                        0.8,
+                        0.8
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                },
+                {
+                    "part": "item",
+                    "entityId": 26,
+                    "position": [
+                        308.9786367266699,
+                        -59.854803653946604,
+                        308.9786367266699
+                    ],
+                    "translation": [
+                        0.0,
+                        0.8,
+                        0.0
+                    ],
+                    "scale": [
+                        0.4,
+                        0.4,
+                        0.4
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                }
+            ],
+            "queryBoundarySequence": 20,
+            "readback": [
+                {
+                    "sequence": 21,
+                    "text": "World marker size \u00d71.0"
+                },
+                {
+                    "sequence": 22,
+                    "text": "World marker distance: 12.0 blocks"
+                }
+            ],
+            "clientEntityIds": {
+                "swp_reader_00": [
+                    "24",
+                    "25",
+                    "26"
+                ],
+                "swp_reader_01": [
+                    "21",
+                    "22",
+                    "23"
+                ]
+            }
+        },
+        "private-target": {
+            "requestedSize": 1,
+            "requestedRadius": 12,
+            "target": {
+                "dimension": "minecraft:overworld",
+                "list": "marker_private",
+                "waypoint": "Home",
+                "displayName": "Home",
+                "rgb": 4508927,
+                "position": [
+                    320,
+                    -61,
+                    320
+                ]
+            },
+            "sampleEye": [
+                300.5,
+                -59.37999999523163,
+                300.5
+            ],
+            "rows": [
+                {
+                    "part": "badge",
+                    "entityId": 24,
+                    "position": [
+                        308.9786367266699,
+                        -59.854803653946604,
+                        308.9786367266699
+                    ],
+                    "translation": [
+                        0.0,
+                        0.3,
+                        0.0
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                },
+                {
+                    "part": "distance",
+                    "entityId": 25,
+                    "position": [
+                        308.9786367266699,
+                        -59.854803653946604,
+                        308.9786367266699
+                    ],
+                    "translation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        0.8,
+                        0.8,
+                        0.8
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                },
+                {
+                    "part": "item",
+                    "entityId": 26,
+                    "position": [
+                        308.9786367266699,
+                        -59.854803653946604,
+                        308.9786367266699
+                    ],
+                    "translation": [
+                        0.0,
+                        0.8,
+                        0.0
+                    ],
+                    "scale": [
+                        0.4,
+                        0.4,
+                        0.4
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                }
+            ],
+            "queryBoundarySequence": 26,
+            "readback": [
+                {
+                    "sequence": 27,
+                    "text": "World marker size \u00d71.0"
+                },
+                {
+                    "sequence": 28,
+                    "text": "World marker distance: 12.0 blocks"
+                }
+            ],
+            "clientEntityIds": {
+                "swp_reader_00": [
+                    "24",
+                    "25",
+                    "26"
+                ],
+                "swp_reader_01": [
+                    "21",
+                    "22",
+                    "23"
+                ]
+            }
+        },
+        "shared-after-private": {
+            "requestedSize": 1,
+            "requestedRadius": 12,
+            "target": {
+                "dimension": "minecraft:overworld",
+                "list": "marker_fixture",
+                "waypoint": "a",
+                "displayName": "Target A",
+                "rgb": 4508927,
+                "position": [
+                    320,
+                    -61,
+                    320
+                ]
+            },
+            "sampleEye": [
+                300.5,
+                -59.37999999523163,
+                300.5
+            ],
+            "rows": [
+                {
+                    "part": "badge",
+                    "entityId": 24,
+                    "position": [
+                        308.9786367266699,
+                        -59.854803653946604,
+                        308.9786367266699
+                    ],
+                    "translation": [
+                        0.0,
+                        0.3,
+                        0.0
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                },
+                {
+                    "part": "distance",
+                    "entityId": 25,
+                    "position": [
+                        308.9786367266699,
+                        -59.854803653946604,
+                        308.9786367266699
+                    ],
+                    "translation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scale": [
+                        0.8,
+                        0.8,
+                        0.8
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                },
+                {
+                    "part": "item",
+                    "entityId": 26,
+                    "position": [
+                        308.9786367266699,
+                        -59.854803653946604,
+                        308.9786367266699
+                    ],
+                    "translation": [
+                        0.0,
+                        0.8,
+                        0.0
+                    ],
+                    "scale": [
+                        0.4,
+                        0.4,
+                        0.4
+                    ],
+                    "inWorld": false,
+                    "billboard": "CENTER",
+                    "teleportDuration": 1
+                }
+            ],
+            "queryBoundarySequence": 31,
+            "readback": [
+                {
+                    "sequence": 32,
+                    "text": "World marker size \u00d71.0"
+                },
+                {
+                    "sequence": 33,
+                    "text": "World marker distance: 12.0 blocks"
+                }
+            ],
+            "clientEntityIds": {
+                "swp_reader_00": [
+                    "24",
+                    "25",
+                    "26"
+                ],
+                "swp_reader_01": [
+                    "21",
+                    "22",
+                    "23"
+                ]
+            }
+        }
+    },
+    "stoppedResources": {
+        "sessions": 0,
+        "tasks": 2,
+        "entities": 0,
+        "markerMotionTracks": 0,
+        "bossbars": 0,
+        "items": 0,
+        "mapTargets": 0,
+        "mapCacheEntries": 0,
+        "targetIndexEntries": 0,
+        "tickCounters": 0
+    },
+    "disconnectedResources": {
+        "sessions": 0,
+        "tasks": 0,
+        "entities": 0,
+        "markerMotionTracks": 0,
+        "bossbars": 0,
+        "items": 0,
+        "mapTargets": 0,
+        "mapCacheEntries": 0,
+        "targetIndexEntries": 0,
+        "tickCounters": 0
+    },
+    "savedSettingsDisconnectedResources": {
+        "sessions": 0,
+        "tasks": 0,
+        "entities": 0,
+        "markerMotionTracks": 0,
+        "bossbars": 0,
+        "items": 0,
+        "mapTargets": 0,
+        "mapCacheEntries": 0,
+        "targetIndexEntries": 0,
+        "tickCounters": 0
+    },
+    "privateRejectionFeedback": [
+        {
+            "sequence": 9,
+            "text": "\u2718 Overworld has no lists yet. New list"
+        }
+    ],
+    "renderedClient": false,
+    "capacityClaim": false,
+    "otherPlatformNativeCoverage": false
+}

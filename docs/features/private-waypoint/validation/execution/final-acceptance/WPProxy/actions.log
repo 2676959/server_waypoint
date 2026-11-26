@@ -1,0 +1,16 @@
+1 connect:127.0.0.1:25653
+2 feature:ready
+3 feature:state
+4 feature:seed-local
+5 feature:capture-transfer
+6 cmd:server b
+7 feature:ready
+8 feature:state
+9 feature:stale-transfer
+10 feature:seed-local
+11 feature:new-profile
+12 feature:state
+13 cmd:server a
+14 feature:ready
+15 feature:state
+16 feature:open-manager

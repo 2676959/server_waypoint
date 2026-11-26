@@ -19,6 +19,7 @@ import _959.server_waypoint.core.waypoint.WaypointPos;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.junit.jupiter.api.Test;
+import _959.server_waypoint.core.collection.WaypointScope;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -1053,7 +1054,7 @@ class ChunkedMessageManagerTest {
 
     @Test
     void receiveObjectLimitAppliesToCanonicalDecoder() {
-        ClientUpdateRequestMessage request = new ClientUpdateRequestMessage(List.of(
+        ClientUpdateRequestMessage request = new ClientUpdateRequestMessage(WaypointScope.SHARED, List.of(
                 new DimensionSyncIdentifier("first", List.of()),
                 new DimensionSyncIdentifier("second", List.of())
         ));
@@ -1482,7 +1483,7 @@ class ChunkedMessageManagerTest {
                 List.of(),
                 description
         );
-        return WaypointData.world(List.of(new DimensionWaypointData(
+        return WaypointData.world(WaypointScope.SHARED, List.of(new DimensionWaypointData(
                 "",
                 List.of(new WaypointList("", "", 1, List.of(waypoint)))
         )));
@@ -1500,7 +1501,7 @@ class ChunkedMessageManagerTest {
                 description
         );
         return new WaypointModificationMessage(
-                "minecraft:overworld",
+                WaypointScope.SHARED, "minecraft:overworld",
                 "list",
                 "list",
                 "waypoint",

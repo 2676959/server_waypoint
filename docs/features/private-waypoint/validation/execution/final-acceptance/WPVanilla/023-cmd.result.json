@@ -1,0 +1,21 @@
+{
+  "chat": [
+    {
+      "commands": [
+        "/wp private list dimensions",
+        "/wp private list dimensions",
+        "/wp private list minecraft:overworld",
+        "/wp private list minecraft:overworld Homes",
+        "/wp private list all search "
+      ],
+      "text": "All dimensions ⏷\nOverworld · 1 ●\n  Homes · 1\nSearch\n"
+    }
+  ],
+  "position": [
+    1.5,
+    73.0,
+    9.5,
+    "minecraft:overworld"
+  ],
+  "screen": "null"
+}

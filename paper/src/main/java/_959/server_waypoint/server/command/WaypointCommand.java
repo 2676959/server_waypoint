@@ -13,6 +13,7 @@ import _959.server_waypoint.core.waypoint.WaypointPos;
 import _959.server_waypoint.core.waypoint.WaypointIconPolicy;
 import _959.server_waypoint.util.NamespacedId;
 import _959.server_waypoint.navigation.NavigationService;
+import _959.server_waypoint.network.PaperMessageSender;
 import com.mojang.brigadier.Message;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -39,7 +40,6 @@ import net.minecraft.server.permissions.PermissionLevel;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Map;
@@ -53,7 +53,7 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
 
     @Override
     protected ChatIcons chatIcons() {
-        return CommandChatIcons.INSTANCE;
+        return this.sender.broadcastChatIcons();
     }
 
     @Override
@@ -121,6 +121,13 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
     }
 
     @Override
+    protected void executeCollectionCommand(CommandSourceStack source, Runnable task) {
+        // Brigadier already runs on the source's owning thread. Source/player APIs must stay here;
+        // executeByServer is a delayed async persistence queue on Paper.
+        task.run();
+    }
+
+    @Override
     protected void executeByServer(CommandSourceStack source, Runnable task) {
         this.scheduler.runAsyncDelayed(task, 20L);
     }
@@ -149,6 +156,11 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
             return player;
         }
         return null;
+    }
+
+    @Override
+    protected boolean isOperator(CommandSourceStack source, Player player) {
+        return this.sender.isBroadcastOperator(player);
     }
 
     @Override
@@ -185,16 +197,7 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
 
     @Override
     protected Map<String, String> getDimensionTypes(CommandSourceStack source) {
-        Map<String, String> types = new LinkedHashMap<>();
-        for (World world : source.getSender().getServer().getWorlds()) {
-            types.put(world.getKey().asString(), switch (world.getEnvironment()) {
-                case NORMAL -> "minecraft:overworld";
-                case NETHER -> "minecraft:the_nether";
-                case THE_END -> "minecraft:the_end";
-                default -> "custom";
-            });
-        }
-        return types;
+        return PaperMessageSender.dimensionTypes(source.getSender().getServer());
     }
 
     @Override

@@ -41,7 +41,32 @@ class ClientConfigTranslationTest {
             "server_waypoint.config.theme.tooltip",
             "server_waypoint.config.confirm_sync",
             "server_waypoint.config.section.rendering",
+            "server_waypoint.config.section.waypoint_manager",
+            "server_waypoint.config.waypoint_update_notifications",
+            "server_waypoint.config.waypoint_update_notifications.tooltip",
+            "server_waypoint.config.waypoint_update_notifications.off",
+            "server_waypoint.config.waypoint_update_notifications.chat",
+            "server_waypoint.config.waypoint_update_notifications.toast",
+            "server_waypoint.config.teleport_method",
+            "server_waypoint.config.teleport_method.tooltip",
+            "server_waypoint.config.teleport_method.key",
+            "server_waypoint.config.teleport_method.double_click",
+            "server_waypoint.config.teleport_method.right_click",
+            "server_waypoint.config.teleport_method.middle_click",
+            "server_waypoint.config.teleport_key",
+            "server_waypoint.config.teleport_key.tooltip",
+            "server_waypoint.config.teleport_key.capture",
+            "server_waypoint.config.close_waypoint_manager_after_teleport",
+            "server_waypoint.config.close_waypoint_manager_after_teleport.tooltip",
             "server_waypoint.config.section.map_mods",
+            "server_waypoint.config.sync_notifications",
+            "server_waypoint.config.sync_notifications.tooltip",
+            "server_waypoint.config.sync_notifications.off",
+            "server_waypoint.config.sync_notifications.chat",
+            "server_waypoint.config.sync_notifications.toast",
+            "server_waypoint.mod_name",
+            "server_waypoint.sync.toast.synced.xaero",
+            "server_waypoint.sync.toast.synced.voxelmap",
             "server_waypoint.config.section.appearance",
             "server_waypoint.map_mod.xaeros_minimap",
             "server_waypoint.map_mod.voxelmap",
@@ -113,6 +138,62 @@ class ClientConfigTranslationTest {
     }
 
     @Test
+    void mapSyncMessagesUseTheArgumentsSuppliedByTheClient() throws Exception {
+        for (String locale : LOCALES) {
+            JsonObject translated = read(locale);
+            for (String destination : List.of("xaeros", "voxelmap", "both_maps")) {
+                assertTranslationArguments(translated, locale, "server_waypoint.all.added." + destination, List.of());
+                for (String operation : List.of("dimension.waypoint.added", "list.added", "list.removed",
+                        "modification.add", "modification.update", "modification.remove")) {
+                    assertTranslationArguments(translated, locale,
+                            "server_waypoint." + operation + "." + destination, List.of(1));
+                }
+            }
+            for (String destination : List.of("xaero", "voxelmap", "both_maps")) {
+                assertTranslationArguments(translated, locale,
+                        "server_waypoint.sync.toast.synced." + destination, List.of());
+            }
+        }
+    }
+
+    @Test
+    void waypointUpdateMessagesTakeOneNameInEveryLocale() throws Exception {
+        for (String locale : LOCALES) {
+            JsonObject translated = read(locale);
+            for (String operation : List.of("added", "updated", "removed", "restored",
+                    "created_list", "updated_list", "removed_list")) {
+                String key = "server_waypoint.update_notification." + operation;
+                assertTrue(translated.has(key), locale + ": " + key);
+                assertEquals(List.of(1), arguments(translated.get(key).getAsString()), locale + ": " + key);
+            }
+        }
+    }
+
+    @Test
+    void waypointUpdateChatTranslationsContainAllReferences() throws Exception {
+        for (String locale : LOCALES) {
+            JsonObject translated = read(locale);
+            for (String operation : List.of("added", "updated", "removed", "restored",
+                    "created_list", "updated_list", "removed_list")) {
+                String key = "server_waypoint.update_notification.chat." + operation;
+                assertTrue(translated.has(key), locale + ": " + key);
+                assertEquals(List.of("added", "removed", "restored").contains(operation) ? List.of(1, 2) : List.of(1),
+                        arguments(translated.get(key).getAsString()), locale + ": " + key);
+            }
+            for (String key : List.of("wp.count.waypoint.one", "wp.count.waypoint.other", "wp.coordinates.nether",
+                    "wp.coordinates.overworld", "wp.teleport.to", "wp.where.in")) {
+                assertTrue(translated.has(key), locale + ": " + key);
+                assertEquals(List.of(1), arguments(translated.get(key).getAsString()), locale + ": " + key);
+            }
+            for (String key : List.of("wp.hint.details", "wp.hint.open", "wp.dimension.overworld",
+                    "wp.dimension.nether", "wp.dimension.end")) {
+                assertTrue(translated.has(key), locale + ": " + key);
+                assertEquals(List.of(), arguments(translated.get(key).getAsString()), locale + ": " + key);
+            }
+        }
+    }
+
+    @Test
     void retiredKeysAreRemovedFromEveryLocale() throws Exception {
         for (String locale : LOCALES) {
             JsonObject translated = read(locale);
@@ -140,6 +221,11 @@ class ClientConfigTranslationTest {
                 assertFalse(label.contains("(") || label.contains("（"), locale + ": " + key);
             }
         }
+    }
+
+    private static void assertTranslationArguments(JsonObject translated, String locale, String key, List<Integer> expected) {
+        assertTrue(translated.has(key), locale + ": " + key);
+        assertEquals(expected, arguments(translated.get(key).getAsString()), locale + ": " + key);
     }
 
     private JsonObject read(String locale) throws Exception {

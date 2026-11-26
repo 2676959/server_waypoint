@@ -39,6 +39,7 @@ struct State {
     wire: Arc<Mutex<BTreeMap<String, WireState>>>,
     effects: Arc<Mutex<BTreeMap<String, sw_performance_bots::effects::Effects>>>,
     failures: Arc<Mutex<Vec<String>>>,
+    trees: Arc<Mutex<BTreeMap<String, sw_performance_bots::command_tree::Capture>>>,
     notifications: Option<tokio::sync::mpsc::Sender<String>>,
 }
 
@@ -89,6 +90,11 @@ async fn handle_event(bot: Client, event: Event, state: State) -> anyhow::Result
             }
         }
         Event::Packet(packet) => {
+            if let ClientboundGamePacket::Commands(packet) = &*packet {
+                if let Some(capture) = state.trees.lock().unwrap().get_mut(&state.identity) {
+                    capture.receive(packet, bot.profile().uuid.to_string()).map_err(anyhow::Error::msg)?;
+                }
+            }
             state
                 .effects
                 .lock()
@@ -276,6 +282,11 @@ async fn run() -> anyhow::Result<()> {
         .join_delay(Duration::from_millis(200));
     for index in 0..count {
         let identity = format!("swp_reader_{index:02}");
+        if let Some(connection) = data["treeConnection"].as_str() {
+            anyhow::ensure!(count == 1, "command-tree capture requires one connection");
+            state.trees.lock().unwrap().insert(identity.clone(), sw_performance_bots::command_tree::Capture::new(
+                connection.to_owned(), data["treeRole"].as_str().unwrap_or("").to_owned()));
+        }
         builder = builder.add_account_with_state(
             Account::offline(&identity),
             State {
@@ -337,11 +348,20 @@ async fn run() -> anyhow::Result<()> {
         let outcomes = outcome_tx.clone();
         let acknowledgements = state.acknowledgements.clone();
         let markers = state.markers.clone();
+        let trees = state.trees.clone();
         workers.push(tokio::task::spawn_local(async move {
+            let mut open_container = None;
             while let Some((id, data, enqueued)) = requests.recv().await {
-                let result = actions::perform(&bot, &data, &acknowledgements, &markers)
-                    .await
-                    .map_err(|error| error.to_string());
+                let result = actions::perform(
+                    &bot,
+                    &data,
+                    &acknowledgements,
+                    &markers,
+                    &trees,
+                    &mut open_container,
+                )
+                .await
+                .map_err(|error| error.to_string());
                 if outcomes
                     .send((id, name.clone(), result, enqueued))
                     .await
@@ -357,9 +377,9 @@ async fn run() -> anyhow::Result<()> {
     let mut failed = 0_u64;
     let mut max_lag = 0_f64;
     let mut barrier = false;
+    let mut include_wire = true;
     loop {
         if barrier && ledger.quiescent() {
-            let peers: Vec<Value> = state.wire.lock().unwrap().iter().map(|(name, peer)| json!({"name": name, "packets": peer.packets, "pendingTransfers": peer.receiver.pending()})).collect();
             let effects: BTreeMap<_, _> = state
                 .effects
                 .lock()
@@ -367,7 +387,16 @@ async fn run() -> anyhow::Result<()> {
                 .iter()
                 .map(|(name, value)| (name.clone(), value.snapshot()))
                 .collect();
-            output.emit("packet_summary", json!({"peers": peers,"effects":effects}));
+            let mut report = sw_performance_bots::driver::snapshot_report(
+                include_wire,
+                || {
+                    let peers: Vec<Value> = state.wire.lock().unwrap().iter().map(|(name, peer)| json!({"name": name, "packets": peer.packets, "pendingTransfers": peer.receiver.pending()})).collect();
+                    json!(peers)
+                },
+                json!(effects),
+            );
+            report["commandTrees"] = json!(state.trees.lock().unwrap().values().flat_map(|capture| capture.samples.clone()).collect::<Vec<_>>());
+            output.emit("packet_summary", report);
             output.emit("rate_sample", json!({"offered": offered, "completed": completed, "failed": failed,
                 "pending": offered - completed - failed, "elapsedSeconds": started.elapsed().as_secs_f64(),
                 "maxLagSeconds": max_lag, "barrierAcknowledged": true, "completionScope": "client-issued"}));
@@ -440,7 +469,14 @@ async fn run() -> anyhow::Result<()> {
                     })?;
                 offered += 1;
             }
-            "barrier" | "quiesce" => barrier = true,
+            "barrier" | "quiesce" => {
+                barrier = true;
+                include_wire = true;
+            }
+            "effects" => {
+                barrier = true;
+                include_wire = false;
+            }
             "stop" => {
                 for worker in &workers {
                     worker.abort();

@@ -429,3 +429,549 @@ lifecycle reconciliation remain.
 
 [Exact scope, queue receipts, artifacts and commands](2026-10-27-removal-reconciliation.md).
 Evidence root: `/Volumes/ssd/sw-removal-reconcile-20261027/`.
+
+
+## 2026-10-31 — Task 10 final workload integration
+
+All storage/command variants now have native runner paths. The extended suite has
+138 passing Python tests, and the Paper 1.21.11 probe builds. Independent review
+found missing distinct timing paths, restart-error masking and incomplete restore
+replay evidence. The fix pass adds tier-sized scans, separately reported measured
+TP/reload/direct-console/execute-as families, exact asynchronous completion counts,
+consumed-token/rejection checks and guarded restart cleanup. A native injected
+fixture-write failure reproduces the old masked exception and preserves the
+original error after the fix, with all owned process groups stopped.
+
+The final small/medium three-repetition run is in progress under
+`/Volumes/ssd/sw-task10-final-20261031b/`. Its sealed inputs match the executable
+suite; earlier prepared/diagnostic roots remain retained. No final numeric result
+or complete Task 10/M1 claim is made at this checkpoint. See the
+[Task 10 record](2026-10-31-task10-storage-commands.md) for command-layer versus
+successful-feature boundaries and the pending validation outcome. No production
+code, localization or active Stonecutter target changed; no commit or push.
+
+## 2026-11-01 — Task 10 command ACK and medium leaves
+
+Native `commands.tree` instruments callbacks; first-ACK smokes without that
+snapshot retain empty wrapper callbacks. After instrumentation, 10-player
+compatible `/wp help` ACK passes (smokes 15 and 16). The official medium
+leaves-suggestions case then completed two full repetitions with acknowledged
+timed actions, exact save/reopen, and the same retained `wp tp` / execute-as
+feedback FAIL as the small case. Repeat 3 hit ENOSPC. Task 10 execute checkbox
+stays open. No production/localization change, commit or push. Root:
+`/Users/mini/.codex/tmp/sw-task10-20261101-commands`.
+
+
+## 2026-11-01 — Task 10 completed with retained command-feedback failures
+
+Six selected published-4.0.0 Paper cases each completed three independent
+30-second warm-up / 60-second measurement repetitions, fulfilled scheduled
+traffic and matched full saved/reopened properties. Normal and 90%-single-list
+storage small/medium PASS. Exhaustive commands small/medium FAIL because direct
+and execute-as local-TP feedback is not observed; native final positions match.
+Each exhaustive repetition records all 10,663 executable paths, 62 suggestion
+paths, 44 permission configurations, 43 individual mutations and stale-wire-edit
+rejection. Successful foreign-feature effects remain owned by Tasks 11/12/15.
+
+Final medium root: `/Users/mini/.codex/tmp/sw-task10-20261101-command-final/`.
+Storage/small-command root: `/Users/mini/.codex/tmp/sw-task10-20261101-final/`.
+These retain separate tool/setup identities. Earlier watchdog, queue and ENOSPC
+failures remain; no healthy baseline or full M1/release acceptance is claimed.
+
+Final review's failure-retention gap is fixed after collection, with four
+RED/GREEN real-runner exception tests. Final verification: 158 Python tests,
+22 pinned Rust tests, optimized bot build and fully qualified Paper 1.21.11
+probe build pass; probe-only archive isolation and no active native workloads
+are verified. Active targets, production code and translations are unchanged.
+No commit, push or deployment. [Full report](2026-10-31-task10-storage-commands.md)
+and [exact per-repetition metrics](2026-11-01-task10-evidence.json).
+
+
+## 2026-11-01 — published 4.0.1 Task 10 rerun
+
+The pinned published Paper artifact (`d7e878b0…63f476`, source `eb3442e`)
+completed the same six small/medium cases, three fresh repetitions each:
+18 complete measurement / exact save-reopen windows. All four storage cases
+PASS; command small/medium FAIL only the retained direct-player / execute-as
+local-TP feedback assertions. Full native teleport coordinates match. Every
+medium timing window meets p95 <40 ms / p99 <50 ms.
+
+The native 4.0.1 tree has 2,834 nodes, 1,447 executable paths and 286 suggestion
+paths; each final command repetition exercises all of them, plus 43 mutations,
+44 permission configurations and stale-wire-edit rejection. The original small
+attempt's vanilla spam kick is retained as BLOCKED. A 1.1-second pause before
+untimed player requests clears that fixture blocker in three fresh native runs;
+measured workload/rates/budgets and assertions are unchanged. Review has no
+Critical/Important findings; 158 Python harness tests pass and owned workloads
+are stopped. No production change, commit, push or baseline promotion.
+
+[Results, identities, fixture ruling and reproduction](2026-11-01-4.0.1-task10.md),
+[per-repetition evidence](2026-11-01-4.0.1-task10-evidence.json).
+
+## 2026-11-01 — local-TP feedback was the bot decoder
+
+The retained direct and execute-as teleport feedback FAILs come from Azalea
+0.15.1 dropping system chat. The live 4.0.1 confirmation has no `text` field on
+its root and a player-head component with a `player` profile and no `object`
+type tag. The vendored `azalea-chat` patch decodes that shape. Functional
+4.0.1 small behavior at `/Volumes/ssd/sw-task10-object-decoder-20261101b`
+passes, including `✔ Teleported [unknown player head] swp_reader_00 to [P] alpha`.
+The sealed timing repetitions were not remeasured. Bot SHA-256
+`f39dbf5c…a843125`. No production change.
+
+## 2026-11-01 — published 4.0.1 Task 10 remasurement with patched decoder
+
+The same six selected Paper cases were remasured against published 4.0.1
+(`d7e878b0…63f476`, source `eb3442e`) with bot `f39dbf5c…a843125`. All six
+PASS: 18 complete 30/60-second measurement / exact save-reopen windows.
+Direct-player and execute-as local-TP feedback now observe
+`✔ Teleported [unknown player head] swp_reader_00 to [P] alpha`. Every medium
+timing window meets p95 <40 ms / p99 <50 ms.
+
+The first root is INCONCLUSIVE only because concurrent-medium repeat 1 offered
+3,298 of 3,300 measurement commands; that attempt is retained. A second root
+completed three fresh concurrent-medium repetitions and PASSes. The two roots
+are not a paired optimization. Decoder-blind 4.0.1 timings remain sealed. No
+production change, commit, push or baseline promotion.
+
+[Results, identities and reproduction](2026-11-01-4.0.1-task10-decoder.md),
+[per-repetition evidence](2026-11-01-4.0.1-task10-decoder-evidence.json).
+
+## 2026-11-01 — Task 11 other-container open/dirty-close
+
+Native one- and ten-owner chest cases pass at
+`/Volumes/ssd/sw-performance-m1-container-small/` and
+`/Volumes/ssd/sw-performance-m1-container-medium/`. Real Azalea block-open and
+hold/close exercise `InventoryOpenEvent` / `InventoryCloseEvent` on owned chests.
+Direct protected clones and nested shulker/map carriers are removed or sanitized;
+ordinary chest identities/counts and owner method items remain exact. Dirty top
+and cursor injections are cleaned on close. 5 / 50 decisions PASS. Native logger
+health PASSes.
+
+Ruling: published 4.0.0 other-container open/close sanitizes a nested shulker
+carrier while preserving ordinary children. That does not reclassify the retained
+depth-nine `onItemSpawn` detector FAIL. Cost if wrong: later nested-inventory
+cases still need their own graphs.
+
+Verification: 161 Python tests (3 new container contracts), 29 Rust tests
+(container coordinates + existing suite), Paper 1.21.11 probe build, and
+probe/production class isolation. Bot SHA-256 `4a9516ee…ba935513`; probe
+`7dc893a8…b7208b`. No production/localization change, commit or push. Task 11
+remains open for drag, craft/cartography, pickup, entity/frame/equipment,
+deletion, remaining terrain boundaries and timed CLI integration.
+
+### Task 11 other-container assertion review (2026-11-01)
+
+Four P2 false-PASS paths in the new container checks:
+
+- Nested ordinary conservation was copied from `top_after`, so deleting the
+  sanitized shulker still passed. Recipes now take ordinary identities from an
+  independently constructed `expectedTop`, and after graphs must match that
+  carrier's sha256/leaf counts.
+- Open cases auto-closed before the snapshot, and `container_cleanup` only
+  required an open receipt to exist. Open recipes now hold the chest until the
+  snapshot, and the matching `inventory-open` `topItems` must already be clean.
+- Before-state field presence accepted a never-dirtied fixture. Recipes now
+  require the intended top/nested/cursor protected counts before cleanup.
+- `monitor.worldItems` was collected and ignored. Cleanup now fails if any
+  protected world item or nested carrier remains.
+
+RED: the four new contract tests returned PASS on the altered evidence.
+GREEN: 166 Python tests and 29 Rust tests; Paper 1.21.11 probe rebuild
+`2d9586bc…fb0a6eeb`; probe/production class overlap 0. Native one-/ten-owner
+container suites were not rerun. No production/localization change, commit or
+push.
+
+## 2026-11-01 — Task 11 inventory drag
+
+Native one- and ten-owner drag cases pass at
+`/Volumes/ssd/sw-performance-m1-drag-small-5/` and
+`/Volumes/ssd/sw-performance-m1-drag-medium/`. Real Azalea QuickCraft
+Start/Add/End packets fire `InventoryDragEvent` on published 4.0.0
+`onInventoryDrag`. A stackable tagged paper cursor is allowed into own storage
+and cancelled on crafting-grid, empty chest and mixed chest/player dests.
+Ordinary stone into an empty chest is uncancelled and conserved in the after
+state. 5 / 50 decisions PASS. Native logger health PASSes.
+
+Ruling: vanilla 1.21.11 QuickCraft Add requires `carried.count > slots.size()`
+and a one-slot End becomes `PICKUP`. Session compass/map max stack 1 cannot
+produce this event. Cost if wrong: a later stackable session item would still
+need its own case.
+
+Ruling: MONITOR drag `topItems` is pre-place; ordinary conservation uses the
+after-state chest. Cost if wrong: a cancelled drag that mutated the chest
+after MONITOR would need a later snapshot hook.
+
+Ruling: occupied dests drop out of the QuickCraft set, so denied chest dests
+are empty raw 3, 4 beside the ordinary fixture. Armor dests reject non-armor
+`mayPlace`; the invalid player-menu dest is crafting-grid raw 1, 2. Cost if
+wrong: an armor-item drag case is still unproven.
+
+Retained fixture RED roots: `drag-small`, `drag-small-2` (count-1 compass
+`PLACE_ALL`), `drag-small-3` (no open inventory), `drag-small-4` (occupied
+chest slot 1). No production repair.
+
+Verification: 173 Python tests, 30 Rust tests, Paper 1.21.11 probe build
+`8c0b49ef…dc0866c`, bot `89eca814…d955631`, probe/production class overlap 0.
+No production/localization change, commit or push. Task 11 remains open for
+craft/cartography, pickup, entity/frame/equipment, deletion, remaining terrain
+boundaries and timed CLI integration.
+
+## 2026-11-03 — Task 12 decision contracts started
+
+The five named sync/upload/sharing tests failed on the missing scenario module,
+then passed with server-owned revision, rejection, lease, backpressure and chat
+decisions. Schedule, compression-flag, merge/delete, broadcast, reconnect,
+Xaero sharing and icon checks were added the same way. Live `sync`,
+`upload-edit` and `sharing-icons` cases now return an explicit blocked result
+instead of the inventory adapter.
+
+Azalea gained bounded `refresh`, `chat` and `upload` action parsing. Refresh
+sends the existing snapshot request. Chat sends a normal chat message. Upload
+rejects counts outside 1..=4096 and does not send a body: the published vector
+set has no waypoint-data upload payload to encode against.
+
+Ruling: a valid 16,384-waypoint stress fixture is four 4,096-waypoint requests.
+One larger request is an oversize rejection. Cost if wrong: a release that
+accepts 16,384 waypoints in one request would be classified as a rejection.
+
+Ruling: work stayed on `codex/experimental-world-marker` beside uncommitted
+world-marker edits. `.worktrees` is not gitignored, and a new worktree would
+need a gitignore commit. Cost if wrong: Task 12 files sit next to those edits
+until they are split.
+
+Verification: 185 Python tests and 31 Rust tests. No native Paper small/medium
+run, profile, persisted-content check or commit. Task 12's original-Paper
+checkbox remains open.
+
+## 2026-11-05 — Task 13 mod probe anchors started
+
+The four matrix tests first failed because a missing loader setup was
+`NOT_APPLICABLE`. They now require a same-platform runtime for every published
+Fabric, Forge, and NeoForge artifact, a Forge/NeoForge `channel-envelope`
+capability, and the one connection-verified Azalea identity:
+`0.15.1+mc1.21.11` revision `675e56fd9d9da084b8f923fdab6feda3ebd19568`.
+The documented 26.2 revision `0d38e0dcf47eb258c41b1b09ebc2bcde7253e185` stays
+blocked. A production jar that contains `_959/server_waypoint/perf/` fails;
+a missing probe jar is blocked.
+
+Build-only, fully qualified:
+
+- `:mods:1.21.11-fabric:remapPerformanceProbeJar` → `server-waypoint-performance-fabric-probe.jar`, SHA-256 `31529a9b081ed7d6349413a0c982bb2b10fab40f492762aaef7be94a6801030e`
+- `:mods:1.21.11-forge:performanceProbeJar` → `server-waypoint-performance-forge-probe.jar`, SHA-256 `9675fb2316a673ed0728a3eea81ba14a9b61cd722aafa0ec1e414ee6cb0b2cc9`
+- `:mods:1.21.11-neoforge:performanceProbeJar` → `server-waypoint-performance-neoforge-probe.jar`, SHA-256 `3193c772a1206a42fc18dcea09e1ac12094354057dbcc43ef81bab6da7e3a243`
+
+Each probe jar contains that loader's entry point and metadata, the shared
+probe classes, and the platform-free command contract. It does not contain the
+other loaders' entry points. Existing local production archives
+`server_waypoint-4.0.0-*-mc1.21.11.jar` contain zero probe classes. Probe
+sources add no Stonecutter markers. `fabric-unobfuscated.gradle.kts` and
+`neogradle.gradle.kts` are unchanged because 1.21.11 does not use them.
+
+The probes call the target loader's pre/post tick hooks, place and restore a
+chest item with `DataComponents.CUSTOM_DATA`, and report the production mod's
+channel object by reflection. `handshakeAccepted` stays false until a real
+client negotiates that production channel. No local 1.21.11 Fabric, Forge, or
+NeoForge server is installed, so readiness, placement, codec, action, and
+cleanup were not run. The pinned Azalea build is still the Paper-verified
+vanilla-protocol bot; it is not a Forge or NeoForge envelope client. Those
+targets remain `BLOCKED` rather than being replaced by another version or loader.
+
+Verification: 189 Python tests. No native mod-server run and no commit.
+
+## 2026-11-05 — Task 11 crafting result and cartography
+
+Native one- and ten-owner station cases pass at
+`/Volumes/ssd/sw-performance-m1-station-small-3/` and
+`/Volumes/ssd/sw-performance-m1-station-ten/`. Real Azalea menu clicks open a
+crafting table or cartography table. Published 4.0.0 `onInventoryClick`
+cancels moving a session compass into workbench raw slot 5 and a session map
+into cartography raw slot 0. The probe then places that same session item into
+the open matrix so `PrepareItemCraftEvent` and `PrepareResultEvent` run.
+Protected results stay empty, paper and session counts stay exact, and no
+uncancelled craft-item or cartography-item receipt appears. Ordinary
+`minecraft:map` crafting and cartography scaling take their results and
+conserve the session compass and map. 4 / 40 decisions PASS. Native logger
+health PASSes.
+
+Ruling: a cleared cartography result means `CartographyItemEvent` is not
+constructed. The protected case requires the empty prepare result. Cost if
+wrong: a release that leaves a result and cancels only the take would need a
+cancelled cartography-item receipt before it could pass.
+
+Ruling: the client click cannot reach the prepare handlers, so the probe
+injection is the native trigger for those handlers. Cost if wrong: a later
+client that places the item without a cancelled click fails the denied-click
+check.
+
+Retained fixture RED roots: `station-small` sent `menu-click` to a bot binary
+that rejected it; `station-small-2` recorded the cancelled click and then
+blocked because the prepare receipt was absent. No production repair.
+
+Verification: 195 Python tests and Paper 1.21.11 probe build
+`a0b57606…b4160854`; bot `b31f632c…5eddcf5c`; probe/production class overlap 0.
+No production/localization change, commit or push. Task 11 remains open for
+pickup, entity/frame/equipment, deletion, remaining terrain boundaries and
+timed CLI integration.
+
+## 2026-11-07 — Task 11 entity protection and waypoint deletion
+
+Native pickup, hopper, item-frame, armor-stand, and allay cases pass for one
+and ten owners at `/Volumes/ssd/sw-performance-m1-entity-small-3/` and
+`/Volumes/ssd/sw-performance-m1-entity-ten/`. Each owner keeps one session
+compass and one session map. Protected items do not remain in the world or on
+the carrier. Ordinary emerald pickup reaches the player; ordinary hopper
+pickup reaches the hopper. Ordinary stone placement on a frame or armor stand
+moves one stone. Native logger health PASSes. 12 / 120 decisions PASS.
+
+Waypoint deletion is a retained original-release FAIL at
+`/Volumes/ssd/sw-performance-m1-delete-small-2/` and
+`/Volumes/ssd/sw-performance-m1-delete-ten/`. `/wp remove` deletes
+`protection_fixture/target` and reports success, but the targeting session,
+its two protected items, and `server_waypoint:navigation_session` remain.
+Nine unaffected owners in the ten-owner run stay on `other`. Server health
+PASSes. Current source `removeTarget` would stop that session; published
+4.0.0 does not, and production was not patched.
+
+Ruling: a navigation item cannot be dropped through `ItemSpawnEvent`, so the
+probe drops stone and then replaces the stack. Cost if wrong: a later client
+that creates the world item without that replacement needs its own case.
+
+Ruling: hoppers collect an item parked above them before the armed window,
+and `Inventory.getHolder()` is not required to identify the hopper block.
+The item is held beside the hopper until enable, and the receipt uses the
+inventory location. Cost if wrong: a hopper that only pulls from a different
+column would not be observed.
+
+Ruling: empty-hand use of a filled frame rotates it. The published non-place
+branch then clears the frame. The expected action is `ROTATE`.
+
+Verification: 41 navigation scenario tests. Probe
+`987f0f0d…905d0c9`; bot `3d33e868…050478`. No production or localization
+change. Task 11 remains open for cross-dimension terrain, separate map
+viewers, and timed CLI integration. Tasks 12 and 13 native runs stay blocked.
+
+## 2026-11-07 — Task 11 cross-dimension terrain
+
+Native one- and ten-owner dimension switches pass at
+`/Volumes/ssd/sw-performance-m1-dimension-small/` and
+`/Volumes/ssd/sw-performance-m1-dimension-ten/`. Each owner starts on an
+overworld map, then navigates to an unexplored nether waypoint at `[0, 80, 0]`.
+The map ID does not change. The destination region is
+`minecraft:the_nether` center 0,0 scale 2, and both the saved colors and the
+client checksum are 16,384 zero bytes. Ten owners have ten distinct map IDs.
+The nether landing pad verifies before the bots connect. Players remain in
+the overworld, so the destination is never explored.
+
+Timed CLI integration remains the open Task 11 gate: navigation, map-terrain,
+and protection still fall through to the inventory adapter and return
+`BLOCKED` for player cases. Functional smokes are not the 30s/60s three-repeat
+window. Task 11 checkboxes stay open. Tasks 12 and 13 native runs stay blocked.
+
+## 2026-11-10 — Task 11 timed Paper small/medium run
+
+The prepared runner now owns navigation, map-terrain, and protection. The
+audit root is `/Volumes/ssd/sw-performance-task11-20261109-5`, run
+`37a240b4-b53e-4969-81a7-7c71c0b099e1`, from `2026-11-10T05:30:29Z` to
+`2026-11-10T08:17:29Z` on Mac16,10 (Apple M4, 10 cores, 16 GiB, macOS 26.5).
+Published 4.0.0 Paper bytes, probe
+`987f0f0d827a3ee6b126db430c6b087d54cc967523256389fddc42366905d0c9`, bot
+`5fe1bc3dad91a07b6605397c9be6b8fe59b8373c167fa9902a546b445ef10ce1`.
+Twenty-eight small/medium cases, three repetitions, 30/60 second windows.
+Report decision FAIL, exit 1: 3 FAIL and 25 BLOCKED. No PASS.
+
+FAIL: medium `boundary-dimension` watchdog and multi-second ticks under
+`/tp` at 50/s; medium `death-respawn-world-change` and `death-reconcile`
+complete every `/kill` and miss the 40 ms tick budget. BLOCKED cases either
+deliver the offered commands without a judged native observation, or the bot
+does not finish the offered walks, container opens, station clicks, or
+entity interactions. Details are in
+[Task 11 continuation](2026-11-09-task11-continuation.md).
+
+Ruling: a BLOCKED behavior observation must not be stored as a failed
+correctness assertion. Otherwise `budgets.evaluate` turns missing evidence
+into FAIL. Cost if wrong: an unjudged variant hides a real tick-budget FAIL
+when both are present. The three FAIL cases still fail on their tick and
+watchdog evidence.
+
+Ruling: saturation FAIL requires the driver queue to be empty. A still-queued
+action stays a deficient bot even when a tick is slow. Cost if wrong: a
+server that missed work already accepted by the bot is labeled INCONCLUSIVE
+while one later action remains queued.
+
+Ruling: connected owners are operators for this workload so vanilla command
+spam does not reject the declared rate. The op commands are fixture setup.
+Cost if wrong: the measured rate includes operator exemption that a
+non-operator player would not have. Permission denial stays a separate
+fixture and was not what this run measured.
+
+No production change, localization change, commit, or profiled diagnostic.
+Save/reopen and post-quiescence counts were not recorded. Task 11's two
+checkboxes stay open. The earlier cleanup, depth-nine, and deletion failures
+remain. Tasks 12 and 13 were not started.
+
+## 2026-11-12 — Task 11 profiles, quiescence and receipt correction
+
+The runner now actually starts/stops JFR for a profiled selection, retains
+recordings produced during shutdown, and finalizes them on errors/interruption.
+It closes the bot once, then observes native resources after at least ten
+disconnected ticks. Interrupted partials retain measured tick-budget failures.
+Zero online items does not prove offline inventory or world-item cleanup;
+those observations remain explicitly blocked.
+
+Six serial medium diagnostics at
+`/Volumes/ssd/sw-performance-task11-profiles-20261112-2` retained six readable
+JFRs: **3 FAIL, 3 BLOCKED**, exit 1, 13m48s excluding preparation/analysis on
+an Apple M4 with 16 GiB. Boundary/dimension retained eight tick counters after
+quit. Navigation/protection `/kill` diagnostics retained nine/seven counters
+and tick p95 4372.51/5147.36 ms. Terrain warm/cold and method selection cleared
+observed counters and remain behavior/item-coverage blocked. Container opens
+remain deficient; bot action errors also prevent the post-disconnect snapshot.
+All raw attempts, preliminary failures and profiles are retained.
+
+After profiling, the command schedule/collector was corrected: a
+`client-monotonic` issued-only receipt cannot establish roundtrip latency or
+fulfilled work. Waypoint commands request actual native completion; identity,
+actor, command, callback stage, scope and clock must match. Vanilla and physical
+operations still need their own completion adapters. Historical Task 11 raw
+completed-action/latency fields are not acknowledged native-work acceptance.
+
+Fresh three-process short native adapter verification at
+`/Volumes/ssd/sw-performance-task11-repetition-smoke-20261112` retained 2/2
+matched command roundtrips and latency samples per measured repetition, no
+double-stop error, and no JFR with profiling disabled. Its one-second phases
+are smoke evidence only. All owned processes stopped. **237 Python tests pass**.
+No production/localization change, commit or push. Task 11 remains open for
+behavior/delivery adapters, terrain eviction/save/reopen, offline-item/world-item
+observations and full acknowledged timed coverage. See
+[the diagnostic report](2026-11-12-task11-diagnostics.md).
+
+## 2026-11-15 — Task 11 completion scope simplified
+
+The user requested simplification. The [revised gate](../plans/2026-11-15-task11-simplified.md)
+separates reusable functional checks from three representative timed workloads.
+Six small/medium cases with three repetitions have 27 minutes of measurement
+windows, versus 126 minutes for the full catalog; other runtime overhead remains.
+The new selection uses one operation per owner per second and must have distinct
+identities. It does not certify the old 10/50/s workloads.
+
+Functional evidence is reused only after checking its raw assertions/identities.
+Essential gaps still block this milestone. Exhaustive timing, cache/viewer stress
+and offline/world-item leak coverage have explicit Task 16/17 ownership and stay
+required before a comprehensive audit. Historical FAIL/BLOCKED records remain.
+This change updates planning only; no adapter was implemented, native workload
+run, completion checkbox checked, or commit made.
+
+## 2026-11-15 — Minimal critical delivery
+
+The user requested only a minimal scope covering critical cases. The
+[minimal scope](../plans/2026-11-15-minimal-critical-scope.md) replaces the
+comprehensive delivery with four Paper 1.21.11 functional groups and an idle /
+ten-owner retarget performance pair, three repetitions each. Current candidate
+checks follow current intended protection semantics. Broader unfinished tasks,
+including previously deferred Task 16/17 requirements, are optional future work.
+This is a documentation change only: no checks ran, no case passed, and no
+implementation completion or healthy baseline is claimed.
+
+### Minimal scope addition — command-tree sending time
+
+At the user's request, the minimal scope also requires native Paper 1.21.11
+command-tree timing on login and permission refresh for ordinary/operator roles.
+Three fresh-process sessions record server preparation/send duration separately
+from client receipt/refresh latency, with packet size and permission assertions.
+No latency threshold is invented and no live run or implementation is claimed.
+See the minimal scope for exact timing boundaries and completion requirements.
+
+### Minimal scope incorporated into the master plan
+
+The October 24 plan now directly contains the minimal scope and five remaining
+implementation steps, including command-tree timing. The previous full plan is
+preserved as `2026-10-24-server-performance-comprehensive-historical.md`; the
+November 15 scope note redirects to the master plan to avoid duplicate checklists.
+The feature README now describes the minimal delivery. Documentation only; no
+new native results, implementation completion or product repairs are claimed.
+
+
+## Minimal critical scope — November 15 implementation
+
+Step 1 is complete: separate seven-case selection, candidate provenance and sealed
+run defaults, Paper-only capability checks, five-group reuse/gap map, fresh candidate
+and probe build, and four native placed/saved/reopened fixtures. All 259 Python tests
+pass; the independent review's three selection/provenance findings were fixed with
+regressions. No production changes or commits were made. Steps 2–5 and all candidate
+functional/timing acceptance remain pending; minimal adapter dispatch is explicitly
+BLOCKED. See [execution evidence](2026-11-15-minimal-execution.md) for hashes, roots,
+exact commands and remaining gaps. This does not close historical tasks or certify
+the candidate.
+
+## November 16, 2026 — minimal Step 2 complete
+
+All four functional groups PASS on the pinned development candidate: storage and
+permissions, all-six-method navigation lifecycle, prepared terrain isolation and
+persistence, and direct item protection. Final root:
+`/Volumes/ssd/sw-performance-minimal-step2-20261115-r4/`.
+284 Python tests pass; sealed inputs match; all seven candidate server processes
+saved/stopped cleanly and no test runtime remains. No production repair or commit.
+See [exact evidence, identities, review fixes and proof boundaries](2026-11-16-minimal-functional.md).
+Step 3 command-tree delivery is next; timing and combined final completion remain pending.
+
+
+## November 16 — Minimal Step 3 complete
+
+[Command-tree delivery report](2026-11-16-command-tree-delivery.md): three fresh
+Paper 1.21.11 build 111 processes, both roles and both triggers, twelve correlated
+native send/client installed-graph samples. Correctness and evidence completeness
+PASS; durations have no established command-tree latency budget. Exact candidate
+unchanged; new probe/agent and bot identities are retained. Final root:
+`/Volumes/ssd/sw-performance-minimal-step3-20261116-r2/`.
+
+298 Python tests, full pinned Rust suite, probe contract/build and separate Java 17
+compilation of the three new classes pass. A supplemental whole-probe Java 17 build
+exposes an existing Java 21 allocation API; normal pinned Java 21 build passes.
+Two Important review findings were corrected with regression tests. One deferred
+Minor scheduling race can yield missing-boundary BLOCKED, never a false PASS;
+all final samples have complete boundaries. Saved shutdown/native health and
+prepared seals verified. No owned runtime remains; no commit or push. Step 4
+bounded timing and Step 5 combined completion report remain pending.
+
+## November 16 — Minimal Step 4 complete
+
+Completed the [bounded performance step](2026-11-16-bounded-performance.md) against
+the unchanged candidate and Step 3 native tools. Final root:
+`/Volumes/ssd/sw-performance-minimal-step4-20261116/`, run
+`81666b7f-b27b-4e9c-9088-25f60bc62e07`. Three fresh idle and three fresh
+ten-owner retarget processes ran serially with 30s warmup/60s measurement: all
+six PASS. Ten-owner runs completed 900/900 warmup and 1,800/1,800 measured
+retargets with matched successful native acknowledgements; each process first
+proved all six methods and exact independent A/B/A target/item expectations.
+
+Worst measured retarget tick p95/p99: 3.555208/7.126666 ms, within the
+exclusive 40/50 ms budgets. Every native tick reports the required session
+count. All post-disconnect active counters clear after 10–11 ticks, retaining
+ten intentional map caches per active run; all six processes saved shutdown.
+No delivery gap or candidate failure occurred. No matching runtime remains.
+
+Independent review found interruption/exception verdict-retention gaps; four
+regressions were observed RED then GREEN, and final 310 Python tests PASS.
+Source/evidence seals and candidate/tool hashes match; production JAR has no
+probe/ASM entries. No production repair, native tool rebuild, commit, push or
+baseline promotion. Step 4 checked; Step 5 combined report remains pending.
+Offline inventory/world-item cleanup and broader platforms/stress remain
+outside this observation.
+
+## November 18 — Minimal Step 5 complete
+
+The [completion report](2026-11-18-minimal-completion.md) closes the five-step
+minimal Paper 1.21.11 plan. All four functional cases passed, three command-tree
+sessions produced twelve matched samples with correct permission views, and all
+six idle/retarget runs met their native tick budgets. The command-tree durations
+carry no latency-budget verdict. The report retains the candidate and tool
+identities, evidence roots, historical findings and explicit exclusions.
+
+Closeout verified all seven case results and their sealed source/fixture inputs,
+all 16 candidate server shutdown logs and the absence of matching test
+processes. The candidate JAR contains zero probe, ASM or Querz/NBT entries.
+Fresh verification passed 310 Python tests, 36 Rust bot tests, both Java probe
+contract tests and the Paper 1.21.11 probe JAR task. The runtime measurements
+were reused for the pinned candidate. The completion changes are documentation
+only. Broader historical coverage remains optional.

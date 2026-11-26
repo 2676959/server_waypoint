@@ -1,0 +1,30 @@
+[package]
+name = "azalea-chat"
+description = "Parse Minecraft chat messages. Local patch of Azalea 0.15.1+mc1.21.11 (MIT, revision 675e56fd9d9da084b8f923fdab6feda3ebd19568) that decodes object components."
+version = "0.15.1+mc1.21.11"
+edition = "2024"
+license = "MIT"
+repository = "https://github.com/azalea-rs/azalea"
+
+[features]
+default = []
+simdnbt = ["dep:simdnbt"]
+azalea-buf = ["dep:azalea-buf", "simdnbt"]
+numbers = ["dep:azalea-registry", "dep:simdnbt"]
+
+[dependencies]
+azalea-buf = { version = "=0.15.1", optional = true, features = ["serde_json"] }
+azalea-language = "=0.15.1"
+azalea-registry = { version = "=0.15.1", optional = true }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+simdnbt = { version = "=0.9.0", optional = true }
+tracing = "0.1"
+
+[lints.clippy]
+str_to_string = "warn"
+
+[lints.rust.unexpected_cfgs]
+level = "warn"
+priority = 0
+check-cfg = ["cfg(docsrs_dep)"]

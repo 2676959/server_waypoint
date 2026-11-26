@@ -14,6 +14,7 @@ pub struct Effects {
     chat: VecDeque<Value>,
     bossbars: BTreeMap<String, Value>,
     displays: BTreeMap<i32, Value>,
+    item_displays: BTreeMap<i32, Value>,
     maps: VecDeque<MapState>,
     dropped_history: u64,
     evicted_maps: u64,
@@ -128,6 +129,13 @@ impl Effects {
                 self.displays
                     .insert(value.id.0, json!({"text":null,"sequence":self.sequence}));
             }
+            Packet::AddEntity(value) if value.entity_type == EntityKind::ItemDisplay => {
+                if self.item_displays.len() >= 16 && !self.item_displays.contains_key(&value.id.0) {
+                    return Err("active item display observation limit".into());
+                }
+                self.sequence += 1;
+                self.item_displays.insert(value.id.0, json!({"sequence":self.sequence}));
+            }
             Packet::SetEntityData(value) if self.displays.contains_key(&value.id.0) => {
                 for item in &value.packed_items.0 {
                     // TextDisplay's text is a direct Component metadata value;
@@ -143,11 +151,13 @@ impl Effects {
             Packet::RemoveEntities(value) => {
                 for id in &value.entity_ids {
                     self.displays.remove(&id.0);
+                    self.item_displays.remove(&id.0);
                 }
             }
             Packet::Login(value) => {
                 self.dimension = Some(value.common.dimension.to_string());
                 self.displays.clear();
+                self.item_displays.clear();
             }
             // Vanilla replaces ClientLevel only when the dimension changes.
             // Same-world death/respawn keeps other level entities, including
@@ -156,6 +166,7 @@ impl Effects {
                 let dimension = value.common.dimension.to_string();
                 if self.dimension.as_ref() != Some(&dimension) {
                     self.displays.clear();
+                    self.item_displays.clear();
                 }
                 self.dimension = Some(dimension);
             }
@@ -215,7 +226,7 @@ impl Effects {
             "colorsCrc32":crc32fast::hash(&map.colors[..]),"decorations":map.decorations,
         })).collect();
         json!({"dimension":self.dimension,"sequence":self.sequence,"actionbarUpdates":self.actionbar_updates,"actionbar":self.actionbar,"chat":self.chat,
-            "bossbars":self.bossbars,"textDisplays":self.displays,"maps":maps,"droppedHistory":self.dropped_history,
+            "bossbars":self.bossbars,"textDisplays":self.displays,"itemDisplays":self.item_displays,"maps":maps,"droppedHistory":self.dropped_history,
             "evictedMaps":self.evicted_maps,"clippedText":self.clipped_text})
     }
 }

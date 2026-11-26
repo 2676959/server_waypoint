@@ -1,9 +1,10 @@
 package _959.server_waypoint.common.client;
 
+import _959.server_waypoint.core.collection.WaypointScope;
 import _959.server_waypoint.common.client.integrations.IntegratedServerUpload;
+import _959.server_waypoint.common.client.local.LocalWaypointProfiles;
 import _959.server_waypoint.ProtocolVersion;
 import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
-import _959.server_waypoint.common.client.gui.screens.WaypointEditScreen;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeJson;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
 import _959.server_waypoint.common.client.handlers.MessageHandler;
@@ -39,6 +40,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.world.level.storage.LevelResource;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 import org.slf4j.Logger;
@@ -77,11 +79,37 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     private final ClientHandshakeC2SPayload clientHandshake = new ClientHandshakeC2SPayload(new ClientHandshakeBuffer());
     private final ChunkedMessageManager<String> chunkedMessages = new ChunkedMessageManager<>();
     private final ChunkedMessageManager<String> uploadChunkedMessages = new ChunkedMessageManager<>();
-    private final ClientSynchronizationTracker synchronizationTracker =
-            new ClientSynchronizationTracker();
+    private final ClientWaypointCollections collections = new ClientWaypointCollections(this);
+    private final ClientSynchronizationTracker synchronizationTracker = collections.tracker(ClientWaypointSource.SHARED);
+
+    public ClientWaypointCollections collections() { return this.collections; }
     private boolean compressChunkedMessages;
-    // TODO: add a local waypoint manager for using waypoints on an unsupported server
-//    private final WaypointFilesManagerCore localManager;
+    private final LocalWaypointProfiles localProfiles;
+    private final ClientWaypointAccess access;
+    private final ClientWaypointScene scene;
+    private final Consumer<WaypointUpdateFeedback.Update> waypointUpdateNotification;
+
+    public void refreshCollectionScene(ClientWaypointSource source) {
+        if (scene != null) scene.refresh(source, currentDimensionName);
+    }
+
+    public void setMarkerVisible(ClientWaypointSelection selection, boolean visible) {
+        scene.setVisible(selection, visible);
+    }
+
+    public void refreshCurrentCollections() {
+        for (var source : ClientWaypointSource.values()) refreshCollectionScene(source);
+        WaypointManagerScreen.updateAllWidgets();
+    }
+
+    private void clearMarkerScene() {
+        if (scene != null) scene.clear();
+        OptimizedWaypointRenderer.clearScene();
+    }
+
+    public ClientWaypointAccess access() { return this.access; }
+
+    public LocalWaypointProfiles localProfiles() { return this.localProfiles; }
     private final Path gameRoot;
     private final Path configPath;
     private final Path widgetThemePath;
@@ -115,9 +143,65 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     }
 
     private WaypointClientMod(Minecraft mc, Path gameRoot, Path configDir) {
+        this(mc, gameRoot, configDir, null);
+    }
+
+    WaypointClientMod(Minecraft mc, Path gameRoot, Path configDir,
+                      Consumer<WaypointUpdateFeedback.Update> waypointUpdateNotification) {
         super();
         this.mc = mc;
         this.gameRoot = gameRoot;
+        this.waypointUpdateNotification = waypointUpdateNotification == null
+                ? this::showWaypointUpdateNotification : waypointUpdateNotification;
+        // Dedicated servers exclude these fields. A standalone client also needs to retain Local
+        // visibility/expansion without waiting for integrated-server initialization.
+        WaypointList.excludeClientOnlyFields = false;
+        this.localProfiles = new LocalWaypointProfiles(gameRoot, this.collections);
+        this.access = new ClientWaypointAccess(this.collections, this.localProfiles, new ClientWaypointAccess.Transport() {
+            public boolean connected() { return mc.getConnection() != null; }
+            public String currentDimension() { return currentDimensionName; }
+            public int commandLimit() {
+                //? if <1.20.5 {
+                /*return 256;
+                *///?} else {
+                return 32767;
+                //?}
+            }
+            public List<String> dimensions() {
+                var connection = mc.getConnection();
+                if (connection == null) return List.of();
+                return connection.levels().stream().map(key ->
+                        //? if >=1.21.11 {
+                        key.identifier().toString()
+                        //?} else {
+                        /*key.location().toString()
+                        *///?}
+                ).toList();
+            }
+            public boolean allowed(ClientWaypointSource source, ClientWaypointAccess.Action action) {
+                var connection = mc.getConnection();
+                if (connection == null) return false;
+                var root = connection.getCommands().getRoot().getChild("wp");
+                if (root != null && source == ClientWaypointSource.PRIVATE) root = root.getChild("private");
+                String name = switch (action) {
+                    case READ -> "list";
+                    case TELEPORT -> "tp";
+                    default -> action.name().toLowerCase(java.util.Locale.ROOT);
+                };
+                return root != null && root.getChild(name) != null;
+            }
+            public boolean command(String command) { return _959.server_waypoint.common.client.util.ClientCommandUtils.sendCommand(command); }
+            public boolean edit(WaypointEditRequestMessage message) { return sendChunkedMessageToServer(message); }
+        });
+        this.scene = new ClientWaypointScene(collections, new ClientWaypointScene.Markers() {
+            public void add(SimpleWaypoint waypoint) { OptimizedWaypointRenderer.add(waypoint); }
+            public void remove(SimpleWaypoint waypoint) { OptimizedWaypointRenderer.remove(waypoint); }
+            public void update(SimpleWaypoint waypoint) { OptimizedWaypointRenderer.updateWaypoint(waypoint); }
+        });
+        this.collections.onChange(source -> {
+            refreshCollectionScene(source);
+            WaypointManagerScreen.updateAllWidgets();
+        });
         this.configPath = configDir.resolve(MOD_ID).resolve("client-config.json");
         this.widgetThemePath = configDir.resolve(MOD_ID).resolve("widget-theme.json");
         INSTANCE = this;
@@ -225,7 +309,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
             }
             dimensionSyncIds.add(new DimensionSyncIdentifier(dimensionName, listSyncIds));
         }
-        return new ClientUpdateRequestMessage(dimensionSyncIds);
+        return new ClientUpdateRequestMessage(WaypointScope.SHARED, dimensionSyncIds);
     }
 
     /**
@@ -265,26 +349,18 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     public static void onDimensionChange(String dimensionName) {
         currentDimensionName = dimensionName;
         LOGGER.info("dimensionName: {}, state: {}", dimensionName, networkState);
-        if (networkState != ClientNetworkState.NOT_READY) {
-            OptimizedWaypointRenderer.clearScene();
-            final List<WaypointList> waypointLists;
-            if (WaypointServerMod.runsWithClient()) {
-                waypointLists = WaypointServerMod.getInstance()
-                        .getOrCreateWaypointFileManager(dimensionName)
-                        .getWaypointLists();
-            } else {
-                WaypointFileManager waypointFileManager = INSTANCE.getWaypointFileManager(dimensionName);
-                // The waypoint files directory may not be loaded yet when the dimension changes right after a
-                // server transfer (e.g. via Velocity): the server handshake/sync has not completed, so there is
-                // nothing to render. Creating a manager here would NPE against the not-yet-set directory.
-                waypointLists = waypointFileManager == null ? List.of() : waypointFileManager.getWaypointLists();
-            }
-            OptimizedWaypointRenderer.loadScene(waypointLists);
-            WaypointManagerScreen.updateAllWidgets();
-        }
+        // Local persistence has no dependency on a server handshake or Shared rendering readiness.
+        if (INSTANCE != null) INSTANCE.saveLocalProfiles();
+        if (INSTANCE != null) INSTANCE.refreshCurrentCollections();
     }
 
     public void onLeaveServer() {
+        try {
+            this.localProfiles.leave();
+        } catch (IOException exception) {
+            this.displayLocalStorageError(exception);
+        }
+        this.collections.disconnect();
         isXaerosMinimapReady = false;
         MapModIntegrations.clearPendingSync();
         this.remoteCatalogs.clear();
@@ -292,11 +368,34 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
         this.uploadChunkedMessages.clearAll();
         this.synchronizationTracker.clearAll();
         this.compressChunkedMessages = false;
-        OptimizedWaypointRenderer.clearScene();
+        clearMarkerScene();
         if (!WaypointServerMod.runsWithClient()) {
             this.saveAllWaypointFiles();
         }
         this.resetNetworkState();
+    }
+
+    public void onShutdown() {
+        this.onLeaveServer();
+    }
+
+    private void saveLocalProfiles() {
+        try {
+            this.localProfiles.save();
+        } catch (IOException exception) {
+            this.displayLocalStorageError(exception);
+        }
+    }
+
+    private void displayLocalStorageError(Exception exception) {
+        LOGGER.error("Cannot load or save Local waypoint profiles", exception);
+        if (this.mc != null && this.mc.player != null) {
+            var message = net.minecraft.network.chat.Component.translatable("waypoint.local.storage_failed");
+            //? if >=26
+            this.mc.player.sendSystemMessage(message);
+            //? if <26
+            /*this.mc.player.displayClientMessage(message, false);*/
+        }
     }
 
     public boolean loadCachedWaypointFiles(int serverId) {
@@ -313,13 +412,31 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
      * can only be called when connected to a server
      * */
     public boolean requestUpdates() {
-        return this.sendChunkedMessageToServer(this.getClientUpdateRequestMessage());
+        boolean shared = this.sendChunkedMessageToServer(this.getClientUpdateRequestMessage());
+        boolean privateRequested = this.sendChunkedMessageToServer(this.collections.updateRequest(ClientWaypointSource.PRIVATE));
+        return shared && privateRequested;
     }
 
     public void onJoinServer() {
         isXaerosMinimapReady = false;
         MapModIntegrations.clearPendingSync();
         LOGGER.info("join server");
+        ServerData serverEntry = this.mc.getCurrentServer();
+        this.collections.beginConnection(this.mc.getUser().getProfileId(),
+                serverEntry == null ? "integrated" : serverEntry.ip);
+        try {
+            var integratedServer = this.mc.getSingleplayerServer();
+            if (integratedServer != null) {
+                this.localProfiles.joinSingleplayer(this.mc.getUser().getProfileId(), integratedServer.getWorldPath(LevelResource.ROOT),
+                        integratedServer.getWorldData().getLevelName());
+            } else if (serverEntry != null) {
+                this.localProfiles.joinMultiplayer(this.mc.getUser().getProfileId(), serverEntry.ip);
+            }
+        } catch (IOException | IllegalArgumentException exception) {
+            // Retain an unsaved outgoing store for retry, but beginConnection has invalidated its
+            // selections so it cannot receive new-world edits after a failed transition.
+            this.displayLocalStorageError(exception);
+        }
         // Switching servers through a proxy (e.g. Velocity) does not trigger the disconnect that normally runs
         // onLeaveServer(), so flush any pending edits from the previous server to its own file before we
         // rebind to the new server. Otherwise edits are only saved at the final real disconnect.
@@ -333,10 +450,10 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
         this.compressChunkedMessages = false;
         WaypointManagerScreen.resetSessionWidgetStates();
         networkState = ClientNetworkState.NOT_READY;
-        OptimizedWaypointRenderer.clearScene();
+        clearMarkerScene();
         if (WaypointServerMod.runsWithClient()) {
             changeFileManagerMap(WaypointServerMod.getInstance().getFileManagerMap());
-            OptimizedWaypointRenderer.loadScene(getCurrentWaypointLists());
+            collections.markSnapshotApplied(ClientWaypointSource.SHARED);
             this.waypointFilesDir = null;
             networkState = ClientNetworkState.SYNC_FINISHED;
             // Shared waypoint storage still needs transport negotiation for edit requests/results.
@@ -352,30 +469,61 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
             networkState = ClientNetworkState.NO_SERVERSIDE_SUPPORT;
             sendPayloadToServer(clientHandshake);
         }
+        refreshCurrentCollections();
     }
     @Override
     public void onServerHandshake(ServerHandshakeBuffer buffer) {
+        this.onServerHandshake(buffer, this.collections.generation());
+    }
+
+    public void onServerHandshake(ServerHandshakeBuffer buffer, long receivedGeneration) {
+        if (receivedGeneration != this.collections.generation()) return;
         this.remoteCatalogs.clear();
         this.compressChunkedMessages = buffer.compressChunkedMessages();
+        if (buffer.version() != ProtocolVersion.PROTOCOL_VERSION) {
+            this.collections.serverUnavailable();
+            this.chunkedMessages.clearAll();
+            networkState = ClientNetworkState.INCOMPATIBLE_PROTOCOL;
+            return;
+        }
+        try {
+            this.collections.bindServer(this.gameRoot, buffer.serverId());
+        } catch (RuntimeException exception) {
+            LOGGER.warn("Cannot bind private client collection", exception);
+            networkState = ClientNetworkState.NOT_READY;
+            return;
+        }
+        if (this.collections.ready(ClientWaypointSource.LOCAL)) {
+            try {
+                this.localProfiles.onBackendIdentity(buffer.serverId());
+            } catch (IOException exception) {
+                this.displayLocalStorageError(exception);
+            }
+        }
         if (WaypointServerMod.runsWithClient()) {
-            // Keep the shared server model; an integrated world has no remote cache directory.
+            // Shared keeps the integrated model. Private always comes through the local player's
+            // authenticated connection; never borrow or expose the server's owner-manager registry.
+            this.collections.markSnapshotApplied(ClientWaypointSource.SHARED);
+            refreshCollectionScene(ClientWaypointSource.SHARED);
             networkState = ClientNetworkState.SYNC_FINISHED;
+            this.sendChunkedMessageToServer(this.collections.updateRequest(ClientWaypointSource.PRIVATE));
             return;
         }
         networkState = ClientNetworkState.HANDSHAKE_FINISHED;
-        int serverId = buffer.serverId();
-        int serverVersion = buffer.version();
-        if (serverVersion != ProtocolVersion.PROTOCOL_VERSION) {
-            this.loadCachedWaypointFiles(serverId);
-            networkState = ClientNetworkState.INCOMPATIBLE_PROTOCOL;
-        } else if (this.loadCachedWaypointFiles(serverId)) {
-            // send update requests to server -> onUpdatesBundle
-            this.requestUpdates();
-        }
+        this.saveAllWaypointFiles();
+        this.chunkedMessages.clearAll();
+        this.uploadChunkedMessages.clearAll();
+        refreshCurrentCollections();
+        if (this.loadCachedWaypointFiles(buffer.serverId())) this.requestUpdates();
     }
 
     @Override
     public void onMessageChunk(MessageChunkBuffer buffer) {
+        this.onMessageChunk(buffer, this.collections.generation());
+    }
+
+    public void onMessageChunk(MessageChunkBuffer buffer, long receivedGeneration) {
+        if (receivedGeneration != this.collections.generation()) return;
         if ((networkState != ClientNetworkState.HANDSHAKE_FINISHED
                 && networkState != ClientNetworkState.SYNC_FINISHED)
                 || !isAllowedClientboundMessageType(buffer.messageTypeId())) {
@@ -405,6 +553,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     }
 
     public boolean sendChunkedMessageToServer(ChunkedMessage message) {
+        long generation = this.collections.generation();
         try {
             if (message instanceof WaypointData waypointData
                     && waypointData.type() == WaypointData.Type.UPLOAD) {
@@ -414,6 +563,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
                         message,
                         this.compressChunkedMessages,
                         packets -> {
+                            if (generation != this.collections.generation()) return CompletableFuture.completedFuture(ChunkedMessageSendResult.UNSUPPORTED);
                             for (MessageChunkBuffer packet : packets) {
                                 sendPayloadToServer(new UploadChunkC2SPayload(
                                         new UploadChunkBuffer(requestId, packet)
@@ -432,6 +582,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
                     message,
                     this.compressChunkedMessages,
                     packets -> {
+                        if (generation != this.collections.generation()) return CompletableFuture.completedFuture(ChunkedMessageSendResult.UNSUPPORTED);
                         for (MessageChunkBuffer packet : packets) {
                             sendPayloadToServer(new MessageChunkC2SPayload(packet));
                         }
@@ -455,7 +606,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
                     != _959.server_waypoint.core.network.upload.UploadStatus.FAILED) {
                 WaypointData.Upload upload = waypointData.uploadData();
                 this.sendChunkedMessageToServer(WaypointData.upload(
-                        upload.requestId(),
+                        WaypointScope.SHARED, upload.requestId(),
                         _959.server_waypoint.core.network.upload.UploadStatus.FAILED,
                         List.of()
                 ));
@@ -471,7 +622,9 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
         if (!delivery.queued()) {
             return;
         }
+        long generation = this.collections.generation();
         delivery.completion().whenComplete((result, exception) -> {
+            if (generation != this.collections.generation()) return;
             if (exception == null && result != null && result.delivered()) {
                 return;
             }
@@ -485,11 +638,11 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
                     && waypointData.type() == WaypointData.Type.UPLOAD
                     && waypointData.uploadData().status()
                     != _959.server_waypoint.core.network.upload.UploadStatus.FAILED) {
-                this.mc.execute(() -> this.sendChunkedMessageToServer(WaypointData.upload(
-                        waypointData.uploadData().requestId(),
-                        _959.server_waypoint.core.network.upload.UploadStatus.FAILED,
-                        List.of()
-                )));
+                this.mc.execute(() -> {
+                    if (generation == this.collections.generation()) this.sendChunkedMessageToServer(WaypointData.upload(
+                            WaypointScope.SHARED, waypointData.uploadData().requestId(),
+                            _959.server_waypoint.core.network.upload.UploadStatus.FAILED, List.of()));
+                });
             }
         });
     }
@@ -531,11 +684,21 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
 
     public static void tickChunkedMessagesIfInitialized() {
         if (INSTANCE != null) {
+            INSTANCE.access.tick();
             INSTANCE.tickChunkedMessages();
         }
     }
 
     private void applyChunkedMessage(ChunkedMessage message) {
+        if (message instanceof WaypointEditResultMessage result) {
+            this.onWaypointEditResult(result);
+            return;
+        }
+        if (message instanceof _959.server_waypoint.core.network.WaypointScopedMessage scoped
+                && (scoped.scope() == WaypointScope.PRIVATE || scoped instanceof WaypointCollectionStateMessage)) {
+            this.applyCollectionMessage(scoped);
+            return;
+        }
         if (message instanceof RemoteCatalogMessage remote) {
             this.remoteCatalogs.apply(remote);
         } else if (message instanceof WaypointData waypointData) {
@@ -544,8 +707,6 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
             this.onWaypointModification(modification);
         } else if (message instanceof WaypointListUpdateMessage update) {
             this.onWaypointListUpdate(update);
-        } else if (message instanceof WaypointEditResultMessage result) {
-            this.onWaypointEditResult(result);
         } else {
             LOGGER.warn(
                     "Ignoring clientbound chunked message type {}",
@@ -554,12 +715,47 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
         }
     }
 
+    private void applyCollectionMessage(_959.server_waypoint.core.network.WaypointScopedMessage message) {
+        ClientWaypointCollections.ApplyResult result;
+        try {
+            result = this.collections.applyWithResult(message, this.collections.generation());
+        } catch (IOException | RuntimeException exception) {
+            this.collections.tracker(ClientWaypointSource.fromScope(message.scope())).markUncertain();
+            LOGGER.warn("Cannot apply client collection message", exception);
+            return;
+        }
+        if (result.notification() != null) {
+            this.waypointUpdateNotification.accept(result.notification());
+        }
+    }
+
+    private void showWaypointUpdateNotification(WaypointUpdateFeedback.Update update) {
+        var mode = clientConfig.getWaypointUpdateNotificationMode();
+        if (mode == ClientConfig.SyncNotificationMode.OFF || this.mc.player == null) {
+            return;
+        }
+        if (mode == ClientConfig.SyncNotificationMode.TOAST) {
+            var toast = WaypointUpdateFeedback.toast(update);
+            ClientNotifications.show(this.mc, mode, toast, toast);
+            return;
+        }
+        boolean canTeleport = false;
+        if (update.waypoint() != null && update.action() != WaypointUpdateFeedback.Action.REMOVE) {
+            var source = ClientWaypointSource.fromScope(update.scope());
+            var selection = this.collections.selection(source, update.dimensionName(), update.list().name(), update.waypoint().name());
+            canTeleport = this.access.allowed(selection, ClientWaypointAccess.Action.TELEPORT);
+        }
+        var chat = WaypointUpdateFeedback.chat(update, canTeleport);
+        ClientNotifications.show(this.mc, mode, chat, chat);
+    }
+
     private static boolean isAllowedClientboundMessageType(int messageTypeId) {
         return messageTypeId == ChunkedMessageRegistry.WAYPOINT_DATA.id()
                 || messageTypeId == ChunkedMessageRegistry.WAYPOINT_EDIT_RESULT.id()
                 || messageTypeId == ChunkedMessageRegistry.WAYPOINT_MODIFICATION.id()
                 || messageTypeId == ChunkedMessageRegistry.WAYPOINT_LIST_UPDATE.id()
-                || messageTypeId == ChunkedMessageRegistry.REMOTE_CATALOG.id();
+                || messageTypeId == ChunkedMessageRegistry.REMOTE_CATALOG.id()
+                || messageTypeId == ChunkedMessageRegistry.WAYPOINT_COLLECTION_STATE.id();
     }
 
     private void applyWaypointData(WaypointData waypointData) {
@@ -574,7 +770,9 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     }
 
     private void handleChunkedReceiveFailure(int messageTypeId) {
+        // A failed fragment does not expose its decoded scope. Both server trackers need recovery.
         this.synchronizationTracker.markTransportFailure(messageTypeId);
+        this.collections.tracker(ClientWaypointSource.PRIVATE).markTransportFailure(messageTypeId);
     }
 
     private void displayNetworkError() {
@@ -629,8 +827,9 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
             }
         }
         networkState = ClientNetworkState.SYNC_FINISHED;
+        this.collections.markSnapshotApplied(ClientWaypointSource.SHARED);
+        refreshCollectionScene(ClientWaypointSource.SHARED);
         this.synchronizationTracker.clearAll();
-        OptimizedWaypointRenderer.loadScene(getCurrentWaypointLists());
         WaypointManagerScreen.updateAllWidgets();
         if (!updates.isEmpty()) {
             MapModIntegrations.onClientWaypointSync(ClientWaypointSyncEvent.allSynced(), this);
@@ -646,24 +845,18 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
             return;
         }
         String dimensionName = buffer.dimensionName();
-        boolean inCurrentDimension = currentDimensionName.equals(dimensionName);
         WaypointFileManager fileManager = this.getWaypointFileManager(dimensionName);
         boolean dimensionListChanged = fileManager == null;
         if (dimensionListChanged) {
             fileManager = this.addWaypointFileManager(dimensionName);
         }
         WaypointList newList = buffer.waypointLists().get(0);
-        WaypointList oldList = fileManager.getWaypointListByName(newList.name());
         fileManager = this.putWaypointList(dimensionName, newList);
         try {
             this.saveWaypointFile(fileManager);
         } catch (IOException e) {
             LOGGER.error("Failed to save dimension: {} at {}", dimensionName, fileManager.getDimensionFile());
             throw new RuntimeException(e);
-        }
-        if (inCurrentDimension) {
-            if (oldList != null) OptimizedWaypointRenderer.removeList(oldList.simpleWaypoints());
-            OptimizedWaypointRenderer.addList(newList.simpleWaypoints());
         }
         this.synchronizationTracker.clearList(dimensionName, newList.name());
         updateWaypointManagerView(dimensionName, dimensionListChanged);
@@ -699,10 +892,6 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
                 throw new RuntimeException(e);
             }
         }
-        if (currentDimensionName.equals(dimensionName)) {
-            OptimizedWaypointRenderer.clearScene();
-            OptimizedWaypointRenderer.loadScene(currentLists);
-        }
         this.synchronizationTracker.clearDimension(dimensionName);
         updateWaypointManagerView(dimensionName, dimensionListChanged && fileManager != null);
         MapModIntegrations.onClientWaypointDownload(
@@ -720,22 +909,18 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
             LOGGER.error("ClientLevel is null at this time");
             return;
         }
-        OptimizedWaypointRenderer.clearScene();
         updateDimensionName();
         Map<String, List<WaypointList>> replacement = new LinkedHashMap<>();
-        List<WaypointList> currentWaypointLists = List.of();
         for (DimensionWaypointData dimensionWaypoint : dimensions) {
             String dimensionName = dimensionWaypoint.dimensionName();
             List<WaypointList> waypointLists = dimensionWaypoint.waypointLists();
             replacement.put(dimensionName, waypointLists);
-            if (currentDimensionName.equals(dimensionName)) {
-                currentWaypointLists = waypointLists;
-            }
         }
         this.replaceWaypointData(replacement);
-        OptimizedWaypointRenderer.loadScene(currentWaypointLists);
         this.saveAllWaypointFiles();
         networkState = ClientNetworkState.SYNC_FINISHED;
+        this.collections.markSnapshotApplied(ClientWaypointSource.SHARED);
+        refreshCollectionScene(ClientWaypointSource.SHARED);
         this.synchronizationTracker.clearAll();
         WaypointManagerScreen.updateAllWidgets();
         MapModIntegrations.onClientWaypointDownload(ClientWaypointSyncEvent.worldReplaced(), this);
@@ -754,19 +939,11 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
                 this.synchronizationTracker.markOutOfSync(dimensionName, snapshot.name());
             }
             int revision = cachedList == null ? WaypointList.SERVER_N - 1 : cachedList.getSyncNum();
-            SimpleWaypoint liveWaypoint = this.addWaypointFromRemoteServer(
-                    dimensionName, snapshot.name(), snapshot.displayName(), waypoint, revision);
+            this.addWaypointFromRemoteServer(dimensionName, snapshot.name(), snapshot.displayName(), waypoint, revision);
             try {
                 this.saveWaypointFile(this.getWaypointFileManager(dimensionName));
             } catch (IOException exception) {
                 LOGGER.error("Failed to save downloaded waypoint in dimension {}", dimensionName, exception);
-            }
-            if (dimensionName.equals(currentDimensionName)) {
-                if (liveWaypoint.renderId == -1) {
-                    OptimizedWaypointRenderer.add(liveWaypoint);
-                } else {
-                    OptimizedWaypointRenderer.updateWaypoint(liveWaypoint);
-                }
             }
             updateWaypointManagerView(dimensionName, dimensionListChanged);
         }
@@ -787,6 +964,10 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     }
 
     public void onWaypointModification(WaypointModificationMessage buffer) {
+        if (buffer.scope() == WaypointScope.PRIVATE) {
+            this.applyCollectionMessage(buffer);
+            return;
+        }
         if (WaypointServerMod.runsWithClient()) return;
         if (networkState != ClientNetworkState.SYNC_FINISHED) return;
         String dimensionName = buffer.dimensionName();
@@ -805,7 +986,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
         try {
             final SimpleWaypoint waypoint = buffer.waypoint();
             switch (modificationType) {
-                case ADD -> {
+                case ADD, RESTORE -> {
                     int syncId = buffer.syncId();
                     SimpleWaypoint liveWaypoint = this.addWaypointFromRemoteServer(
                             dimensionName,
@@ -816,11 +997,11 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
                     );
                     fileManager = this.getWaypointFileManager(dimensionName);
                     this.saveWaypointFile(fileManager);
-                    if (dimensionName.equals(currentDimensionName)) {
-                        OptimizedWaypointRenderer.add(liveWaypoint);
-                    }
                     updateWaypointManagerView(dimensionName, dimensionListChanged);
-                    MapModIntegrations.onClientWaypointSync(ClientWaypointSyncEvent.waypointModified(dimensionName, listName, modificationType, liveWaypoint, liveWaypoint.name()), this);
+                    var list = fileManager.getWaypointListByName(listName);
+                    this.waypointUpdateNotification.accept(WaypointUpdateFeedback.Update.fromDelta(buffer, list, liveWaypoint));
+                    MapModIntegrations.onClientWaypointSync(ClientWaypointSyncEvent.waypointModified(
+                            dimensionName, listName, WaypointModificationType.ADD, liveWaypoint, liveWaypoint.name()), this);
                 }
                 case REMOVE -> {
                     if (fileManager == null) {
@@ -836,9 +1017,10 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
                     if (wpToRemove != null) {
                         this.saveWaypointFile(fileManager);
                         if (dimensionName.equals(currentDimensionName)) {
-                            OptimizedWaypointRenderer.remove(wpToRemove);
+                            refreshCollectionScene(ClientWaypointSource.SHARED);
                         }
                         WaypointManagerScreen.updateWaypointWidget(dimensionName);
+                        this.waypointUpdateNotification.accept(WaypointUpdateFeedback.Update.fromDelta(buffer, currentList, wpToRemove));
                         MapModIntegrations.onClientWaypointSync(ClientWaypointSyncEvent.waypointModified(dimensionName, listName, modificationType, null, waypointName), this);
                     }
                 }
@@ -857,23 +1039,25 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
                         return;
                     }
                     if (dimensionName.equals(currentDimensionName)) {
-                        OptimizedWaypointRenderer.updateWaypoint(waypointFound);
+                        refreshCollectionScene(ClientWaypointSource.SHARED);
                     }
                     this.saveWaypointFile(fileManager);
                     WaypointManagerScreen.updateWaypointWidget(dimensionName);
+                    this.waypointUpdateNotification.accept(WaypointUpdateFeedback.Update.fromDelta(buffer, currentList, waypointFound));
                     MapModIntegrations.onClientWaypointSync(ClientWaypointSyncEvent.waypointModified(dimensionName, listName, modificationType, waypointFound, buffer.waypointName()), this);
                 }
                 case ADD_LIST -> {
+                    if (currentList != null) {
+                        return;
+                    }
                     if (fileManager == null) {
                         fileManager = this.addWaypointFileManager(dimensionName);
                     }
-                    WaypointList waypointList = fileManager.getWaypointListByName(listName);
-                    if (waypointList == null) {
-                        waypointList = WaypointList.buildByServer(listName, listDisplayName);
-                        fileManager = this.putWaypointList(dimensionName, waypointList);
-                    }
+                    WaypointList waypointList = WaypointList.buildByServer(listName, listDisplayName);
+                    fileManager = this.putWaypointList(dimensionName, waypointList);
                     updateWaypointManagerView(dimensionName, dimensionListChanged);
                     this.saveWaypointFile(fileManager);
+                    this.waypointUpdateNotification.accept(WaypointUpdateFeedback.Update.fromDelta(buffer, waypointList, null));
                     MapModIntegrations.onClientWaypointSync(ClientWaypointSyncEvent.waypointModified(dimensionName, listName, modificationType, null, null), this);
                 }
                 case REMOVE_LIST -> {
@@ -886,8 +1070,10 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
                     } else {
                         this.removeWaypointListImmediately(dimensionName, listName);
                     }
+                    refreshCollectionScene(ClientWaypointSource.SHARED);
                     WaypointManagerScreen.updateWaypointWidget(dimensionName);
                     this.saveWaypointFile(fileManager);
+                    this.waypointUpdateNotification.accept(WaypointUpdateFeedback.Update.fromDelta(buffer, waypointList, null));
                     MapModIntegrations.onClientWaypointSync(ClientWaypointSyncEvent.waypointModified(dimensionName, listName, modificationType, null, null), this);
                 }
             }
@@ -933,6 +1119,10 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     }
 
     public void onWaypointListUpdate(WaypointListUpdateMessage buffer) {
+        if (buffer.scope() == WaypointScope.PRIVATE) {
+            this.applyCollectionMessage(buffer);
+            return;
+        }
         if (WaypointServerMod.runsWithClient()) {
             return;
         }
@@ -961,6 +1151,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
                 && updated.getSyncNum() <= current.getSyncNum()) {
             return;
         }
+        boolean notify = current != null && updated.getSyncNum() > current.getSyncNum();
         if (previous != null) {
             this.removeWaypointListImmediately(dimensionName, buffer.previousListIdentifier());
         }
@@ -969,19 +1160,19 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
             this.saveWaypointFile(fileManager);
         } catch (IOException exception) {
             LOGGER.error("Failed to save updated waypoint list in {}", dimensionName, exception);
+            notify = false;
         }
-        if (dimensionName.equals(currentDimensionName)) {
-            if (previous != null) {
-                OptimizedWaypointRenderer.removeList(previous.simpleWaypoints());
-            }
-            OptimizedWaypointRenderer.addList(updated.simpleWaypoints());
-        }
+        refreshCollectionScene(ClientWaypointSource.SHARED);
         this.synchronizationTracker.clearList(
                 dimensionName,
                 buffer.previousListIdentifier()
         );
         this.synchronizationTracker.clearList(dimensionName, updated.name());
         WaypointManagerScreen.updateWidgetsForDimensionListChange(dimensionName);
+        if (notify) {
+            this.waypointUpdateNotification.accept(new WaypointUpdateFeedback.Update(buffer.scope(), dimensionName,
+                    WaypointUpdateFeedback.Action.UPDATE_LIST, updated, null));
+        }
         MapModIntegrations.onClientWaypointSync(
                 ClientWaypointSyncEvent.listReplaced(dimensionName, updated),
                 this
@@ -989,7 +1180,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     }
 
     public void onWaypointEditResult(WaypointEditResultMessage buffer) {
-        WaypointEditScreen.handleResult(buffer);
+        this.access.acceptResult(buffer, this.collections.generation());
     }
 
     /**
@@ -999,6 +1190,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
      * @param dimensionListChanged whether the mutation created a new dimension manager
      */
     private static void updateWaypointManagerView(String dimensionName, boolean dimensionListChanged) {
+        if (INSTANCE != null) INSTANCE.refreshCollectionScene(ClientWaypointSource.SHARED);
         if (dimensionListChanged) {
             WaypointManagerScreen.updateWidgetsForDimensionListChange(dimensionName);
         } else {

@@ -9,150 +9,105 @@
 
 [![discord-singular](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/social/discord-singular_vector.svg)](https://discord.com/invite/tKtSSYDkHx)
 
-## Make your world easier to explore.
+Server Waypoint adds shared waypoints to Minecraft servers. Players can browse, edit and navigate to waypoints through clickable chat without a client mod. The optional client mod adds a waypoint manager, in-world markers and minimap sync.
 
-Share useful places with your community and help players find their way around your world.
+It runs on Fabric, Forge, NeoForge, Paper, Folia and Purpur. An optional Velocity plugin lets players browse and teleport to waypoints on other servers.
 
-[Get started](https://github.com/2676959/server_waypoint/blob/master/README.md#your-first-waypoint) | [Source code](https://github.com/2676959/server_waypoint)
+## Features
 
-Server Waypoint provides shared destinations, cross-server teleportation, navigation and clickable chat commands. Players can use the server features with a vanilla client. The optional client mod adds in-world markers, a waypoint manager and map integrations.
+### Server (no client mod needed)
 
-## Across servers, closer together
+| Feature | Description |
+| --- | --- |
+| **Shared waypoints** | Named lists for each dimension. Waypoints have a color and initials, plus an optional item icon, description and keywords. |
+| **Private waypoints** | Personal lists saved on the server and visible only to their owner. Open them with `/wp private`. |
+| **Chat menus** | Browse, search, sort, add, edit and remove waypoints by clicking in chat. Hover over a waypoint for its details. |
+| **Navigation** | Find your target with a compass, map, boss bar, action bar, floating label or world marker. Use one or several at once. |
+| **Teleport** | Teleport to a waypoint from chat or the manager, if you have permission. |
+| **Restore** | Removing a waypoint gives a Restore link that works once within 10 minutes. |
+| **Cross-server** | Browse and teleport to waypoints on other servers behind a Velocity proxy, from chat or the manager. |
+| **Styled text** | Display names and descriptions accept JSON text components for colors and formatting. |
+| **Permissions** | Choose who can add, edit, remove, navigate, teleport and upload. Supports LuckPerms on Fabric and Paper. |
+| **Translations** | Messages follow each player's language setting. Includes English, Chinese (Simplified, Traditional and Hong Kong), Spanish and Hebrew. |
 
-The optional **Velocity** integration lets players browse shared waypoints on connected servers and teleport between them when permitted. Cross-server browsing and teleportation are available through clickable chat without the client mod.
+### Client mod (optional)
 
-![Clickable chat browser showing four connected remote servers](https://raw.githubusercontent.com/2676959/server_waypoint/master/docs/gallery/4.0.0/cross-server-chat-browser.png)
+| Feature | Description |
+| --- | --- |
+| **Waypoint manager** | Browse, search, edit, navigate and teleport from one screen. Open it with **Right Shift** or `/wp_gui`, and press **T** over a waypoint to teleport. |
+| **In-world markers** | Visible waypoints appear in the world with their item icon, color and initials. Look at one to see its name and distance. |
+| **Local waypoints** | Keep your own waypoints on the client, separately for each server or world. They work even on servers without Server Waypoint. |
+| **Map mod sync** | Show shared waypoints in Xaero's Minimap or VoxelMap-Updated, and upload your map waypoints when permitted. |
+| **Xaero's World Map** | Add and edit server waypoints from the world map's right-click menu. Requires Xaero's Minimap. |
+| **Client settings** | Adjust marker size, range and opacity, the GUI theme and map sync. Press **C** in the manager. |
 
-**Use chat across the network.** Run `/wp remote` to browse without the client mod. The chat view lists connected servers with availability indicators and waypoint counts, with an **All servers** option for browsing them together.
+## Getting started
 
-![Cross-server waypoint manager showing the building server catalog and teleport action](https://raw.githubusercontent.com/2676959/server_waypoint/master/docs/gallery/4.0.0/cross-server-waypoint-manager.png)
+- **Server:** install the Fabric mod (with Fabric API), the Forge or NeoForge mod, or the [Paper plugin](https://modrinth.com/plugin/server_waypoint/versions?l=paper), which also runs on Folia and Purpur. Join and run `/wp`.
+- **Client (optional):** install the Fabric, Forge or NeoForge mod on your client. It works with any of the server platforms above and in singleplayer.
+- **Velocity (optional):** install the [Velocity plugin](https://modrinth.com/plugin/server_waypoint/versions?l=velocity) and enable cross-server support on each backend server. It is off by default and needs Java 25 on the proxy and matching Server Waypoint versions on every server.
 
-**Browse another server's places.** In the client manager, choose a remote server and explore its lists. Here, the building server's Collaborative Build Sites list contains Public Bridge Works. The details panel shows the server's availability, the destination's properties and a **Teleport** action.
+By default, players can add, edit, remove and navigate. Teleporting and uploading require operator permission. Some features depend on the Minecraft version, such as item icons in chat (1.21.9 and later) and VoxelMap support on Forge and NeoForge.
 
-Cross-server teleportation follows the server's permissions. To edit a remote waypoint, join the server that owns it.
+[Quick start](https://github.com/2676959/server_waypoint/blob/master/README.md#your-first-waypoint) · [Server guide](https://github.com/2676959/server_waypoint/blob/master/docs/tips/server-guide.md) · [Velocity setup](https://github.com/2676959/server_waypoint/blob/master/docs/tips/server-guide.md#cross-server-teleport-setup) · [Features by Minecraft version](https://github.com/2676959/server_waypoint/blob/master/README.md#feature-availability-by-minecraft-version)
 
-[Set up cross-server waypoints](https://github.com/2676959/server_waypoint/blob/master/docs/tips/server-guide.md#cross-server-teleport-setup)
+## Screenshots
 
-## Follow the route your way
+### Chat menus
 
-Choose the guidance that feels comfortable as you travel. The labeled example shows all five server navigation methods pointing to **Festival Green** at the same time.
+Run `/wp` to browse waypoints by dimension and list. Hover over a waypoint to see its description and coordinates, or click it for details and actions.
 
-![All five server navigation methods with labels for the compass, map, boss bar, action bar and floating label](https://raw.githubusercontent.com/2676959/server_waypoint/master/docs/gallery/4.0.0/server-navigation-labeled.png)
+![Clickable chat waypoint list with a hover tooltip](https://raw.githubusercontent.com/2676959/server_waypoint/master/docs/gallery/4.0.0/interactive-chat-waypoint-browser.png)
 
-- **Compass and map:** follow the compass toward the destination or find its marker on the navigation map.
-- **Boss bar and action bar:** keep the destination's name, direction, distance and height difference on screen.
-- **Floating label:** see the destination's guidance within the world.
+![Waypoint details in chat with edit, navigation and teleport controls](https://raw.githubusercontent.com/2676959/server_waypoint/master/docs/gallery/4.0.0/interactive-chat-waypoint-details.png)
 
-Use `/wp navigate` to change your navigation methods or stop navigation. All five methods are provided by the server and work without the client mod.
+### Navigation
 
-## Browse and manage with clickable commands
+The compass, map, boss bar, action bar and floating label pointing to the same waypoint. Choose methods with `/wp navigate`.
 
-Browse and manage waypoints from Minecraft's chat. The server provides clickable lists, hover details and waypoint actions, so players can get started with a vanilla client.
+![Compass, map, boss bar, action bar and floating label, each labeled](https://raw.githubusercontent.com/2676959/server_waypoint/master/docs/gallery/4.0.0/server-navigation-labeled.png)
 
-![Interactive chat waypoint browser with a destination tooltip](https://raw.githubusercontent.com/2676959/server_waypoint/master/docs/gallery/4.0.0/interactive-chat-waypoint-browser.png)
+### Waypoint manager
 
-![Waypoint details with clickable edit, navigation and teleport controls](https://raw.githubusercontent.com/2676959/server_waypoint/master/docs/gallery/4.0.0/interactive-chat-waypoint-details.png)
+Pick a dimension, search, and expand a list to see its waypoints. The details panel shows the selected waypoint's properties.
 
-**Browse before you travel.** Open `/wp` to view waypoints grouped by dimension and list, with icons and distances beside their names. Search or change the sort order, and hover over a destination to read its description and coordinates. The example shows Slime Foundry in the Industrial Quarter list.
+![Waypoint manager with a list expanded and a waypoint selected](https://raw.githubusercontent.com/2676959/server_waypoint/master/docs/gallery/4.0.0/waypoint-manager.png)
 
-**Details and actions in one place.** Select a waypoint to see its properties and the available edit controls. The detail view includes actions to navigate, teleport, download or remove the waypoint. Hover hints explain controls such as **Here**, which moves the saved position to where you are standing.
+### In-world markers
 
-The server's permissions determine which actions each player can use. Messages follow each player's Minecraft language setting.
+![In-world waypoint markers with item icons over a village](https://raw.githubusercontent.com/2676959/server_waypoint/master/docs/gallery/4.0.0/in-world-waypoint-markers.png)
 
-[Explore server commands](https://github.com/2676959/server_waypoint/blob/master/docs/tips/server-guide.md#commands)
+### Map mods
 
-## Give every destination its own style
+One shared waypoint in Xaero's Minimap, VoxelMap and the world. Client settings sync each map mod automatically or on demand.
 
-Shared waypoint display names and descriptions support **JSON text components**, so you can combine colors and text styles for each destination. The screenshots show how the client mod displays that shared formatting in the manager and in-world markers.
+![Shared waypoint in Xaero's Minimap, VoxelMap and the world](https://raw.githubusercontent.com/2676959/server_waypoint/master/docs/gallery/4.0.0/shared-waypoint-map-integrations.png)
 
-![Waypoint manager with a JSON-styled display name and multicolored description](https://raw.githubusercontent.com/2676959/server_waypoint/master/docs/gallery/4.0.0/json-styled-waypoint-details.png)
+![Client settings with Xaero and VoxelMap sync controls](https://raw.githubusercontent.com/2676959/server_waypoint/master/docs/gallery/4.0.0/map-integration-sync-settings.png)
 
-![Colorful bold italic waypoint display name rendered in the world](https://raw.githubusercontent.com/2676959/server_waypoint/master/docs/gallery/4.0.0/json-styled-waypoint-marker.png)
+### Styled text
 
-**Styled names in the manager and the world.** The example uses **Fancy Waypoint**, with a blue-to-purple display name in bold italics. Its formatting appears in the waypoint list, the details panel and the in-world marker.
+A display name and description written with JSON text components, shown in the manager and on an in-world marker.
 
-**Descriptions with their own formatting.** The details panel shows a multicolored description with several text styles. You can use the same format to highlight directions or add context about a place.
+![Waypoint manager showing a JSON-styled display name and description](https://raw.githubusercontent.com/2676959/server_waypoint/master/docs/gallery/4.0.0/json-styled-waypoint-details.png)
 
-**A separate identifier for commands.** The styled display name belongs to the waypoint identified as `fancy_wp`. You can keep a simple identifier for commands while editing the display name and description through the waypoint's edit controls or `/wp edit`.
+![JSON-styled display name on an in-world marker](https://raw.githubusercontent.com/2676959/server_waypoint/master/docs/gallery/4.0.0/json-styled-waypoint-marker.png)
 
-[Learn about identifiers and display names](https://github.com/2676959/server_waypoint/blob/master/docs/tips/server-guide.md#identifiers-and-display-names)
+### Cross-server
 
-## A whole world, neatly organized
+`/wp remote` lists connected servers with their status and waypoint counts. The manager can browse another server's waypoints and teleport you there.
 
-The client manager brings waypoint lists and destination details into one view. Choose a dimension, search by name or expand a list to browse its places.
+![Chat list of four connected servers](https://raw.githubusercontent.com/2676959/server_waypoint/master/docs/gallery/4.0.0/cross-server-chat-browser.png)
 
-![Waypoint manager with Harbour Town expanded and Lantern Market selected](https://raw.githubusercontent.com/2676959/server_waypoint/master/docs/gallery/4.0.0/waypoint-manager.png)
+![Waypoint manager browsing another server's waypoints, with a Teleport button](https://raw.githubusercontent.com/2676959/server_waypoint/master/docs/gallery/4.0.0/cross-server-waypoint-manager.png)
 
-**Lists for the places you share.** Harbour Town is expanded here, with Lantern Market selected alongside Harbour Square, Mapmakers Library and other destinations. Item icons and distances help distinguish entries. The details panel shows the selected waypoint's identifier, display name, initials, coordinates, visibility, color and keywords.
+## Migrating from MCDR
 
-Open the manager with **Right Shift** or `/wp_gui`. Hover over a local waypoint and press **T** to teleport to it. Available actions, including editing, navigation and teleportation, follow the server's permissions.
+Convert `locations.json` from the MCDReforged plugins Locations or LocationMarker with [locations2waypoints.py](https://github.com/2676959/server_waypoint/blob/master/locations2waypoints.py), which needs only Python 3. Follow the [migration steps](https://github.com/2676959/server_waypoint/blob/master/README.md#migrate-waypoints-from-mcdr-plugins) to back up your files and copy the output to the right folder.
 
-## Your waypoints. Your favorite map.
+## Links
 
-Use shared destinations with **Xaero's Minimap** or supported **VoxelMap-Updated** builds. The example shows **Shared Waypoint** in both minimaps alongside its in-world markers.
-
-![Shared waypoint displayed in the world and in Xaero and VoxelMap minimaps](https://raw.githubusercontent.com/2676959/server_waypoint/master/docs/gallery/4.0.0/shared-waypoint-map-integrations.png)
-
-![Client settings with Xaero and VoxelMap automatic and manual synchronization controls](https://raw.githubusercontent.com/2676959/server_waypoint/master/docs/gallery/4.0.0/map-integration-sync-settings.png)
-
-**Choose when to sync.** Press **C** in the waypoint manager to open the client configuration screen. Client settings provide separate automatic synchronization toggles and manual **Sync** buttons for Xaero and VoxelMap. The screenshot has automatic sync enabled for both, while syncing into Xaero's default set is disabled.
-
-You can also upload map waypoints when you have permission. **Xaero's World Map** offers actions for adding and editing server waypoints when installed alongside Xaero's Minimap.
-
-[Check map and version compatibility](https://github.com/2676959/server_waypoint/blob/master/README.md#feature-availability-by-minecraft-version)
-
-## Shared places, visible as you explore
-
-![Server Waypoint in-world markers with item icons over a village](https://raw.githubusercontent.com/2676959/server_waypoint/master/docs/gallery/4.0.0/in-world-waypoint-markers.png)
-
-The client mod shows waypoints in the world with item icons, colors and initials. Look toward a marker to see its display name and distance.
-
----
-
-## Install it your way
-
-**For a server**
-
-Install the matching **Fabric, Forge or NeoForge** mod, or the **Paper, Folia or Purpur** plugin. Once you join, run `/wp` to browse waypoints and get started.
-
-**For a connected network**
-
-Install the optional **Velocity** plugin and configure the backend servers to share waypoints. Cross-server support is off by default and requires matching versions. The proxy plugin requires Java 25.
-
-**For client markers and the manager**
-
-Install the client mod with the dependencies listed for your download. Fabric requires Fabric API. You can also use the mod in singleplayer.
-
-[Server setup and permissions](https://github.com/2676959/server_waypoint/blob/master/docs/tips/server-guide.md)
-
-## Migrate your MCDR waypoints
-
-Moving from the MCDReforged (MCDR) plugins **Locations** or **LocationMarker**? Use [locations2waypoints.py](https://github.com/2676959/server_waypoint/blob/master/locations2waypoints.py) to convert your `locations.json`. It requires Python 3 with no extra packages.
-
-1. Back up `locations.json` and your existing Server Waypoint files, then stop the server.
-2. Download the script, open a terminal in its folder and run:
-
-    ```sh
-    python3 locations2waypoints.py "/path/to/locations.json"
-    ```
-
-    Without a file argument, the script prompts you for the path.
-3. Review any messages about skipped entries. The script creates a `waypoints/` folder beside your source file, with a `locations` list for each dimension in files such as `minecraft$overworld.json`. It keeps names and descriptions, rounds coordinates down to block positions and makes the waypoints shared with all players.
-4. Copy the generated JSON files into the appropriate folder under your server root:
-
-    | Server platform | Waypoint folder |
-    | --- | --- |
-    | Fabric | `config/server_waypoint/waypoints/` |
-    | Forge or NeoForge | `defaultconfigs/server_waypoint/waypoints/` |
-    | Paper, Folia or Purpur | `plugins/ServerWaypoint/waypoints/` |
-
-    If a destination file already exists, manually merge the generated `locations` list into its JSON array; choose another list name if `locations` is already taken. Replacing a dimension file removes its existing waypoint lists. The converter does not merge files and refuses to overwrite its own existing output files.
-5. Start the server and run `/wp list` to browse the imported lists. Waypoint files require a restart; `/wp reload` does not reload them.
-
-Invalid entries and duplicate names within a dimension are skipped with a message. Keep your source file and review the conversion output before finishing.
-
-## Build somewhere worth finding
-
-[Community Discord](https://discord.com/invite/tKtSSYDkHx) | [Report a bug](https://github.com/2676959/server_waypoint/issues)
-
-You're welcome to join the community, report an issue or help translate. Messages follow each player's Minecraft language setting; see the [translation credits and review status](https://github.com/2676959/server_waypoint/blob/master/TRANSLATOR_CREDITS.md) for language coverage.
+- [Discord](https://discord.com/invite/tKtSSYDkHx): questions and community help
+- [Issues](https://github.com/2676959/server_waypoint/issues): bug reports
+- [Source code](https://github.com/2676959/server_waypoint)
+- [Translation credits and review status](https://github.com/2676959/server_waypoint/blob/master/TRANSLATOR_CREDITS.md); help translate on [Crowdin](https://crowdin.com/project/server-waypoint)

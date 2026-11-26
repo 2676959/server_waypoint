@@ -35,7 +35,8 @@ public final class ModNavigationRuntime {
                     this.mapHandler,
                     this.bossbarHandler,
                     this.actionbarHandler,
-                    this.textDisplayHandler
+                    this.textDisplayHandler,
+                    new ModWorldMarkerNavigationHandler()
             )
     );
 
@@ -55,7 +56,7 @@ public final class ModNavigationRuntime {
     public void onPlayerJoin(ServerPlayer player) {
         WaypointServerMod waypointServer = WaypointServerMod.getInstance();
         if (waypointServer != null) {
-            this.service.restorePersistedSession(player, waypointServer);
+            this.service.restorePersistedSession(player, waypointServer::resolveNavigationTarget);
         }
         if (this.itemManager.validateDirectInventory(player, this.enabledItemMethods(player))) {
             this.sendDeduplicatedMessage(player);
@@ -67,6 +68,8 @@ public final class ModNavigationRuntime {
 
     public void onPlayerQuit(ServerPlayer player) {
         this.service.removePlayer(player);
+        WaypointServerMod server = WaypointServerMod.getInstance();
+        if (server != null) server.releasePrivateWaypoints(player.getUUID());
         this.itemManager.removeAllNavigationItems(player);
     }
 

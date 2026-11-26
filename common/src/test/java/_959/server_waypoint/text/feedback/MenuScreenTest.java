@@ -1,5 +1,6 @@
 package _959.server_waypoint.text.feedback;
 
+import _959.server_waypoint.core.collection.WaypointCollectionKey;
 import _959.server_waypoint.text.chat.ChatAssert;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -16,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class MenuScreenTest {
     private static PlacedWaypoint mainHome() {
         var list = Fixtures.homeBases();
-        return new PlacedWaypoint(OVERWORLD, list, list.getWaypointByName("Main Home"));
+        return new PlacedWaypoint(WaypointCollectionKey.shared(), OVERWORLD, list, list.getWaypointByName("Main Home"));
     }
 
     @Test
@@ -24,7 +25,7 @@ class MenuScreenTest {
         Component menu = MenuScreen.menu(Fixtures.player(), Fixtures.dims(Fixtures.player()), mainHome(), true);
 
         assertEquals(List.of(
-                "Server Waypoint   Open GUI · Help · Reload",
+                "Server Waypoint   Open GUI · Private · Help · Reload",
                 "Browse",
                 "  This dimension · All · Remote · Search",
                 "Create",
@@ -33,6 +34,7 @@ class MenuScreenTest {
                 "  Navigation to [MH] Main Home · Stop",
                 "Transfer",
                 "  Download · Upload"), lines(menu));
+        assertEquals("/wp private", clickOf(menu, "Private"));
         assertEquals("/wp_gui", clickOf(menu, "Open GUI"));
         assertEquals("/wp help", clickOf(menu, "Help"));
         assertEquals("/wp reload", clickOf(menu, "Reload"));

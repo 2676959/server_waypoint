@@ -17,9 +17,9 @@ new development build. See [removal validation](2026-10-26-hopper-transfer-remov
 | Hook | Native event | Required independent observations | Execution |
 | --- | --- | --- | --- |
 | `onInventoryClick` | `InventoryClickEvent` | Current/cursor/hotbar, direct allowed slots, shift move, drop/clone/collect, portable storage; ordinary items conserved. | Partial: actual 1/10-owner storage moves allowed, armor/result-slot attempts cancelled, ordinary move control conserved; other click modes/nested storage pending. |
-| `onInventoryDrag` | `InventoryDragEvent` | Protected cursor into valid/invalid raw slots; ordinary cursor conserved. | Pending |
-| `onInventoryOpen` | `InventoryOpenEvent` | Remove protected/nested items from invalid top inventory; preserve ordinary contents. | Pending |
-| `onInventoryClose` | `InventoryCloseEvent` | Top inventory and cursor cleanup; reconcile only the owner. | Partial: actual player-menu close receipts, clean top/cursor and exact owner method items after click cases; other containers pending. |
+| `onInventoryDrag` | `InventoryDragEvent` | Protected cursor into valid/invalid raw slots; ordinary cursor conserved. | Partial: 1/10-owner left-drag of a stackable tagged cursor into own storage is allowed; crafting-grid, empty chest dests and mixed chest/player dests are cancelled; ordinary stone into an empty chest is uncancelled and conserved. Unstackable session compass/map drags become clicks and are not this hook. |
+| `onInventoryOpen` | `InventoryOpenEvent` | Remove protected/nested items from invalid top inventory; preserve ordinary contents. | Partial: real 1/10-owner chest opens remove a direct protected compass and sanitize a nested shulker/map while preserving ordinary chest children; other inventory types pending. |
+| `onInventoryClose` | `InventoryCloseEvent` | Top inventory and cursor cleanup; reconcile only the owner. | Partial: player-menu close receipts plus 1/10-owner dirty chest top/cursor cleanup; ordinary chest contents conserved; drag/other types pending. |
 | `onPrepareCraft` | `PrepareItemCraftEvent` | Protected ingredients clear result; ordinary recipe remains craftable. | Pending |
 | `onPrepareResult` | `PrepareResultEvent` | Cartography protected contents clear result; other inventory types and ordinary contents retain results. | Pending |
 | `onCartographyItem` | `CartographyItemEvent` | Protected cartography interaction denied; ordinary interaction allowed. | Pending |

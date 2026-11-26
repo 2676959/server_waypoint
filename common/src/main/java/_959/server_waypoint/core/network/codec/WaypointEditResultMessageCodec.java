@@ -6,12 +6,14 @@ import _959.server_waypoint.core.edit.EditResultStatus;
 import _959.server_waypoint.core.network.message.WaypointEditResultMessage;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import io.netty.buffer.ByteBuf;
+import _959.server_waypoint.core.collection.WaypointScope;
 
 public final class WaypointEditResultMessageCodec {
     private WaypointEditResultMessageCodec() {
     }
 
     public static void encode(ByteBuf buf, WaypointEditResultMessage result, EncodingContext context) {
+        WaypointScopeCodec.encode(buf, result.scope());
         buf.writeLong(result.requestId());
         buf.writeByte(result.status().ordinal());
         UtfStringCodec.encode(buf, result.dimensionName(), context);
@@ -25,6 +27,7 @@ public final class WaypointEditResultMessageCodec {
     }
 
     public static WaypointEditResultMessage decode(ByteBuf buf, DecodingContext context) {
+        WaypointScope scope = WaypointScopeCodec.decode(buf);
         long requestId = buf.readLong();
         int statusIndex = buf.readUnsignedByte();
         EditResultStatus[] statuses = EditResultStatus.values();
@@ -37,6 +40,7 @@ public final class WaypointEditResultMessageCodec {
         SimpleWaypoint waypoint = buf.readBoolean() ? SimpleWaypointCodec.decode(buf, context) : null;
         int listRevision = buf.readInt();
         return new WaypointEditResultMessage(
+                scope,
                 requestId,
                 statuses[statusIndex],
                 dimensionName,

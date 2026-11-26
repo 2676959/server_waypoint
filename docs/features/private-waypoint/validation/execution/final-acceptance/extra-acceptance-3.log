@@ -1,0 +1,2 @@
+PASS tombstone source isolation and restore name-conflict token preservation
+PASS 24 native locale/view captures, six profile captures, narration/popup/wheel/Escape checks

@@ -1,0 +1,18 @@
+[
+    {
+        "path": "/Volumes/ssd/sw-private-task8-20261031/paper/plugins/server-waypoint.jar",
+        "sha256": "3d2db928258fc46143432eb7dc9ea943ce9ce1261c2ce5de1b8b2556be159c88"
+    },
+    {
+        "path": "/Volumes/ssd/sw-private-task8-20261031/paper/server.jar",
+        "sha256": "ab9bb1afc3cea6978a0c03ce8448aa654fe8a9c4dddf341e7cbda1b0edaa73f5"
+    },
+    {
+        "path": "/Volumes/ssd/sw-private-task8-20261031/multiplayer/server.jar",
+        "sha256": "b51d49a5f62446b7cfc01e6c29e48e0ce6abd35a783134aace1047b839b178ef"
+    },
+    {
+        "path": "/Volumes/ssd/sw-private-task8-20261031/multiplayer/plugins/old-server-waypoint.jar",
+        "sha256": "1dc1487481185799c48f9118849b901efd05bfa3cd8c5d7f2c1e6acec85932be"
+    }
+]

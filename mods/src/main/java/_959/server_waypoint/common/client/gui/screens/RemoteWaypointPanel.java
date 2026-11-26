@@ -63,11 +63,13 @@ final class RemoteWaypointPanel {
     private int listY;
     private int listWidth;
     private int listHeight;
-    // A failed teleport's message; shown until the selection changes.
+    private final Runnable teleportCommandSubmitted;
+    // A failed teleport's message; shown until the selection changes or a retry is submitted.
     private @Nullable String failure;
 
-    RemoteWaypointPanel(WaypointClientMod client, Font font) {
+    RemoteWaypointPanel(WaypointClientMod client, Font font, Runnable teleportCommandSubmitted) {
         this.font = font;
+        this.teleportCommandSubmitted = teleportCommandSubmitted;
         this.catalogs = client.remoteCatalogs();
         this.session = catalogs.session();
         this.tree = new BrowserTree();
@@ -231,7 +233,9 @@ final class RemoteWaypointPanel {
         if (!isSessionCurrent() || request == null || !RemoteBrowserModel.isCurrent(catalogs, request)) {
             failure = "waypoint.remote.gui.changed";
         } else if (ClientCommandUtils.sendCommand(request.command())) {
-            MinecraftClientHelper.setScreen(null);
+            failure = null;
+            updateTeleportAction();
+            teleportCommandSubmitted.run();
             return;
         } else {
             failure = "waypoint.remote.gui.send_failed";

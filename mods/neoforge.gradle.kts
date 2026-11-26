@@ -9,6 +9,8 @@ val minecraft = stonecutter.current.version
 val loader = "neoforge"
 // VoxelMap-Updated publishes NeoForge builds only for some Minecraft versions; a pinned build enables the integration.
 val voxelmapSupported = project.hasProperty("voxelmap_neoforge")
+// Optional NeoForge version range for targets whose code needs a later build of their NeoForge line.
+val neoforgeVersionForge = findProperty("neoforgeVersionForge")?.toString().orEmpty()
 val targetJavaVersion = when {
     stonecutter.eval(stonecutter.current.version, ">=26") -> 25
     stonecutter.eval(stonecutter.current.version, ">=1.20.5") -> 21
@@ -127,6 +129,38 @@ repositories {
     }
 }
 
+if (minecraft == "1.21.11") {
+    val performanceProbe = sourceSets.create("performanceProbe") {
+        java.setSrcDirs(listOf(rootProject.file("mods/src/performanceProbe/java")))
+        resources.setSrcDirs(listOf(rootProject.file("mods/src/performanceProbe/resources/neoforge")))
+        java.exclude("_959/server_waypoint/perf/mods/fabric")
+        java.exclude("_959/server_waypoint/perf/mods/forge")
+        compileClasspath += sourceSets.main.get().compileClasspath
+        runtimeClasspath += output + compileClasspath
+    }
+    evaluationDependsOn(":cross-server")
+    val probeContractTask = project(":cross-server").tasks.named("performanceProbeContractJar")
+    val probeContract = configurations.create("performanceProbeContract")
+    dependencies {
+        add(performanceProbe.compileOnlyConfigurationName, files(probeContractTask))
+        add(probeContract.name, files(probeContractTask))
+    }
+    tasks.named("compilePerformanceProbeJava") {
+        dependsOn("stonecutterGenerate")
+    }
+    tasks.register<Jar>("performanceProbeJar") {
+        group = "verification"
+        description = "Builds the test-only NeoForge performance probe."
+        archiveBaseName.set("server-waypoint-performance-neoforge")
+        archiveVersion.set("")
+        archiveClassifier.set("probe")
+        from(performanceProbe.output)
+        from(probeContract.map { zipTree(it) })
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        dependsOn(tasks.named("performanceProbeClasses"))
+    }
+}
+
 neoForge {
     val neoforge_loader: String by project
     version = neoforge_loader
@@ -135,6 +169,9 @@ neoForge {
     // Resolve the test classpath together with Minecraft's libraries, so the older Gson, SLF4J, Netty and
     // Brigadier that :common brings in are upgraded instead of shadowing Minecraft's on the test classpath.
     addModdingDependenciesTo(sourceSets.test.get())
+    if (minecraft == "1.21.11") {
+        addModdingDependenciesTo(sourceSets.getByName("performanceProbe"))
+    }
 
     runs {
         configureEach {
@@ -201,15 +238,25 @@ tasks.processResources {
     inputs.property("version", mod_version)
     inputs.property("java_version", targetJavaVersion)
 
+    // Mixins this target doesn't compile (each class's `//? if` sets where it exists) must leave the config too.
+    val uncompiledMixins = buildSet<String> {
+        if (stonecutter.eval(stonecutter.current.version, "<1.20.5")) add("CustomDataAccessor")
+        if (stonecutter.eval(stonecutter.current.version, "<1.21.6")) {
+            addAll(listOf("GuiItemRenderStateMixin", "GuiRendererItemAlphaMixin", "OversizedWaypointItemAlphaMixin"))
+        }
+        add("WaypointBlockItemAlphaMixin") // Fabric-only
+    }
+    inputs.property("uncompiled_mixins", uncompiledMixins.sorted())
     filesMatching(listOf("*.mixins.json")) {
         filter { line: String ->
-            if (line.trim() == "\"CustomDataAccessor\"," && stonecutter.eval(stonecutter.current.version, "<1.20.5")) "" else line
+            if (line.trim().removeSurrounding("\"", "\",") in uncompiledMixins) "" else line
         }
         expand("java_version" to targetJavaVersion)
     }
 
     val mcVersionForge: String by project
     inputs.property("minecraft_dependency", mcVersionForge)
+    inputs.property("neoforge_dependency", neoforgeVersionForge)
     inputs.property("voxelmap", voxelmapSupported)
     filesMatching("META-INF/neoforge.mods.toml") {
         expand(mapOf(
@@ -218,6 +265,7 @@ tasks.processResources {
             "description" to mod_description,
             "version" to mod_version,
             "minecraft_dependency" to mcVersionForge,
+            "neoforge_dependency" to neoforgeVersionForge,
             "voxelmap" to voxelmapSupported,
         ))
     }

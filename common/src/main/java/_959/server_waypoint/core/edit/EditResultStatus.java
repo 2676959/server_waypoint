@@ -14,5 +14,6 @@ public enum EditResultStatus {
     MALFORMED_REQUEST,
     DUPLICATE_KEYWORD,
     ENCODING_FAILED,
+    PERSISTENCE_FAILED,
     UPLOAD_BUSY
 }

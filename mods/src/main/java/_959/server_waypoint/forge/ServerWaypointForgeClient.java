@@ -174,7 +174,7 @@ public class ServerWaypointForgeClient {
                 (payload, buf) -> payload.write(buf),
                 decoder,
                 (payload, context) -> {
-                    context.get().enqueueWork(() -> handler.handle(payload, context));
+                    handler.handle(payload, context);
                     context.get().setPacketHandled(true);
                 },
                 Optional.of(NetworkDirection.PLAY_TO_CLIENT)
@@ -188,9 +188,9 @@ public class ServerWaypointForgeClient {
                 .decoder(decoder)
                 *///?}
                 //? if >= 1.20.5 {
-                .consumerMainThread((payload, context) -> handler.handle((P) payload, context))
+                .consumerNetworkThread((payload, context) -> { handler.handle((P) payload, context); })
                 //?} else {
-                /*.consumerMainThread(handler::handle)
+                /*.consumerNetworkThread(handler::handle)
                 *///?}
                 .add();
         //?}

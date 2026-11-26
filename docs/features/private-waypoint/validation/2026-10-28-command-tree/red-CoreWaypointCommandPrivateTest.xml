@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="_959.server_waypoint.command.CoreWaypointCommandPrivateTest" tests="2" skipped="0" failures="2" errors="0" timestamp="2026-10-28T21:09:52.827Z" hostname="Mac-mini.local" time="0.107">
+  <properties/>
+  <testcase name="invalidListOptionsFailAtTheArgumentBeforeStorageOrScheduling()" classname="_959.server_waypoint.command.CoreWaypointCommandPrivateTest" time="0.062">
+    <failure message="org.opentest4j.AssertionFailedError: wp private list sort invalid ==&gt; Expected com.mojang.brigadier.exceptions.CommandSyntaxException to be thrown, but nothing was thrown." type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: wp private list sort invalid ==&gt; Expected com.mojang.brigadier.exceptions.CommandSyntaxException to be thrown, but nothing was thrown.
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:152)
+	at org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:73)
+	at org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:39)
+	at org.junit.jupiter.api.Assertions.assertThrows(Assertions.java:3131)
+	at _959.server_waypoint.command.CoreWaypointCommandPrivateTest.invalidListOptionsFailAtTheArgumentBeforeStorageOrScheduling(CoreWaypointCommandPrivateTest.java:146)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+</failure>
+  </testcase>
+  <testcase name="privateOptionsAndOwnerSuggestionsWorkThroughNestedRedirects()" classname="_959.server_waypoint.command.CoreWaypointCommandPrivateTest" time="0.039">
+    <failure message="org.opentest4j.AssertionFailedError: Expected com.mojang.brigadier.exceptions.CommandSyntaxException to be thrown, but nothing was thrown." type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: Expected com.mojang.brigadier.exceptions.CommandSyntaxException to be thrown, but nothing was thrown.
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:152)
+	at org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:73)
+	at org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:35)
+	at org.junit.jupiter.api.Assertions.assertThrows(Assertions.java:3115)
+	at _959.server_waypoint.command.CoreWaypointCommandPrivateTest.privateOptionsAndOwnerSuggestionsWorkThroughNestedRedirects(CoreWaypointCommandPrivateTest.java:164)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+</failure>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

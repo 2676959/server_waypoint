@@ -1,0 +1,5 @@
+FAIL 26.1.2-Fabric errors=3 warnings=48 03-connect-incompatible: FAIL java.util.concurrent.ExecutionException: java.lang.IllegalArgumentException: Only Local selections require a profile UUID at java.base/java.util.concurrent.CompletableFuture.wrapInExecutionException(CompletableFuture.java:345) at java.
+  ERROR Failed to fetch user properties (game/logs/latest.log:567)
+  ERROR Couldn't connect to realms (game/logs/latest.log:850)
+  ERROR Failed to retrieve profile key pair (game/logs/latest.log:1250)
+Report: /Volumes/ssd/sw-private-task8-20261031/multiplayer-results/report.md

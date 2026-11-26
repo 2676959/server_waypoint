@@ -1,6 +1,27 @@
-use azalea::{Client, WalkDirection, container::ContainerClientExt};
+use azalea::{
+    Client, WalkDirection,
+    bot::BotClientExt,
+    container::{ContainerClientExt, ContainerHandle},
+    core::position::BlockPos,
+    inventory::operations::{ClickOperation, QuickCraftClick, QuickCraftKind, QuickCraftStatus},
+};
 use serde_json::{Value, json};
 use std::time::{Duration, Instant};
+
+async fn open_other_container(bot: &Client, position: BlockPos) -> anyhow::Result<ContainerHandle> {
+    // Azalea can wait forever after a rapid open/close misses the server menu.
+    match tokio::time::timeout(Duration::from_secs(2), bot.open_container_at(position)).await {
+        Ok(Some(handle)) => Ok(handle),
+        Ok(None) | Err(_) => anyhow::bail!("other container did not open"),
+    }
+}
+
+async fn wait_game_ticks(bot: &Client, count: usize) {
+    let mut ticks = bot.get_tick_broadcaster();
+    for _ in 0..count {
+        let _ = ticks.recv().await;
+    }
+}
 
 pub async fn perform(
     bot: &Client,
@@ -9,12 +30,27 @@ pub async fn perform(
         std::sync::Mutex<sw_performance_bots::command_ack::PendingAcks>,
     >,
     markers: &std::sync::Arc<std::sync::Mutex<sw_performance_bots::command_ack::PendingAcks>>,
+    trees: &std::sync::Arc<std::sync::Mutex<std::collections::BTreeMap<String, sw_performance_bots::command_tree::Capture>>>,
+    open_container: &mut Option<ContainerHandle>,
 ) -> anyhow::Result<Value> {
     let mut started = Instant::now();
     let mut marker_elapsed = 0_u64;
     let before = bot.position();
     let mut native_ack = Value::Null;
+    let mut tree_receipt = Value::Null;
     match data["operation"].as_str().unwrap_or("") {
+        "tree-refresh" => {
+            let (receiver, request) = {
+                let mut trees = trees.lock().unwrap();
+                let capture = trees.get_mut(&bot.profile().name).ok_or_else(|| anyhow::anyhow!("tree capture absent"))?;
+                (capture.refresh().map_err(anyhow::Error::msg)?, capture.request())
+            };
+            bot.write_packet(azalea::protocol::packets::game::ServerboundCustomPayload {
+                identifier: "swperf:tree_refresh".parse().unwrap(),
+                data: azalea::buf::UnsizedByteArray::from(serde_json::to_vec(&request)?),
+            });
+            tree_receipt = tokio::time::timeout(Duration::from_secs(30), receiver).await??;
+        }
         "command" => {
             let command = data["command"]
                 .as_str()
@@ -63,13 +99,29 @@ pub async fn perform(
                 bot.write_packet(azalea::protocol::packets::game::ServerboundChatCommand {
                     command: command[1..].to_owned(),
                 });
-                let reply = tokio::time::timeout(Duration::from_secs(10), receiver).await;
+                let reply = tokio::time::timeout(Duration::from_secs(90), receiver).await;
                 acknowledgements
                     .lock()
                     .unwrap()
                     .cancel(&bot.profile().name, id);
-                native_ack = reply
-                    .map_err(|_| anyhow::anyhow!("native command acknowledgement deadline"))??;
+                match reply {
+                    Ok(Ok(value)) => native_ack = value,
+                    Ok(Err(error)) => anyhow::bail!(error.to_string()),
+                    Err(_) => {
+                        let after = bot.position();
+                        return Ok(json!({
+                            "error": "native command acknowledgement deadline",
+                            "success": false,
+                            "clientElapsedNs": started.elapsed().as_nanos() as u64,
+                            "markerRegistrationNs": marker_elapsed,
+                            "clock": "client-monotonic",
+                            "completionScope": "client-issued",
+                            "nativeAck": Value::Null,
+                            "before": [before.x, before.y, before.z],
+                            "after": [after.x, after.y, after.z]
+                        }));
+                    }
+                }
             } else {
                 bot.chat(command);
                 tokio::time::sleep(Duration::from_millis(50)).await;
@@ -102,6 +154,15 @@ pub async fn perform(
             tokio::time::sleep(Duration::from_millis(millis)).await;
             bot.walk(WalkDirection::None);
         }
+        "entity-interact" => {
+            let id = sw_performance_bots::action_input::entity_interact(data)
+                .map_err(anyhow::Error::msg)?;
+            let entity = bot
+                .ecs_entity_by_minecraft_entity(azalea::world::MinecraftEntityId(id))
+                .ok_or_else(|| anyhow::anyhow!("entity is not loaded"))?;
+            bot.entity_interact(entity);
+            wait_game_ticks(bot, 5).await;
+        }
         "select" => {
             let slot = data["slot"]
                 .as_u64()
@@ -133,13 +194,171 @@ pub async fn perform(
             });
             tokio::time::sleep(Duration::from_millis(150)).await;
         }
+        "open-container" => {
+            let (x, y, z) = sw_performance_bots::action_input::container_position(data)
+                .map_err(anyhow::Error::msg)?;
+            anyhow::ensure!(open_container.is_none(), "another container already open");
+            let handle = open_other_container(bot, BlockPos::new(x, y, z)).await?;
+            if data["hold"] == true {
+                *open_container = Some(handle);
+            } else {
+                handle.close();
+            }
+            tokio::time::sleep(Duration::from_millis(150)).await;
+        }
+        "close-container" => {
+            let handle = open_container
+                .take()
+                .ok_or_else(|| anyhow::anyhow!("no held other container"))?;
+            handle.close();
+            tokio::time::sleep(Duration::from_millis(150)).await;
+        }
+        "pickup" => {
+            let from = data["from"]
+                .as_u64()
+                .ok_or_else(|| anyhow::anyhow!("inventory pickup source slot required"))?;
+            anyhow::ensure!(from <= 62, "invalid inventory pickup source slot");
+            if open_container.is_none() {
+                if data.get("x").is_some() {
+                    let (x, y, z) = sw_performance_bots::action_input::container_position(data)
+                        .map_err(anyhow::Error::msg)?;
+                    *open_container = Some(open_other_container(bot, BlockPos::new(x, y, z)).await?);
+                } else {
+                    *open_container = Some(
+                        bot.open_inventory()
+                            .ok_or_else(|| anyhow::anyhow!("another container open"))?,
+                    );
+                }
+            }
+            open_container
+                .as_ref()
+                .ok_or_else(|| anyhow::anyhow!("no open inventory"))?
+                .left_click(from as usize);
+            wait_game_ticks(bot, 2).await;
+        }
+        "drag" => {
+            let (slots, left) = if data.get("from").is_some() {
+                let (from, slots, left) = sw_performance_bots::action_input::inventory_drag(data)
+                    .map_err(anyhow::Error::msg)?;
+                if open_container.is_none() {
+                    if data.get("x").is_some() {
+                        let (x, y, z) = sw_performance_bots::action_input::container_position(data)
+                            .map_err(anyhow::Error::msg)?;
+                        *open_container = Some(open_other_container(bot, BlockPos::new(x, y, z)).await?);
+                    } else {
+                        *open_container = Some(
+                            bot.open_inventory()
+                                .ok_or_else(|| anyhow::anyhow!("another container open"))?,
+                        );
+                    }
+                }
+                open_container
+                    .as_ref()
+                    .ok_or_else(|| anyhow::anyhow!("no open inventory"))?
+                    .left_click(from);
+                tokio::time::sleep(Duration::from_millis(150)).await;
+                (slots, left)
+            } else {
+                if open_container.is_none() {
+                    if data.get("x").is_some() {
+                        let (x, y, z) = sw_performance_bots::action_input::container_position(data)
+                            .map_err(anyhow::Error::msg)?;
+                        *open_container = Some(open_other_container(bot, BlockPos::new(x, y, z)).await?);
+                    } else {
+                        *open_container = Some(
+                            bot.open_inventory()
+                                .ok_or_else(|| anyhow::anyhow!("another container open"))?,
+                        );
+                    }
+                }
+                sw_performance_bots::action_input::inventory_drag_slots(data)
+                    .map_err(anyhow::Error::msg)?
+            };
+            let handle = open_container
+                .as_ref()
+                .ok_or_else(|| anyhow::anyhow!("no open inventory"))?;
+            let kind = if left {
+                QuickCraftKind::Left
+            } else {
+                QuickCraftKind::Right
+            };
+            handle.click(ClickOperation::QuickCraft(QuickCraftClick {
+                kind: kind.clone(),
+                status: QuickCraftStatus::Start,
+            }));
+            wait_game_ticks(bot, 2).await;
+            for slot in slots {
+                handle.click(ClickOperation::QuickCraft(QuickCraftClick {
+                    kind: kind.clone(),
+                    status: QuickCraftStatus::Add { slot: slot as u16 },
+                }));
+                wait_game_ticks(bot, 2).await;
+            }
+            handle.click(ClickOperation::QuickCraft(QuickCraftClick {
+                kind,
+                status: QuickCraftStatus::End,
+            }));
+            wait_game_ticks(bot, 2).await;
+            if data["hold"] != true {
+                open_container
+                    .take()
+                    .ok_or_else(|| anyhow::anyhow!("no open inventory"))?
+                    .close();
+                tokio::time::sleep(Duration::from_millis(150)).await;
+            }
+        }
+        "menu-click" => {
+            let (slot, button) = sw_performance_bots::action_input::menu_click(data)
+                .map_err(anyhow::Error::msg)?;
+            let handle = open_container
+                .as_ref()
+                .ok_or_else(|| anyhow::anyhow!("no open inventory"))?;
+            match button {
+                sw_performance_bots::action_input::MenuButton::Left => handle.left_click(slot),
+                sw_performance_bots::action_input::MenuButton::Right => handle.right_click(slot),
+                sw_performance_bots::action_input::MenuButton::Shift => handle.shift_click(slot),
+            }
+            wait_game_ticks(bot, 2).await;
+        }
         "disconnect" => bot.disconnect(),
+        "refresh" => {
+            use azalea::protocol::packets::game::ServerboundCustomPayload;
+            use sw_performance_bots::waypoint_protocol::request_snapshot;
+            let action = sw_performance_bots::action_input::waypoint_action(data)
+                .map_err(anyhow::Error::msg)?;
+            anyhow::ensure!(action.operation == "refresh" && action.forced, "forced refresh required");
+            let frame = request_snapshot(*bot.profile().uuid.as_bytes());
+            bot.write_packet(ServerboundCustomPayload {
+                identifier: "server_waypoint:message_chunk".parse().unwrap(),
+                data: azalea::buf::UnsizedByteArray::from(frame),
+            });
+            tokio::time::sleep(Duration::from_millis(150)).await;
+        }
+        "chat" => {
+            let action = sw_performance_bots::action_input::waypoint_action(data)
+                .map_err(anyhow::Error::msg)?;
+            anyhow::ensure!(action.operation == "chat", "chat action required");
+            bot.chat(&action.text);
+            tokio::time::sleep(Duration::from_millis(150)).await;
+        }
+        "upload" => {
+            let action = sw_performance_bots::action_input::waypoint_action(data)
+                .map_err(anyhow::Error::msg)?;
+            anyhow::ensure!(
+                action.waypoints >= 1 && action.waypoints <= 4096,
+                "upload request out of bounds"
+            );
+            anyhow::bail!(
+                "published waypoint-data upload body is not in the vector set (compression={})",
+                action.compression
+            );
+        }
         _ => anyhow::bail!("unsupported action"),
     }
     let after = bot.position();
     Ok(
         json!({"clientElapsedNs": started.elapsed().as_nanos() as u64,
-        "markerRegistrationNs": marker_elapsed, "clock": "client-monotonic", "completionScope": if native_ack.is_null() {"client-issued"} else {"client-roundtrip"}, "nativeAck":native_ack,
+        "markerRegistrationNs": marker_elapsed, "clock": "client-monotonic", "completionScope": if native_ack.is_null() {"client-issued"} else {"client-roundtrip"}, "nativeAck":native_ack, "treeReceipt":tree_receipt,
         "before": [before.x, before.y, before.z], "after": [after.x, after.y, after.z]}),
     )
 }

@@ -60,3 +60,17 @@ class MutationLeavesTest(unittest.TestCase):
         other=event(3,"command.begin",{**callback,"input":"wp help","path":"wp help","commandObservationId":5})
         with self.assertRaises(ValueError):
             async_reload_feedback(begin+"\n"+end+"\n"+other+"\n[Server thread/INFO]: PERF_RELOAD_unique","r","a",callback,"PERF_RELOAD_unique")
+
+    def test_reload_correlation_allows_prior_completed_reload_but_not_a_second_active_reload(self):
+        import json
+        from scenarios.mutation_leaves import async_reload_feedback
+        callback={"path":"wp reload","input":"wp reload","actor":"CONSOLE","commandObservationId":4,"serverObserved":True}
+        def event(sequence,kind,identifier):
+            data={**callback,"commandObservationId":identifier}
+            return "[Server thread/INFO]: SW_PERF "+json.dumps({"schemaVersion":1,"runId":"r","attemptId":"a","sequence":sequence,"type":kind,"data":data})
+        transcript="\n".join((event(1,"command.begin",2),event(2,"command.end",2),
+                              event(3,"command.begin",4),event(4,"command.end",4),
+                              "[Server thread/INFO]: PERF_RELOAD_target"))
+        self.assertTrue(async_reload_feedback(transcript,"r","a",callback,"PERF_RELOAD_target")["feedbackObserved"])
+        with self.assertRaises(ValueError):
+            async_reload_feedback(transcript.replace("[Server thread/INFO]: PERF_RELOAD_target",event(5,"command.begin",6)+"\n[Server thread/INFO]: PERF_RELOAD_target"),"r","a",callback,"PERF_RELOAD_target")

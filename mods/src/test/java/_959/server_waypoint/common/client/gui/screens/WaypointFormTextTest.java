@@ -8,8 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
 /**
- * The header text is one line as wide as the panel: text that doesn't fit is cut and ends with an
- * ellipsis. {@link TestFont} makes every character 6 pixels wide.
+ * The title is one line as wide as the panel: text that doesn't fit is cut and ends with an ellipsis (the
+ * subtitle wraps instead, see {@link WaypointFormSubtitleTest}). {@link TestFont} makes every character 6
+ * pixels wide.
  */
 class WaypointFormTextTest {
     private static final TestFont FONT = new TestFont();

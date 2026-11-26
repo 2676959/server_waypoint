@@ -1,5 +1,6 @@
 package _959.server_waypoint.util;
 
+import _959.server_waypoint.core.collection.WaypointScope;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
 import _959.server_waypoint.core.network.upload.UploadConflictPolicy;
@@ -7,13 +8,29 @@ import _959.server_waypoint.core.network.upload.UploadScope;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Locale;
-
 import static _959.server_waypoint.command.CoreWaypointCommand.*;
 import static _959.server_waypoint.util.ColorUtils.rgbToNameOrHexCode;
 
 public class StringCommandBuilder {
     public static final String WAYPOINT_COMMAND_WITH_SLASH = "/" + WAYPOINT_COMMAND;
+
+    /** Scopes a complete command or help syntax, leaving identifiers and already scoped commands intact. */
+    public static String inScope(WaypointScope scope, String command) {
+        if (scope != WaypointScope.PRIVATE || !(command.equals("/wp") || command.startsWith("/wp "))
+                || command.equals("/wp private") || command.startsWith("/wp private ")) {
+            return command;
+        }
+        return commandPrefix(scope) + command.substring(WAYPOINT_COMMAND_WITH_SLASH.length());
+    }
+
+    public static String commandPrefix(WaypointScope scope) {
+        return scope == WaypointScope.PRIVATE ? WAYPOINT_COMMAND_WITH_SLASH + " private" : WAYPOINT_COMMAND_WITH_SLASH;
+    }
+
+    public static String navigateCmd(WaypointScope scope, String dimensionName, String listName, String waypointName) {
+        return commandPrefix(scope) + navigateCmd(dimensionName, listName, waypointName)
+                .substring(WAYPOINT_COMMAND_WITH_SLASH.length());
+    }
 
     public static String tpCmd(String dimensionName, String waypointList, String waypointName) {
         return tpCmd(dimensionName, waypointList, waypointName, true);
@@ -49,7 +66,7 @@ public class StringCommandBuilder {
                                    boolean deleteMissing) {
         StringBuilder command = new StringBuilder(WAYPOINT_COMMAND_WITH_SLASH)
                 .append(' ').append(UPLOAD_COMMAND)
-                .append(' ').append(request.target().name().toLowerCase(Locale.ROOT));
+                .append(' ').append(request.target().id());
         if (conflictPolicy == UploadConflictPolicy.LOCAL) {
             command.append(" force local");
             if (deleteMissing) {
@@ -111,12 +128,13 @@ public class StringCommandBuilder {
         sb.append(' ').append(rgbToNameOrHexCode(waypoint.rgb(), false));
         sb.append(' ').append(waypoint.yaw());
         sb.append(' ').append(waypoint.global());
-        if (waypoint.icon() == null) {
+        if (waypoint.icon() == null && waypoint.displayNameOverride() == null) {
             appendExtraInfo(sb, waypoint);
         } else {
             sb.append(' ').append(escapeArgument(String.join(", ", waypoint.keywords())));
             sb.append(' ').append(escapeArgument(waypoint.description()));
-            sb.append(" icon ").append(waypoint.icon());
+            if (waypoint.icon() != null) sb.append(" icon ").append(waypoint.icon());
+            if (waypoint.displayNameOverride() != null) sb.append(" display_name ").append(escapeArgument(waypoint.displayNameOverride()));
         }
         return sb.toString();
     }

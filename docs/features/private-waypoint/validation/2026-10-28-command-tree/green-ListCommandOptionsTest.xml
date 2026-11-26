@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="_959.server_waypoint.command.ListCommandOptionsTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-10-28T21:19:10.644Z" hostname="Mac-mini.local" time="0.036">
+  <properties/>
+  <testcase name="localAndRemoteBranchesStaySmall(Path)" classname="_959.server_waypoint.command.ListCommandOptionsTest" time="0.005"/>
+  <testcase name="privateAndCompleteEmptyCatalogTreesStayWithinBudgetBeforeAndAfterCopy(Path)" classname="_959.server_waypoint.command.ListCommandOptionsTest" time="0.01"/>
+  <testcase name="optionCombinationsKeepTheirValuesAndNativeArgumentBounds()" classname="_959.server_waypoint.command.ListCommandOptionsTest" time="0.02"/>
+  <testcase name="optionTreeStaysSmallBeforeAndAfterVanillaStyleCopy()" classname="_959.server_waypoint.command.ListCommandOptionsTest" time="0.0"/>
+  <testcase name="invalidValuesReportTheirPositionBeforeRunningTheCommand()" classname="_959.server_waypoint.command.ListCommandOptionsTest" time="0.0"/>
+  <testcase name="valueSuggestionsAndExecutionWorkThroughNestedRedirects()" classname="_959.server_waypoint.command.ListCommandOptionsTest" time="0.0"/>
+  <system-out><![CDATA[Command branch nodes: local=1327, remote=1337
+Empty catalog nodes: privateList=1327 private=1469 copiedPrivate=1469 total=4305 copiedTotal=4305
+List option nodes: server=332, copied=332
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

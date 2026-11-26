@@ -153,6 +153,7 @@ public class ServerWaypointNeoForgeClient {
 
 //? if >= 1.20.5 {
     public static void registerClientPayloadHandlers(PayloadRegistrar registrar) {
+        registrar = registrar.executesOn(net.neoforged.neoforge.network.registration.HandlerThread.NETWORK);
         S2CPayloadHandler.ServerHandshakeHandler serverHandshakeHandler = new S2CPayloadHandler.ServerHandshakeHandler();
         S2CPayloadHandler.UploadRequestHandler uploadRequestHandler = new S2CPayloadHandler.UploadRequestHandler();
         // S2C
@@ -186,7 +187,7 @@ public class ServerWaypointNeoForgeClient {
         channel.messageBuilder(payloadClass, id, PlayNetworkDirection.PLAY_TO_CLIENT)
                 .encoder((payload, buf) -> payload.write(buf))
                 .decoder(decoder::apply)
-                .consumerMainThread(handler::handle)
+                .consumerNetworkThread(handler::handle)
                 .add();
     }
 ^///?}

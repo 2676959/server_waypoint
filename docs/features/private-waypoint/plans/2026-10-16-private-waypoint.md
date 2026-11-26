@@ -17,7 +17,7 @@ JUnit 5, Gradle Kotlin DSL, and Stonecutter across Fabric, Forge, NeoForge, and 
 
 **Spec:** [Private and local waypoint design](../specs/2026-10-16-private-waypoint-design.md).
 
-Status: planned, not implemented. Prepared on 2026-10-16 against branch
+Status: implementation in progress; Tasks 1–2 verified on 2026-10-23, Tasks 3–6 on 2026-10-28, and Task 7 on 2026-10-29. Task 8 platform/documentation and planned live acceptance were completed on 2026-10-31; evidence and certification boundaries are tracked in the validation checklist. Prepared on 2026-10-16 against branch
 `feature/private-waypoint`. Exact proposed class names below are implementation contracts,
 not claims that those classes already exist.
 
@@ -114,18 +114,18 @@ callers constructing their identities. Extend navigation tests and add
 an explicit collection-to-manager resolver. Task 1 tests supply in-memory managers; Task 2 wires
 the private store, so this task does not depend on a store implementation that comes later.
 
-- [ ] Add tests for valid Shared/Private keys and rejection of missing/mismatched owners.
-- [ ] Add navigation tests with Shared, Alice Private, and Bob Private all named
+- [x] Add tests for valid Shared/Private keys and rejection of missing/mismatched owners.
+- [x] Add navigation tests with Shared, Alice Private, and Bob Private all named
   `minecraft:overworld / Homes / Base`: refreshing or renaming Alice's target changes only Alice's
   private session. Removal cannot resolve the shared or Bob target.
-- [ ] Add codec round-trip tests retaining collection identity, reject mismatched-owner restoration,
+- [x] Add codec round-trip tests retaining collection identity, reject mismatched-owner restoration,
   and reject the former navigation session format after the version increment.
-- [ ] Run the focused tests and confirm the new assertions fail before implementation.
-- [ ] Implement identity propagation through target creation, target/list refresh keys, stopped
+- [x] Run the focused tests and confirm the new assertions fail before implementation.
+- [x] Implement identity propagation through target creation, target/list refresh keys, stopped
   target links, persistence, and restore resolution. Keep one active navigation session per player.
-- [ ] Run `rtk proxy ./gradlew :common:test --tests '*WaypointCollectionKeyTest' --tests '*Navigation*Test'`.
+- [x] Run `rtk proxy ./gradlew :common:test --tests '*WaypointCollectionKeyTest' --tests '*Navigation*Test'`.
   Expected: successful build and passing assertions, including existing navigation behavior.
-- [ ] Review the diff for unscoped target construction and unrelated changes.
+- [x] Review the diff for unscoped target construction and unrelated changes.
 
 ## Task 2: Owner storage, quotas, and platform lifecycle
 
@@ -139,20 +139,20 @@ Update mod/Paper server lifecycle roots and add `core/collection/PrivateWaypoint
 Callers supply an authenticated UUID; no public operation takes an arbitrary filesystem directory
 derived from client data.
 
-- [ ] Test distinct owners and dimensions round-trip into the spec's dedicated/integrated roots.
+- [x] Test distinct owners and dimensions round-trip into the spec's dedicated/integrated roots.
   Assert shared world snapshots and the shared manager map contain no private lists.
-- [ ] Test defaults 1,000/100, zero unlimited, negative configuration rejection, and valid reload.
+- [x] Test defaults 1,000/100, zero unlimited, negative configuration rejection, and valid reload.
   With a two-waypoint quota and one existing entry, two concurrent additions in different
   dimensions must leave exactly two entries and one rejection.
-- [ ] Test list quotas including empty lists and automatic list creation: a rejected add creates
+- [x] Test list quotas including empty lists and automatic list creation: a rejected add creates
   neither list nor waypoint. Reduced limits preserve data and permit rename/edit/delete.
-- [ ] Test disconnect during a mutation, shutdown flushing, and failed reads/saves. Read failures
+- [x] Test disconnect during a mutation, shutdown flushing, and failed reads/saves. Read failures
   cannot expose an empty writable replacement; save failures cannot be reported as durable success.
-- [ ] Run the new tests, observe failures, then implement isolated managers with an owner gate held
+- [x] Run the new tests, observe failures, then implement isolated managers with an owner gate held
   before existing dimension lanes. Keep load/eviction/persistence under the same lifecycle contract.
-- [ ] Run `rtk proxy ./gradlew :common:test --tests '*PrivateWaypointStoreTest' --tests '*WaypointFilesManagerConcurrencyTest'`.
+- [x] Run `rtk proxy ./gradlew :common:test --tests '*PrivateWaypointStoreTest' --tests '*WaypointFilesManagerConcurrencyTest'`.
   Expected: passing isolation, quota concurrency, and existing mutation tests.
-- [ ] Review storage paths and all lifecycle hooks before proceeding.
+- [x] Review storage paths and all lifecycle hooks before proceeding.
 
 ## Task 3: Private commands, permissions, and feedback
 
@@ -166,23 +166,23 @@ Add `command/CoreWaypointCommandPrivateTest.java` and extend command-builder/res
 **Interfaces:** produces `/wp private` and its spec-defined command subtree. Shared remains the
 ordinary `/wp` scope. Existing command syntax builders take explicit server scope where relevant.
 
-- [ ] Add tests for private menu/help, list creation, full waypoint properties, list/waypoint
+- [x] Add tests for private menu/help, list creation, full waypoint properties, list/waypoint
   details/edit/remove, restore, navigation, and teleport using the same identifiers in all stores.
   Verify every private action/suggestion link retains its prefix.
-- [ ] Assert ordinary players get list/add/edit/remove/navigate; default private teleport is denied
+- [x] Assert ordinary players get list/add/edit/remove/navigate; default private teleport is denied
   until granted. Assert existing shared grants do not authorize another owner's private access.
-- [ ] Assert no-player sources fail without touching storage, privileged execute-as follows the
+- [x] Assert no-player sources fail without touching storage, privileged execute-as follows the
   executing player's identity and existing commander feedback, and private changes have no shared
   player broadcast.
-- [ ] Test restore's ten-minute expiry, single-use behavior, wrong owner/collection, name conflict,
+- [x] Test restore's ten-minute expiry, single-use behavior, wrong owner/collection, name conflict,
   and quota rejection. Failed restore attempts must not consume a valid token.
-- [ ] Run the focused tests to establish failures. Parameterize the existing command registration,
+- [x] Run the focused tests to establish failures. Parameterize the existing command registration,
   query lookup, permission selection, and feedback context rather than duplicating the entire
   `CoreWaypointCommand`. Resolve one scope at invocation and carry it through asynchronous work.
-- [ ] Add all applicable common translations, with MessageFormat placeholder consistency.
-- [ ] Run `rtk proxy ./gradlew :common:test --tests '*CoreWaypointCommand*Test' --tests '*StringCommandBuilderTest' --tests '*WaypointRestoreRegistryTest' --tests '*Platform*Permission*Test'`.
+- [x] Add all applicable common translations, with MessageFormat placeholder consistency.
+- [x] Run `rtk proxy ./gradlew :common:test --tests '*CoreWaypointCommand*Test' --tests '*StringCommandBuilderTest' --tests '*WaypointRestoreRegistryTest' --tests '*Platform*Permission*Test'`.
   Expected: passing scoped command and existing permission contracts.
-- [ ] Review generated links, source resolution, private persistence outcomes, and permission
+- [x] Review generated links, source resolution, private persistence outcomes, and permission
   descriptors; no dedicated other-player administration or private upload/download extension.
 
 ## Task 4: Owner-only protocol and separate client server caches
@@ -200,27 +200,27 @@ update client message dispatch and synchronization tracking. Add
 separate Shared/Private client stores, readiness, revisions, and selection generations.
 Protocol version becomes 3; all constructors/producers supply a scope.
 
-- [ ] Test snapshot, update/tombstone, list-rename, edit-request and result round-trips with scope;
+- [x] Test snapshot, update/tombstone, list-rename, edit-request and result round-trips with scope;
   invalid scope and Private upload payloads fail before mutation.
-- [ ] Test Alice's snapshot/edit delivery contains only Alice's private data; Bob and Shared
+- [x] Test Alice's snapshot/edit delivery contains only Alice's private data; Bob and Shared
   recipients receive no private message. Reject unauthorized and incompatible requests.
-- [ ] Test equal list revisions/names across Shared and Private independently. A recovery snapshot
+- [x] Test equal list revisions/names across Shared and Private independently. A recovery snapshot
   or tombstone for one source must not replace another source.
-- [ ] Test private read permission is checked before every snapshot/incremental send. Observed
+- [x] Test private read permission is checked before every snapshot/incremental send. Observed
   denial/revocation sends unreadable collection state and clears private presentation without
   changing Local/Shared; it never sends a private delta while access is denied.
-- [ ] Test late responses and transfers cannot apply to a different connection/account generation.
+- [x] Test late responses and transfers cannot apply to a different connection/account generation.
   Integrated-server client access must select only the local player's private store.
-- [ ] Run the new tests to establish failures; implement scope codecs, connection-derived owner
+- [x] Run the new tests to establish failures; implement scope codecs, connection-derived owner
   lookup, owner-directed sends, account/server-isolated private caches and per-source tracking.
   Preserve bounded chunked transport and existing edit revision checks.
-- [ ] Update protocol/channel equality tests. Keep incompatible clients outside private custom
+- [x] Update protocol/channel equality tests. Keep incompatible clients outside private custom
   synchronization while vanilla command access remains functional.
-- [ ] Run `rtk proxy ./gradlew :common:test --tests '*ProtocolVersionTest' --tests '*CodecTest' --tests '*C2SPacketHandlerTest'`.
+- [x] Run `rtk proxy ./gradlew :common:test --tests '*ProtocolVersionTest' --tests '*CodecTest' --tests '*C2SPacketHandlerTest'`.
   Expected: new and existing codec/handler tests pass. Run the client tests using the versioned
   command in the verification section, filtering for `*ClientWaypointCollectionsTest` and
   `*ClientSynchronizationTrackerTest`.
-- [ ] Review every waypoint producer/consumer and broadcast call for an explicit source and correct
+- [x] Review every waypoint producer/consumer and broadcast call for an explicit source and correct
   recipient. Existing cross-server catalog models must remain private-data-free.
 
 ## Task 5: Independent local profiles and persistence
@@ -234,20 +234,20 @@ Add `local/LocalWaypointProfilesTest.java` and extend client collection lifecycl
 **Interfaces:** produces the active profile store and profile management operations, independent
 of network readiness. Profile bindings and command settings persist using GSON.
 
-- [ ] Test first join creates Default, reconnect restores the same files, and host/port/account and
+- [x] Test first join creates Default, reconnect restores the same files, and host/port/account and
   singleplayer saves are isolated. Assert profile display names cannot alter storage paths.
-- [ ] Test known and new backend identities using the spec's selection algorithm; manual selection
+- [x] Test known and new backend identities using the spec's selection algorithm; manual selection
   must win over a late handshake and survive reconnect through its saved binding.
-- [ ] Test unsupported/protocol-incompatible servers can create and persist Local waypoints.
+- [x] Test unsupported/protocol-incompatible servers can create and persist Local waypoints.
   A proxy transfer saves before rebinding without requiring a disconnect event.
-- [ ] Test create/rename/delete, deletion of the last profile, outgoing-save failure, malformed
+- [x] Test create/rename/delete, deletion of the last profile, outgoing-save failure, malformed
   indexes/files, and disconnect during pending work. Local state must never overwrite server caches.
-- [ ] Run tests to establish failures; implement UUID-backed profile directories, address digest,
+- [x] Run tests to establish failures; implement UUID-backed profile directories, address digest,
   fallback/backend bindings, synchronous selection state, and serialized disk/lifecycle operations.
   Do not move or merge files on late identity discovery.
-- [ ] Run `*LocalWaypointProfilesTest` and `*ClientWaypointCollectionsTest` on the active Fabric
+- [x] Run `*LocalWaypointProfilesTest` and `*ClientWaypointCollectionsTest` on the active Fabric
   target using the verification command. Expected: all persistence and transition assertions pass.
-- [ ] Review join/leave/dimension paths for the old handshake-only renderer/manager assumptions.
+- [x] Review join/leave/dimension paths for the old handshake-only renderer/manager assumptions.
 
 ## Task 6: Client operation routing and teleport templates
 
@@ -262,24 +262,24 @@ form patch/validation tests.
 existing server results. The collection and generation are captured, never inferred from the
 current view when a delayed action runs.
 
-- [ ] Test add/edit/remove routes to only the selected collection. Local must send neither waypoint
+- [x] Test add/edit/remove routes to only the selected collection. Local must send neither waypoint
   commands nor custom payloads; server edits must wait for matching authoritative results.
-- [ ] Test a draft survives profile/connection invalidation but cannot submit into the replacement
+- [x] Test a draft survives profile/connection invalidation but cannot submit into the replacement
   store. Opening and cancelling a copy draft creates nothing.
-- [ ] Test copied name, display name, initials, coordinates, color, yaw, global visibility, keywords,
+- [x] Test copied name, display name, initials, coordinates, color, yaw, global visibility, keywords,
   description, and icon are detached. Name conflicts, quota denial, invalid destination metadata,
   or permission changes leave source and destination unchanged.
-- [ ] Test template expansion with negative coordinates and yaw under a non-English locale.
+- [x] Test template expansion with negative coordinates and yaw under a non-English locale.
   For the default template and Nether target `(-12, 64, 30), yaw 90`, assert the exact result:
   `execute in minecraft:the_nether run tp @s -12 64 30 90 ~`.
-- [ ] Reject blank, unknown/unbalanced tokens, control characters, excessive commands, obsolete
+- [x] Reject blank, unknown/unbalanced tokens, control characters, excessive commands, obsolete
   selections, and cross-dimension targets without `{dimension}`. A submitted command is not a
   successful-teleport result.
-- [ ] Run tests to establish failures; implement routing and the named token parser. Reuse
+- [x] Run tests to establish failures; implement routing and the named token parser. Reuse
   detached waypoint copies and existing patch/form validation; validate commands at submission.
-- [ ] Run `*ClientWaypointAccessTest`, `*LocalTeleportCommandTest`, `*WaypointForm*Test` on the
+- [x] Run `*ClientWaypointAccessTest`, `*LocalTeleportCommandTest`, `*WaypointForm*Test` on the
   active Fabric target. Expected: routing/validation assertions and existing form tests pass.
-- [ ] Document changed form/access APIs in the GUI guide and review the diff.
+- [x] Document changed form/access APIs in the GUI guide and review the diff.
 
 ## Task 7: Four manager views, profiles, copying, and composed rendering
 
@@ -293,26 +293,26 @@ Extend manager/render tests; add `ClientWaypointQueryTest.java` and
 **Interfaces:** produces source-tagged queries, four view modes, destination/profile controls, and
 a composed render scene. Reuse the screen-owned `IconDropdownMenu` for source switching.
 
-- [ ] Test Combined includes all three current collections, retains duplicate identifiers with
+- [x] Test Combined includes all three current collections, retains duplicate identifiers with
   distinct selection keys, and excludes Remote. Grouped headers and flat rows retain source labels.
   Search/sort/dimension choices use the selected sources and preserve provenance.
-- [ ] Test Combined is the initial configuration and creation defaults to Local; single-source
+- [x] Test Combined is the initial configuration and creation defaults to Local; single-source
   views default to their source. Unavailable sources cannot become accidental save destinations.
-- [ ] Test Local/Combined remain ready when the server is absent, incompatible, loading, or denied.
+- [x] Test Local/Combined remain ready when the server is absent, incompatible, loading, or denied.
   Preserve the separate remote-browser toggle and its existing read-only behavior.
-- [ ] Test captured selection routing after view changes, copied drafts, per-source visibility,
+- [x] Test captured selection routing after view changes, copied drafts, per-source visibility,
   profile changes while forms are open, and identical-coordinate markers.
-- [ ] Test a Shared resync does not remove Local/Private render entries and a private tombstone
+- [x] Test a Shared resync does not remove Local/Private render entries and a private tombstone
   removes only that private entry. Existing renderer `local`/waypoint `global` visibility flags
   retain their meaning. Renderer capacity limits must not cause unrelated stores to be mutated
   or lose saved data.
-- [ ] Run tests to establish failures; compose existing query results and marker instances without
+- [x] Run tests to establish failures; compose existing query results and marker instances without
   creating a merged mutable store. Add source labels, destination/profile controls, and Copy.
-- [ ] Follow existing dropdown popup layering/hover suppression and semantic theme roles; add
+- [x] Follow existing dropdown popup layering/hover suppression and semantic theme roles; add
   applicable client locale keys and update the GUI guide in the same task.
-- [ ] Run manager, query, form, renderer, and existing map-integration tests on active Fabric.
+- [x] Run manager, query, form, renderer, and existing map-integration tests on active Fabric.
   Expected: new collection behavior and existing Shared integration tests pass.
-- [ ] Review constrained-layout/input changes before live validation.
+- [x] Review constrained-layout/input changes before live validation.
 
 ## Task 8: Platform validation, player documentation, and evidence
 
@@ -321,20 +321,20 @@ a composed render scene. Reuse the screen-owned `IconDropdownMenu` for source sw
 **Files:** update `docs/tips/server-guide.md`, GUI guide and relevant feature indexes; fill
 the feature validation record only with executed evidence.
 
-- [ ] Run the full common suite and representative versioned loader/Paper checks below.
-- [ ] Run the validation checklist with two player identities, one vanilla client, and a modded
+- [x] Run the full common suite and representative versioned loader/Paper checks below.
+- [x] Run the validation checklist with two player identities, one vanilla client, and a modded
   client. Verify actual target coordinates after authorized teleports.
-- [ ] Test Local on a server without Server Waypoint, an incompatible backend, a singleplayer save,
+- [x] Test Local on a server without Server Waypoint, an incompatible backend, a singleplayer save,
   and multiple worlds behind one address. Verify persistence by reconnecting/restarting.
-- [ ] Inspect all four views at a constrained viewport and with long translated labels. Exercise
+- [x] Inspect all four views at a constrained viewport and with long translated labels. Exercise
   dropdown overlap, wheel handling, keyboard focus, Escape, copy cancellation, and profile dialogs.
-- [ ] Verify existing Shared map synchronization still works and receives no Local/Private events.
+- [x] Verify existing Shared map synchronization still works and receives no Local/Private events.
   No other map mod is required for the local feature.
-- [ ] Add user-facing documentation distinguishing collection storage, permissions, quotas,
+- [x] Add user-facing documentation distinguishing collection storage, permissions, quotas,
   profiles, custom teleport commands, and explicit copy behavior.
-- [ ] Run whitespace/link/translation checks. Record exact commands, targets, outcomes, screenshots
+- [x] Run whitespace/link/translation checks. Record exact commands, targets, outcomes, screenshots
   or log locations, and remaining proof gaps. Leave unexecuted items unchecked.
-- [ ] Review the whole feature diff and remaining working-tree changes. Do not commit or publish.
+- [x] Review the whole feature diff and remaining working-tree changes. Do not commit or publish.
 
 ## Verification commands and proof boundaries
 

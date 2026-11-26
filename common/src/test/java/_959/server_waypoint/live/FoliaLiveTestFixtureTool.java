@@ -1,5 +1,6 @@
 package _959.server_waypoint.live;
 
+import _959.server_waypoint.core.collection.WaypointScope;
 import _959.server_waypoint.core.network.codec.ChunkedMessageManager;
 import _959.server_waypoint.core.network.data.DimensionWaypointData;
 import _959.server_waypoint.core.network.data.WaypointData;
@@ -71,11 +72,11 @@ public final class FoliaLiveTestFixtureTool {
 
         DimensionWaypointData dimension = new DimensionWaypointData(DIMENSION, lists);
         int compressedFrames = ChunkedMessageManager.prepare(
-                WaypointData.world(List.of(dimension)),
+                WaypointData.world(WaypointScope.SHARED, List.of(dimension)),
                 true
         ).frames().size();
         int uncompressedFrames = ChunkedMessageManager.prepare(
-                WaypointData.world(List.of(dimension)),
+                WaypointData.world(WaypointScope.SHARED, List.of(dimension)),
                 false
         ).frames().size();
         if (compressedFrames < MINIMUM_LARGE_FRAMES) {

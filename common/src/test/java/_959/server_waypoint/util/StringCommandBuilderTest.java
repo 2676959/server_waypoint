@@ -16,6 +16,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class StringCommandBuilderTest {
     @Test
+    void scopesOnlyTheCommandPrefixAndKeepsQuotedIdentifiersAndOtherCommands() {
+        var scope = _959.server_waypoint.core.collection.WaypointScope.PRIVATE;
+        assertEquals("/wp private", StringCommandBuilder.inScope(scope, "/wp"));
+        assertEquals("/wp private details list d \"/wp private\"",
+                StringCommandBuilder.inScope(scope, "/wp details list d \"/wp private\""));
+        assertEquals("/wp private add", StringCommandBuilder.inScope(scope, "/wp private add"));
+        assertEquals("/wp_gui", StringCommandBuilder.inScope(scope, "/wp_gui"));
+    }
+
+    @Test
     void escapeArgumentPreservesEveryIdentifierShape() {
         assertEquals("\"\"", StringCommandBuilder.escapeArgument(""));
         assertEquals("\"   \"", StringCommandBuilder.escapeArgument("   "));
@@ -75,7 +85,7 @@ class StringCommandBuilderTest {
         String command = StringCommandBuilder.addCmd("minecraft:overworld", "list", waypoint);
 
         assertTrue(command.contains(" exact-id E "));
-        assertTrue(!command.contains("Presentation"));
+        assertTrue(command.contains(" display_name \"{\\\"text\\\":\\\"Presentation\\\"}\""));
     }
 
     @Test

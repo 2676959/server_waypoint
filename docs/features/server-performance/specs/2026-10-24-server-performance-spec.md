@@ -1,5 +1,7 @@
 # Server performance suite specification
 
+> **Current delivery scope (November 15):** The [minimal critical Paper plan](../plans/2026-10-24-server-performance.md) supersedes the broader requirements and earlier Task 11 amendment below. Full-matrix, stress and later milestone work is optional future work. Historical requirements/results remain preserved; exclusions are not passing evidence.
+
 Date: 2026-10-24
 
 Status: implementation specification derived from the design approved by the user on
@@ -29,6 +31,18 @@ Inputs and decisions:
 The implementation plan is [2026-10-24-server-performance.md](../plans/2026-10-24-server-performance.md).
 This specification fixes the interfaces and acceptance semantics; the design explains
 their rationale. Calibrations must be recorded, not silently substituted for these defaults.
+
+### Task 11 milestone simplification — November 15
+
+The user requested a simpler Task 11. Its immediate completion gate is now
+[focused functional evidence plus representative Paper timing](../plans/2026-11-15-task11-simplified.md):
+three workloads, one/ten owners, three repetitions, 30/60-second phases,
+one operation per owner per second. This explicit reduced-rate selection must
+have distinct identities; it cannot establish the original catalog's throughput.
+Existing tick budgets and evidence validity rules remain unchanged.
+Full per-variant timing, cache/viewer stress and offline/world-item leak checks
+remain required in Tasks 16–17 as mapped there. This amendment takes precedence
+for Task 11 milestone sequencing only; the comprehensive audit contract remains.
 
 ### Cross-platform server-thread repair scope
 

@@ -1,0 +1,66 @@
+{
+    "schemaVersion": 1,
+    "runtimes": [
+        {
+            "id": "paper-1.21.11",
+            "artifact": "server_waypoint-4.0.1-paper-mc1.21.11-26.1.2.jar",
+            "platform": "paper",
+            "minecraft": "1.21.11",
+            "bot": {
+                "candidate": "0.15.1+mc1.21.11",
+                "verifiedNativeActions": true,
+                "path": "/Volumes/ssd/fabric_mods_repo/server_waypoint/tools/server-performance/bots/versions/mc1.21.11/target/release/sw-performance-bots",
+                "sha256": "f39dbf5ce6ce70557be3745ebb5fd75900cb6a21369379db49729c02fa843125",
+                "toolchain": "nightly-2026-07-15",
+                "nativeModes": [
+                    "vanilla",
+                    "compatible",
+                    "incompatible"
+                ]
+            },
+            "evidence": [
+                "Paper 1.21.11 build 111; source/bytecode inspection recorded in validation/runtime-evidence.md",
+                "/Volumes/ssd/sw-performance-m0-activity-smoke/activity.json: 100 native ticks, 224 observed transfers, zero players, pause threshold 0, conserved 16 items",
+                "/Volumes/ssd/sw-performance-m1-bots-2: native 1/10/50 identities, movement, inventory and command observations; 3/30/150 completed actions; zero online after stop",
+                "/Volumes/ssd/sw-performance-m1-task9-final: seeded revision/name match, incompatible incoming request rejection, buffer cleanup, queued-overload and malformed-payload regressions",
+                "/Volumes/ssd/sw-performance-m1-command-callback-3: exact small dataset load and actual native command callbacks; full Task 10 workload coverage pending",
+                "/Volumes/ssd/sw-performance-m1-persistence-{small,medium}-3: one real compatible actor at 1,000/10,000 waypoint sizes; denial, stale edit, rename/remove/single-use restore, exact saved JSON and reopened identities/revisions; timed workload coverage pending",
+                "/Volumes/ssd/sw-performance-m1-capacity: 10 independent 500ms moves in 0.522s, all native actors moved; per-actor FIFO workers; /Volumes/ssd/sw-performance-m1-parallel-{wire,swarm}: protocol regressions and 1/10/50 native sessions pass",
+                "/Volumes/ssd/sw-performance-m1-traffic-small and /Volumes/ssd/sw-performance-m1-traffic-medium-3: five-second scheduled smoke, 55/275 native callbacks and exact mutations/saved contents; medium first drain 195 then full completion after 3.34s; performance acceptance INCONCLUSIVE",
+                "2026-10-24 two-stage native command ACK: /Volumes/ssd/sw-performance-m1-ack-medium-4; 275 correlated command roundtrips, exact persisted content; timed three-repeat acceptance remains separate",
+                "2026-10-25 /Volumes/ssd/sw-performance-m1-read-suggestions-full: 5295 console read leaves with delivered feedback/exact saved state, 51 local custom suggestion paths with matching native provider receipts; remote and other behavior requirements pending",
+                "2026-10-25 /Volumes/ssd/sw-performance-m1-mutation-leaves-final: 43 console storage leaves, exact full properties/revisions/disk/reopen, single-use restore, nonempty-list denial, real config/language reload outcomes; remaining feature/player/permission requirements pending",
+                "2026-10-25 /Volumes/ssd/sw-performance-m1-navigation-{small-targets,medium-targets,medium-isolation}: 31 native method combinations per actor, movement/retarget/edit/teleport, ten-owner isolation and ordinary-item conservation; retained cleanup FAIL for 1/10 post-disconnect tick counters; terrain/protection/lifecycle coverage pending",
+                "2026-10-25 /Volumes/ssd/sw-performance-m1-terrain-small and /Volumes/ssd/sw-performance-m1-terrain-medium-all: exact native cold/warm region pixels, saved terrain files, full client coverage/checksum, active-session save/restart/join restoration; ten owners restore all five methods and same map IDs; same-dimension functional evidence only",
+                "2026-10-25 /Volumes/ssd/sw-performance-m1-lifecycle-small-final and /Volumes/ssd/sw-performance-m1-lifecycle-medium-2: actual 1/10 deaths, automatic respawns, exact ordinary death-drop identities/counts and protected exclusion, all-method owner targets/map IDs/live effects through Nether/Overworld travel; native verified landing fixture; functional evidence only",
+                "2026-10-25 /Volumes/ssd/sw-performance-m1-protection-small-final and /Volumes/ssd/sw-performance-m1-protection-medium: nine physical drop/swap/player-menu cases, native cancellation/slot receipts, exact owner targets/items/map IDs, atomic ordinary conservation and correlated ordinary world entities; /Volumes/ssd/sw-performance-m1-physical-action-regression-peaceful: 1/10/50 native action regression; remaining protections pending; peaceful fifty-player action checks complete but retained watchdog log stability FAIL (3 reports), independent of physical case PASS; isolated /Volumes/ssd/sw-performance-m1-action-health-guard all action checks and native log health PASS, prior shared-host watchdog FAIL retained",
+                "2026-10-26 /Volumes/ssd/sw-performance-m1-nested-small and /Volumes/ssd/sw-performance-m1-nested-medium: all eight native spawn recipes per owner; retained depth-nine bundle escape FAIL (1/10), seven/70 direct-shallower-plain PASS, independent item graphs/exact carrier metadata, 800 medium owner checks, ordinary conservation/owned-entity cleanup/native log health PASS; physical nine-case independent-reader regression PASS at /Volumes/ssd/sw-performance-m1-independent-graph-regression; functional fixture evidence only",
+                "Selected published 4.0.1 Task 10 rerun; native assertions and hash verification remain required per attempt"
+            ],
+            "java": "/opt/homebrew/Cellar/openjdk@21/21.0.11/libexec/openjdk.jdk/Contents/Home/bin/java",
+            "java_sha256": "04005388bac0c272ea914210ca519ce94b2f873ea3962b9874a6859f74d7f279",
+            "server": "/Volumes/ssd/minecraft_servers/paper/1.21.11/paper-1.21.11-111.jar",
+            "server_sha256": "82a487ab8c2d0f6f072b8dbaedc9218c85ae3a7d167808124462b248955beec3",
+            "argv": [
+                "-Xms1G",
+                "-Xmx2G",
+                "-XX:+UseG1GC",
+                "-jar",
+                "/Volumes/ssd/minecraft_servers/paper/1.21.11/paper-1.21.11-111.jar",
+                "--nogui"
+            ],
+            "capabilities": [
+                "profile",
+                "fixture",
+                "tick-processing",
+                "zero-player-ticking",
+                "bots",
+                "wire-protocol"
+            ],
+            "probe": {
+                "path": "/Volumes/ssd/fabric_mods_repo/server_waypoint/paper/versions/1.21.11-paper/build/libs/server-waypoint-performance-paper-probe.jar",
+                "sha256": "588192cf705de2e10f722385759e4dd7593df016d608f6a5492573d11d7b337d"
+            }
+        }
+    ]
+}

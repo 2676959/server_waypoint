@@ -1,0 +1,23 @@
+{
+  "chat": [
+    {
+      "commands": [
+        "/wp private help",
+        "/wp private list",
+        "/wp private list all",
+        "/wp private list all search ",
+        "/wp private add",
+        "/wp private add minecraft:overworld ",
+        "/wp private navigate"
+      ],
+      "text": "Private waypoints   Help\nBrowse\n  This dimension · All · Search\nCreate\n  Waypoint here · List\nTravel\n  Navigation\n"
+    }
+  ],
+  "position": [
+    1.5,
+    73.0,
+    9.5,
+    "minecraft:overworld"
+  ],
+  "screen": "null"
+}

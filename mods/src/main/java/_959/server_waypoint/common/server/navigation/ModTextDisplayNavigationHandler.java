@@ -1,47 +1,19 @@
 package _959.server_waypoint.common.server.navigation;
 
-import _959.server_waypoint.common.network.ModMessageSender;
-import _959.server_waypoint.common.util.PlayerLocaleHelper;
 import _959.server_waypoint.navigation.AbstractTextDisplayNavigationHandler;
-import com.mojang.math.Transformation;
-import com.mojang.serialization.DataResult;
 import io.netty.buffer.Unpooled;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import net.kyori.adventure.translation.GlobalTranslator;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
-//? if >=1.21.5
-import net.minecraft.network.chat.ComponentSerialization;
-import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
-import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket;
-import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
 import net.minecraft.network.protocol.game.ClientboundSetPassengersPacket;
-import net.minecraft.network.syncher.SynchedEntityData;
+import net.kyori.adventure.text.Component;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Brightness;
-//? if >=1.21.6 {
-import net.minecraft.util.ProblemReporter;
-import net.minecraft.world.level.storage.TagValueInput;
-import net.minecraft.world.level.storage.TagValueOutput;
-//?}
 import net.minecraft.world.entity.Display;
-import net.minecraft.world.entity.EntityType;
-//? if >=26.2
-/*import net.minecraft.world.entity.EntityTypes;*/
-import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import java.util.List;
 import java.util.UUID;
 
-/**
- * Packet-only text display navigation for the modded server platforms. The
- * display is never added to the level and is visible only to its owner.
- */
+/** Mounted text-display HUD for the modded server platforms. */
 final class ModTextDisplayNavigationHandler
         extends AbstractTextDisplayNavigationHandler<ServerPlayer, Display.TextDisplay> {
     private static final int BACKGROUND_COLOR = 0x66000000;
@@ -64,150 +36,50 @@ final class ModTextDisplayNavigationHandler
 
     @Override
     protected Display.TextDisplay createDisplay(ServerPlayer player) {
-        Display.TextDisplay display = new Display.TextDisplay(
-                textDisplayType(),
-                player.level()
-        );
-        display.setPos(player.getX(), player.getY(), player.getZ());
-        return display;
+        return ModTextDisplayPackets.createDisplay(player);
     }
 
     @Override
     protected void sendSpawn(ServerPlayer player, Display.TextDisplay display) {
-        player.connection.send(new ClientboundAddEntityPacket(
-                display.getId(),
-                display.getUUID(),
-                player.getX(),
-                player.getY(),
-                player.getZ(),
-                0.0F,
-                0.0F,
-                textDisplayType(),
-                0,
-                Vec3.ZERO,
-                0.0D
-        ));
+        ModTextDisplayPackets.sendSpawn(player, display);
     }
 
     @Override
     protected void sendRemove(ServerPlayer player, Display.TextDisplay display) {
-        player.connection.send(new ClientboundRemoveEntitiesPacket(display.getId()));
+        ModTextDisplayPackets.sendRemove(player, display);
         player.connection.send(new ClientboundSetPassengersPacket(player));
     }
 
     @Override
-    protected void setText(
-            ServerPlayer player,
-            Display.TextDisplay display,
-            Component text
-    ) {
-        Component translated = GlobalTranslator.render(text, PlayerLocaleHelper.forPlayer(player));
-        CompoundTag tag = saveDisplayData(display);
-        //? if <1.21.5 {
-        /*tag.putString("text", GsonComponentSerializer.gson().serialize(translated));
-        *///?} else {
-        tag.put(
-                "text",
-                encode(
-                        ComponentSerialization.CODEC.encodeStart(
-                                NbtOps.INSTANCE,
-                                ModMessageSender.toVanillaText(translated)
-                        ),
-                        "text"
-                )
-        );
-        //?}
-        loadDisplayData(display, tag);
+    protected void setText(ServerPlayer player, Display.TextDisplay display, Component text) {
+        ModTextDisplayPackets.setText(player, display, text);
     }
 
     @Override
-    protected void setTransformation(
-            Display.TextDisplay display,
-            Vector3f translation,
-            Quaternionf rotation,
-            Vector3f scale
-    ) {
-        CompoundTag tag = saveDisplayData(display);
-        tag.put(
-                "transformation",
-                encode(
-                        Transformation.EXTENDED_CODEC.encodeStart(
-                                NbtOps.INSTANCE,
-                                new Transformation(
-                                        new Vector3f(translation),
-                                        new Quaternionf(rotation),
-                                        new Vector3f(scale),
-                                        new Quaternionf()
-                                )
-                        ),
-                        "transformation"
-                )
-        );
-        tag.put(
-                "brightness",
-                encode(
-                        Brightness.CODEC.encodeStart(NbtOps.INSTANCE, Brightness.FULL_BRIGHT),
-                        "brightness"
-                )
-        );
+    protected void setTransformation(Display.TextDisplay display, Vector3f translation,
+                                     Quaternionf rotation, Vector3f scale) {
+        CompoundTag tag = ModTextDisplayPackets.saveDisplayData(display);
+        tag.put("transformation", ModTextDisplayPackets.transformation(translation, rotation, scale));
+        tag.put("brightness", ModTextDisplayPackets.fullBrightness());
         tag.putString("billboard", "center");
         tag.putInt("background", BACKGROUND_COLOR);
+        tag.putBoolean("default_background", false);
+        //? if >=1.20.2
+        tag.putInt("teleport_duration", 0);
         tag.putInt("line_width", LINE_WIDTH);
         tag.putBoolean("shadow", true);
         tag.putBoolean("see_through", true);
-        loadDisplayData(display, tag);
+        ModTextDisplayPackets.loadDisplayData(display, tag);
     }
 
     @Override
     protected void sendEntityData(ServerPlayer player, Display.TextDisplay display) {
-        List<SynchedEntityData.DataValue<?>> data = display.getEntityData().packDirty();
-        if (data != null) {
-            player.connection.send(new ClientboundSetEntityDataPacket(display.getId(), data));
-        }
+        ModTextDisplayPackets.sendEntityData(player, display);
     }
 
     @Override
     protected void sendPassengers(ServerPlayer player, Display.TextDisplay display) {
         player.connection.send(passengerPacket(player, display.getId()));
-    }
-
-    private static CompoundTag saveDisplayData(Display.TextDisplay display) {
-        //? if >=1.21.6 {
-        TagValueOutput output = TagValueOutput.createWithContext(
-                ProblemReporter.DISCARDING,
-                display.registryAccess()
-        );
-        display.saveWithoutId(output);
-        return output.buildResult();
-        //?} else {
-        /*return display.saveWithoutId(new CompoundTag());
-        *///?}
-    }
-
-    private static void loadDisplayData(Display.TextDisplay display, CompoundTag tag) {
-        //? if >=1.21.6 {
-        display.load(TagValueInput.create(
-                ProblemReporter.DISCARDING,
-                display.registryAccess(),
-                tag
-        ));
-        //?} else {
-        /*display.load(tag);
-        *///?}
-    }
-
-    private static Tag encode(DataResult<Tag> result, String field) {
-        return result.result().orElseThrow(() -> new IllegalStateException(
-                "Could not encode text display " + field
-        ));
-    }
-
-    private static EntityType<Display.TextDisplay> textDisplayType() {
-        //? if >=26.2 {
-        /*return EntityTypes.TEXT_DISPLAY;
-        *///?} else {
-        return EntityType.TEXT_DISPLAY;
-        //?}
     }
 
     private static ClientboundSetPassengersPacket passengerPacket(

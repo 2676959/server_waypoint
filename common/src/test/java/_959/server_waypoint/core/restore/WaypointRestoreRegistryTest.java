@@ -18,6 +18,22 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class WaypointRestoreRegistryTest {
     @Test
+    void defaultTenMinuteExpiryAndCollectionOwnerIdentity() {
+        MutableClock clock = new MutableClock();
+        var registry = new WaypointRestoreRegistry<_959.server_waypoint.core.collection.WaypointCollectionKey>(
+                clock, WaypointRestoreRegistry.DEFAULT_EXPIRY, 8, 256, new SecureRandom());
+        var alice = _959.server_waypoint.core.collection.WaypointCollectionKey.privateFor(java.util.UUID.randomUUID());
+        var bob = _959.server_waypoint.core.collection.WaypointCollectionKey.privateFor(java.util.UUID.randomUUID());
+        String token = registry.register(alice, "d", "l", waypoint("w"));
+        assertFalse(registry.consume(bob, token));
+        assertFalse(registry.consume(_959.server_waypoint.core.collection.WaypointCollectionKey.shared(), token));
+        clock.advance(Duration.ofMinutes(10).minusMillis(1));
+        assertTrue(registry.lookup(alice, token).isPresent());
+        clock.advance(Duration.ofMillis(1));
+        assertFalse(registry.lookup(alice, token).isPresent());
+    }
+
+    @Test
     void lookupIsOwnerScopedDetachedAndSingleUse() {
         MutableClock clock = new MutableClock();
         WaypointRestoreRegistry<String> registry = registry(clock, 2, 4);

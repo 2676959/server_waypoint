@@ -1,5 +1,6 @@
 package _959.server_waypoint.text.feedback;
 
+import _959.server_waypoint.core.network.upload.UploadTarget;
 import _959.server_waypoint.text.chat.Tooltip;
 import _959.server_waypoint.text.chat.Viewer;
 import net.kyori.adventure.text.Component;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
@@ -25,7 +27,7 @@ public final class HelpTopics {
     }
 
     public enum Topic {
-        LIST, DETAILS, ADD, EDIT, REMOVE, TP, NAVIGATE, UPLOAD, DOWNLOAD, REMOTE, RELOAD;
+        LIST, DETAILS, ADD, EDIT, REMOVE, TP, NAVIGATE, UPLOAD, DOWNLOAD, REMOTE, RELOAD, PRIVATE;
 
         public String id() {
             return this.name().toLowerCase(Locale.ROOT);
@@ -37,8 +39,12 @@ public final class HelpTopics {
 
         /** Whether the viewer may use the commands this topic is about. */
         public boolean readableBy(Viewer viewer) {
+            if (viewer.scope() == _959.server_waypoint.core.collection.WaypointScope.PRIVATE
+                    && (this == UPLOAD || this == DOWNLOAD || this == REMOTE || this == RELOAD || this == PRIVATE)) return false;
             return switch (this) {
-                case LIST, DETAILS, DOWNLOAD -> true;
+                case LIST, DETAILS -> viewer.scope() == _959.server_waypoint.core.collection.WaypointScope.SHARED
+                        || viewer.can(Viewer.Permission.LIST);
+                case DOWNLOAD -> true;
                 case ADD -> viewer.can(Viewer.Permission.ADD);
                 case EDIT -> viewer.can(Viewer.Permission.EDIT);
                 case REMOVE -> viewer.can(Viewer.Permission.REMOVE);
@@ -47,6 +53,7 @@ public final class HelpTopics {
                 case UPLOAD -> viewer.can(Viewer.Permission.UPLOAD);
                 case REMOTE -> viewer.can(Viewer.Permission.REMOTE_LIST) || viewer.can(Viewer.Permission.REMOTE_TP);
                 case RELOAD -> viewer.can(Viewer.Permission.RELOAD);
+                case PRIVATE -> viewer.can(Viewer.Permission.PRIVATE);
             };
         }
     }
@@ -104,8 +111,10 @@ public final class HelpTopics {
         return Arrays.stream(Topic.values()).filter(topic -> topic.readableBy(viewer)).toList();
     }
 
-    public static Content content(Topic topic, boolean textDisplay) {
+    public static Content content(Topic topic, boolean textDisplay, Set<UploadTarget> uploadPlatforms) {
         return switch (topic) {
+            case PRIVATE -> new Content(List.of(usage("/wp private [<command>]", "/wp private", "wp.help.private.run",
+                    note("wp.help.private.note"))), List.of());
             case LIST -> new Content(List.of(
                     usage("/wp list [<dimension> [<list>]]", "/wp list ", "wp.help.list.browse",
                             note("wp.help.list.browse.note")),
@@ -179,12 +188,7 @@ public final class HelpTopics {
                 yield new Content(usages, List.of(new Example("/wp navigate {dimension minecraft:overworld} {list Villages}"
                         + " {waypoint \"Oak Village\"} {method bossbar}", "wp.help.navigate.example")));
             }
-            case UPLOAD -> new Content(List.of(
-                    usage("/wp upload", "/wp upload", "wp.help.upload.panel"),
-                    usage("/wp upload <source> [force server|local [delete]] [<dimension> [<list> [<waypoint>]]]",
-                            "/wp upload ", "wp.help.upload.run", param("source", "wp.help.upload.source"),
-                            note("wp.help.upload.force"))),
-                    List.of(new Example("/wp upload {source xaero}", "wp.help.upload.example")));
+            case UPLOAD -> uploadContent(uploadPlatforms);
             case DOWNLOAD -> new Content(List.of(
                     usage("/wp download [<dimension> [<list> [<waypoint>]]]", "/wp download ", "wp.help.download.run")),
                     List.of(new Example("/wp download {dimension minecraft:overworld}", "wp.help.download.example")));
@@ -198,9 +202,22 @@ public final class HelpTopics {
                             "wp.help.remote.tp", param("dimension", "wp.help.remote.dimension"))),
                     List.of(new Example("/wp remote list {server survival}", "wp.help.remote.example")));
             case RELOAD -> new Content(List.of(usage("/wp reload", "/wp reload", "wp.help.reload.run",
-                    note("wp.help.reload.applies"), note("wp.help.reload.restart"), note("wp.help.reload.waypoints"))),
+                    note("wp.help.reload.applies"), note("wp.help.reload.upload"),
+                    note("wp.help.reload.restart"), note("wp.help.reload.waypoints"))),
                     List.of());
         };
+    }
+
+    private static Content uploadContent(Set<UploadTarget> platforms) {
+        List<String> ids = platforms.stream().map(UploadTarget::id).toList();
+        List<Example> examples = ids.isEmpty() ? List.of()
+                : List.of(new Example("/wp upload {source " + ids.get(0) + "}", "wp.help.upload.example"));
+        return new Content(List.of(
+                usage("/wp upload", "/wp upload", "wp.help.upload.panel"),
+                usage("/wp upload <source> [force server|local [delete]] [<dimension> [<list> [<waypoint>]]]",
+                        "/wp upload ", "wp.help.upload.run",
+                        translatable("wp.help.upload.source", text("<source>", argumentColor("source")),
+                                text(String.join(", ", ids))), note("wp.help.upload.force"))), examples);
     }
 
     private static Usage usage(String syntax, String suggestion, String descriptionKey, Component... notes) {

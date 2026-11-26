@@ -30,4 +30,10 @@ class TranslucentButtonTest {
         assertEquals(51, TranslucentButton.fittedWidth(41));
         assertEquals(76, TranslucentButton.fittedWidth(66));
     }
+
+    @Test
+    void aFittedButtonShowsALabelTenPixelsNarrowerThanItselfInFull() {
+        assertEquals(66, TranslucentButton.fittedLabelWidth(76));
+        assertEquals(76, TranslucentButton.fittedWidth(TranslucentButton.fittedLabelWidth(76)));
+    }
 }

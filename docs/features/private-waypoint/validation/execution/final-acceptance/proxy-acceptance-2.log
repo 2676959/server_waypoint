@@ -1,0 +1,7 @@
+READY a
+READY b
+READY WPProxy MODDED
+PASS real Velocity transfer creates separate profile; stale source rejected; live late-handshake packet retains manual selection
+PASS return proxy transfer restores original profile/data without disconnect
+WAIT_UI
+COMPLETE proxy acceptance

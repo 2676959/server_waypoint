@@ -1,0 +1,39 @@
+[
+  {
+    "list_name": "Copies",
+    "n": 2,
+    "waypoints": [
+      {
+        "name": "Rich",
+        "display_name": "Rich home",
+        "initials": "RH",
+        "pos": [-12, 80, 30],
+        "color": "#123456",
+        "yaw": 90,
+        "global": true,
+        "keywords": [
+          "home",
+          "test"
+        ],
+        "description": "Complete copy metadata",
+        "icon": "minecraft:diamond"
+      }
+    ]
+  },
+  {
+    "list_name": "Homes",
+    "n": 2,
+    "waypoints": [
+      {
+        "name": "Base",
+        "initials": "BA",
+        "pos": [100, 80, 100],
+        "color": "#12AEA3",
+        "yaw": 0,
+        "global": true,
+        "keywords": [],
+        "description": ""
+      }
+    ]
+  }
+]

@@ -6,6 +6,7 @@ import _959.server_waypoint.core.network.data.DimensionWaypointData;
 import _959.server_waypoint.core.network.data.WaypointData;
 import _959.server_waypoint.core.network.upload.UploadStatus;
 import io.netty.buffer.ByteBuf;
+import _959.server_waypoint.core.collection.WaypointScope;
 
 import java.util.UUID;
 import java.util.List;
@@ -15,6 +16,7 @@ public final class WaypointDataCodec {
     }
 
     public static void encode(ByteBuf buf, WaypointData waypointData, EncodingContext context) {
+        WaypointScopeCodec.encode(buf, waypointData.scope());
         buf.writeByte(waypointData.type().ordinal());
         switch (waypointData.type()) {
             case UPDATES, WORLD ->
@@ -26,25 +28,29 @@ public final class WaypointDataCodec {
     }
 
     public static WaypointData decode(ByteBuf buf, DecodingContext context) {
+        WaypointScope scope = WaypointScopeCodec.decode(buf);
         int typeId = buf.readUnsignedByte();
         WaypointData.Type[] types = WaypointData.Type.values();
         if (typeId >= types.length) {
             throw new IllegalArgumentException("Invalid waypoint-data type: " + typeId);
         }
         return switch (types[typeId]) {
-            case UPDATES -> WaypointData.updates(DimensionWaypointsListCodec.decode(buf, context));
-            case DIMENSION -> WaypointData.dimension(DimensionWaypointCodec.decode(buf, context));
+            case UPDATES -> WaypointData.updates(scope, DimensionWaypointsListCodec.decode(buf, context));
+            case DIMENSION -> WaypointData.dimension(scope, DimensionWaypointCodec.decode(buf, context));
             case WAYPOINT_LIST -> {
                 DimensionWaypointData dimension = DimensionWaypointCodec.decode(buf, context);
                 if (dimension.waypointLists().size() != 1) {
                     throw new IllegalArgumentException("Waypoint-list data must contain exactly one list");
                 }
-                yield WaypointData.waypointList(dimension.dimensionName(), dimension.waypointLists().get(0));
+                yield WaypointData.waypointList(scope, dimension.dimensionName(), dimension.waypointLists().get(0));
             }
-            case WORLD -> WaypointData.world(DimensionWaypointsListCodec.decode(buf, context));
-            case UPLOAD -> decodeUpload(buf, context);
+            case WORLD -> WaypointData.world(scope, DimensionWaypointsListCodec.decode(buf, context));
+            case UPLOAD -> {
+                if (scope != WaypointScope.SHARED) throw new IllegalArgumentException("Private uploads are forbidden");
+                yield decodeUpload(buf, context);
+            }
             case WAYPOINT -> new WaypointData(
-                    WaypointData.Type.WAYPOINT, List.of(DimensionWaypointCodec.decode(buf, context)), null
+                    scope, WaypointData.Type.WAYPOINT, List.of(DimensionWaypointCodec.decode(buf, context)), null
             );
         };
     }
@@ -65,6 +71,7 @@ public final class WaypointDataCodec {
             throw new IllegalArgumentException("Invalid upload status: " + statusId);
         }
         return WaypointData.upload(
+                WaypointScope.SHARED,
                 requestId,
                 statuses[statusId],
                 DimensionWaypointsListCodec.decode(buf, context)

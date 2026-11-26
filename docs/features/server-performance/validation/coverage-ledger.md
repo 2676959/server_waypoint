@@ -1,6 +1,45 @@
 # Published 4.0.0 coverage ledger
 
-Source revision: `d9f532f8b5a14c9be4bc47531b05b44fd1dc5773`. Static requirements only; execution evidence is pending.
+> **Current delivery scope (November 15):** The [minimal critical Paper plan](../plans/2026-10-24-server-performance.md) supersedes the broader requirements and earlier Task 11 amendment below. Full-matrix, stress and later milestone work is optional future work. Historical requirements/results remain preserved; exclusions are not passing evidence.
+
+**November 15 milestone scope:** [Task 11 now has a reduced gate](../plans/2026-11-15-task11-simplified.md).
+Its representative lower-rate cases do not replace the full requirements below.
+Deferred per-variant timing belongs to Task 17; cache/viewer stress and
+offline-inventory/world-item leak checks belong to Task 16 before Task 17.
+No coverage row becomes PASS or NOT_APPLICABLE through this planning change.
+
+Source revision: `d9f532f8b5a14c9be4bc47531b05b44fd1dc5773`. The table below
+records static requirements. Selected Task 10 execution is recorded in the
+[storage/command audit](2026-10-31-task10-storage-commands.md); all other rows
+still require their own native evidence.
+
+Task 10 expands the installed release tree into 10,663 executable paths and 62
+custom-suggestion paths. It retains separate callback/feedback evidence for each
+path, 44 permission configurations and exact local mutation snapshots. Timing
+alone is grouped by source-backed family. Navigation, upload and remote paths
+use explicit console/unpaired command-boundary outcomes here; successful feature
+effects stay required in Tasks 11, 12 and 15. Missing teleport feedback remains a
+failed assertion on the decoder-blind 4.0.0 / first 4.0.1 timings. The patched
+4.0.1 remasurement observes that confirmation and PASSes the selected command
+cases; see [2026-11-01-4.0.1-task10-decoder.md](2026-11-01-4.0.1-task10-decoder.md). 2026-11-01 medium leaves-suggestions repeats 1–2 execute that
+leaf with a native callback and still fail delivered player feedback; repeat 3
+is ENOSPC. This command-layer coverage does not mark those feature rows,
+other runtimes, stress tiers or the complete release matrix as passing.
+
+The 2026-11-10 Paper Task 11 run executed the 28 small/medium navigation,
+map-terrain, and protection cases at
+`/Volumes/ssd/sw-performance-task11-20261109-5`. Three cases FAIL and 25 are
+BLOCKED. That run does not mark the feature rows below as passing, and it
+does not cover stress, other runtimes, or the protocol and soak families.
+
+The [November 12 continuation](2026-11-12-task11-diagnostics.md) retains six
+separate medium diagnostic JFRs (3 FAIL, 3 BLOCKED) and post-disconnect native
+resource snapshots. Client-issued elapsed times in historical Task 11 results
+are not acknowledged roundtrip latency or fulfilled-work proof. The corrected
+waypoint callback path has three fresh-process short native checks; terrain
+save/reopen, disconnected inventory/world-item observations and remaining
+behavior/completion adapters remain open. No additional feature row is marked
+passing.
 
 Current-development changes on 2026-10-26 remove the Paper inventory-transfer
 handler and the mod backend's allay/item-entity tick injections at the user's

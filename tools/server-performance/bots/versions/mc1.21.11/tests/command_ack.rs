@@ -38,6 +38,23 @@ fn unobserved_ack_and_duplicate_pending_action_are_rejected() {
 }
 
 #[test]
+fn late_acknowledgement_after_cancel_is_ignored() {
+    let mut pending = PendingAcks::default();
+    let value = json!({"actionId":"action-1", "command":"wp help", "serverObserved":true, "stage":"command-completed"});
+    let _reply = pending.register("alice", "action-1", "/wp help").unwrap();
+    pending.cancel("alice", "action-1");
+    pending.receive("alice", &value).unwrap();
+    assert_eq!(pending.len(), 0);
+    assert!(pending.receive("alice", &value).is_err());
+    assert!(pending
+        .receive(
+            "bob",
+            &json!({"actionId":"never-registered", "command":"wp help", "serverObserved":true, "stage":"command-completed"})
+        )
+        .is_err());
+}
+
+#[test]
 fn marker_registration_is_separate_from_native_callback_completion() {
     let mut markers = PendingAcks::markers();
     let mut commands = PendingAcks::default();

@@ -1,0 +1,38 @@
+Configuration on demand is an incubating feature.
+Running Stonecutter 0.9.7
+> Task :cross-server:updateModInfo UP-TO-DATE
+> Task :common:processResources UP-TO-DATE
+> Task :common:processTestResources NO-SOURCE
+> Task :cross-server:compileJava UP-TO-DATE
+> Task :cross-server:processResources NO-SOURCE
+> Task :cross-server:classes UP-TO-DATE
+> Task :cross-server:jar UP-TO-DATE
+> Task :common:compileJava UP-TO-DATE
+> Task :common:classes UP-TO-DATE
+
+> Task :common:compileTestJava
+Note: /Volumes/ssd/fabric_mods_repo/server_waypoint/common/src/test/java/_959/server_waypoint/crossserver/ModOfflineTeleportPermissionContractTest.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :common:testClasses
+
+> Task :common:test FAILED
+
+CoreWaypointCommandPrivateTest > copiedDisplayNameIsAddedAtomicallyWithAllMetadata() FAILED
+    com.mojang.brigadier.exceptions.CommandSyntaxException at CoreWaypointCommandPrivateTest.java:137
+
+1 test completed, 1 failed
+
+[Incubating] Problems report is available at: file:///Volumes/ssd/fabric_mods_repo/server_waypoint/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':common:test'.
+> There were failing tests. See the report at: file:///Volumes/ssd/fabric_mods_repo/server_waypoint/common/build/reports/tests/test/index.html
+
+* Try:
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+
+BUILD FAILED in 6s
+7 actionable tasks: 2 executed, 5 up-to-date

@@ -15,6 +15,7 @@ import java.util.List;
 
 public final class PaperPerformanceProbe extends JavaPlugin {
     private PaperFixtureAdapter fixture;
+    private CommandTreeAssertions commandTrees;
     private final BotAssertions bots = new BotAssertions();
     private final CommandAssertions commands = new CommandAssertions();
     private final LifecycleAssertions lifecycle = new LifecycleAssertions();
@@ -27,6 +28,8 @@ public final class PaperPerformanceProbe extends JavaPlugin {
 
     @Override public void onEnable() {
         fixture = new PaperFixtureAdapter();
+        commandTrees = new CommandTreeAssertions(this);
+        commandTrees.install();
         commands.install(this, this::emit);
         Bukkit.getPluginManager().registerEvents(bots, this);
         Bukkit.getPluginManager().registerEvents(lifecycle, this);
@@ -110,6 +113,7 @@ public final class PaperPerformanceProbe extends JavaPlugin {
                     emit("scenario.stopped", stopped);
                 }
                 case "storage.snapshot" -> emit("storage.snapshot", StorageAssertions.snapshot());
+                case "storage.reload" -> emit("storage.reloaded", StorageAssertions.reload());
                 case "navigation.snapshot" -> emit("navigation.snapshot", NavigationAssertions.snapshot());
                 case "lifecycle.arm" -> emit("lifecycle.armed", lifecycle.arm());
                 case "lifecycle.prepare-nether" -> emit("lifecycle.nether.prepared", lifecycle.prepareNether());
@@ -117,14 +121,43 @@ public final class PaperPerformanceProbe extends JavaPlugin {
                 case "protection.fixture.spawn" -> emit("protection.fixture.spawned", protection.spawn(data));
                 case "protection.fixture.snapshot" -> emit("protection.fixture.snapshot", protection.snapshot(data));
                 case "protection.fixture.remove" -> emit("protection.fixture.removed", protection.remove(data));
+                case "protection.container.place" -> emit("protection.container.placed", protection.placeContainer(data));
+                case "protection.container.snapshot" -> emit("protection.container.snapshot", protection.snapshotContainer(data));
+                case "protection.container.dirty" -> emit("protection.container.dirtied", protection.dirtyContainer(data));
+                case "protection.container.remove" -> emit("protection.container.removed", protection.removeContainer(data));
+                case "protection.drag.cursor" -> emit("protection.drag.cursor-set", protection.setDragCursor(data));
+                case "protection.station.place" -> emit("protection.station.placed", protection.placeStation(data));
+                case "protection.station.seed" -> emit("protection.station.seeded", protection.seedStation(data));
+                case "protection.station.remove" -> emit("protection.station.removed", protection.removeStation(data));
+                case "protection.station.inject" -> emit("protection.station.injected", protection.injectProtected(data));
+                case "protection.entity.prepare" -> emit("protection.entity.prepared", protection.prepareEntity(data));
+                case "protection.entity.enable" -> emit("protection.entity.enabled", protection.enableEntity(data));
+                case "protection.entity.snapshot" -> emit("protection.entity.snapshot", protection.snapshotEntity(data));
+                case "protection.entity.remove" -> emit("protection.entity.removed", protection.removeEntity(data));
+                case "navigation.persisted" -> emit("navigation.persisted", protection.persistedSessions());
                 case "commands.feedback-barrier" -> Bukkit.getGlobalRegionScheduler().execute(this, () -> emit("commands.feedback.completed", new JsonObject()));
                 case "commands.restore-tokens" -> emit("commands.restore-tokens", commands.restoreTokens());
+                case "command-tree.arm" -> emit("command-tree.armed", commandTrees.arm(data));
+                case "command-tree.snapshot" -> emit("command-tree.snapshot", commandTrees.snapshot());
                 case "commands.tree" -> emit("commands.tree", commands.tree());
                 case "commands.execute" -> {
                     JsonObject acknowledgement = commands.execute(data);
                     Bukkit.getScheduler().runTask(this, () -> emit("commands.executed", commands.completed(acknowledgement)));
                 }
                 case "commands.suggest" -> emit("commands.suggested", commands.suggest(data));
+                case "commands.permissions" -> emit("commands.permissions", commands.permissions(data));
+                case "commands.resources" -> emit("commands.resources", commands.resources());
+                case "process.snapshot" -> {
+                    var bean = java.lang.management.ManagementFactory.getThreadMXBean();
+                    JsonObject state = new JsonObject();
+                    state.addProperty("pid", ProcessHandle.current().pid());
+                    state.addProperty("startedMs", java.lang.management.ManagementFactory.getRuntimeMXBean().getStartTime());
+                    state.addProperty("allocatedBytes", bean instanceof com.sun.management.ThreadMXBean supported
+                            && supported.isThreadAllocatedMemorySupported() && supported.isThreadAllocatedMemoryEnabled()
+                            ? supported.getTotalThreadAllocatedBytes() : -1);
+                    state.addProperty("scope", "whole-process");
+                    emit("process.snapshot", state);
+                }
                 case "players.malformed" -> { bots.sendMalformed(); emit("players.malformed", new JsonObject()); }
                 case "players.snapshot" -> emit("players.snapshot", bots.snapshot(false));
                 case "players.reset" -> emit("players.reset", bots.snapshot(true));

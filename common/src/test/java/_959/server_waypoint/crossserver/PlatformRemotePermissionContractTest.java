@@ -193,6 +193,7 @@ class PlatformRemotePermissionContractTest {
                     : "net.minecraft.commands.CommandSourceStack").getConstructor().newInstance();
             Object console = source;
             Object subject = platform.equals("paper") ? source.getClass().getField("sender").get(source) : source;
+            assertPrivatePermissions(manager, player, platform, adapterClass);
             var permissions = new RemotePermissions<>(manager, CommandPermission::new, actual -> actual == player ? player : null);
             var zeroLevels = new Gson().fromJson("{\"tp\":0,\"remoteTp\":0}", CommandPermission.class);
             var unrestricted = new RemotePermissions<>(manager, () -> zeroLevels, actual -> actual == player ? player : null);
@@ -258,6 +259,37 @@ class PlatformRemotePermissionContractTest {
                 assertFalse(permissions.canTeleportOnArrival(player));
             }
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void assertPrivatePermissions(PermissionManager<Object, String, Object> manager,
+                                                  Object player, String platform, Class<?> adapter) throws Exception {
+        var level = player.getClass().getField("level");
+        int previous = level.getInt(player);
+        var keys = manager.keys;
+        CommandPermission defaults = new CommandPermission();
+        level.setInt(player, 0);
+        assertEquals("server_waypoint.command.private.list", keys.privateList().getKey());
+        assertTrue(manager.checkPlayerPermission(player, keys.privateList(), defaults.privateList()));
+        assertTrue(manager.checkPlayerPermission(player, keys.privateAdd(), defaults.privateAdd()));
+        assertTrue(manager.checkPlayerPermission(player, keys.privateEdit(), defaults.privateEdit()));
+        assertTrue(manager.checkPlayerPermission(player, keys.privateRemove(), defaults.privateRemove()));
+        assertTrue(manager.checkPlayerPermission(player, keys.privateNavigate(), defaults.privateNavigate()));
+        assertFalse(manager.checkPlayerPermission(player, keys.privateTp(), defaults.privateTp()));
+        assertTrue(manager.checkPlayerPermission(player, keys.privateTp(), 0), "Reloaded private teleport level");
+        Map<String, Boolean> assignments = (Map<String, Boolean>) player.getClass().getField("assignments").get(player);
+        if (platform.equals("fabric")) adapter.getMethod("setFabricPermissionAPILoaded", boolean.class).invoke(null, true);
+        if (platform.equals("paper") || platform.equals("fabric")) {
+            assignments.put(keys.tp().getKey(), true);
+            assertFalse(manager.checkPlayerPermission(player, keys.privateTp(), defaults.privateTp()));
+            assignments.put(keys.privateTp().getKey(), true);
+            assertTrue(manager.checkPlayerPermission(player, keys.privateTp(), defaults.privateTp()));
+            assignments.put(keys.privateList().getKey(), false);
+            assertFalse(manager.checkPlayerPermission(player, keys.privateList(), defaults.privateList()));
+        }
+        if (platform.equals("fabric")) adapter.getMethod("setFabricPermissionAPILoaded", boolean.class).invoke(null, false);
+        assignments.clear();
+        level.setInt(player, previous);
     }
 
     private static String adapterSource(Path adapter, AdapterVariant variant) throws Exception {

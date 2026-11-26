@@ -1,0 +1,17 @@
+{
+    "/Volumes/ssd/sw-private-final-20261031/checks-5.jar": {
+        "sha256": "ca4121d5283165ba5bd4325e8cb598990c063acc52929e3aa3787841e048ef1f"
+    },
+    "/Volumes/ssd/sw-private-final-20261031/paper/plugins/server-waypoint.jar": {
+        "sha256": "20b0a182c88934cfcde631e8048920451cf79e402b5837b2616795e713480bfa"
+    },
+    "/Volumes/ssd/sw-private-final-20261031/folia/plugins/server-waypoint.jar": {
+        "sha256": "b3204336c1fd5b0091a1fbab5edede3b6925e6643317f73951d86c11a6660c43"
+    },
+    "/Volumes/ssd/sw-private-final-20261031/fabric/mods/server-waypoint.jar": {
+        "sha256": "aa953765f70b4d3fa7b09c21281116cde17f09f744cfc8ef11b79ad3ecb37522"
+    },
+    "/Volumes/ssd/sw-private-final-20261031/proxy-check/velocity/server.jar": {
+        "sha256": "35a5596a5468a035d8a32c8de5ebb0dc6b8d8f0cc3ff5169d514aca762af8aa8"
+    }
+}

@@ -1,5 +1,6 @@
 package _959.server_waypoint.navigation;
 
+import _959.server_waypoint.core.collection.WaypointCollectionKey;
 import _959.server_waypoint.core.WaypointFilesManagerCore;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointPos;
@@ -45,6 +46,7 @@ class NavigationModelTest {
                 }
         );
         NavigationTarget target = new NavigationTarget(
+                WaypointCollectionKey.shared(),
                 "minecraft:overworld",
                 addResult.waypointList(),
                 addResult.waypoint()
@@ -79,6 +81,8 @@ class NavigationModelTest {
         assertEquals(List.of("town"), target.withListIdentity("renamed", "Renamed").waypointKeywords());
         assertEquals(new WaypointPos(1, 2, 3), target.position());
         assertEquals(0x123456, target.rgb());
+        assertEquals("V", target.waypointInitials());
+        assertEquals("V", target.withListIdentity("renamed", "Renamed").waypointInitials());
     }
 
     @Test
@@ -88,7 +92,9 @@ class NavigationModelTest {
                 UUID.randomUUID(),
                 target(),
                 methods,
-                TextDisplayTransformation.defaultValue()
+                TextDisplayTransformation.defaultValue(),
+                NavigationSession.DEFAULT_WORLD_MARKER_SIZE,
+                NavigationSession.DEFAULT_WORLD_MARKER_DISTANCE
         );
 
         methods.add(NavigationMethod.BOSSBAR);
@@ -195,7 +201,8 @@ class NavigationModelTest {
                         NavigationMethod.MAP,
                         NavigationMethod.BOSSBAR,
                         NavigationMethod.ACTIONBAR,
-                        NavigationMethod.TEXT_DISPLAY
+                        NavigationMethod.TEXT_DISPLAY,
+                        NavigationMethod.WORLD_MARKER
                 ),
                 NavigationMethod.definedMethods()
         );
@@ -204,6 +211,7 @@ class NavigationModelTest {
 
     private static NavigationTarget target() {
         return new NavigationTarget(
+                WaypointCollectionKey.shared(),
                 "minecraft:overworld",
                 "towns",
                 "towns",
@@ -212,7 +220,7 @@ class NavigationModelTest {
                 "",
                 List.of(),
                 new WaypointPos(1, 2, 3),
-                0x123456
+                0x123456, _959.server_waypoint.util.WaypointInitials.getDefaultInitials("Village"), null
         );
     }
 

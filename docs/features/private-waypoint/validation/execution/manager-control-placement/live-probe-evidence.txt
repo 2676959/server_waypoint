@@ -1,0 +1,32 @@
+GUI scale 4, nothing selected: screen 427x240, panels from x 26 y 17, content y 21-218
+  profile [26,4 117x11] 'Local profile: Default', status [149,6 251x9]
+  search [56,21 165x11], add [225,21 11x11], list column right edge 236
+  details [246,21 150x197], copy [316,207 80x11 hidden inactive], details right edge 396
+saved /Volumes/ssd/sw-manager-layout-check/results-032241/26.1.2-Fabric/manager-scale4-no-selection.png
+waypoint row 1, row height 20, list [56,36 180x182]
+selected after clicking the waypoint row: WaypointSelection[identity=ClientWaypointSelection[source=LOCAL, generation=3, profileId=e5c95ad4-d8ac-4a38-ab5f-3125cd158fcc, dimensionName=minecraft:overworld, listIdentifier=Bases, waypointIdentifier=Home base], dimensionName=minecraft:overworld, listName=Bases, listDisplayName=Bases, waypoint=SimpleWaypoint{name='Home base', displayName='Home base', initials='HB', pos=WaypointPos[x=120, y=64, z=-38], rgb=3368652, yaw=0, global=false, keywords=[], description='', icon=null}]
+GUI scale 4, a waypoint selected: screen 427x240, panels from x 26 y 17, content y 21-218
+  profile [26,4 117x11] 'Local profile: Default', status [149,6 251x9]
+  search [56,21 165x11], add [225,21 11x11], list column right edge 236
+  details [246,21 150x182], copy [316,207 80x11], details right edge 396
+profile button tooltip: 'Local waypoint profiles'
+add button tooltip: 'Add'
+saved /Volumes/ssd/sw-manager-layout-check/results-032241/26.1.2-Fabric/manager-scale4-selected.png
+profileButton opened LocalWaypointProfilesScreen
+saved /Volumes/ssd/sw-manager-layout-check/results-032241/26.1.2-Fabric/opened-by-profileButton.png
+copyButton opened WaypointAddScreen
+saved /Volumes/ssd/sw-manager-layout-check/results-032241/26.1.2-Fabric/opened-by-copyButton.png
+addWaypointButton opened WaypointAddScreen
+saved /Volumes/ssd/sw-manager-layout-check/results-032241/26.1.2-Fabric/opened-by-addWaypointButton.png
+GUI scale 4, back from the forms: screen 427x240, panels from x 26 y 17, content y 21-218
+  profile [26,4 117x11] 'Local profile: Default', status [149,6 251x9]
+  search [56,21 165x11], add [225,21 11x11], list column right edge 236
+  details [246,21 150x182], copy [316,207 80x11], details right edge 396
+long name: profile button [26,4 369x11] 'Local profile: A very long profile name for the survival world we sha…', line right edge 400
+long name tooltip: 'Local profile: A very long profile name for the survival world we share with friends'
+saved /Volumes/ssd/sw-manager-layout-check/results-032241/26.1.2-Fabric/manager-scale4-long-profile.png
+GUI scale 1, a waypoint selected: screen 854x480, panels from x 106 y 39, content y 43-437
+  profile [106,26 117x11] 'Local profile: Default', status [229,28 519x9]
+  search [136,43 310x11], add [450,43 11x11], list column right edge 461
+  details [471,43 273x379], copy [664,426 80x11], details right edge 744
+saved /Volumes/ssd/sw-manager-layout-check/results-032241/26.1.2-Fabric/manager-scale1-selected.png

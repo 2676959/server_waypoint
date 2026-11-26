@@ -1,0 +1,20 @@
+{
+  "chat": [
+    {
+      "commands": [
+        "/wp private tp minecraft:overworld Homes Base",
+        "/wp private tp minecraft:overworld Homes Base",
+        "/wp private tp minecraft:overworld Homes Base",
+        "/wp private tp minecraft:overworld Homes Base"
+      ],
+      "text": "Incorrect argument for command\n...p private tp minecraft:overworld Homes Base\u003c--[HERE]"
+    }
+  ],
+  "position": [
+    1.5,
+    73.0,
+    9.5,
+    "minecraft:overworld"
+  ],
+  "screen": "null"
+}

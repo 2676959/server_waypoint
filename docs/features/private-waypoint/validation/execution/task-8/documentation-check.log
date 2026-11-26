@@ -1,0 +1,4 @@
+Relative link paths: 111 checked in 8 files
+common/src/main/resources/lang: 6 locales, 574 English keys; required keys and existing placeholders checked
+mods/src/main/resources/assets/server_waypoint/lang: 6 locales, 316 English keys; required keys and existing placeholders checked
+PASS (language fluency and visual layout require separate evidence)

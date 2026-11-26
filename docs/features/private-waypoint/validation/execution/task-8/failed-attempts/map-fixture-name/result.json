@@ -1,0 +1,96 @@
+{
+    "profile": "1.21.5-Fabric",
+    "target": "1.21.5-fabric",
+    "minecraft": "1.21.5",
+    "prepared": "/Volumes/ssd/sw-private-task8-20261031/map-prepared-2",
+    "suite": "editor",
+    "status": "FAIL",
+    "steps": [
+        {
+            "name": "create",
+            "result": "01-create.result",
+            "state": "PASS\n"
+        },
+        {
+            "name": "seed",
+            "result": "02-seed.result",
+            "state": "PASS\n"
+        }
+    ],
+    "heap_mb": 1024,
+    "stage": "03-collection-isolation",
+    "awt_headless": true,
+    "started_at": 1793488482.566325,
+    "jars": [
+        {
+            "path": "/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/1.21.5-fabric/build/libs/server_waypoint-4.0.1-fabric-mc1.21.5.jar",
+            "name": "server_waypoint-4.0.1-fabric-mc1.21.5.jar",
+            "sha256": "383f7ab1571f1554f3b050a173626ec4e090ac871ab95d344117832697527706"
+        },
+        {
+            "path": "/Volumes/ssd/gradle_home/caches/modules-2/files-2.1/maven.modrinth/xaeros-minimap/25.2.6_Fabric_1.21.5/c6f68fcce1fd2bbb8ef8dc771b0d350cb2ecfff4/xaeros-minimap-25.2.6_Fabric_1.21.5.jar",
+            "name": "xaeros-minimap-25.2.6_Fabric_1.21.5.jar",
+            "sha256": "cf2b3b0c9f0dfabc72d8b6f98203f0d1d6b4fb8240b5ed4e98defd03a6d3f798"
+        },
+        {
+            "path": "/Volumes/ssd/gradle_home/caches/modules-2/files-2.1/maven.modrinth/xaeros-world-map/1.39.12_Fabric_1.21.5/90fdd94c5b6c7551cc7811185b9e69f35dac9dee/xaeros-world-map-1.39.12_Fabric_1.21.5.jar",
+            "name": "xaeros-world-map-1.39.12_Fabric_1.21.5.jar",
+            "sha256": "94d5a50eb46ad544329ddd77fcddca1135d64beda4846a3ff741cb34e4f3a6d4"
+        },
+        {
+            "path": "/Volumes/ssd/gradle_home/caches/modules-2/files-2.1/maven.modrinth/voxelmap-updated/tmjVF7vf/f60970a12be231803a493c178df97f843a4aebed/voxelmap-updated-tmjVF7vf.jar",
+            "name": "voxelmap-updated-tmjVF7vf.jar",
+            "sha256": "e335c3d53e64aa61270583a29f2062917ffc84242c4c5ed7beb5bae47313fd13"
+        },
+        {
+            "path": "/Volumes/ssd/gradle_home/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-api/0.119.5+1.21.5/fd2ef43af82094bf208d68e948d77c65d038d857/fabric-api-0.119.5+1.21.5.jar",
+            "name": "fabric-api-0.119.5+1.21.5.jar",
+            "sha256": "c4176a3a9dadc24391749a6f8dbe43cda69503e8113db71a8880d8d9b409fc9f"
+        }
+    ],
+    "probe_hashes": {
+        "tools": "39b059d8af2b5d968033ccfc3d0de1b3d0d4650ab5b3357c7dffa59be62c4986",
+        "agent": "447e31357ef0cf4131707fbc2c428e9ac4837606b4f3e6d54cbb7d96ba515bf1",
+        "scenario": "e7bbc36bcb228813cad2b1d24eb544e76c8a801e6b59d4b3e42fefee573a9d4e",
+        "targets": "d4d51b4f3ad6293dc8af285d41573033bbd8760477634d2a209c7e216e7bf358"
+    },
+    "java": "/opt/homebrew/Cellar/openjdk@21/21.0.11/libexec/openjdk.jdk/Contents/Home/bin/java",
+    "pid": 90581,
+    "actual_minecraft": "1.21.5",
+    "mixin_audit": "PASS\nTRANSFORMED com.mamiyaotaru.voxelmap.persistent.GuiPersistentMap\nTRANSFORMED net.minecraft.class_918\nOPTIONAL_ABSENT net.minecraft.client.gui.render.GuiRenderer\nOPTIONAL_ABSENT net.minecraft.client.gui.render.pip.PictureInPictureRenderer\nOPTIONAL_ABSENT net.minecraft.client.gui.render.state.GuiItemRenderState\nTRANSFORMED xaero.common.gui.GuiWaypoints\nTRANSFORMED xaero.common.gui.dropdown.DropDownWidget\nTRANSFORMED com.mamiyaotaru.voxelmap.VoxelMap\nTRANSFORMED com.mamiyaotaru.voxelmap.gui.GuiAddWaypoint\nTRANSFORMED com.mamiyaotaru.voxelmap.gui.GuiSlotWaypoints\nTRANSFORMED com.mamiyaotaru.voxelmap.gui.GuiSlotWaypoints$WaypointItem\nTRANSFORMED com.mamiyaotaru.voxelmap.gui.GuiWaypoints\nTRANSFORMED com.mamiyaotaru.voxelmap.persistent.GuiPersistentMap\nTRANSFORMED com.mamiyaotaru.voxelmap.util.WaypointContainer\nTRANSFORMED net.minecraft.class_1531\nTRANSFORMED net.minecraft.class_1533\nTRANSFORMED net.minecraft.class_1542\nTRANSFORMED net.minecraft.class_1661\nTRANSFORMED net.minecraft.class_1703\nTRANSFORMED net.minecraft.class_1714\nTRANSFORMED net.minecraft.class_1759\nTRANSFORMED net.minecraft.class_2168\nTRANSFORMED net.minecraft.class_22\nTRANSFORMED net.minecraft.class_304\nTRANSFORMED net.minecraft.class_310\nTRANSFORMED net.minecraft.class_3222\nTRANSFORMED net.minecraft.class_329\nTRANSFORMED net.minecraft.class_3324\nTRANSFORMED net.minecraft.class_342\nTRANSFORMED net.minecraft.class_3910\nTRANSFORMED net.minecraft.class_4185\nTRANSFORMED net.minecraft.class_634\nTRANSFORMED net.minecraft.class_7298\nTRANSFORMED net.minecraft.class_757\nTRANSFORMED net.minecraft.class_761\nTRANSFORMED net.minecraft.class_7975\nTRANSFORMED net.minecraft.class_8168\nTRANSFORMED net.minecraft.class_8172\nTRANSFORMED net.minecraft.class_9279\nTRANSFORMED xaero.common.gui.GuiWaypoints\nTRANSFORMED xaero.common.gui.GuiWaypoints$List\nTRANSFORMED xaero.common.minimap.waypoints.Waypoint\nTRANSFORMED xaero.hud.minimap.waypoint.render.WaypointMapRenderer\nTRANSFORMED xaero.hud.minimap.world.state.MinimapWorldStateUpdater\nTRANSFORMED xaero.map.gui.GuiMap\nTRANSFORMED xaero.map.mods.gui.Waypoint\nTRANSFORMED xaero.map.mods.gui.WaypointReader\nPASS native set identity=sw\u241fBases\nPASS World Map mixin access interface\nPASS applied handlers xaero.map.mods.gui.WaypointReader [handler$zpi000$server_waypoint$sw$addDropDownOption, sw$getFallbackY, sw$getListName]\nPASS applied handlers xaero.common.gui.dropdown.DropDownWidget [localvar$zpd000$server_waypoint$sw$displaySyncedWaypointSetString, modify$zpd000$server_waypoint$sw$useSyncedWaypointSetBackground, localvar$zpd000$server_waypoint$sw$displaySyncedWaypointSetComponent]\nPASS MixinEnvironment.audit\nSUCCESS targets=44\n",
+    "failure": "FAIL\njava.util.concurrent.ExecutionException: java.lang.AssertionError: Shared fixture missing from XAERO\n\tat java.base/java.util.concurrent.CompletableFuture.reportGet(CompletableFuture.java:396)\n\tat java.base/java.util.concurrent.CompletableFuture.get(CompletableFuture.java:2096)\n\tat LiveChecks.client(LiveChecks.java:84)\n\tat LiveChecks.run(LiveChecks.java:464)\n\tat LiveChecks.lambda$start$0(LiveChecks.java:29)\n\tat java.base/java.lang.Thread.run(Thread.java:1583)\nCaused by: java.lang.AssertionError: Shared fixture missing from XAERO\n\tat LiveChecks.require(LiveChecks.java:119)\n\tat LiveChecks.lambda$run$2(LiveChecks.java:473)\n\tat LiveChecks.lambda$client$0(LiveChecks.java:78)\n\tat knot//net.minecraft.class_1255.method_18859(class_1255.java:164)\n\tat knot//net.minecraft.class_4093.method_18859(class_4093.java:23)\n\tat knot//net.minecraft.class_1255.method_16075(class_1255.java:138)\n\tat knot//net.minecraft.class_1255.method_5383(class_1255.java:123)\n\tat knot//net.minecraft.class_310.method_1523(class_310.java:1308)\n\tat knot//net.minecraft.class_310.method_1514(class_310.java:936)\n\tat knot//net.minecraft.client.main.Main.main(Main.java:265)\n\tat net.fabricmc.loader.impl.game.minecraft.MinecraftGameProvider.launch(MinecraftGameProvider.java:480)\n\tat net.fabricmc.loader.impl.launch.knot.Knot.launch(Knot.java:74)\n\tat net.fabricmc.loader.impl.launch.knot.KnotClient.main(KnotClient.java:23)\n",
+    "exit_code": 143,
+    "finished_at": 1793488532.1737988,
+    "diagnostics": {
+        "errors": 0,
+        "warnings": 65,
+        "ignored": 3
+    },
+    "crash_reports": [],
+    "diagnostic_preview": [
+        {
+            "severity": "WARN",
+            "message": "Compatibility level JAVA_21 specified by fabric-api-lookup-api-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+            "source": {
+                "file": "game/logs/latest.log",
+                "line": 63
+            }
+        },
+        {
+            "severity": "WARN",
+            "message": "Compatibility level JAVA_17 specified by server_waypoint-common.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+            "source": {
+                "file": "game/logs/latest.log",
+                "line": 65
+            }
+        },
+        {
+            "severity": "WARN",
+            "message": "Compatibility level JAVA_17 specified by server_waypoint-voxelmap.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+            "source": {
+                "file": "game/logs/latest.log",
+                "line": 66
+            }
+        }
+    ]
+}

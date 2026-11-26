@@ -1,18 +1,18 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
+import _959.server_waypoint.common.client.*;
+
 import com.mojang.blaze3d.platform.InputConstants;
 import _959.server_waypoint.common.client.gui.render.WidgetTextures;
 import _959.server_waypoint.common.client.gui.render.WaypointRowRenderer;
 import _959.server_waypoint.common.client.gui.screens.WaypointAddScreen;
 import _959.server_waypoint.common.client.gui.screens.WaypointEditScreen;
 import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
-import _959.server_waypoint.common.client.render.OptimizedWaypointRenderer;
 import _959.server_waypoint.common.client.util.ColorHelper;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
-import _959.server_waypoint.core.waypoint.WaypointListDisplayModel;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import _959.server_waypoint.core.waypoint.WaypointQueryEngine;
 import _959.server_waypoint.core.waypoint.WaypointSorting;
@@ -52,12 +52,8 @@ import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_MUTED;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_PRIMARY;
 import static _959.server_waypoint.common.client.gui.screens.MovementAllowedScreen.centered;
-import static _959.server_waypoint.common.client.util.ClientCommandUtils.sendCommand;
 import static _959.server_waypoint.common.util.TextHelper.parseFormattedText;
 import static _959.server_waypoint.util.ColorUtils.getSafeTextColor;
-import static _959.server_waypoint.util.StringCommandBuilder.removeCmd;
-import static _959.server_waypoint.util.StringCommandBuilder.removeListCmd;
-import static _959.server_waypoint.util.StringCommandBuilder.tpCmd;
 
 public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNode> {
     private static final int EMPTY_MESSAGE_INSET = 5;
@@ -74,7 +70,16 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     // The null key belongs to all-dimensions mode; dimension identifiers keep separate positions.
     private static final Map<String, Double> SESSION_SCROLL_POSITIONS = new HashMap<>();
     private final WaypointManagerScreen parentScreen;
-    private final WaypointQueryEngine queryEngine;
+    private final ClientWaypointQuery queryEngine;
+    private ClientWaypointQuery.View collectionView = ClientWaypointQuery.View.COMBINED;
+    private final Map<WaypointList, ClientWaypointSelection> sourceSelections = new java.util.IdentityHashMap<>();
+
+    public void setCollectionView(ClientWaypointQuery.View view) {
+        this.collectionView = view;
+        this.removeClickedPos = -1;
+        applySearchAndSort();
+    }
+    public @Nullable WaypointSelection selectedWaypoint() { return selectedWaypoint; }
     private final Font textRenderer;
     private final Consumer<WaypointSelection> selectionCallback;
     private final int textVertOffset;
@@ -106,7 +111,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
             int width,
             int height,
             WaypointManagerScreen parent,
-            WaypointQueryEngine queryEngine,
+            ClientWaypointQuery queryEngine,
             Font textRenderer,
             Consumer<WaypointSelection> selectionCallback
     ) {
@@ -276,7 +281,8 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     }
 
     public List<String> getSearchSuggestions() {
-        return this.queryEngine.getSearchSuggestions(this.selectedDimensionName);
+        return this.queryEngine.suggestions(collectionView, showAllDimensions ? null : selectedDimensionName)
+                .stream().map(ClientWaypointQuery.Suggestion::text).distinct().toList();
     }
 
     private void applySearchAndSort() {
@@ -296,77 +302,38 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
                 playerDimension,
                 this.sortReversed
         );
-        WaypointQueryEngine.QueryResult result = this.showAllDimensions
-                ? this.queryEngine.queryAll(query)
-                : this.queryEngine.queryDimension(this.selectedDimensionName, query);
-        WaypointListDisplayModel.Display display = WaypointListDisplayModel.build(result, isGroupByLists());
-        List<RowNode> roots;
-        if (display.groupByLists()) {
-            if (this.showAllDimensions) {
-                roots = display.dimensions().stream()
-                        .map(this::createDimensionNode)
-                        .map(RowNode.class::cast)
-                        .toList();
-            } else {
-                roots = display.lists().stream()
-                        .map(this::createListNode)
-                        .map(RowNode.class::cast)
-                        .toList();
+        var result = queryEngine.query(collectionView, showAllDimensions ? null : selectedDimensionName, query);
+        sourceSelections.clear();
+        List<RowNode> roots = new ArrayList<>();
+        if (isGroupByLists()) {
+            var dimensions = new java.util.LinkedHashMap<String, List<ListNode>>();
+            for (var group : result.lists()) {
+                WaypointList view = new ViewWaypointList(group.list(), group.rows().stream().map(ClientWaypointQuery.Row::waypoint).toList());
+                sourceSelections.put(view, group.selection());
+                var node = new ListNode(group.selection().dimensionName(), view);
+                if (showAllDimensions) dimensions.computeIfAbsent(group.selection().dimensionName(), ignored -> new ArrayList<>()).add(node);
+                else roots.add(node);
             }
+            dimensions.forEach((name, lists) -> roots.add(new DimensionNode(name, lists)));
         } else {
-            roots = display.flatWaypoints().stream()
-                    .map(waypoint -> new WaypointNode(
-                            waypoint.dimensionName(),
-                            waypoint.sourceList(),
-                            waypoint.waypoint(),
-                            true,
-                            this.showAllDimensions
-                    ))
-                    .map(RowNode.class::cast)
-                    .toList();
+            for (var row : result.rows()) {
+                sourceSelections.put(row.list(), row.selection().at(row.selection().dimensionName(), row.list().name(), null));
+                roots.add(new WaypointNode(row.selection().dimensionName(), row.list(), row.waypoint(), true, showAllDimensions));
+            }
         }
         updateRoots(roots);
         emptyMessage.setText(Component.translatable(
-                resolveEmptyReason(this.searchQuery, this.showAllDimensions).translationKey(),
-                this.searchQuery
-        ));
-        reconcileSelection(display);
-    }
-
-    private void reconcileSelection(WaypointListDisplayModel.Display display) {
-        if (this.selectedWaypoint == null) {
-            return;
-        }
-        WaypointSelection matchingSelection = null;
-        if (display.groupByLists()) {
-            outer:
-            for (WaypointListDisplayModel.DisplayList list : display.lists()) {
-                for (SimpleWaypoint waypoint : list.waypoints()) {
-                    WaypointSelection selection = createSelection(
-                            list.dimensionName(),
-                            list.sourceList(),
-                            waypoint
-                    );
-                    if (this.selectedWaypoint.matches(selection)) {
-                        matchingSelection = selection;
-                        break outer;
-                    }
-                }
-            }
-        } else {
-            for (WaypointListDisplayModel.DisplayWaypoint row : display.flatWaypoints()) {
-                WaypointSelection selection = createSelection(
-                        row.dimensionName(),
-                        row.sourceList(),
-                        row.waypoint()
-                );
-                if (this.selectedWaypoint.matches(selection)) {
-                    matchingSelection = selection;
+                resolveEmptyReason(this.searchQuery, this.showAllDimensions).translationKey(), this.searchQuery));
+        if (selectedWaypoint != null) {
+            WaypointSelection matching = null;
+            for (var row : result.rows()) {
+                if (selectedWaypoint.identity().equals(row.selection())) {
+                    matching = new WaypointSelection(row.selection(), row.selection().dimensionName(), row.list().name(), row.list().displayName(), row.waypoint());
                     break;
                 }
             }
+            setSelectedWaypoint(matching, true);
         }
-        setSelectedWaypoint(matchingSelection, true);
     }
 
     private void restoreSessionScrollPositionIfPending() {
@@ -402,22 +369,6 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         return sortMode == WaypointSorting.SortMode.DISTANCE
                 && (!Objects.equals(previousPosition, currentPosition)
                 || !Objects.equals(previousDimension, currentDimension));
-    }
-
-    private DimensionNode createDimensionNode(WaypointListDisplayModel.DisplayDimension dimension) {
-        return new DimensionNode(
-                dimension.dimensionName(),
-                dimension.lists().stream()
-                        .map(this::createListNode)
-                        .toList()
-        );
-    }
-
-    private ListNode createListNode(WaypointListDisplayModel.DisplayList list) {
-        return new ListNode(
-                list.dimensionName(),
-                new ViewWaypointList(list.sourceList(), list.waypoints())
-        );
     }
 
     public void toggleSortMode(WaypointSorting.SortMode sortMode) {
@@ -492,11 +443,8 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
 
     @Override
     protected boolean onEntryClicked(TreeEntry<RowNode> entry, double contentMouseX, double contentMouseY, int button) {
-        if (button != InputConstants.MOUSE_BUTTON_LEFT) {
-            return false;
-        }
         RowNode value = entry.value();
-        if (value instanceof ListNode listNode) {
+        if (button == InputConstants.MOUSE_BUTTON_LEFT && value instanceof ListNode listNode) {
             return onListClicked(
                     entry.row(),
                     listNode.dimensionName(),
@@ -510,7 +458,8 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
                     waypointNode.dimensionName(),
                     waypointNode.waypointList(),
                     waypointNode.waypoint(),
-                    contentMouseX
+                    contentMouseX,
+                    button
             );
         }
         return false;
@@ -525,7 +474,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         if (waypointList.isEmpty()) {
             if (contentMouseX > thirdBtnXPos) {
                 if (removeClickedPos == row) {
-                    if (sendCommand(removeListCmd(dimensionName, waypointList.name(), false))) {
+                    if (operationAccepted(client().access().removeList(sourceSelections.get(waypointList)))) {
                         this.removeClickedPos = -1;
                         return true;
                     }
@@ -533,32 +482,19 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
                 removeClickedPos = row;
                 return true;
             } else if (contentMouseX > secondBtnXPos) {
-                MinecraftClientHelper.setScreen(new WaypointAddScreen(
-                        this.parentScreen,
-                        dimensionName,
-                        waypointList.name()
-                ));
+                MinecraftClientHelper.setScreen(new WaypointAddScreen(this.parentScreen, client().access(), sourceSelections.get(waypointList), null, null));
                 this.removeClickedPos = -1;
                 return true;
             }
         } else {
             if (contentMouseX > thirdBtnXPos) {
-                MinecraftClientHelper.setScreen(new WaypointAddScreen(
-                        this.parentScreen,
-                        dimensionName,
-                        waypointList.name()
-                ));
+                MinecraftClientHelper.setScreen(new WaypointAddScreen(this.parentScreen, client().access(), sourceSelections.get(waypointList), null, null));
                 this.removeClickedPos = -1;
                 return true;
             } else if (contentMouseX > secondBtnXPos) {
                 if (canToggleVisibility(dimensionName)) {
                     waypointList.setShow(!waypointList.isShow());
-                    List<SimpleWaypoint> list = waypointList.simpleWaypoints();
-                    if (waypointList.isShow()) {
-                        OptimizedWaypointRenderer.addList(list);
-                    } else {
-                        OptimizedWaypointRenderer.removeList(list);
-                    }
+                    client().refreshCollectionScene(sourceSelections.get(waypointList).source());
                     refreshSelectedWaypointDetails(dimensionName, waypointList.name());
                 }
                 return true;
@@ -572,16 +508,27 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
             String dimensionName,
             WaypointList waypointList,
             SimpleWaypoint waypoint,
-            double contentMouseX
+            double contentMouseX,
+            int button
     ) {
+        boolean leftClick = button == InputConstants.MOUSE_BUTTON_LEFT;
         if (contentMouseX <= firstBtnXPos) {
-            setSelectedWaypoint(createSelection(dimensionName, waypointList, waypoint));
-            this.removeClickedPos = -1;
-            return true;
+            WaypointSelection selection = createSelection(dimensionName, waypointList, waypoint);
+            if (leftClick) {
+                setSelectedWaypoint(selection);
+            }
+            boolean handled = this.parentScreen.onWaypointRowClicked(selection.identity(), button) || leftClick;
+            if (handled) {
+                this.removeClickedPos = -1;
+            }
+            return handled;
+        }
+        if (!leftClick) {
+            return false;
         }
         if (contentMouseX > thirdBtnXPos) {
             if (removeClickedPos == row) {
-                if (sendCommand(removeCmd(dimensionName, waypointList.name(), waypoint, false))) {
+                if (operationAccepted(client().access().remove(createSelection(dimensionName, waypointList, waypoint).identity()))) {
                     this.removeClickedPos = -1;
                     return true;
                 }
@@ -589,21 +536,12 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
             this.removeClickedPos = row;
             return true;
         } else if (contentMouseX > secondBtnXPos) {
-            MinecraftClientHelper.setScreen(new WaypointEditScreen(
-                        this.parentScreen,
-                        dimensionName,
-                        waypointList.name(),
-                        waypointList.displayName(),
-                        waypoint
-            ));
+            MinecraftClientHelper.setScreen(new WaypointEditScreen(this.parentScreen, client().access(),
+                        createSelection(dimensionName, waypointList, waypoint).identity(), waypointList.displayName(), waypoint));
             return true;
         } else if (contentMouseX > firstBtnXPos) {
             if (canToggleVisibility(dimensionName)) {
-                if (waypoint.isRendered()) {
-                    OptimizedWaypointRenderer.remove(waypoint);
-                } else {
-                    OptimizedWaypointRenderer.add(waypoint);
-                }
+                client().setMarkerVisible(createSelection(dimensionName, waypointList, waypoint).identity(), !waypoint.isRendered());
                 refreshSelectedWaypointDetails(dimensionName, waypointList.name());
             }
             return true;
@@ -611,12 +549,13 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         return false;
     }
 
-    private static WaypointSelection createSelection(
+    private WaypointSelection createSelection(
             String dimensionName,
             WaypointList waypointList,
             SimpleWaypoint waypoint
     ) {
         return new WaypointSelection(
+                sourceSelections.get(waypointList).at(dimensionName, waypointList.name(), waypoint.name()),
                 dimensionName,
                 waypointList.name(),
                 waypointList.displayName(),
@@ -659,6 +598,18 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
                 ));
     }
 
+    private static WaypointClientMod client() { return WaypointClientMod.getInstance(); }
+
+    private boolean operationAccepted(ClientWaypointAccess.Outcome outcome) {
+        parentScreen.showOperationOutcome(outcome);
+        return outcome.status() == ClientWaypointAccess.Status.SAVED || outcome.status() == ClientWaypointAccess.Status.AWAITING_SERVER
+                || outcome.status() == ClientWaypointAccess.Status.COMMAND_SUBMITTED;
+    }
+
+    private static net.minecraft.network.chat.MutableComponent sourceLabel(ClientWaypointSelection selection) {
+        return Component.translatable("waypoint.collection." + selection.source().name().toLowerCase(java.util.Locale.ROOT));
+    }
+
     private boolean canToggleVisibility(String dimensionName) {
         return dimensionName.equals(getCurrentDimensionName());
     }
@@ -678,26 +629,13 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         }
     }
 
-    @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        boolean ret = false;
-        if (isTeleportKey(keyCode)) {
-            TreeEntry<RowNode> hoveredEntry = getHoveredEntry();
-            if (hoveredEntry != null && hoveredEntry.value() instanceof WaypointNode waypointNode) {
-                sendCommand(tpCmd(
-                        waypointNode.dimensionName(),
-                        waypointNode.waypointList().name(),
-                        waypointNode.waypoint().name(),
-                        false
-                ));
-                ret = true;
-            }
+    /** The hovered waypoint's captured identity, when a waypoint row is under the pointer. */
+    public @Nullable ClientWaypointSelection hoveredWaypointIdentity() {
+        TreeEntry<RowNode> hoveredEntry = getHoveredEntry();
+        if (this.active && this.visible && hoveredEntry != null && hoveredEntry.value() instanceof WaypointNode waypointNode) {
+            return createSelection(waypointNode.dimensionName(), waypointNode.waypointList(), waypointNode.waypoint()).identity();
         }
-        return ret || super.keyPressed(keyCode, scanCode, modifiers);
-    }
-
-    static boolean isTeleportKey(int keyCode) {
-        return keyCode == InputConstants.KEY_T;
+        return null;
     }
 
     @Override
@@ -832,7 +770,15 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
             }
         }
 
-        drawText(context, textRenderer, parseFormattedText(waypointList.displayName()), indent + 18, rowY + textVertOffset, textColor, true);
+        Component listLabel = parseFormattedText(waypointList.displayName());
+        if (collectionView == ClientWaypointQuery.View.COMBINED) listLabel = sourceLabel(sourceSelections.get(waypointList)).append(" · ").append(listLabel);
+        int labelRight = hovered ? secondBtnXPos : contentWidth;
+        push(context);
+        translate(context, indent + 18, rowY + textVertOffset);
+        float listScale = resolveLabelScale(Math.max(0, labelRight - indent - 20), textRenderer.width(listLabel));
+        scale(context, listScale, listScale);
+        drawText(context, textRenderer, listLabel, 0, 0, textColor, true);
+        pop(context);
         if (isListEmpty) {
             texture(context, WidgetTextures.LIST_EMPTY, indent, rowY + listIconVertOffset, 0, 0, listIconSize, listIconSize, listIconSize, listIconSize, WidgetThemeState.iconTint(this.active));
         } else if (waypointList.isExpand()) {
@@ -903,6 +849,10 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
                 );
             }
             listName = parseFormattedText(waypointNode.waypointList().displayName());
+        }
+        if (collectionView == ClientWaypointQuery.View.COMBINED) {
+            String label = sourceLabel(sourceSelections.get(waypointNode.waypointList())).getString();
+            dimensionLine = dimensionLine.isEmpty() ? label : label + " · " + dimensionLine;
         }
         DistanceLabel distanceLabel = getDistanceLabel(waypoint, waypointNode.dimensionName());
         if (!wpRendered && !distanceLabel.isEmpty()) {
@@ -1162,6 +1112,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     }
 
     public record WaypointSelection(
+            ClientWaypointSelection identity,
             String dimensionName,
             String listName,
             String listDisplayName,
@@ -1175,9 +1126,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         }
 
         private boolean matches(WaypointSelection other) {
-            return Objects.equals(this.dimensionName, other.dimensionName)
-                    && Objects.equals(this.listName, other.listName)
-                    && Objects.equals(this.waypoint.name(), other.waypoint.name());
+            return Objects.equals(this.identity, other.identity);
         }
     }
 

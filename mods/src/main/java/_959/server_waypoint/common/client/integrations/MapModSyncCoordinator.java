@@ -9,11 +9,21 @@ import java.util.List;
 
 /** Client-thread coordination of automatic sync; pending work never retains old event payloads. */
 final class MapModSyncCoordinator {
+    private static final ClientWaypointSyncEvent FULL_SYNC = ClientWaypointSyncEvent.allSynced();
+    private static final int NOTIFICATION_WAIT_TICKS = 20;
+
     private final List<MapModIntegration> integrations;
+    private final MapModSyncNotifications notifications;
     private final EnumSet<UploadTarget> pendingSync = EnumSet.noneOf(UploadTarget.class);
+    private int notificationWaitTicks;
 
     MapModSyncCoordinator(List<MapModIntegration> integrations) {
+        this(integrations, new MapModSyncNotifications());
+    }
+
+    MapModSyncCoordinator(List<MapModIntegration> integrations, MapModSyncNotifications notifications) {
         this.integrations = List.copyOf(integrations);
+        this.notifications = notifications;
     }
 
     void onAutomaticSync(ClientWaypointSyncEvent event, WaypointClientMod client,
@@ -21,18 +31,20 @@ final class MapModSyncCoordinator {
         if (event.type() == ClientWaypointSyncEvent.Type.ALL_SYNCED && integratedWorld) {
             return;
         }
-        for (MapModIntegration integration : integrations) {
-            synchronize(integration, event, client, config);
+        flushNotifications();
+        try {
+            for (MapModIntegration integration : integrations) {
+                synchronize(integration, event, client, config);
+            }
+        } finally {
+            if (pendingSync.isEmpty()) {
+                flushNotifications();
+            }
         }
     }
 
     void onUnchangedSync(WaypointClientMod client, ClientConfig config, boolean integratedWorld) {
-        if (integratedWorld) {
-            return;
-        }
-        for (MapModIntegration integration : integrations) {
-            synchronize(integration, ClientWaypointSyncEvent.allSynced(), client, config);
-        }
+        onAutomaticSync(FULL_SYNC, client, config, integratedWorld);
     }
 
     private void synchronize(MapModIntegration integration, ClientWaypointSyncEvent event,
@@ -46,32 +58,35 @@ final class MapModSyncCoordinator {
             pendingSync.add(target);
             return;
         }
-        if (pendingSync.remove(target)) {
-            integration.syncAll(client);
-            return;
-        }
-        integration.onClientWaypointSync(event, client);
+        ClientWaypointSyncEvent syncEvent = pendingSync.remove(target) ? FULL_SYNC : event;
+        notifications.recordSuccess(target, integration.onClientWaypointSync(syncEvent, client));
     }
 
     void tick(WaypointClientMod client, ClientConfig config) {
         if (pendingSync.isEmpty()) {
             return;
         }
-        for (MapModIntegration integration : integrations) {
-            UploadTarget target = integration.uploadTarget();
-            if (!pendingSync.contains(target)) {
-                continue;
+        try {
+            for (MapModIntegration integration : integrations) {
+                if (pendingSync.contains(integration.uploadTarget())) {
+                    synchronize(integration, FULL_SYNC, client, config);
+                }
             }
-            if (!integration.isInstalled() || !integration.isEnabled(config)) {
-                pendingSync.remove(target);
-            } else if (integration.isReady()) {
-                pendingSync.remove(target);
-                integration.syncAll(client);
+        } finally {
+            if (pendingSync.isEmpty() || (notifications.hasSuccess() && ++notificationWaitTicks >= NOTIFICATION_WAIT_TICKS)) {
+                flushNotifications();
             }
         }
     }
 
+    private void flushNotifications() {
+        notificationWaitTicks = 0;
+        notifications.flush();
+    }
+
     void clearPending() {
         pendingSync.clear();
+        notificationWaitTicks = 0;
+        notifications.clear();
     }
 }

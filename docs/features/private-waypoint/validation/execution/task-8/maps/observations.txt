@@ -1,0 +1,2 @@
+[19:16:45] [Render thread/INFO]: [STDOUT]: SW_LIVE COLLECTION_ISOLATION XAERO native upload contains Shared fixture, excludes live Local/Private entries
+[19:16:45] [Render thread/INFO]: [STDOUT]: SW_LIVE COLLECTION_ISOLATION VOXELMAP native upload contains Shared fixture, excludes live Local/Private entries

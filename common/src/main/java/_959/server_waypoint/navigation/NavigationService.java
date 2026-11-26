@@ -1,10 +1,12 @@
 package _959.server_waypoint.navigation;
 
 import _959.server_waypoint.core.WaypointFilesManagerCore;
+import _959.server_waypoint.core.collection.WaypointCollectionKey;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
@@ -16,6 +18,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 /**
@@ -151,6 +154,9 @@ public final class NavigationService<P> {
         Objects.requireNonNull(previousTarget, "previousTarget");
         Objects.requireNonNull(updatedTarget, "updatedTarget");
 
+        if (!previousTarget.collectionKey().equals(updatedTarget.collectionKey())) {
+            throw new IllegalArgumentException("A refresh cannot move a target between collections");
+        }
         Set<UUID> playerUuids = this.sessionPlayerUuidsByTarget.get(
                 TargetIdentity.from(previousTarget)
         );
@@ -171,23 +177,45 @@ public final class NavigationService<P> {
         }
     }
 
+    /** Stops exactly the sessions targeting a removed waypoint, including their saved resume state. */
+    public void removeTarget(NavigationTarget removedTarget) {
+        TargetIdentity identity = TargetIdentity.from(Objects.requireNonNull(removedTarget, "removedTarget"));
+        Set<UUID> players = this.sessionPlayerUuidsByTarget.get(identity);
+        if (players == null) {
+            return;
+        }
+        for (UUID playerUuid : List.copyOf(players)) {
+            this.platform.executePlayer(playerUuid, player -> {
+                this.platform.assertPlayerThread(player);
+                NavigationSession current = this.sessions.get(playerUuid);
+                if (current != null && identity.equals(TargetIdentity.from(current.target()))) {
+                    this.cleanupSession(player, current);
+                    this.clearPersistedSession(player);
+                }
+            });
+        }
+    }
+
     /**
      * Refreshes all active targets owned by a renamed or redisplayed waypoint list.
      * Persisted sessions are rewritten by the normal per-player refresh path.
      */
     public void refreshListIdentity(
+            WaypointCollectionKey collectionKey,
             String dimensionName,
             String previousListName,
             String updatedListName,
             String updatedListDisplayName
     ) {
+        Objects.requireNonNull(collectionKey, "collectionKey");
         Objects.requireNonNull(dimensionName, "dimensionName");
         Objects.requireNonNull(previousListName, "previousListName");
         Objects.requireNonNull(updatedListName, "updatedListName");
         Objects.requireNonNull(updatedListDisplayName, "updatedListDisplayName");
         for (Map.Entry<UUID, NavigationSession> entry : List.copyOf(this.sessions.entrySet())) {
             NavigationTarget currentTarget = entry.getValue().target();
-            if (!dimensionName.equals(currentTarget.dimensionName())
+            if (!collectionKey.equals(currentTarget.collectionKey())
+                    || !dimensionName.equals(currentTarget.dimensionName())
                     || !previousListName.equals(currentTarget.listName())) {
                 continue;
             }
@@ -340,10 +368,24 @@ public final class NavigationService<P> {
      * the currently loaded waypoint files. Invalid or stale identities are
      * removed so they cannot fail on every future login.
      */
-    public NavigationResult restorePersistedSession(P player, WaypointFilesManagerCore waypointFiles) {
+    @FunctionalInterface
+    public interface SessionResolver {
+        Optional<NavigationTarget> resolve(UUID playerUuid, StoredNavigationSession session) throws IOException;
+    }
+
+    public NavigationResult restorePersistedSession(
+            P player,
+            Function<WaypointCollectionKey, WaypointFilesManagerCore> collectionResolver
+    ) {
+        Objects.requireNonNull(collectionResolver, "collectionResolver");
+        return this.restorePersistedSession(player, (playerUuid, stored) -> stored.resolve(playerUuid, collectionResolver));
+    }
+
+    /** Resolves under the collection owner's lifecycle gate when backed by persistent owner stores. */
+    public NavigationResult restorePersistedSession(P player, SessionResolver resolver) {
         Objects.requireNonNull(player, "player");
         this.platform.assertPlayerThread(player);
-        Objects.requireNonNull(waypointFiles, "waypointFiles");
+        Objects.requireNonNull(resolver, "resolver");
 
         Optional<String> encodedSession;
         try {
@@ -366,7 +408,16 @@ public final class NavigationService<P> {
             this.clearPersistedSession(player);
             return NavigationResult.failure(NavigationResult.Code.TARGET_UNAVAILABLE);
         }
-        Optional<NavigationTarget> target = storedSession.get().resolve(waypointFiles);
+        Optional<NavigationTarget> target;
+        try {
+            UUID playerUuid = this.platform.playerUuid(player);
+            target = storedSession.get().collectionKey().accessibleBy(playerUuid)
+                    ? resolver.resolve(playerUuid, storedSession.get()) : Optional.empty();
+        } catch (IOException | RuntimeException exception) {
+            this.reportPersistenceException(player, "resolve", exception instanceof RuntimeException runtime
+                    ? runtime : new java.io.UncheckedIOException((IOException) exception));
+            return NavigationResult.failure(NavigationResult.Code.TARGET_UNAVAILABLE);
+        }
         if (target.isEmpty()) {
             this.clearPersistedSession(player);
             return NavigationResult.failure(NavigationResult.Code.TARGET_UNAVAILABLE);
@@ -376,9 +427,34 @@ public final class NavigationService<P> {
                 this.platform.playerUuid(player),
                 target.get(),
                 storedSession.get().enabledMethods(),
-                true,
-                storedSession.get().textDisplayTransformation()
+                storedSession.get()
         );
+    }
+
+    public NavigationResult updateWorldMarkerSize(P player, float size) {
+        return this.updateWorldMarker(player, session -> session.withWorldMarkerSize(size));
+    }
+
+    public NavigationResult updateWorldMarkerDistance(P player, float distance) {
+        return this.updateWorldMarker(player, session -> session.withWorldMarkerDistance(distance));
+    }
+
+    private NavigationResult updateWorldMarker(P player, UnaryOperator<NavigationSession> update) {
+        Objects.requireNonNull(player, "player");
+        this.platform.assertPlayerThread(player);
+        NavigationMethod method = NavigationMethod.WORLD_MARKER;
+        NavigationSession session = this.sessions.get(this.platform.playerUuid(player));
+        if (session == null) {
+            return NavigationResult.result(NavigationResult.Code.NO_ACTIVE_SESSION, null, method);
+        }
+        if (!this.handlers.containsKey(method)) {
+            return NavigationResult.result(NavigationResult.Code.METHOD_UNAVAILABLE, session, method);
+        }
+
+        NavigationSession updatedSession = update.apply(session);
+        this.putSession(updatedSession);
+        this.persistSession(player, updatedSession);
+        return NavigationResult.result(NavigationResult.Code.SUCCESS, updatedSession, method);
     }
 
     public NavigationResult updateTextDisplayTranslation(P player, Vector3f translation) {
@@ -507,6 +583,16 @@ public final class NavigationService<P> {
         return Optional.ofNullable(this.sessions.get(Objects.requireNonNull(playerUuid, "playerUuid")));
     }
 
+    /** Returns diagnostics for the independent world marker handler. */
+    public Optional<WorldMarkerStatistics> worldMarkerStatistics(P player) {
+        this.platform.assertPlayerThread(player);
+        NavigationMethodHandler<P> handler = this.handlers.get(NavigationMethod.WORLD_MARKER);
+        if (handler instanceof AbstractWorldMarkerNavigationHandler<?, ?> displayHandler) {
+            return displayHandler.markerStatistics(this.platform.playerUuid(player));
+        }
+        return Optional.empty();
+    }
+
     /** Ticks the live displays owned by one player. */
     public void tickPlayer(P player) {
         Objects.requireNonNull(player, "player");
@@ -528,14 +614,17 @@ public final class NavigationService<P> {
         }
 
         int tickCounter = this.tickCounters.merge(playerUuid, 1, Integer::sum);
-        if (tickCounter < this.updateIntervalTicks) {
+        boolean updateOtherDisplays = tickCounter >= this.updateIntervalTicks;
+        if (updateOtherDisplays) {
+            this.tickCounters.remove(playerUuid);
+        } else if (!session.isEnabled(NavigationMethod.WORLD_MARKER)) {
             return;
         }
-        this.tickCounters.remove(playerUuid);
 
         NavigationSnapshot snapshot = this.platform.snapshot(player, session.target());
         for (NavigationMethod method : session.enabledMethods()) {
-            if (!method.isLiveDisplay()) {
+            if (!method.isLiveDisplay()
+                    || (!updateOtherDisplays && method != NavigationMethod.WORLD_MARKER)) {
                 continue;
             }
             NavigationMethodHandler<P> handler = this.handlers.get(method);
@@ -593,6 +682,9 @@ public final class NavigationService<P> {
 
     private NavigationResult retargetInternal(P player, UUID playerUuid, NavigationTarget target) {
         NavigationSession currentSession = this.sessions.get(playerUuid);
+        if (!target.collectionKey().accessibleBy(playerUuid)) {
+            return NavigationResult.failure(NavigationResult.Code.TARGET_UNAVAILABLE).withSession(currentSession);
+        }
         if (currentSession == null) {
             return NavigationResult.result(NavigationResult.Code.NO_ACTIVE_SESSION, null, null);
         }
@@ -664,7 +756,7 @@ public final class NavigationService<P> {
             NavigationTarget target,
             Set<NavigationMethod> selection
     ) {
-        return this.replaceSelection(player, playerUuid, target, selection, false, null);
+        return this.replaceSelection(player, playerUuid, target, selection, null);
     }
 
     private NavigationResult replaceSelection(
@@ -672,11 +764,13 @@ public final class NavigationService<P> {
             UUID playerUuid,
             NavigationTarget target,
             Set<NavigationMethod> selection,
-            boolean allowEmptySelection,
-            @Nullable TextDisplayTransformation restoredTransformation
+            @Nullable StoredNavigationSession storedSession
     ) {
         NavigationSession currentSession = this.sessions.get(playerUuid);
-        if (selection.isEmpty() && !allowEmptySelection) {
+        if (!target.collectionKey().accessibleBy(playerUuid)) {
+            return NavigationResult.failure(NavigationResult.Code.TARGET_UNAVAILABLE).withSession(currentSession);
+        }
+        if (selection.isEmpty() && storedSession == null) {
             return NavigationResult.result(
                     NavigationResult.Code.INVALID_SELECTION,
                     currentSession,
@@ -694,16 +788,28 @@ public final class NavigationService<P> {
             }
         }
 
-        TextDisplayTransformation transformation = restoredTransformation != null
-                ? restoredTransformation
+        TextDisplayTransformation transformation = storedSession != null
+                ? storedSession.textDisplayTransformation()
                 : currentSession == null
                         ? TextDisplayTransformation.defaultValue()
                         : currentSession.textDisplayTransformation();
+        float worldMarkerSize = storedSession != null
+                ? storedSession.worldMarkerSize()
+                : currentSession == null
+                        ? NavigationSession.DEFAULT_WORLD_MARKER_SIZE
+                        : currentSession.worldMarkerSize();
+        float worldMarkerDistance = storedSession != null
+                ? storedSession.worldMarkerDistance()
+                : currentSession == null
+                        ? NavigationSession.DEFAULT_WORLD_MARKER_DISTANCE
+                        : currentSession.worldMarkerDistance();
         NavigationSession proposedSession = new NavigationSession(
                 playerUuid,
                 target,
                 selection,
-                transformation
+                transformation,
+                worldMarkerSize,
+                worldMarkerDistance
         );
         NavigationResult preflight = this.preflight(player, currentSession, proposedSession);
         if (!preflight.successful()) {
@@ -1020,12 +1126,14 @@ public final class NavigationService<P> {
     }
 
     private record TargetIdentity(
+            WaypointCollectionKey collectionKey,
             String dimensionName,
             String listName,
             String waypointName
     ) {
         private static TargetIdentity from(NavigationTarget target) {
             return new TargetIdentity(
+                    target.collectionKey(),
                     target.dimensionName(),
                     target.listName(),
                     target.waypointName()

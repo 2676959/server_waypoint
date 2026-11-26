@@ -6,6 +6,18 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 
 
 class CommandLeavesTest(unittest.TestCase):
+    def test_feature_boundaries_have_explicit_arguments_and_expected_console_outcome(self):
+        from scenarios.command_leaves import boundary_cases
+        tree={"origin":"native-minecraft-command-dispatcher","nodes":[
+            {"path":"wp remote details <remote server> <remote dimension> <remote list> <remote waypoint>","executable":True},
+            {"path":"wp upload <source> force local delete <dimension> <list identifier>","executable":True},
+            {"path":"wp navigate config text_display transformation scale <scale x> <scale y> <scale z>","executable":True}]}
+        cases=boundary_cases(tree)
+        self.assertEqual("wp remote details missing-server minecraft:overworld perf_00 wp_00000",cases[0]["command"])
+        self.assertEqual("unpaired-remote",cases[0]["behavior"])
+        self.assertEqual("console-player-required",cases[1]["behavior"])
+        self.assertEqual("wp navigate config text_display transformation scale 1 1 1",cases[2]["command"])
+
     def test_compact_list_values_supply_executable_reads_and_suggestion_prefixes(self):
         from scenarios.command_leaves import read_cases, suggestion_cases
         prefix = "wp list sort <list sort mode> order <list sort order> view "
@@ -51,6 +63,11 @@ class CommandLeavesTest(unittest.TestCase):
         from scenarios.command_leaves import console_feedback
         transcript=self.transcript().replace("Native help output\n","Native help output\nUsage: /wp help\n")
         self.assertEqual(["Native help output","Usage: /wp help"],console_feedback(transcript,"run","attempt")[0]["feedback"])
+
+    def test_structured_action_log_is_not_user_feedback(self):
+        from scenarios.command_leaves import console_feedback
+        transcript=self.transcript().replace("Native help output","[server_waypoint.actions] action=tp player=alice outcome=success")
+        self.assertFalse(console_feedback(transcript,"run","attempt")[0]["feedbackObserved"])
 
     def test_suggestion_prefix_requires_matching_native_provider_receipt(self):
         from scenarios.command_leaves import suggestion_cases,verify_suggestions

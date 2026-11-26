@@ -1,0 +1,21 @@
+{
+  "chat": [
+    {
+      "text": "✔ [BA] Base נוספה אל Homes   פרטים · ניווט · ביטול",
+      "commands": [
+        "/wp private details waypoint minecraft:overworld Homes Base",
+        "/wp private list minecraft:overworld Homes",
+        "/wp private details waypoint minecraft:overworld Homes Base",
+        "/wp private navigate minecraft:overworld Homes Base",
+        "/wp private remove minecraft:overworld Homes Base"
+      ]
+    }
+  ],
+  "position": [
+    5.5,
+    74.0,
+    -4.5,
+    "minecraft:overworld"
+  ],
+  "screen": "null"
+}

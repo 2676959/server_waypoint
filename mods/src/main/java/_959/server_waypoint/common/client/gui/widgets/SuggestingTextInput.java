@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
@@ -47,6 +48,8 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.MouseButtonInfo;
 //?}
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.util.FormattedCharSequence;
 import org.jetbrains.annotations.Nullable;
 
 /** Surface-free editable input with shared completion, popup, and layout behavior. */
@@ -66,6 +69,8 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
     private Supplier<List<String>> suggestionsProvider = List::of;
     private @Nullable BiPredicate<String, String> suggestionsMatcher;
     private @Nullable IntSupplier textColorProvider;
+    private @Nullable BiFunction<String, Integer, FormattedCharSequence> textFormatter;
+    private boolean editable = true;
     private List<String> suggestions = List.of();
     private int selectedSuggestion;
     private int suggestionOffset;
@@ -204,6 +209,38 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
     public void setTextColorProvider(IntSupplier provider) {
         this.textColorProvider = Objects.requireNonNull(provider);
         this.updateThemeTextColors();
+    }
+
+    /**
+     * Styles the drawn text. The function receives the shown substring and its offset in the value;
+     * vanilla draws the text in two parts split at the caret. The first call registers
+     * {@link #formatShown} with vanilla, and later calls replace the function.
+     */
+    public void setTextFormatter(BiFunction<String, Integer, FormattedCharSequence> formatter) {
+        boolean registered = this.textFormatter != null;
+        this.textFormatter = Objects.requireNonNull(formatter);
+        if (registered) {
+            return;
+        }
+        //? if >=1.21.9 {
+        this.addFormatter(this::formatShown);
+        //?} else {
+        /*this.setFormatter(this::formatShown);
+        *///?}
+    }
+
+    /** What vanilla draws for the shown text: plain while no formatter is set or the input is disabled. */
+    public FormattedCharSequence formatShown(String shown, int offset) {
+        return this.textFormatter == null || !this.editable || !this.active
+                ? FormattedCharSequence.forward(shown, Style.EMPTY)
+                : this.textFormatter.apply(shown, offset);
+    }
+
+    /** Records the flag, which vanilla keeps private. */
+    @Override
+    public void setEditable(boolean editable) {
+        this.editable = editable;
+        super.setEditable(editable);
     }
 
     /** Returns the visible suggestion under the pointer without accepting it or changing selection. */

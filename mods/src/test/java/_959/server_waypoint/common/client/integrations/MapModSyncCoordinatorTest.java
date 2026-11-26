@@ -6,7 +6,10 @@ import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
 import _959.server_waypoint.core.network.data.WaypointData;
 import _959.server_waypoint.core.network.upload.UploadTarget;
 import _959.server_waypoint.core.waypoint.WaypointList;
+import net.minecraft.network.chat.Component;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,9 +17,100 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class MapModSyncCoordinatorTest {
+    private record Notification(Component chat, Component toast) {}
+
     private final MapStorage voxelMap = new MapStorage(UploadTarget.VOXELMAP);
     private final MapStorage xaero = new MapStorage(UploadTarget.XAERO);
-    private final MapModSyncCoordinator coordinator = new MapModSyncCoordinator(List.of(xaero, voxelMap));
+    private final List<Notification> shown = new ArrayList<>();
+    private final MapModSyncCoordinator coordinator = new MapModSyncCoordinator(List.of(xaero, voxelMap),
+            new MapModSyncNotifications((chat, toast) -> shown.add(new Notification(chat, toast))));
+
+    @Test
+    void readyMapsShareOneNotification() {
+        coordinator.onUnchangedSync(null, null, false);
+
+        assertEquals(List.of(combinedNotification()), shown);
+    }
+
+    @ParameterizedTest
+    @EnumSource(UploadTarget.class)
+    void deferredFullSyncKeepsTheListNameInTheCombinedNotification(UploadTarget deferredTarget) {
+        MapStorage deferred = deferredTarget == UploadTarget.VOXELMAP ? voxelMap : xaero;
+        deferred.ready = false;
+        coordinator.onAutomaticSync(ClientWaypointSyncEvent.listReplaced("minecraft:overworld",
+                WaypointList.build("Outposts", 1)), null, null, false);
+        assertEquals(List.of(), shown);
+
+        deferred.ready = true;
+        coordinator.tick(null, null);
+
+        assertEquals(List.of(new Notification(Component.translatable("server_waypoint.list.added.both_maps", "Outposts"),
+                Component.translatable("server_waypoint.sync.toast.synced.both_maps"))), shown);
+    }
+
+    @Test
+    void readyMapGetsItsOwnNotificationIfTheOtherMapNeverBecomesReady() {
+        voxelMap.ready = false;
+        coordinator.onUnchangedSync(null, null, false);
+        for (int tick = 0; tick < 19; tick++) {
+            coordinator.tick(null, null);
+        }
+        assertEquals(List.of(), shown);
+
+        coordinator.tick(null, null);
+        assertEquals(List.of(xaeroNotification()), shown);
+
+        voxelMap.ready = true;
+        coordinator.tick(null, null);
+        assertEquals(List.of(xaeroNotification(), new Notification(
+                Component.translatable("server_waypoint.all.added.voxelmap"),
+                Component.translatable("server_waypoint.sync.toast.synced.voxelmap"))), shown);
+    }
+
+    @Test
+    void attemptedSyncWithoutSuccessDoesNotNameThatMap() {
+        voxelMap.reportSuccess = false;
+        coordinator.onUnchangedSync(null, null, false);
+
+        assertEquals(List.of(xaeroNotification()), shown);
+    }
+
+    @Test
+    void aNewUpdateKeepsTheEarlierSyncNotificationDistinct() {
+        xaero.ready = false;
+        coordinator.onUnchangedSync(null, null, false);
+
+        xaero.ready = true;
+        coordinator.onAutomaticSync(ClientWaypointSyncEvent.listReplaced("minecraft:overworld",
+                WaypointList.build("Outposts", 1)), null, null, false);
+
+        assertEquals(List.of(
+                new Notification(Component.translatable("server_waypoint.all.added.voxelmap"),
+                        Component.translatable("server_waypoint.sync.toast.synced.voxelmap")),
+                new Notification(Component.translatable("server_waypoint.list.added.both_maps", "Outposts"),
+                        Component.translatable("server_waypoint.sync.toast.synced.both_maps"))), shown);
+    }
+
+    @Test
+    void clearingTheSessionDiscardsUndeliveredNotifications() {
+        voxelMap.ready = false;
+        coordinator.onUnchangedSync(null, null, false);
+        coordinator.clearPending();
+        voxelMap.ready = true;
+        coordinator.onUnchangedSync(null, null, false);
+
+        assertEquals(List.of(combinedNotification()), shown);
+    }
+
+    private static Notification combinedNotification() {
+        return new Notification(Component.translatable("server_waypoint.all.added.both_maps"),
+                Component.translatable("server_waypoint.sync.toast.synced.both_maps"));
+    }
+
+    private static Notification xaeroNotification() {
+        return new Notification(Component.translatable("server_waypoint.all.added.xaeros"),
+                Component.translatable("server_waypoint.sync.toast.synced.xaero"));
+    }
 
     @Test
     void unchangedHandshakeRestoresManagedMarkersInBothMaps() {
@@ -53,12 +147,14 @@ class MapModSyncCoordinatorTest {
         coordinator.tick(null, null);
         assertEquals(List.of("personal", "sw:Home"), xaero.markers);
         assertEquals(List.of("personal"), voxelMap.markers);
+        assertEquals(List.of(), shown);
 
         xaero.markers.add("sw:local-edit");
         voxelMap.ready = true;
         coordinator.tick(null, null);
         assertEquals(List.of("personal", "sw:Home", "sw:local-edit"), xaero.markers);
         assertEquals(List.of("personal", "sw:Home"), voxelMap.markers);
+        assertEquals(List.of(combinedNotification()), shown);
     }
 
     @Test
@@ -196,6 +292,7 @@ class MapModSyncCoordinatorTest {
         private boolean ready = true;
         private boolean installed = true;
         private boolean enabled = true;
+        private boolean reportSuccess = true;
         private boolean rejectReadinessChecks;
 
         private MapStorage(UploadTarget target) { this.target = target; }
@@ -211,9 +308,13 @@ class MapModSyncCoordinatorTest {
             markers.removeIf(marker -> marker.startsWith("sw:"));
             markers.addAll(model);
         }
-        @Override public void onClientWaypointSync(ClientWaypointSyncEvent event, WaypointClientMod client) {
-            if (event.type() == ClientWaypointSyncEvent.Type.ALL_SYNCED) syncAll(client);
-            else markers.add("sw:old-delta");
+        @Override public SyncSuccess onClientWaypointSync(ClientWaypointSyncEvent event, WaypointClientMod client) {
+            if (event.type() == ClientWaypointSyncEvent.Type.ALL_SYNCED) {
+                syncAll(client);
+                return reportSuccess ? SyncSuccess.FULL_SYNC : null;
+            }
+            markers.add("sw:old-delta");
+            return new SyncSuccess("server_waypoint.list.added", event.listName());
         }
     }
 }

@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
@@ -18,6 +19,9 @@ import org.jetbrains.annotations.Nullable;
 
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.nextLayer;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.previousLayer;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutlineWithoutBottom;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutlineWithoutTop;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.NO_MOUSE;
 
 /**
@@ -29,6 +33,9 @@ import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.NO
  * widget.
  */
 public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidget implements Expandable, PopupOwner {
+    protected static final int ARROW_COLUMN_WIDTH = 14;
+    private static final int ARROW_RIGHT_PADDING = 4;
+
     private final List<AbstractMenuItem> menuItems = new ArrayList<>();
     private final LayoutFlow.Orientation expansionOrientation;
     private LayoutFlow.Direction expansionDirection;
@@ -117,6 +124,59 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
         boolean scrollbar = this.expanded && this.expansionOrientation == LayoutFlow.Orientation.VERTICAL
                 && this.countDisplayedMenuItems(this.selectedMenuItemIndex) > this.getPopupItemCount();
         return Math.max(0, this.getWidth() - (scrollbar ? 4 : 0));
+    }
+
+    /** Creates the themed arrow for a text trigger at the trigger's text scale. */
+    protected final ScalableText createDropdownArrow(Font font, float textScale) {
+        return new ScalableText(0, 0, Component.empty(), textScale, () -> WidgetThemeState.text(this.active), font);
+    }
+
+    /** Draws the open or closed arrow with fixed right padding inside the trigger's arrow column. */
+    protected final void renderDropdownArrow(GuiGraphicsExtractor context, ScalableText arrow, int textTop,
+            int mouseX, int mouseY, float deltaTicks) {
+        int right = this.getX() + this.getWidth();
+        int left = Math.max(this.getX() + 1, right - ARROW_COLUMN_WIDTH);
+        if (left >= right - 1 || this.getHeight() <= 2) {
+            return;
+        }
+        arrow.setText(this.isExpanded() ? "⏶" : "⏷");
+        arrow.setPosition(right - ARROW_RIGHT_PADDING - arrow.getWidth(), this.getY() + textTop);
+        context.enableScissor(left, this.getY() + 1, right - 1, this.getY() + this.getHeight() - 1);
+        try {
+            arrow.
+            //$ render_method_swap
+            extractRenderState
+                    (context, mouseX, mouseY, deltaTicks);
+        } finally {
+            context.disableScissor();
+        }
+    }
+
+    /** Draws the shared combobox and text dropdown surface for a trigger or a popup choice. */
+    protected final void renderTextChoiceSurface(GuiGraphicsExtractor context, ShiftableClickableWidget widget,
+            boolean popup) {
+        boolean hovered = widget.isHovered();
+        boolean focused = widget.isFocused();
+        boolean restingChoice = popup && !hovered && !focused;
+        int color = restingChoice ? WidgetThemeManager.getColor(WidgetThemeVariable.POPUP_BACKGROUND)
+                : WidgetThemeState.controlBackground(widget.active, hovered || focused);
+        int x = widget.getX();
+        int y = widget.getY();
+        int width = popup ? Math.min(widget.getWidth(), this.getPopupContentWidth()) : widget.getWidth();
+        int height = widget.getHeight();
+        int border = WidgetThemeState.border(widget.active, focused, hovered);
+        context.fill(x, y, x + width, y + height, color);
+        if (popup && width < widget.getWidth()) {
+            context.fill(x + width, y, x + widget.getWidth(), y + height,
+                    WidgetThemeManager.getColor(WidgetThemeVariable.POPUP_BACKGROUND));
+        }
+        if (!restingChoice) {
+            renderOutline(context, x, y, width, height, border);
+        } else if (this.expansionDirection == LayoutFlow.Direction.REVERSE) {
+            renderOutlineWithoutBottom(context, x, y, width, height, border);
+        } else {
+            renderOutlineWithoutTop(context, x, y, width, height, border);
+        }
     }
 
     /** Caps the popup's vertical extent; wheel and arrow keys can reach the remaining choices. */

@@ -8,9 +8,11 @@ import _959.server_waypoint.core.network.codec.ChunkedMessageManager.PreparedMes
 import _959.server_waypoint.core.network.codec.ChunkedMessageManager.ReceiveFailure;
 import _959.server_waypoint.core.network.codec.ChunkedMessageManager.ReceiveLimits;
 import _959.server_waypoint.text.chat.Chat;
+import _959.server_waypoint.text.chat.ChatIcons;
 import net.kyori.adventure.text.Component;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
@@ -66,6 +68,15 @@ public interface PlatformMessageSender<S, P> {
     default Iterable<? extends P> getBroadcastPlayersFromPlayer(P player) {
         return List.of(player);
     }
+    default boolean isBroadcastOperator(P player) {
+        return false;
+    }
+    default Map<String, String> broadcastDimensionTypes(P player) {
+        return Map.of();
+    }
+    default ChatIcons broadcastChatIcons() {
+        return ChatIcons.NONE;
+    }
     Component getSenderName(S source);
     PlayerActionLog.Actor playerActor(P player);
     /** Identity of the original sender, independent of the stack's /execute as executor. */
@@ -102,6 +113,32 @@ public interface PlatformMessageSender<S, P> {
                     ChunkedMessageSendResult.ENCODING_FAILED
             );
         }
+    }
+
+    /** Authorization is rechecked when queued frames are actually sent, including platform scheduling. */
+    default ChunkedMessageDelivery sendPlayerChunkedMessageTracked(
+            P player, ChunkedMessage message, java.util.function.BooleanSupplier readable
+    ) {
+        if (!this.canSendChunkedMessage(player) || !readable.getAsBoolean()) {
+            return ChunkedMessageDelivery.rejected(ChunkedMessageSendResult.UNSUPPORTED);
+        }
+        try {
+            return this.chunkedMessageManager().sendTracked(player, this.prepareChunkedMessage(message),
+                    packets -> this.sendPlayerPacketBatch(player, packets, readable));
+        } catch (MessageEncodingException exception) {
+            WaypointServerCore.LOGGER.warn("Cannot encode guarded collection message", exception);
+            this.sendPlayerMessage(player, Component.translatable("waypoint.network.encoding_failed"));
+            return ChunkedMessageDelivery.rejected(ChunkedMessageSendResult.ENCODING_FAILED);
+        }
+    }
+
+    default CompletionStage<ChunkedMessageSendResult> sendPlayerPacketBatch(
+            P player, List<MessageChunkBuffer> packets, java.util.function.BooleanSupplier readable
+    ) {
+        if (!this.canSendChunkedMessage(player) || !readable.getAsBoolean()) {
+            return CompletableFuture.completedFuture(ChunkedMessageSendResult.UNSUPPORTED);
+        }
+        return this.sendPlayerPacketBatch(player, packets);
     }
 
     default ChunkedMessageSendResult sendPlayerPreparedChunkedMessage(
@@ -195,6 +232,10 @@ public interface PlatformMessageSender<S, P> {
             Iterable<? extends P> recipients,
             ChunkedMessage message
     ) {
+        if (message instanceof WaypointScopedMessage scoped
+                && scoped.scope() == _959.server_waypoint.core.collection.WaypointScope.PRIVATE) {
+            throw new IllegalArgumentException("Private waypoint messages cannot be broadcast");
+        }
         PreparedMessage prepared;
         try {
             prepared = this.prepareChunkedMessage(message);
@@ -257,7 +298,4 @@ public interface PlatformMessageSender<S, P> {
         return ChunkedMessageManagerRegistry.get(this);
     }
 
-    default void broadcastChunkedMessageFromPlayer(P player, ChunkedMessage message) {
-        this.broadcastChunkedMessage(this.getBroadcastPlayersFromPlayer(player), message);
-    }
 }

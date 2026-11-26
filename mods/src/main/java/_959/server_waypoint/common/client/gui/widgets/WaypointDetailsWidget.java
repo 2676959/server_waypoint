@@ -116,9 +116,7 @@ public final class WaypointDetailsWidget extends ShiftableScrollableWidget imple
     ) {
         return left != null
                 && right != null
-                && Objects.equals(left.dimensionName(), right.dimensionName())
-                && Objects.equals(left.listName(), right.listName())
-                && Objects.equals(left.waypoint().name(), right.waypoint().name());
+                && Objects.equals(left.identity(), right.identity());
     }
 
     @Override
@@ -284,6 +282,8 @@ public final class WaypointDetailsWidget extends ShiftableScrollableWidget imple
                 SECTION_GAP,
                 null
         ));
+        rows.add(detail("waypoint.details.collection", Component.translatable("waypoint.collection."
+                + selection.identity().source().name().toLowerCase(java.util.Locale.ROOT))));
         rows.add(detail("waypoint.details.name", Component.literal(waypoint.name())));
         rows.add(detail("waypoint.details.display_name", parseFormattedText(waypoint.displayName())));
         rows.add(detail("waypoint.details.initials", Component.literal(waypoint.initials())));

@@ -23,7 +23,8 @@ public final class ClientSynchronizationTracker {
     public void markTransportFailure(int messageTypeId) {
         if (messageTypeId == ChunkedMessageRegistry.WAYPOINT_DATA.id()
                 || messageTypeId == ChunkedMessageRegistry.WAYPOINT_MODIFICATION.id()
-                || messageTypeId == ChunkedMessageRegistry.WAYPOINT_LIST_UPDATE.id()) {
+                || messageTypeId == ChunkedMessageRegistry.WAYPOINT_LIST_UPDATE.id()
+                || messageTypeId == ChunkedMessageRegistry.WAYPOINT_COLLECTION_STATE.id()) {
             this.markUncertain();
         }
     }

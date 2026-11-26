@@ -25,6 +25,7 @@ import _959.server_waypoint.util.NamespacedId;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.junit.jupiter.api.Test;
+import _959.server_waypoint.core.collection.WaypointScope;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -199,7 +200,7 @@ class NetworkCodecTest {
     @Test
     void logicalMessageCodecsRoundTripCanonicalSnapshots() {
         WaypointModificationMessage modification = new WaypointModificationMessage(
-                "minecraft:overworld",
+                WaypointScope.SHARED, "minecraft:overworld",
                 "Bases",
                 "{\"text\":\"Bases\",\"color\":\"aqua\"}",
                 null,
@@ -225,7 +226,7 @@ class NetworkCodecTest {
                 PatchField.clear(),
                 PatchField.clear(), PatchField.unchanged());
         WaypointEditRequestMessage request = new WaypointEditRequestMessage(
-                42L,
+                WaypointScope.SHARED, 42L,
                 "minecraft:overworld",
                 "",
                 "way point",
@@ -237,7 +238,7 @@ class NetworkCodecTest {
         assertEquals(request, WaypointEditRequestMessageCodec.decode(requestBuffer, decoding()));
 
         WaypointEditResultMessage result = new WaypointEditResultMessage(
-                42L,
+                WaypointScope.SHARED, 42L,
                 EditResultStatus.DUPLICATE_KEYWORD,
                 "minecraft:overworld",
                 "",
@@ -253,7 +254,7 @@ class NetworkCodecTest {
         assertEquals(8, decodedResult.listRevision());
 
         WaypointListUpdateMessage update = new WaypointListUpdateMessage(
-                "minecraft:overworld",
+                WaypointScope.SHARED, "minecraft:overworld",
                 "old list",
                 new WaypointList("", "{\"text\":\"Shown\"}", 9, List.of())
         );
@@ -270,7 +271,7 @@ class NetworkCodecTest {
         SimpleWaypoint waypoint = waypoint("Spawn");
         WaypointList list = new WaypointList("Bases", "Server bases", 17, List.of(waypoint));
         ByteBuf buffer = Unpooled.buffer();
-        WaypointDataCodec.encode(buffer, WaypointData.waypoint("minecraft:overworld", list, waypoint), encoding());
+        WaypointDataCodec.encode(buffer, WaypointData.waypoint(WaypointScope.SHARED, "minecraft:overworld", list, waypoint), encoding());
 
         WaypointData decoded = WaypointDataCodec.decode(buffer, decoding());
 
@@ -294,7 +295,7 @@ class NetworkCodecTest {
                         new WaypointList("second", 17, List.of(waypoint("second"))))
         )) {
             assertThrows(IllegalArgumentException.class, () -> new WaypointData(
-                    WaypointData.Type.WAYPOINT, List.of(new DimensionWaypointData("minecraft:overworld", lists)), null));
+                    WaypointScope.SHARED, WaypointData.Type.WAYPOINT, List.of(new DimensionWaypointData("minecraft:overworld", lists)), null));
         }
     }
 
@@ -305,7 +306,7 @@ class NetworkCodecTest {
             waypoints.add(waypoint("Waypoint " + index));
         }
         WaypointData uploadData = WaypointData.upload(
-                UUID.randomUUID(),
+                WaypointScope.SHARED, UUID.randomUUID(),
                 UploadStatus.SUCCESS,
                 List.of(new DimensionWaypointData(
                         "minecraft:overworld",

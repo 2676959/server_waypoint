@@ -2,6 +2,8 @@
 package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.common.client.WaypointClientMod;
+import _959.server_waypoint.common.client.ClientWaypointAccess;
+import _959.server_waypoint.common.client.ClientWaypointSelection;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Direction;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Orientation;
 import _959.server_waypoint.common.client.gui.layout.VisualPositioning;
@@ -11,6 +13,7 @@ import _959.server_waypoint.common.client.gui.render.WaypointRowRenderer;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import _959.server_waypoint.common.client.gui.screens.WaypointFormLayout.Arrangement;
 import _959.server_waypoint.common.client.gui.screens.WaypointFormLayout.Columns;
+import _959.server_waypoint.common.client.gui.widgets.AbstractDropdownMenuWidget;
 import _959.server_waypoint.common.client.gui.widgets.ColorHexCodeField;
 import _959.server_waypoint.common.client.gui.widgets.ColorSquareButton;
 import _959.server_waypoint.common.client.gui.widgets.ComboBoxWidget;
@@ -28,9 +31,7 @@ import _959.server_waypoint.common.client.gui.widgets.WaypointIconPicker;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.common.util.CoordinateInputParser;
 import _959.server_waypoint.common.util.CoordinateSuggestions;
-import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
-import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import com.mojang.blaze3d.platform.InputConstants;
 import java.util.ArrayList;
@@ -98,6 +99,8 @@ import static _959.server_waypoint.util.WaypointInitials.getInitialsCandidatesFr
  */
 public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedScreen {
     private static final float TITLE_SCALE = 1.2F;
+    /** The subtitle wraps to this many lines at most, so a long one cannot push the footer off a short screen. */
+    private static final int SUBTITLE_MAX_LINES = 2;
     private static final long TOOLTIP_DELAY_NANOS = 500_000_000L;
     /**
      * The Visibility toggle's own fills, the same in every theme. They are the previous release's Local
@@ -110,7 +113,9 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     private static final int MIN_STATUS_WIDTH = 100;
     private static final String AXIS_LETTERS = "XYZRUF";
     private static final Component ELLIPSIS = Component.literal("…");
-    private static final WaypointFormCheck.Lookup CLIENT_DATA = new ClientData();
+    protected final ClientWaypointAccess access;
+    protected ClientWaypointSelection selection;
+    private WaypointFormCheck.Lookup data;
 
     protected final Screen previousScreen;
     protected final String dimensionName;
@@ -164,7 +169,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     private List<TranslucentButton> buttons = List.of();
     private List<AbstractWidget> tabOrder = List.of();
     private List<AbstractWidget> fieldControls = List.of();
-    private List<ComboBoxWidget> dropdowns = List.of();
+    private List<AbstractDropdownMenuWidget> dropdowns = List.of();
     private List<TranslucentTextField> suggestionFields = List.of();
     private List<Renderable> staticParts = List.of();
     private @Nullable Arrangement arrangement;
@@ -224,9 +229,13 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     protected void onTick() {
     }
 
-    public AbstractWaypointPropertiesScreen(Screen previousScreen, Component title, String dimensionName, String listName, @Nullable SimpleWaypoint waypoint) {
+    public AbstractWaypointPropertiesScreen(Screen previousScreen, Component title, String dimensionName, String listName,
+            @Nullable SimpleWaypoint waypoint, ClientWaypointAccess access, ClientWaypointSelection selection) {
         super(title);
         this.previousScreen = previousScreen;
+        this.access = Objects.requireNonNull(access);
+        this.selection = Objects.requireNonNull(selection);
+        this.data = WaypointFormCheck.lookup(access, selection);
         this.dimensionName = dimensionName;
         this.listName = listName;
         this.saved = waypoint == null ? null : WaypointFormPatch.Saved.of(waypoint);
@@ -312,12 +321,21 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
 
     // ------------------------------------------------------------------ building
 
+    /** Additional live availability checks before enabling submission. */
+    protected boolean destinationAvailable() { return this.access.valid(this.selection); }
+
+    protected final void retargetDestination(ClientWaypointSelection destination) {
+        this.selection = destination;
+        this.data = WaypointFormCheck.lookup(access, destination);
+    }
+
     /** One labelled row above Name whose single control fills the control column. */
     protected record LeadingRow(FormField field, AbstractWidget control, IntConsumer setWidth) {
     }
 
     /** The form's fields, each with the tooltip shown when the pointer rests on its label or controls. */
     enum FormField {
+        DESTINATION("waypoint.form.destination", "waypoint.form.destination.tooltip"),
         DIMENSION("waypoint.form.dimension", "waypoint.form.dimension.tooltip"),
         LIST("waypoint.form.list", "waypoint.form.list.tooltip"),
         NAME("waypoint.form.name", "waypoint.form.name.tooltip"),
@@ -356,18 +374,19 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         @Nullable Component subtitle = this.subtitle();
         if (subtitle != null) {
             this.subtitleText = new ScalableText(0, 0, subtitle, TEXT_MUTED, font);
+            this.subtitleText.setMaxLines(SUBTITLE_MAX_LINES);
         }
         for (FormField field : FormField.values()) {
             this.labels.put(field, new ScalableText(0, 0, Component.translatable(field.labelKey()), TEXT_PRIMARY, font));
         }
 
         List<AbstractWidget> controls = new ArrayList<>();
-        List<ComboBoxWidget> dropdownList = new ArrayList<>();
+        List<AbstractDropdownMenuWidget> dropdownList = new ArrayList<>();
         List<TranslucentTextField> textFields = new ArrayList<>();
         for (LeadingRow row : this.leading) {
             controls.add(row.control());
-            if (row.control() instanceof ComboBoxWidget combo) {
-                dropdownList.add(combo);
+            if (row.control() instanceof AbstractDropdownMenuWidget dropdown) {
+                dropdownList.add(dropdown);
             } else if (row.control() instanceof TranslucentTextField field) {
                 textFields.add(field);
             }
@@ -516,7 +535,8 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         this.titleText.setText(cutToWidth(font, this.getTitle(), (int) (columns.panelWidth() / TITLE_SCALE)));
         int headerHeight = this.titleText.getHeight();
         if (this.subtitleText != null) {
-            this.subtitleText.setText(cutToWidth(font, this.subtitle(), columns.panelWidth()));
+            this.subtitleText.setMaxWidth(columns.panelWidth());
+            this.subtitleText.setText(this.subtitle());
             headerHeight += WaypointFormLayout.TITLE_SUBTITLE_GAP + this.subtitleText.getHeight();
         }
         int[] buttonWidths = new int[this.buttons.size()];
@@ -726,9 +746,14 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         boolean modal = this.swatchWidget.visible;
         Component pending = this.pendingMessage();
         boolean locked = modal || pending != null;
-        WaypointFormCheck.Problem problem = WaypointFormCheck.firstProblem(this.checkInput(), CLIENT_DATA);
-        boolean changed = this.hasChanges();
-        boolean canSubmit = !locked && !(problem != null && problem.blocks()) && changed;
+        WaypointFormCheck.Problem problem = WaypointFormCheck.firstProblem(this.checkInput(), this.data);
+        boolean xValid = CoordinateInputParser.isCoordinateExpression(this.xEditBox.getValue());
+        boolean yValid = CoordinateInputParser.isCoordinateExpression(this.yEditBox.getValue());
+        boolean zValid = CoordinateInputParser.isCoordinateExpression(this.zEditBox.getValue());
+        boolean coordinatesValid = xValid && yValid && zValid;
+        boolean changed = !coordinatesValid || this.hasChanges();
+        boolean canSubmit = this.destinationAvailable() && !locked && coordinatesValid
+                && !(problem != null && problem.blocks()) && changed;
 
         for (AbstractWidget control : this.fieldControls) {
             setControlActive(control, !locked);
@@ -742,11 +767,18 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         this.displayNameEditBox.setInvalid(this.marks(WaypointFormCheck.Field.DISPLAY_NAME, errorField));
         this.keywordsEditBox.setInvalid(this.marks(WaypointFormCheck.Field.KEYWORDS, errorField));
         this.descriptionEditBox.setInvalid(this.marks(WaypointFormCheck.Field.DESCRIPTION, errorField));
+        this.xEditBox.setInvalid(!xValid);
+        this.yEditBox.setInvalid(!yValid);
+        this.zEditBox.setInvalid(!zValid);
 
         if (pending != null) {
             this.showStatus(pending, TEXT_MUTED);
         } else if (this.resultMessage != null) {
             this.showStatus(this.resultMessage, DANGER);
+        } else if (!this.access.valid(this.selection)) {
+            this.showStatus(Component.translatable("waypoint.form.status.obsolete"), DANGER);
+        } else if (!destinationAvailable()) {
+            this.showStatus(Component.translatable("waypoint.form.status.denied"), DANGER);
         } else if (problem != null) {
             this.showStatus(this.messageFor(problem), problem.kind() == WaypointFormCheck.Kind.ERROR ? DANGER : TEXT_MUTED);
         } else {
@@ -767,8 +799,8 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     }
 
     /** Whether the client's waypoint data has a waypoint with exactly this name in that list. */
-    protected static boolean hasWaypoint(String dimension, String list, String name) {
-        return CLIENT_DATA.hasWaypoint(dimension, list, name);
+    protected final boolean hasWaypoint(String dimension, String list, String name) {
+        return this.data.hasWaypoint(dimension, list, name);
     }
 
     /** Shows a message from the server or a failed send in the footer, marking a field when it names one. */
@@ -868,6 +900,9 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     }
 
     private void coordinateEdited(CoordinateField editedField) {
+        if (this.enforcingCoordinateMode) {
+            return;
+        }
         this.enforceCoordinateMode(editedField);
         this.onFormEdited();
     }
@@ -888,9 +923,6 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     }
 
     private void enforceCoordinateMode(CoordinateField editedField) {
-        if (this.enforcingCoordinateMode) {
-            return;
-        }
         this.enforcingCoordinateMode = true;
         try {
             if (isLocalCoordinateField(editedField)) {
@@ -922,7 +954,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     }
 
     private boolean isLocalCoordinateField(CoordinateField field) {
-        return CoordinateInputParser.isLocalCoordinateExpression(field.getValue());
+        return field.getValue().startsWith("^");
     }
 
     private void setLocalIfNeeded(CoordinateField field) {
@@ -1086,7 +1118,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     }
 
     private boolean clickDropdown(double mouseX, double mouseY, int button) {
-        for (ComboBoxWidget dropdown : this.dropdowns) {
+        for (AbstractDropdownMenuWidget dropdown : this.dropdowns) {
             if (dropdown.isMouseOver(mouseX, mouseY) && dropdown.mouseClicked(mouseX, mouseY, button)) {
                 this.setFocused(dropdown);
                 if (button == InputConstants.MOUSE_BUTTON_LEFT) {
@@ -1100,7 +1132,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     }
 
     private boolean releaseDropdown(double mouseX, double mouseY, int button) {
-        for (ComboBoxWidget dropdown : this.dropdowns) {
+        for (AbstractDropdownMenuWidget dropdown : this.dropdowns) {
             if (dropdown.mouseReleased(mouseX, mouseY, button)) {
                 this.setDragging(false);
                 return true;
@@ -1110,7 +1142,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     }
 
     private boolean scrollDropdown(double mouseX, double mouseY, double verticalAmount) {
-        for (ComboBoxWidget dropdown : this.dropdowns) {
+        for (AbstractDropdownMenuWidget dropdown : this.dropdowns) {
             if (dropdown.isExpanded() && dropdown.mouseScrolled(mouseX, mouseY, 0, verticalAmount)) {
                 return true;
             }
@@ -1137,8 +1169,10 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
             return;
         }
         // Popup placement must be current before deciding which layer owns hover.
-        for (ComboBoxWidget dropdown : this.dropdowns) {
-            dropdown.layoutPopup(this.height, 8);
+        for (AbstractDropdownMenuWidget dropdown : this.dropdowns) {
+            if (dropdown instanceof ComboBoxWidget combo) {
+                combo.layoutPopup(this.height, 8);
+            }
         }
         // Covered controls still calculate hover and request cursors during rendering.
         boolean blockContentHover = this.swatchWidget.visible || this.isMouseOverPopup(mouseX, mouseY);
@@ -1173,7 +1207,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
             field.renderSuggestions(context, popupMouseX, popupMouseY);
         }
         previousLayer(context);
-        for (ComboBoxWidget dropdown : this.dropdowns) {
+        for (AbstractDropdownMenuWidget dropdown : this.dropdowns) {
             dropdown.renderPopup(context, popupMouseX, popupMouseY, delta);
         }
         this.scheduleFieldTooltip(contentMouseX, contentMouseY);
@@ -1186,7 +1220,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     }
 
     private boolean isMouseOverPopup(double mouseX, double mouseY) {
-        for (ComboBoxWidget dropdown : this.dropdowns) {
+        for (AbstractDropdownMenuWidget dropdown : this.dropdowns) {
             if (dropdown.isMouseOverPopup(mouseX, mouseY)) {
                 return true;
             }
@@ -1237,8 +1271,8 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         if (this.swatchWidget.visible || this.pendingMessage() != null) {
             return true;
         }
-        for (ComboBoxWidget dropdown : this.dropdowns) {
-            if (dropdown.isExpanded() || dropdown.isSuggestionListOpen()) {
+        for (AbstractDropdownMenuWidget dropdown : this.dropdowns) {
+            if (dropdown.isExpanded() || dropdown instanceof ComboBoxWidget combo && combo.isSuggestionListOpen()) {
                 return true;
             }
         }
@@ -1279,28 +1313,10 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     private record PlayerCoordinates(WaypointPos pos, float pitch, float yaw) {
     }
 
-    /** The client's waypoint data for the checks: the synced files, or the integrated server's in singleplayer. */
-    private static final class ClientData implements WaypointFormCheck.Lookup {
-        @Override
-        public boolean listExists(String dimension, String list) {
-            return list(dimension, list) != null;
-        }
-
-        @Override
-        public boolean hasWaypoint(String dimension, String list, String name) {
-            WaypointList found = list(dimension, list);
-            return found != null && found.getWaypointByName(name) != null;
-        }
-
-        @Override
-        public String listDisplayName(String dimension, String list) {
-            WaypointList found = list(dimension, list);
-            return found == null ? list : found.displayName();
-        }
-
-        private static @Nullable WaypointList list(String dimension, String list) {
-            WaypointFileManager manager = WaypointClientMod.getInstance().getWaypointFileManager(dimension);
-            return manager == null ? null : manager.getWaypointListByName(list);
-        }
+    protected final void showOutcome(ClientWaypointAccess.Outcome outcome) {
+        String key = outcome.problem() != null ? "waypoint.form.status." + outcome.problem().name().toLowerCase(java.util.Locale.ROOT)
+                : outcome.editStatus() != null ? "waypoint.edit.error." + outcome.editStatus().name().toLowerCase(java.util.Locale.ROOT)
+                : "waypoint.form.status." + outcome.status().name().toLowerCase(java.util.Locale.ROOT);
+        this.showResult(Component.translatable(key), WaypointFormCheck.fieldFor(outcome.editStatus()));
     }
 }

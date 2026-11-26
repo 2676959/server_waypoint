@@ -214,3 +214,94 @@ property/revision, single-use restore, nonempty-list rejection and actual config
 reload behavior. It saves/reopens the server and compares exact contents. Generated
 quick-add color values are explicitly domain-checked before entering the operation ledger.
 This console smoke does not establish remaining player/permission/platform coverage.
+
+
+## Task 10 combined native audit
+
+The Paper anchor runs exhaustive command behavior separately from measured
+traffic, plus normal and 90%-single-list storage. Select the combined cases to
+avoid repeating the same behavioral setup under every named variant:
+
+```sh
+rtk proxy python3 tools/server-performance/run.py prepare --output "$SW_PERF_TASK10_ROOT" --suite all --scenarios commands,storage --variants leaves-suggestions,concurrent,skewed-list --tiers small,medium
+rtk proxy python3 tools/server-performance/run.py run --root "$SW_PERF_TASK10_ROOT" --suite all --tiers small,medium --repeats 3
+```
+
+`SW_PERF_TASK10_ROOT` must name a new absolute disposable directory. Keep suite
+sources, configuration and pinned binaries unchanged until the run ends. Native
+feedback/permission assertions are independent of the latency samples; a failed
+correctness assertion stays failed even if every scheduled command completes.
+A case that aborts retains its completed repetitions and reports the missing
+ones. Combined-case evidence does not automatically pass unexecuted case IDs or
+successful feature effects owned by navigation, upload and cross-server adapters.
+See the [Task 10 validation record](../../docs/features/server-performance/validation/2026-10-31-task10-storage-commands.md)
+for exact outcomes and retained roots.
+
+
+### Minimal critical candidate selection (November 15)
+
+Inventory the revised Paper-only scope without starting a server:
+
+```sh
+rtk proxy python3 tools/server-performance/run.py inventory --suite minimal-critical --mode candidate --output /tmp/sw-minimal-inventory
+```
+
+This selects four functional cases (one repetition), command-tree delivery (three
+fresh processes), and idle/ten-owner retarget (three repetitions each). Historical
+case IDs and catalogs remain unchanged. See the [implementation status and native
+check map](../../docs/features/server-performance/validation/2026-11-15-minimal-execution.md).
+The four functional adapters, command-tree delivery adapter and bounded
+idle/retarget timing adapter are implemented. Inventory is not execution proof.
+
+Preparation accepts `--suite minimal-critical --mode candidate` with an explicit
+candidate `--release-manifest`, Paper `--runtime-lock`, and `--cache` containing the
+exact artifact bytes. The manifest uses `provenance: candidate`; audit manifests
+remain published provenance. Preparation seals the selection and fixture identities.
+`run --root ...` preserves that prepared suite, mode and each case's repetition
+count. Minimal runs reject mode/suite/repetition overrides, and historical roots
+cannot be relabeled as minimal. Filters produce partial coverage, never acceptance
+of omitted cases.
+
+
+### Minimal Step 3: live command-tree delivery
+
+Use the explicit Step 3 runtime lock with `probe.commandTreeAgent=true`. The probe
+JAR has a premain entry point and packages ASM only in the test JAR. Each session
+uses an empty catalog and one sequential ordinary/operator connection, measuring
+login plus one native permission refresh per role. The driver installs its own
+validated decoded graph because the pinned Azalea client ignores command trees.
+Native submission and client-local timing have separate clocks/scopes; body bytes,
+CRC, nodes, all expected `/wp` branches and grant/revocation are correlated.
+
+```sh
+rtk proxy python3 tools/server-performance/run.py prepare --output "$SW_PERF_STEP3_ROOT" --suite minimal-critical --mode candidate --variants minimal-command-tree --tiers small --release-manifest /Volumes/ssd/sw-performance-minimal-20261115-inputs/candidate.json --runtime-lock /Volumes/ssd/sw-performance-minimal-step3-20261116-inputs/runtime-lock.json --cache /Volumes/ssd/sw-performance-minimal-20261115-inputs/cache
+rtk proxy python3 tools/server-performance/run.py run --root "$SW_PERF_STEP3_ROOT" --variants minimal-command-tree
+```
+
+Set `SW_PERF_STEP3_ROOT` to a new absolute disposable root. This runs exactly three
+fresh-process sessions; no repetition override or latency-budget PASS is allowed.
+The [Step 3 report](../../docs/features/server-performance/validation/2026-11-16-command-tree-delivery.md)
+contains all twelve timing pairs, median/max summaries, identities and proof limits.
+
+### Minimal Step 4: bounded idle/retarget timing
+
+Use the same explicit candidate/tool locks as Step 3. Each selected case starts
+three fresh processes serially, with 30 seconds warmup and 60 seconds measurement.
+The idle control has zero owners. The retarget case has ten owners, all six
+methods active, alternating B/A once per owner per second. Setup A/B/A must prove
+matched native command completions and exact session/items before timing begins.
+Tick samples retain active-session counts and continuous native tick indices;
+both windows require delivery evidence, and only measurement judges p95 <40 ms
+and p99 <50 ms. Missing evidence is BLOCKED; later errors preserve observed FAIL.
+
+```sh
+rtk proxy python3 tools/server-performance/run.py prepare --output "$SW_PERF_STEP4_ROOT" --suite minimal-critical --mode candidate --variants minimal-idle,minimal-retarget --tiers medium --release-manifest /Volumes/ssd/sw-performance-minimal-20261115-inputs/candidate.json --runtime-lock /Volumes/ssd/sw-performance-minimal-step3-20261116-inputs/runtime-lock.json --cache /Volumes/ssd/sw-performance-minimal-20261115-inputs/cache
+rtk proxy python3 tools/server-performance/run.py run --root "$SW_PERF_STEP4_ROOT" --variants minimal-idle,minimal-retarget
+```
+
+Set `SW_PERF_STEP4_ROOT` to a new absolute disposable root. Each repetition keeps
+its setup receipts, expected/native targets, raw ticks, scheduled/issued/completed
+counts, local roundtrip latencies, offer lag, post-disconnect counters and saved
+shutdown. Pending commands may drain after sampling stops, for at most 30 seconds;
+the measured duration and issued counts remain unchanged. Post-disconnect item
+counts cover online inventories only, not offline inventories or world drops.

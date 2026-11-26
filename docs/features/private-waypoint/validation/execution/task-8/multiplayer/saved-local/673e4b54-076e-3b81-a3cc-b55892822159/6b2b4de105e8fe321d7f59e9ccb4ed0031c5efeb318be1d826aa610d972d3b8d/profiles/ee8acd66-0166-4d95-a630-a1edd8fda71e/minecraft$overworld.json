@@ -1,0 +1,20 @@
+[
+  {
+    "list_name": "Offline",
+    "n": 2,
+    "waypoints": [
+      {
+        "name": "Incompatible",
+        "initials": "I",
+        "pos": [8, 80, 9],
+        "color": "#AA3355",
+        "yaw": 0,
+        "global": false,
+        "keywords": [],
+        "description": ""
+      }
+    ],
+    "show": true,
+    "expand": true
+  }
+]

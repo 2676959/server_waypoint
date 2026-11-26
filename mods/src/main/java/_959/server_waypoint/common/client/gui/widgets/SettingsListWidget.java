@@ -109,6 +109,11 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
         this.positionEntries();
     }
 
+    /** The width every entry lays out in: the list's width less the scrollbar column. */
+    public int getRowWidth() {
+        return this.rowWidth();
+    }
+
     /** The width at which no entry wraps, including the always-reserved scrollbar column. */
     public int getPreferredWidth() {
         int widest = 0;
@@ -526,7 +531,8 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
         private final LayoutElement control;
         private final Renderable controlRenderer;
         private @Nullable Component suffix;
-        private @Nullable AbstractWidget action;
+        private @Nullable LayoutElement action;
+        private @Nullable Renderable actionRenderer;
         private BooleanSupplier actionShown = () -> true;
         private @Nullable Supplier<Component> tooltip;
         private WidgetThemeVariable labelColor = TEXT_PRIMARY;
@@ -546,14 +552,15 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
             return this;
         }
 
-        /** A widget in the last column, such as a reset button. */
-        public Row action(AbstractWidget action) {
+        /** A widget or composite in the last column, such as a reset button or a pair of icon buttons. */
+        public <A extends LayoutElement & Renderable> Row action(A action) {
             return this.action(action, () -> true);
         }
 
-        /** A conditional action whose column stays reserved while the widget is hidden. */
-        public Row action(AbstractWidget action, BooleanSupplier shown) {
+        /** A conditional action whose column stays reserved while its widgets are hidden. */
+        public <A extends LayoutElement & Renderable> Row action(A action, BooleanSupplier shown) {
             this.action = Objects.requireNonNull(action, "action");
+            this.actionRenderer = action;
             this.actionShown = Objects.requireNonNull(shown, "shown");
             return this;
         }
@@ -564,8 +571,14 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
             return this;
         }
 
+        /** Sets the theme color of the label without changing its layout. */
         public Row labelColor(WidgetThemeVariable color) {
-            this.labelColor = Objects.requireNonNull(color, "color");
+            if (this.labelColor != color) {
+                this.labelColor = Objects.requireNonNull(color, "color");
+                if (this.labelText != null) {
+                    this.labelText.setColor(color);
+                }
+            }
             return this;
         }
 
@@ -577,14 +590,15 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
             return this.action == null ? 0 : VisualPositioning.getVisualWidth(this.action);
         }
 
-        /** Every widget is shown except a conditional action that's hidden now. */
+        /** Every widget is shown except those of a conditional action that's hidden now. */
         @Override
         boolean showsWidget(AbstractWidget widget) {
-            return widget != this.action || this.actionShown.getAsBoolean();
+            return this.actionShown.getAsBoolean() || !this.actionWidgets().contains(widget);
         }
 
         boolean isOverAction(int mouseX, int mouseY) {
-            if (this.action == null || !this.action.visible || !this.actionShown.getAsBoolean()) {
+            if (this.action == null || !this.actionShown.getAsBoolean()
+                    || this.actionWidgets().stream().noneMatch(widget -> widget.visible)) {
                 return false;
             }
             int x = VisualPositioning.getVisualX(this.action);
@@ -605,8 +619,6 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
                     VisualPositioning.getVisualWidth(this.control), suffixColumn, actionColumn);
             if (this.labelText == null) {
                 this.labelText = new ScalableText(0, 0, this.label, ROW_TEXT_SCALE, this.labelColor, list.font);
-            } else {
-                this.labelText.setColor(this.labelColor);
             }
             this.labelText.setWidth(labelWidth);
             if (this.suffix != null) {
@@ -664,8 +676,8 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
                 renderPart(context, this.suffixText, mouseX, mouseY, deltaTicks);
             }
             renderPart(context, this.controlRenderer, mouseX, mouseY, deltaTicks);
-            if (this.action != null && this.actionShown.getAsBoolean()) {
-                renderPart(context, this.action, mouseX, mouseY, deltaTicks);
+            if (this.actionRenderer != null && this.actionShown.getAsBoolean()) {
+                renderPart(context, this.actionRenderer, mouseX, mouseY, deltaTicks);
             }
         }
 
@@ -682,6 +694,14 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
             if (this.action != null) {
                 this.action.visitWidgets(consumer);
             }
+        }
+
+        private List<AbstractWidget> actionWidgets() {
+            List<AbstractWidget> widgets = new ArrayList<>();
+            if (this.action != null) {
+                this.action.visitWidgets(widgets::add);
+            }
+            return widgets;
         }
     }
 

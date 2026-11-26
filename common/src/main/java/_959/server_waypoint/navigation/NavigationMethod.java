@@ -14,7 +14,8 @@ public enum NavigationMethod {
     MAP("map", NavigationMethodKind.ITEM),
     BOSSBAR("bossbar", NavigationMethodKind.LIVE_DISPLAY),
     ACTIONBAR("actionbar", NavigationMethodKind.LIVE_DISPLAY),
-    TEXT_DISPLAY("text_display", NavigationMethodKind.LIVE_DISPLAY);
+    TEXT_DISPLAY("text_display", NavigationMethodKind.LIVE_DISPLAY),
+    WORLD_MARKER("world_marker", NavigationMethodKind.LIVE_DISPLAY);
 
     private static final Set<NavigationMethod> BUILT_IN_DEFAULT_METHODS =
             immutableSet(EnumSet.of(ACTIONBAR));

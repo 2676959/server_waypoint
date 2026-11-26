@@ -19,6 +19,7 @@ public class Config {
     Set<NavigationMethod> defaultNavigationMethods = NavigationMethod.builtInDefaultMethods();
     CommandPermission CommandPermission = new CommandPermission();
     Features Features = new Features();
+    private PrivateWaypointConfig privateWaypoints = new PrivateWaypointConfig();
 
     public Config() {
     }
@@ -29,6 +30,14 @@ public class Config {
 
     public Features Features() {
         return this.Features;
+    }
+
+    public PrivateWaypointConfig privateWaypoints() {
+        if (this.privateWaypoints == null) {
+            throw new IllegalArgumentException("privateWaypoints configuration cannot be null");
+        }
+        this.privateWaypoints.validate();
+        return this.privateWaypoints;
     }
 
     public int defaultPageLimit() {

@@ -1,0 +1,1386 @@
+[19:11:17] [main/INFO]: Loading Minecraft 1.21.5 with Fabric Loader 0.16.14
+[19:11:17] [main/INFO]: Fabric is preparing JARs on first launch, this may take a few seconds...
+[19:11:18] [main/INFO]: Loading 56 mods:
+	- fabric-api 0.119.5+1.21.5
+	   |-- fabric-api-base 0.4.62+73a52b4b07
+	   |-- fabric-api-lookup-api-v1 1.6.95+86c3a9f107
+	   |-- fabric-biome-api-v1 16.0.7+2dd063df07
+	   |-- fabric-block-api-v1 1.0.37+86c3a9f107
+	   |-- fabric-block-view-api-v2 1.0.26+aa6d566c07
+	   |-- fabric-blockrenderlayer-v1 2.0.16+86c3a9f107
+	   |-- fabric-client-tags-api-v1 1.1.37+86c3a9f107
+	   |-- fabric-command-api-v1 1.2.70+f71b366f07
+	   |-- fabric-command-api-v2 2.2.49+73a52b4b07
+	   |-- fabric-commands-v0 0.2.87+df3654b307
+	   |-- fabric-content-registries-v0 10.0.11+216530c807
+	   |-- fabric-convention-tags-v1 2.1.27+7f945d5b07
+	   |-- fabric-convention-tags-v2 2.14.1+277f99c707
+	   |-- fabric-crash-report-info-v1 0.3.12+86c3a9f107
+	   |-- fabric-data-attachment-api-v1 1.6.6+7b20cbb007
+	   |-- fabric-data-generation-api-v1 22.3.1+d94614b807
+	   |-- fabric-dimensions-v1 4.0.16+86c3a9f107
+	   |-- fabric-entity-events-v1 2.0.25+27c1078f07
+	   |-- fabric-events-interaction-v0 4.0.13+73a52b4b07
+	   |-- fabric-game-rule-api-v1 1.0.70+c327076a07
+	   |-- fabric-item-api-v1 11.3.1+eeb42f0207
+	   |-- fabric-item-group-api-v1 4.2.8+3459fc6107
+	   |-- fabric-key-binding-api-v1 1.0.63+ecf51cdc07
+	   |-- fabric-keybindings-v0 0.2.61+df3654b307
+	   |-- fabric-lifecycle-events-v1 2.5.13+5cbce67307
+	   |-- fabric-loot-api-v2 3.0.47+3f89f5a507
+	   |-- fabric-loot-api-v3 1.0.35+86c3a9f107
+	   |-- fabric-message-api-v1 6.0.33+86c3a9f107
+	   |-- fabric-model-loading-api-v1 5.0.2+55bce67a07
+	   |-- fabric-networking-api-v1 4.4.0+f3ffa98907
+	   |-- fabric-object-builder-api-v1 21.0.0+7b20cbb007
+	   |-- fabric-particles-v1 4.0.22+86c3a9f107
+	   |-- fabric-recipe-api-v1 8.1.6+052a85d007
+	   |-- fabric-registry-sync-v0 6.1.20+b556383207
+	   |-- fabric-renderer-api-v1 6.0.0+55bce67a07
+	   |-- fabric-renderer-indigo 3.0.0+55bce67a07
+	   |-- fabric-rendering-data-attachment-v1 0.3.64+73761d2e07
+	   |-- fabric-rendering-fluids-v1 3.1.27+86c3a9f107
+	   |-- fabric-rendering-v1 11.1.11+081cc04307
+	   |-- fabric-resource-conditions-api-v1 5.0.21+73a52b4b07
+	   |-- fabric-resource-loader-v0 3.1.6+02ca679607
+	   |-- fabric-screen-api-v1 2.0.46+86c3a9f107
+	   |-- fabric-screen-handler-api-v1 1.3.127+c327076a07
+	   |-- fabric-sound-api-v1 1.0.38+86c3a9f107
+	   |-- fabric-tag-api-v1 1.0.16+ecf51cdc07
+	   |-- fabric-transfer-api-v1 5.4.23+7b20cbb007
+	   \-- fabric-transitive-access-wideners-v1 6.3.17+f17a180c07
+	- fabricloader 0.16.14
+	   \-- mixinextras 0.4.1
+	- java 21
+	- minecraft 1.21.5
+	- server_waypoint 4.0.1
+	- voxelmap 1.21.5-1.15.3
+	- xaerominimap 25.2.6
+	- xaeroworldmap 1.39.12
+[19:11:18] [main/INFO]: SpongePowered MIXIN Subsystem Version=0.8.7 Source=file:/Volumes/ssd/minecraft_clients/libraries/net/fabricmc/sponge-mixin/0.15.5+mixin.0.8.7/sponge-mixin-0.15.5+mixin.0.8.7.jar Service=Knot/Fabric Env=CLIENT
+[19:11:18] [main/INFO]: Attempting to load Fernflower decompiler (Threaded mode)
+[19:11:18] [main/INFO]: Fernflower could not be loaded, exported classes will not be decompiled. NoClassDefFoundError: org/jetbrains/java/decompiler/main/extern/IResultSaver
+[19:11:18] [main/WARN]: Compatibility level JAVA_21 specified by fabric-api-lookup-api-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).
+[19:11:18] [main/INFO]: Compatibility level set to JAVA_21
+[19:11:18] [main/WARN]: Compatibility level JAVA_17 specified by server_waypoint-common.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).
+[19:11:18] [main/WARN]: Compatibility level JAVA_17 specified by server_waypoint-voxelmap.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).
+[19:11:18] [main/WARN]: Compatibility level JAVA_17 specified by xaerohud.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).
+[19:11:18] [main/WARN]: Compatibility level JAVA_17 specified by xaerominimap.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).
+[19:11:18] [main/WARN]: Compatibility level JAVA_17 specified by xaeroworldmap.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).
+[19:11:18] [main/WARN]: Compatibility level JAVA_17 specified by xaeroworldmap.fabric.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).
+[19:11:18] [main/INFO]: Preparing mixins for MixinEnvironment[DEFAULT]
+[19:11:18] [main/INFO]: Selecting config fabric-api-lookup-api-v1.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-biome-api-v1.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-block-api-v1.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-block-view-api-v2.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-block-view-api-v2.client.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-blockrenderlayer-v1.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-command-api-v2.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-command-api-v2.client.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-content-registries-v0.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-convention-tags-api-v2.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-crash-report-info-v1.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-data-attachment-api-v1.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-data-attachment-api-v1.client.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-data-generation-api-v1.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-data-generation-api-v1.client.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-dimensions-v1.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-entity-events-v1.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-events-interaction-v0.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-events-interaction-v0.client.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-game-rule-api-v1.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-game-rule-api-v1.client.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-item-api-v1.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-item-api-v1.client.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-item-group-api-v1.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-item-group-api-v1.client.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-key-binding-api-v1.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-lifecycle-events-v1.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-lifecycle-events-v1.client.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-loot-api-v2.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-loot-api-v3.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-message-api-v1.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-message-api-v1.client.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-model-loading-api-v1.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-networking-api-v1.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-networking-api-v1.client.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-object-builder-v1.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-object-builder-v1.client.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-particles-v1.client.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-recipe-api-v1.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-registry-sync-v0.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-registry-sync-v0.client.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-renderer-api-v1.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-renderer-api-v1.debughud.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-renderer-indigo.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-rendering-data-attachment-v1.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-rendering-data-attachment-v1.client.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-rendering-fluids-v1.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-rendering-v1.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-resource-conditions-api-v1.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-resource-loader-v0.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-resource-loader-v0.client.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-screen-api-v1.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-screen-handler-api-v1.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-sound-api-v1.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-tag-api-v1.mixins.json
+[19:11:18] [main/INFO]: Selecting config fabric-transfer-api-v1.mixins.json
+[19:11:18] [main/INFO]: Selecting config mixinextras.init.mixins.json
+[19:11:18] [main/INFO]: Selecting config server_waypoint-common.mixins.json
+[19:11:18] [main/WARN]: Reference map 'server_waypoint-common.refmap.json' for server_waypoint-common.mixins.json could not be read. If this is a development environment you can ignore this message
+[19:11:18] [main/INFO]: Selecting config server_waypoint-voxelmap.mixins.json
+[19:11:18] [main/WARN]: Reference map 'server_waypoint-common.refmap.json' for server_waypoint-voxelmap.mixins.json could not be read. If this is a development environment you can ignore this message
+[19:11:18] [main/INFO]: Selecting config mixin.voxelmap.json
+[19:11:18] [main/WARN]: Reference map 'voxelmap.refmap.json' for mixin.voxelmap.json could not be read. If this is a development environment you can ignore this message
+[19:11:18] [main/INFO]: Selecting config mixin.voxelmap.fabric.json
+[19:11:18] [main/WARN]: Reference map 'voxelmap.fabric.refmap.json' for mixin.voxelmap.fabric.json could not be read. If this is a development environment you can ignore this message
+[19:11:18] [main/INFO]: Selecting config xaerohud.mixins.json
+[19:11:18] [main/INFO]: Selecting config xaerominimap.mixins.json
+[19:11:18] [main/INFO]: Selecting config xaeroworldmap.mixins.json
+[19:11:18] [main/INFO]: Selecting config xaeroworldmap.fabric.mixins.json
+[19:11:18] [main/INFO]: Preparing fabric-api-lookup-api-v1.mixins.json (2)
+[19:11:18] [main/INFO]: Preparing fabric-biome-api-v1.mixins.json (9)
+[19:11:18] [main/INFO]: Preparing fabric-block-api-v1.mixins.json (4)
+[19:11:18] [main/INFO]: Preparing fabric-block-view-api-v2.mixins.json (3)
+[19:11:18] [main/INFO]: Preparing fabric-block-view-api-v2.client.mixins.json (2)
+[19:11:18] [main/INFO]: Preparing fabric-blockrenderlayer-v1.mixins.json (1)
+[19:11:18] [main/INFO]: Preparing fabric-command-api-v2.mixins.json (5)
+[19:11:18] [main/INFO]: Preparing fabric-command-api-v2.client.mixins.json (2)
+[19:11:18] [main/INFO]: Preparing fabric-content-registries-v0.mixins.json (17)
+[19:11:18] [main/INFO]: Preparing fabric-convention-tags-api-v2.mixins.json (1)
+[19:11:18] [main/INFO]: Preparing fabric-crash-report-info-v1.mixins.json (2)
+[19:11:18] [main/INFO]: Preparing fabric-data-attachment-api-v1.mixins.json (14)
+[19:11:18] [main/INFO]: Preparing fabric-data-attachment-api-v1.client.mixins.json (1)
+[19:11:18] [main/INFO]: Preparing fabric-data-generation-api-v1.mixins.json (10)
+[19:11:18] [main/INFO]: Preparing fabric-data-generation-api-v1.client.mixins.json (4)
+[19:11:18] [main/INFO]: Preparing fabric-dimensions-v1.mixins.json (4)
+[19:11:18] [main/INFO]: Preparing fabric-entity-events-v1.mixins.json (7)
+[19:11:18] [main/INFO]: Preparing fabric-events-interaction-v0.mixins.json (5)
+[19:11:18] [main/INFO]: Preparing fabric-events-interaction-v0.client.mixins.json (3)
+[19:11:18] [main/INFO]: Preparing fabric-game-rule-api-v1.mixins.json (6)
+[19:11:18] [main/INFO]: Preparing fabric-game-rule-api-v1.client.mixins.json (3)
+[19:11:18] [main/INFO]: Preparing fabric-item-api-v1.mixins.json (16)
+[19:11:18] [main/INFO]: Preparing fabric-item-api-v1.client.mixins.json (3)
+[19:11:18] [main/INFO]: Preparing fabric-item-group-api-v1.mixins.json (3)
+[19:11:18] [main/INFO]: Preparing fabric-item-group-api-v1.client.mixins.json (1)
+[19:11:18] [main/INFO]: Preparing fabric-key-binding-api-v1.mixins.json (2)
+[19:11:18] [main/INFO]: Preparing fabric-lifecycle-events-v1.mixins.json (10)
+[19:11:18] [main/INFO]: Preparing fabric-lifecycle-events-v1.client.mixins.json (7)
+[19:11:18] [main/INFO]: Preparing fabric-loot-api-v2.mixins.json (2)
+[19:11:18] [main/INFO]: Preparing fabric-loot-api-v3.mixins.json (7)
+[19:11:18] [main/INFO]: Preparing fabric-message-api-v1.mixins.json (2)
+[19:11:18] [main/INFO]: Preparing fabric-message-api-v1.client.mixins.json (2)
+[19:11:18] [main/INFO]: Preparing fabric-model-loading-api-v1.mixins.json (4)
+[19:11:18] [main/INFO]: Preparing fabric-networking-api-v1.mixins.json (20)
+[19:11:18] [main/INFO]: Preparing fabric-networking-api-v1.client.mixins.json (9)
+[19:11:18] [main/INFO]: Preparing fabric-object-builder-v1.mixins.json (9)
+[19:11:19] [main/INFO]: Preparing fabric-object-builder-v1.client.mixins.json (4)
+[19:11:19] [main/INFO]: Preparing fabric-particles-v1.client.mixins.json (4)
+[19:11:19] [main/INFO]: Preparing fabric-recipe-api-v1.mixins.json (5)
+[19:11:19] [main/INFO]: Preparing fabric-registry-sync-v0.mixins.json (16)
+[19:11:19] [main/INFO]: Preparing fabric-registry-sync-v0.client.mixins.json (5)
+[19:11:19] [main/INFO]: Preparing fabric-renderer-api-v1.mixins.json (22)
+[19:11:19] [main/INFO]: Preparing fabric-renderer-api-v1.debughud.mixins.json (1)
+[19:11:19] [main/INFO]: Preparing fabric-renderer-indigo.mixins.json (8)
+[19:11:19] [main/INFO]: Preparing fabric-rendering-data-attachment-v1.mixins.json (2)
+[19:11:19] [main/INFO]: Preparing fabric-rendering-data-attachment-v1.client.mixins.json (1)
+[19:11:19] [main/INFO]: Preparing fabric-rendering-fluids-v1.mixins.json (1)
+[19:11:19] [main/INFO]: Preparing fabric-rendering-v1.mixins.json (17)
+[19:11:19] [main/INFO]: Preparing fabric-resource-conditions-api-v1.mixins.json (8)
+[19:11:19] [main/INFO]: Preparing fabric-resource-loader-v0.mixins.json (15)
+[19:11:19] [main/INFO]: Preparing fabric-resource-loader-v0.client.mixins.json (8)
+[19:11:19] [main/INFO]: Preparing fabric-screen-api-v1.mixins.json (7)
+[19:11:19] [main/INFO]: Preparing fabric-screen-handler-api-v1.mixins.json (2)
+[19:11:19] [main/INFO]: Preparing fabric-sound-api-v1.mixins.json (2)
+[19:11:19] [main/INFO]: Preparing fabric-tag-api-v1.mixins.json (5)
+[19:11:19] [main/INFO]: Preparing fabric-transfer-api-v1.mixins.json (15)
+[19:11:19] [main/INFO]: Preparing mixinextras.init.mixins.json (0)
+[19:11:19] [main/INFO]: Preparing server_waypoint-common.mixins.json (43)
+[19:11:19] [main/WARN]: Error loading class: net/minecraft/client/gui/render/state/GuiItemRenderState (java.lang.ClassNotFoundException: net/minecraft/client/gui/render/state/GuiItemRenderState)
+[19:11:19] [main/WARN]: Error loading class: net/minecraft/client/gui/render/GuiRenderer (java.lang.ClassNotFoundException: net/minecraft/client/gui/render/GuiRenderer)
+[19:11:19] [main/WARN]: Error loading class: net/minecraft/client/gui/render/pip/PictureInPictureRenderer (java.lang.ClassNotFoundException: net/minecraft/client/gui/render/pip/PictureInPictureRenderer)
+[19:11:19] [main/INFO]: Preparing server_waypoint-voxelmap.mixins.json (8)
+[19:11:19] [main/INFO]: Preparing mixin.voxelmap.json (8)
+[19:11:19] [main/INFO]: Preparing mixin.voxelmap.fabric.json (1)
+[19:11:19] [main/INFO]: Preparing xaerohud.mixins.json (27)
+[19:11:19] [main/INFO]: Preparing xaerominimap.mixins.json (0)
+[19:11:19] [main/INFO]: Preparing xaeroworldmap.mixins.json (13)
+[19:11:19] [main/INFO]: Preparing xaeroworldmap.fabric.mixins.json (12)
+[19:11:19] [main/INFO]: Prepared 453 mixins in 1.240 sec (2.7ms avg) (0ms load, 0ms transform, 0ms plugin)
+[19:11:20] [main/INFO]: Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.4.1).
+[19:11:20] [main/INFO]: Mixing TaggedChoiceMixin from fabric-dimensions-v1.mixins.json into com.mojang.datafixers.types.templates.TaggedChoice
+[19:11:20] [main/INFO]: Mixing TaggedChoiceTypeMixin from fabric-dimensions-v1.mixins.json into com.mojang.datafixers.types.templates.TaggedChoice$TaggedChoiceType
+[19:11:20] [main/INFO]: Mixing Schema2832Mixin from fabric-dimensions-v1.mixins.json into net.minecraft.class_6640
+[19:11:20] [main/INFO]: Mixing SystemDetailsMixin from fabric-crash-report-info-v1.mixins.json into net.minecraft.class_6396
+[19:11:20] [main/INFO]: Renaming synthetic method lambda$appendMods$1(Lnet/fabricmc/loader/api/ModContainer;)Ljava/lang/String; to md3b8686$fabric-crash-report-info-v1$lambda$appendMods$1$0 in fabric-crash-report-info-v1.mixins.json:SystemDetailsMixin from mod fabric-crash-report-info-v1
+[19:11:20] [main/INFO]: Renaming synthetic method lambda$fillSystemDetails$0()Ljava/lang/String; to md3b8686$fabric-crash-report-info-v1$lambda$fillSystemDetails$0$1 in fabric-crash-report-info-v1.mixins.json:SystemDetailsMixin from mod fabric-crash-report-info-v1
+[19:11:22] [main/INFO]: Mixing BootstrapMixin from fabric-registry-sync-v0.mixins.json into net.minecraft.class_2966
+[19:11:22] [main/INFO]: Renaming synthetic method lambda$initialize$1(Lnet/minecraft/class_3611;)Ljava/util/Collection; to md3b8686$fabric-registry-sync-v0$lambda$initialize$1$0 in fabric-registry-sync-v0.mixins.json:BootstrapMixin from mod fabric-registry-sync-v0
+[19:11:22] [main/INFO]: Renaming synthetic method lambda$initialize$0(Lnet/minecraft/class_2248;)Ljava/util/Collection; to md3b8686$fabric-registry-sync-v0$lambda$initialize$0$1 in fabric-registry-sync-v0.mixins.json:BootstrapMixin from mod fabric-registry-sync-v0
+[19:11:22] [main/INFO]: Mixing RegistryMixin from fabric-registry-sync-v0.mixins.json into net.minecraft.class_2378
+[19:11:22] [main/INFO]: Mixing RegistriesMixin from fabric-item-api-v1.mixins.json into net.minecraft.class_7923
+[19:11:22] [main/INFO]: Mixing RegistriesAccessor from fabric-registry-sync-v0.mixins.json into net.minecraft.class_7923
+[19:11:22] [main/INFO]: Renaming @Accessor method getROOT()Lnet/minecraft/class_2385; to getROOT$fabric-registry-sync-v0_$md$3b8686$0 in fabric-registry-sync-v0.mixins.json:RegistriesAccessor from mod fabric-registry-sync-v0
+[19:11:22] [main/INFO]: Mixing RegistriesMixin from fabric-registry-sync-v0.mixins.json into net.minecraft.class_7923
+[19:11:22] [main/INFO]: Mixing SimpleRegistryAccessor from fabric-registry-sync-v0.mixins.json into net.minecraft.class_2370
+[19:11:22] [main/INFO]: Mixing SimpleRegistryMixin from fabric-registry-sync-v0.mixins.json into net.minecraft.class_2370
+[19:11:22] [main/INFO]: Renaming synthetic method lambda$init$4([Lnet/fabricmc/fabric/api/event/registry/RegistryIdRemapCallback;)Lnet/fabricmc/fabric/api/event/registry/RegistryIdRemapCallback; to md3b8686$fabric-registry-sync-v0$lambda$init$4$0 in fabric-registry-sync-v0.mixins.json:SimpleRegistryMixin from mod fabric-registry-sync-v0
+[19:11:22] [main/INFO]: Renaming synthetic method lambda$init$3([Lnet/fabricmc/fabric/api/event/registry/RegistryIdRemapCallback;Lnet/fabricmc/fabric/api/event/registry/RegistryIdRemapCallback$RemapState;)V to md3b8686$fabric-registry-sync-v0$lambda$init$3$1 in fabric-registry-sync-v0.mixins.json:SimpleRegistryMixin from mod fabric-registry-sync-v0
+[19:11:22] [main/INFO]: Renaming synthetic method lambda$init$2(ILnet/minecraft/class_2960;Ljava/lang/Object;)V to md3b8686$fabric-registry-sync-v0$lambda$init$2$2 in fabric-registry-sync-v0.mixins.json:SimpleRegistryMixin from mod fabric-registry-sync-v0
+[19:11:22] [main/INFO]: Renaming synthetic method lambda$init$1([Lnet/fabricmc/fabric/api/event/registry/RegistryEntryAddedCallback;)Lnet/fabricmc/fabric/api/event/registry/RegistryEntryAddedCallback; to md3b8686$fabric-registry-sync-v0$lambda$init$1$3 in fabric-registry-sync-v0.mixins.json:SimpleRegistryMixin from mod fabric-registry-sync-v0
+[19:11:22] [main/INFO]: Renaming synthetic method lambda$init$0([Lnet/fabricmc/fabric/api/event/registry/RegistryEntryAddedCallback;ILnet/minecraft/class_2960;Ljava/lang/Object;)V to md3b8686$fabric-registry-sync-v0$lambda$init$0$4 in fabric-registry-sync-v0.mixins.json:SimpleRegistryMixin from mod fabric-registry-sync-v0
+[19:11:22] [main/INFO]: Mixing SimpleRegistryMixin from fabric-tag-api-v1.mixins.json into net.minecraft.class_2370
+[19:11:22] [main/INFO]: Mixing RegistryKeysMixin from fabric-registry-sync-v0.mixins.json into net.minecraft.class_7924
+[19:11:23] [main/INFO]: Mixing ArgumentTypesAccessor from fabric-command-api-v2.mixins.json into net.minecraft.class_2316
+[19:11:23] [main/INFO]: Renaming @Accessor method fabric_getClassMap()Ljava/util/Map; to fabric_getClassMap$fabric-command-api-v2_$md$3b8686$0 in fabric-command-api-v2.mixins.json:ArgumentTypesAccessor from mod fabric-command-api-v2
+[19:11:23] [main/INFO]: Mixing ItemGroupsMixin from fabric-item-group-api-v1.mixins.json into net.minecraft.class_7706
+[19:11:23] [main/INFO]: Renaming synthetic method lambda$paginateGroups$0(Lnet/minecraft/class_6880$class_6883;Lnet/minecraft/class_6880$class_6883;)I to md3b8686$fabric-item-group-api-v1$lambda$paginateGroups$0$0 in fabric-item-group-api-v1.mixins.json:ItemGroupsMixin from mod fabric-item-group-api-v1
+[19:11:23] [main/INFO]: Mixing ItemGroupAccessor from fabric-item-group-api-v1.mixins.json into net.minecraft.class_1761
+[19:11:23] [main/INFO]: Mixing ItemGroupMixin from fabric-item-group-api-v1.mixins.json into net.minecraft.class_1761
+[19:11:23] [main/INFO]: Renaming synthetic method lambda$getStacks$0(Lnet/minecraft/class_1761;)Ljava/lang/IllegalStateException; to md3b8686$fabric-item-group-api-v1$lambda$getStacks$0$0 in fabric-item-group-api-v1.mixins.json:ItemGroupMixin from mod fabric-item-group-api-v1
+[19:11:23] [Datafixer Bootstrap/INFO]: 263 Datafixer optimizations took 2291 milliseconds
+[19:11:23] [main/INFO]: Mixing FireBlockMixin from fabric-content-registries-v0.mixins.json into net.minecraft.class_2358
+[19:11:23] [main/INFO]: Mixing BlockMixin from fabric-block-api-v1.mixins.json into net.minecraft.class_2248
+[19:11:23] [main/INFO]: Mixing AbstractBlockMixin from fabric-content-registries-v0.mixins.json into net.minecraft.class_4970
+[19:11:23] [main/INFO]: Mixing AbstractBlockAccessor from fabric-object-builder-v1.mixins.json into net.minecraft.class_4970
+[19:11:23] [main/INFO]: Mixing BlockViewMixin from fabric-block-view-api-v2.mixins.json into net.minecraft.class_1922
+[19:11:23] [main/INFO]: Mixing AttachmentTargetsMixin from fabric-data-attachment-api-v1.mixins.json into net.minecraft.class_1297
+[19:11:23] [main/INFO]: Renaming synthetic method lambda$fabric_readAttachmentsFromNbt$0(Lnet/minecraft/class_7225$class_7874;Lnet/fabricmc/fabric/api/attachment/v1/AttachmentType;Ljava/lang/Object;)V to md3b8686$fabric-data-attachment-api-v1$lambda$fabric_readAttachmentsFromNbt$0$0 in fabric-data-attachment-api-v1.mixins.json:AttachmentTargetsMixin from mod fabric-data-attachment-api-v1
+[19:11:23] [main/INFO]: Mixing EntityMixin from fabric-data-attachment-api-v1.mixins.json into net.minecraft.class_1297
+[19:11:23] [main/INFO]: Renaming synthetic method lambda$fabric_syncChange$0(Lnet/fabricmc/fabric/api/attachment/v1/AttachmentSyncPredicate;Lnet/fabricmc/fabric/impl/attachment/sync/s2c/AttachmentSyncPayloadS2C;Lnet/minecraft/class_3222;)V to md3b8686$fabric-data-attachment-api-v1$lambda$fabric_syncChange$0$1 in fabric-data-attachment-api-v1.mixins.json:EntityMixin from mod fabric-data-attachment-api-v1
+[19:11:23] [main/INFO]: Mixing EntityMixin from fabric-entity-events-v1.mixins.json into net.minecraft.class_1297
+[19:11:23] [main/INFO]: Mixing PlayerEntityMixin from fabric-entity-events-v1.mixins.json into net.minecraft.class_1657
+[19:11:23] [main/INFO]: Mixing MixinPlayerEntity from xaerohud.mixins.json into net.minecraft.class_1657
+[19:11:23] [main/WARN]: xaerohud.mixins.json:MixinPlayerEntity from mod xaerominimap: Class version 65 required is higher than the class version supported by the current version of Mixin (JAVA_17 supports class version 61)
+[19:11:23] [main/INFO]: Mixing MixinPlayerClient from xaerohud.mixins.json into net.minecraft.class_1657
+[19:11:23] [main/INFO]: Mixing MixinFabricPlayerEntity from xaeroworldmap.fabric.mixins.json into net.minecraft.class_1657
+[19:11:23] [main/WARN]: xaeroworldmap.fabric.mixins.json:MixinFabricPlayerEntity from mod xaeroworldmap: Class version 65 required is higher than the class version supported by the current version of Mixin (JAVA_17 supports class version 61)
+[19:11:23] [main/INFO]: Mixing MixinFabricPlayerClient from xaeroworldmap.fabric.mixins.json into net.minecraft.class_1657
+[19:11:23] [main/INFO]: Mixing LivingEntityMixin from fabric-entity-events-v1.mixins.json into net.minecraft.class_1309
+[19:11:23] [main/INFO]: Mixing elytra.LivingEntityMixin from fabric-entity-events-v1.mixins.json into net.minecraft.class_1309
+[19:11:23] [main/INFO]: Mixing LivingEntityMixin from fabric-item-api-v1.mixins.json into net.minecraft.class_1309
+[19:11:23] [main/INFO]: Mixing LivingEntityMixin from fabric-lifecycle-events-v1.mixins.json into net.minecraft.class_1309
+[19:11:23] [main/INFO]: Mixing WorldViewMixin from fabric-block-view-api-v2.mixins.json into net.minecraft.class_4538
+[19:11:23] [main/INFO]: Mixing WorldViewMixin from fabric-rendering-data-attachment-v1.mixins.json into net.minecraft.class_4538
+[19:11:23] [main/INFO]: Mixing AttachmentTargetsMixin from fabric-data-attachment-api-v1.mixins.json into net.minecraft.class_1937
+[19:11:23] [main/INFO]: Mixing WorldMixin from fabric-data-attachment-api-v1.mixins.json into net.minecraft.class_1937
+[19:11:23] [main/INFO]: Mixing WorldMixin from fabric-lifecycle-events-v1.mixins.json into net.minecraft.class_1937
+[19:11:23] [main/INFO]: Mixing MixinFabricWorld from xaeroworldmap.fabric.mixins.json into net.minecraft.class_1937
+[19:11:23] [main/INFO]: Mixing ServerWorldMixin from fabric-api-lookup-api-v1.mixins.json into net.minecraft.class_3218
+[19:11:23] [main/INFO]: Renaming synthetic method lambda$fabric_invalidateCache$5(Ljava/util/Map$Entry;)Z to md3b8686$fabric-api-lookup-api-v1$lambda$fabric_invalidateCache$5$0 in fabric-api-lookup-api-v1.mixins.json:ServerWorldMixin from mod fabric-api-lookup-api-v1
+[19:11:23] [main/INFO]: Renaming synthetic method lambda$fabric_invalidateCache$4(Ljava/lang/ref/WeakReference;)Z to md3b8686$fabric-api-lookup-api-v1$lambda$fabric_invalidateCache$4$1 in fabric-api-lookup-api-v1.mixins.json:ServerWorldMixin from mod fabric-api-lookup-api-v1
+[19:11:23] [main/INFO]: Renaming synthetic method lambda$fabric_invalidateCache$3(Ljava/lang/ref/WeakReference;)V to md3b8686$fabric-api-lookup-api-v1$lambda$fabric_invalidateCache$3$2 in fabric-api-lookup-api-v1.mixins.json:ServerWorldMixin from mod fabric-api-lookup-api-v1
+[19:11:23] [main/INFO]: Renaming synthetic method lambda$fabric_invalidateCache$2(Ljava/lang/ref/WeakReference;)Z to md3b8686$fabric-api-lookup-api-v1$lambda$fabric_invalidateCache$2$3 in fabric-api-lookup-api-v1.mixins.json:ServerWorldMixin from mod fabric-api-lookup-api-v1
+[19:11:23] [main/INFO]: Renaming synthetic method lambda$fabric_registerCache$1(Ljava/lang/ref/WeakReference;)Z to md3b8686$fabric-api-lookup-api-v1$lambda$fabric_registerCache$1$4 in fabric-api-lookup-api-v1.mixins.json:ServerWorldMixin from mod fabric-api-lookup-api-v1
+[19:11:23] [main/INFO]: Renaming synthetic method lambda$fabric_registerCache$0(Lnet/minecraft/class_2338;)Ljava/util/List; to md3b8686$fabric-api-lookup-api-v1$lambda$fabric_registerCache$0$5 in fabric-api-lookup-api-v1.mixins.json:ServerWorldMixin from mod fabric-api-lookup-api-v1
+[19:11:23] [main/INFO]: Mixing ServerWorldMixin from fabric-data-attachment-api-v1.mixins.json into net.minecraft.class_3218
+[19:11:23] [main/INFO]: Renaming synthetic method lambda$fabric_syncChange$1(Lnet/fabricmc/fabric/api/attachment/v1/AttachmentType;Lnet/fabricmc/fabric/impl/attachment/sync/s2c/AttachmentSyncPayloadS2C;Lnet/minecraft/class_3222;)V to md3b8686$fabric-data-attachment-api-v1$lambda$fabric_syncChange$1$6 in fabric-data-attachment-api-v1.mixins.json:ServerWorldMixin from mod fabric-data-attachment-api-v1
+[19:11:23] [main/INFO]: Renaming synthetic method lambda$createAttachmentsPersistentState$0(Lnet/minecraft/class_3218;)Lnet/fabricmc/fabric/impl/attachment/AttachmentPersistentState; to md3b8686$fabric-data-attachment-api-v1$lambda$createAttachmentsPersistentState$0$7 in fabric-data-attachment-api-v1.mixins.json:ServerWorldMixin from mod fabric-data-attachment-api-v1
+[19:11:23] [main/INFO]: Mixing ServerWorldMixin from fabric-lifecycle-events-v1.mixins.json into net.minecraft.class_3218
+[19:11:23] [main/INFO]: Mixing MixinServerWorld from xaeroworldmap.mixins.json into net.minecraft.class_3218
+[19:11:23] [main/WARN]: xaeroworldmap.mixins.json:MixinServerWorld from mod xaeroworldmap: Class version 65 required is higher than the class version supported by the current version of Mixin (JAVA_17 supports class version 61)
+[19:11:23] [main/INFO]: Mixing ItemEntityNavigationMixin from server_waypoint-common.mixins.json into net.minecraft.class_1542
+[19:11:23] [main/WARN]: server_waypoint-common.mixins.json:ItemEntityNavigationMixin from mod server_waypoint: Class version 65 required is higher than the class version supported by the current version of Mixin (JAVA_17 supports class version 61)
+[19:11:23] [main/INFO]: Mixing BlockStateMixin from fabric-block-api-v1.mixins.json into net.minecraft.class_2680
+[19:11:23] [main/INFO]: Mixing AbstractBlockStateMixin from fabric-content-registries-v0.mixins.json into net.minecraft.class_4970$class_4971
+[19:11:23] [main/INFO]: Mixing IdListMixin from fabric-registry-sync-v0.mixins.json into net.minecraft.class_2361
+[19:11:23] [main/INFO]: Renaming synthetic method lambda$fabric_remapIds$0(Lit/unimi/dsi/fastutil/ints/Int2IntMap;Ljava/lang/Object;Ljava/lang/Integer;)Ljava/lang/Integer; to md3b8686$fabric-registry-sync-v0$lambda$fabric_remapIds$0$0 in fabric-registry-sync-v0.mixins.json:IdListMixin from mod fabric-registry-sync-v0
+[19:11:23] [main/INFO]: Mixing RegistryByteBufMixin from fabric-networking-api-v1.mixins.json into net.minecraft.class_9129
+[19:11:23] [main/INFO]: Mixing BlocksMixin from fabric-registry-sync-v0.mixins.json into net.minecraft.class_2246
+[19:11:23] [main/INFO]: Renaming synthetic method lambda$initShapeCache$0(ILnet/minecraft/class_2960;Lnet/minecraft/class_2248;)V to md3b8686$fabric-registry-sync-v0$lambda$initShapeCache$0$0 in fabric-registry-sync-v0.mixins.json:BlocksMixin from mod fabric-registry-sync-v0
+[19:11:23] [main/INFO]: Mixing OxidizableMixin from fabric-content-registries-v0.mixins.json into net.minecraft.class_5955
+[19:11:23] [main/INFO]: Mixing EntityTypeMixin from fabric-object-builder-v1.mixins.json into net.minecraft.class_1299
+[19:11:23] [main/INFO]: Mixing FluidMixin from fabric-transfer-api-v1.mixins.json into net.minecraft.class_3611
+[19:11:24] [main/INFO]: Mixing ComponentMapBuilderMixin from fabric-item-api-v1.mixins.json into net.minecraft.class_9323$class_9324
+[19:11:24] [main/INFO]: Mixing BlockEntityMixin from fabric-block-view-api-v2.mixins.json into net.minecraft.class_2586
+[19:11:24] [main/INFO]: Mixing AttachmentTargetsMixin from fabric-data-attachment-api-v1.mixins.json into net.minecraft.class_2586
+[19:11:24] [main/INFO]: Mixing BlockEntityMixin from fabric-data-attachment-api-v1.mixins.json into net.minecraft.class_2586
+[19:11:24] [main/INFO]: Renaming synthetic method lambda$fabric_syncChange$0(Lnet/fabricmc/fabric/api/attachment/v1/AttachmentType;Lnet/fabricmc/fabric/impl/attachment/sync/s2c/AttachmentSyncPayloadS2C;Lnet/minecraft/class_3222;)V to md3b8686$fabric-data-attachment-api-v1$lambda$fabric_syncChange$0$0 in fabric-data-attachment-api-v1.mixins.json:BlockEntityMixin from mod fabric-data-attachment-api-v1
+[19:11:24] [main/INFO]: Mixing BlockEntityMixin from fabric-rendering-data-attachment-v1.mixins.json into net.minecraft.class_2586
+[19:11:24] [main/INFO]: Mixing NamedScreenHandlerFactoryMixin from fabric-screen-handler-api-v1.mixins.json into net.minecraft.class_3908
+[19:11:24] [main/INFO]: Mixing LockableContainerBlockEntityMixin from fabric-transfer-api-v1.mixins.json into net.minecraft.class_2624
+[19:11:24] [main/INFO]: Mixing DetectorRailBlockMixin from fabric-object-builder-v1.mixins.json into net.minecraft.class_2313
+[19:11:24] [main/INFO]: Renaming synthetic method lambda$getCustomComparatorOutput$0(Lnet/minecraft/class_1297;)Z to md3b8686$fabric-object-builder-api-v1$lambda$getCustomComparatorOutput$0$0 in fabric-object-builder-v1.mixins.json:DetectorRailBlockMixin from mod fabric-object-builder-api-v1
+[19:11:24] [main/INFO]: Mixing MobEntityMixin from fabric-entity-events-v1.mixins.json into net.minecraft.class_1308
+[19:11:24] [main/INFO]: Mixing ChiseledBookshelfBlockEntityMixin from fabric-transfer-api-v1.mixins.json into net.minecraft.class_7716
+[19:11:24] [main/WARN]: @Shadow target fabric-transfer-api-v1.mixins.json:ChiseledBookshelfBlockEntityMixin from mod fabric-transfer-api-v1::field_41314 is final but shadow is not decorated with @Final
+[19:11:24] [main/INFO]: Mixing BlockEntityTypeAccessor from fabric-api-lookup-api-v1.mixins.json into net.minecraft.class_2591
+[19:11:24] [main/INFO]: Mixing BlockEntityTypeMixin from fabric-object-builder-v1.mixins.json into net.minecraft.class_2591
+[19:11:24] [main/WARN]: Write access to @Mutable @Final field field_19315:Ljava/util/Set; in fabric-object-builder-v1.mixins.json:BlockEntityTypeMixin from mod fabric-object-builder-api-v1::handler$zhk000$fabric-object-builder-api-v1$mutableBlocks
+[19:11:24] [main/INFO]: Mixing AbstractContainerMenuNavigationMixin from server_waypoint-common.mixins.json into net.minecraft.class_1703
+[19:11:24] [main/INFO]: Mixing CraftingMenuNavigationMixin from server_waypoint-common.mixins.json into net.minecraft.class_1714
+[19:11:24] [main/INFO]: Mixing AbstractFurnaceBlockEntityMixin from fabric-item-api-v1.mixins.json into net.minecraft.class_2609
+[19:11:24] [main/INFO]: Mixing AbstractFurnaceBlockEntityMixin from fabric-transfer-api-v1.mixins.json into net.minecraft.class_2609
+[19:11:24] [main/INFO]: Mixing WoodTypeMixin from fabric-object-builder-v1.client.mixins.json into net.minecraft.class_4719
+[19:11:24] [main/INFO]: Mixing JukeboxBlockEntityMixin from fabric-transfer-api-v1.mixins.json into net.minecraft.class_2619
+[19:11:24] [main/INFO]: Mixing BrewingStandBlockEntityMixin from fabric-item-api-v1.mixins.json into net.minecraft.class_2589
+[19:11:24] [main/INFO]: Mixing ItemStackMixin from fabric-item-api-v1.mixins.json into net.minecraft.class_1799
+[19:11:24] [main/INFO]: Renaming synthetic method lambda$hookDamage$0(Lorg/apache/commons/lang3/mutable/MutableBoolean;Ljava/util/function/Consumer;)V to md3b8686$fabric-item-api-v1$lambda$hookDamage$0$0 in fabric-item-api-v1.mixins.json:ItemStackMixin from mod fabric-item-api-v1
+[19:11:24] [main/INFO]: Mixing ItemStackMixin from fabric-item-api-v1.client.mixins.json into net.minecraft.class_1799
+[19:11:24] [main/INFO]: Mixing AnvilScreenHandlerMixin from fabric-item-api-v1.mixins.json into net.minecraft.class_1706
+[19:11:24] [main/INFO]: Mixing HopperBlockEntityMixin from fabric-transfer-api-v1.mixins.json into net.minecraft.class_2614
+[19:11:24] [main/INFO]: Renaming synthetic method lambda$hookExtract$1(Lnet/fabricmc/fabric/api/transfer/v1/item/ItemVariant;)Z to md3b8686$fabric-transfer-api-v1$lambda$hookExtract$1$0 in fabric-transfer-api-v1.mixins.json:HopperBlockEntityMixin from mod fabric-transfer-api-v1
+[19:11:24] [main/INFO]: Renaming synthetic method lambda$hookInsert$0(Lnet/fabricmc/fabric/api/transfer/v1/item/ItemVariant;)Z to md3b8686$fabric-transfer-api-v1$lambda$hookInsert$0$1 in fabric-transfer-api-v1.mixins.json:HopperBlockEntityMixin from mod fabric-transfer-api-v1
+[19:11:24] [main/INFO]: Mixing DropperBlockMixin from fabric-transfer-api-v1.mixins.json into net.minecraft.class_2325
+[19:11:24] [main/INFO]: Renaming synthetic method lambda$hookDispense$0(Lnet/fabricmc/fabric/api/transfer/v1/item/ItemVariant;)Z to md3b8686$fabric-transfer-api-v1$lambda$hookDispense$0$0 in fabric-transfer-api-v1.mixins.json:DropperBlockMixin from mod fabric-transfer-api-v1
+[19:11:24] [main/INFO]: Mixing BannerBlockEntityMixin from fabric-data-attachment-api-v1.mixins.json into net.minecraft.class_2573
+[19:11:25] [main/INFO]: Mixing CartographyTableMenuNavigationMixin from server_waypoint-common.mixins.json into net.minecraft.class_3910
+[19:11:25] [main/INFO]: Mixing DecoratedPotBlockNavigationMixin from server_waypoint-common.mixins.json into net.minecraft.class_8168
+[19:11:25] [main/INFO]: Mixing DecoratedPotBlockEntityNavigationMixin from server_waypoint-common.mixins.json into net.minecraft.class_8172
+[19:11:25] [main/INFO]: Mixing CrafterBlockMixin from fabric-transfer-api-v1.mixins.json into net.minecraft.class_8886
+[19:11:25] [main/INFO]: Mixing ItemAccessor from fabric-item-api-v1.mixins.json into net.minecraft.class_1792
+[19:11:25] [main/INFO]: Mixing ItemMixin from fabric-item-api-v1.mixins.json into net.minecraft.class_1792
+[19:11:25] [main/INFO]: Mixing ItemMixin from fabric-transfer-api-v1.mixins.json into net.minecraft.class_1792
+[19:11:25] [main/INFO]: Mixing BucketItemAccessor from fabric-transfer-api-v1.mixins.json into net.minecraft.class_1755
+[19:11:25] [main/INFO]: Mixing BucketItemMixin from fabric-transfer-api-v1.mixins.json into net.minecraft.class_1755
+[19:11:25] [main/INFO]: Mixing HoeItemAccessor from fabric-content-registries-v0.mixins.json into net.minecraft.class_1794
+[19:11:25] [main/INFO]: Renaming @Accessor method getTillingActions()Ljava/util/Map; to getTillingActions$fabric-content-registries-v0_$md$3b8686$0 in fabric-content-registries-v0.mixins.json:HoeItemAccessor from mod fabric-content-registries-v0
+[19:11:25] [main/INFO]: Mixing AxeItemAccessor from fabric-content-registries-v0.mixins.json into net.minecraft.class_1743
+[19:11:25] [main/INFO]: Renaming @Accessor method getStrippedBlocks()Ljava/util/Map; to getStrippedBlocks$fabric-content-registries-v0_$md$3b8686$0 in fabric-content-registries-v0.mixins.json:AxeItemAccessor from mod fabric-content-registries-v0
+[19:11:25] [main/INFO]: Renaming @Accessor method setStrippedBlocks(Ljava/util/Map;)V to setStrippedBlocks$fabric-content-registries-v0_$md$3b8686$1 in fabric-content-registries-v0.mixins.json:AxeItemAccessor from mod fabric-content-registries-v0
+[19:11:25] [main/INFO]: Mixing ShovelItemAccessor from fabric-content-registries-v0.mixins.json into net.minecraft.class_1821
+[19:11:25] [main/INFO]: Renaming @Accessor method getPathStates()Ljava/util/Map; to getPathStates$fabric-content-registries-v0_$md$3b8686$0 in fabric-content-registries-v0.mixins.json:ShovelItemAccessor from mod fabric-content-registries-v0
+[19:11:25] [main/INFO]: Mixing ItemSettingsMixin from fabric-item-api-v1.mixins.json into net.minecraft.class_1792$class_1793
+[19:11:25] [main/INFO]: Mixing CustomDataAccessor from server_waypoint-common.mixins.json into net.minecraft.class_9279
+[19:11:25] [main/INFO]: Mixing TagKeyMixin from fabric-convention-tags-api-v2.mixins.json into net.minecraft.class_6862
+[19:11:26] [main/INFO]: Mixing BundleContentsComponentAccessor from fabric-transfer-api-v1.mixins.json into net.minecraft.class_9276
+[19:11:26] [main/INFO]: Renaming @Invoker method getOccupancy(Lnet/minecraft/class_1799;)Lorg/apache/commons/lang3/math/Fraction; to getOccupancy$fabric-transfer-api-v1_$md$3b8686$0 in fabric-transfer-api-v1.mixins.json:BundleContentsComponentAccessor from mod fabric-transfer-api-v1
+[19:11:26] [main/INFO]: Mixing AttachmentTargetsMixin from fabric-data-attachment-api-v1.mixins.json into net.minecraft.class_2791
+[19:11:26] [main/INFO]: Mixing ChunkMixin from fabric-data-attachment-api-v1.mixins.json into net.minecraft.class_2791
+[19:11:26] [main/INFO]: Mixing WorldChunkMixin from fabric-data-attachment-api-v1.mixins.json into net.minecraft.class_2818
+[19:11:26] [main/INFO]: Renaming synthetic method lambda$fabric_syncChange$0(Lnet/fabricmc/fabric/api/attachment/v1/AttachmentType;Lnet/fabricmc/fabric/impl/attachment/sync/s2c/AttachmentSyncPayloadS2C;Lnet/minecraft/class_3222;)V to md3b8686$fabric-data-attachment-api-v1$lambda$fabric_syncChange$0$0 in fabric-data-attachment-api-v1.mixins.json:WorldChunkMixin from mod fabric-data-attachment-api-v1
+[19:11:26] [main/INFO]: Mixing WorldChunkMixin from fabric-lifecycle-events-v1.client.mixins.json into net.minecraft.class_2818
+[19:11:26] [main/INFO]: Mixing MixinWorldChunk from xaerohud.mixins.json into net.minecraft.class_2818
+[19:11:26] [main/INFO]: Mixing MixinWorldChunk from xaeroworldmap.mixins.json into net.minecraft.class_2818
+[19:11:26] [main/INFO]: Mixing ContainerComponentAccessor from fabric-transfer-api-v1.mixins.json into net.minecraft.class_9288
+[19:11:26] [main/INFO]: Mixing LootTableAccessor from fabric-loot-api-v3.mixins.json into net.minecraft.class_52
+[19:11:26] [main/INFO]: Mixing EnchantRandomlyLootFunctionMixin from fabric-item-api-v1.mixins.json into net.minecraft.class_109
+[19:11:26] [main/INFO]: Mixing EntityTypeBuilderMixin from fabric-object-builder-v1.mixins.json into net.minecraft.class_1299$class_1300
+[19:11:26] [main/INFO]: Mixing AllayNavigationMixin from server_waypoint-common.mixins.json into net.minecraft.class_7298
+[19:11:26] [main/INFO]: Mixing ArmorStandNavigationMixin from server_waypoint-common.mixins.json into net.minecraft.class_1531
+[19:11:26] [main/INFO]: Mixing VillagerEntityAccessor from fabric-content-registries-v0.mixins.json into net.minecraft.class_1646
+[19:11:26] [main/INFO]: Renaming @Accessor method fabric_setItemFoodValues(Ljava/util/Map;)V to fabric_setItemFoodValues$fabric-content-registries-v0_$md$3b8686$0 in fabric-content-registries-v0.mixins.json:VillagerEntityAccessor from mod fabric-content-registries-v0
+[19:11:26] [main/INFO]: Mixing VillagerEntityMixin from fabric-content-registries-v0.mixins.json into net.minecraft.class_1646
+[19:11:26] [main/INFO]: Mixing ServerPlayerEntityMixin from fabric-entity-events-v1.mixins.json into net.minecraft.class_3222
+[19:11:26] [main/INFO]: Mixing ServerPlayerEntityMixin from fabric-events-interaction-v0.mixins.json into net.minecraft.class_3222
+[19:11:26] [main/INFO]: Mixing ServerPlayerEntityMixin from fabric-screen-handler-api-v1.mixins.json into net.minecraft.class_3222
+[19:11:26] [main/INFO]: Mixing ServerPlayerEntityMixin from server_waypoint-common.mixins.json into net.minecraft.class_3222
+[19:11:26] [main/INFO]: Mixing MixinServerPlayer from xaerohud.mixins.json into net.minecraft.class_3222
+[19:11:26] [main/INFO]: Mixing MixinServerPlayer from xaeroworldmap.mixins.json into net.minecraft.class_3222
+[19:11:26] [main/INFO]: Mixing ItemFrameNavigationMixin from server_waypoint-common.mixins.json into net.minecraft.class_1533
+[19:11:26] [main/INFO]: Mixing CompassItemNavigationMixin from server_waypoint-common.mixins.json into net.minecraft.class_1759
+[19:11:26] [main/INFO]: Mixing HoneycombItemMixin from fabric-content-registries-v0.mixins.json into net.minecraft.class_5953
+[19:11:26] [main/INFO]: Mixing EntitySelectorOptionsAccessor from fabric-command-api-v2.mixins.json into net.minecraft.class_2306
+[19:11:26] [main/INFO]: Renaming @Invoker method callPutOption(Ljava/lang/String;Lnet/minecraft/class_2306$class_2307;Ljava/util/function/Predicate;Lnet/minecraft/class_2561;)V to callPutOption$fabric-command-api-v2_$md$3b8686$0 in fabric-command-api-v2.mixins.json:EntitySelectorOptionsAccessor from mod fabric-command-api-v2
+[19:11:26] [main/INFO]: Mixing EntitySelectorReaderMixin from fabric-command-api-v2.mixins.json into net.minecraft.class_2303
+[19:11:26] [main/INFO]: Mixing InventoryNavigationMixin from server_waypoint-common.mixins.json into net.minecraft.class_1661
+[19:11:26] [main/INFO]: Mixing SimpleInventoryMixin from fabric-transfer-api-v1.mixins.json into net.minecraft.class_1277
+[19:11:26] [main/INFO]: Mixing CraftingRecipeMixin from fabric-item-api-v1.mixins.json into net.minecraft.class_3955
+[19:11:26] [main/INFO]: Mixing ingredient.IngredientMixin from fabric-recipe-api-v1.mixins.json into net.minecraft.class_1856
+[19:11:26] [main/INFO]: Renaming synthetic method lambda$injectCodec$2(Lnet/minecraft/class_1856;)Lcom/mojang/datafixers/util/Either; to md3b8686$fabric-recipe-api-v1$lambda$injectCodec$2$0 in fabric-recipe-api-v1.mixins.json:ingredient.IngredientMixin from mod fabric-recipe-api-v1
+[19:11:26] [main/INFO]: Renaming synthetic method lambda$injectCodec$1(Lcom/mojang/datafixers/util/Either;)Lnet/minecraft/class_1856; to md3b8686$fabric-recipe-api-v1$lambda$injectCodec$1$1 in fabric-recipe-api-v1.mixins.json:ingredient.IngredientMixin from mod fabric-recipe-api-v1
+[19:11:26] [main/INFO]: Renaming synthetic method lambda$injectCodec$0(Lnet/minecraft/class_1856;)Lnet/minecraft/class_1856; to md3b8686$fabric-recipe-api-v1$lambda$injectCodec$0$2 in fabric-recipe-api-v1.mixins.json:ingredient.IngredientMixin from mod fabric-recipe-api-v1
+[19:11:26] [main/WARN]: Write access to @Mutable @Final field field_46095:Lcom/mojang/serialization/Codec; in fabric-recipe-api-v1.mixins.json:ingredient.IngredientMixin from mod fabric-recipe-api-v1::handler$zii000$fabric-recipe-api-v1$injectCodec
+[19:11:27] [main/INFO]: Mixing ingredient.ShapelessRecipeMixin from fabric-recipe-api-v1.mixins.json into net.minecraft.class_1867
+[19:11:27] [main/INFO]: Mixing ChunkGeneratingMixin from fabric-lifecycle-events-v1.mixins.json into net.minecraft.class_9310
+[19:11:27] [main/INFO]: Mixing BiomeSourceMixin from fabric-biome-api-v1.mixins.json into net.minecraft.class_1966
+[19:11:27] [main/INFO]: Mixing MultiNoiseBiomeSourceMixin from fabric-biome-api-v1.mixins.json into net.minecraft.class_4766
+[19:11:27] [main/INFO]: Mixing NetherBiomePresetMixin from fabric-biome-api-v1.mixins.json into net.minecraft.class_8197$class_5305$1
+[19:11:27] [main/INFO]: Mixing RegistryOpsAccessor from fabric-resource-conditions-api-v1.mixins.json into net.minecraft.class_6903
+[19:11:27] [main/INFO]: Mixing TheEndBiomeSourceMixin from fabric-biome-api-v1.mixins.json into net.minecraft.class_2169
+[19:11:27] [main/INFO]: Renaming synthetic method lambda$init$1(Lnet/minecraft/class_7871;)Lnet/fabricmc/fabric/impl/biome/TheEndBiomeData$Overrides; to md3b8686$fabric-biome-api-v1$lambda$init$1$0 in fabric-biome-api-v1.mixins.json:TheEndBiomeSourceMixin from mod fabric-biome-api-v1
+[19:11:27] [main/INFO]: Renaming synthetic method lambda$modifyCodec$0(Lcom/mojang/serialization/codecs/RecordCodecBuilder$Instance;)Lcom/mojang/datafixers/kinds/App; to md3b8686$fabric-biome-api-v1$lambda$modifyCodec$0$1 in fabric-biome-api-v1.mixins.json:TheEndBiomeSourceMixin from mod fabric-biome-api-v1
+[19:11:27] [main/WARN]: Write access to @Mutable @Final field field_24730:Lcom/mojang/serialization/MapCodec; in fabric-biome-api-v1.mixins.json:TheEndBiomeSourceMixin from mod fabric-biome-api-v1::handler$zze000$fabric-biome-api-v1$modifyCodec
+[19:11:27] [main/INFO]: Mixing DebugChunkGeneratorAccessor from fabric-registry-sync-v0.mixins.json into net.minecraft.class_2891
+[19:11:27] [main/INFO]: Renaming @Accessor method setBLOCK_STATES(Ljava/util/List;)V to setBLOCK_STATES$fabric-registry-sync-v0_$md$3b8686$0 in fabric-registry-sync-v0.mixins.json:DebugChunkGeneratorAccessor from mod fabric-registry-sync-v0
+[19:11:27] [main/INFO]: Renaming @Accessor method setX_SIDE_LENGTH(I)V to setX_SIDE_LENGTH$fabric-registry-sync-v0_$md$3b8686$1 in fabric-registry-sync-v0.mixins.json:DebugChunkGeneratorAccessor from mod fabric-registry-sync-v0
+[19:11:27] [main/INFO]: Renaming @Accessor method setZ_SIDE_LENGTH(I)V to setZ_SIDE_LENGTH$fabric-registry-sync-v0_$md$3b8686$2 in fabric-registry-sync-v0.mixins.json:DebugChunkGeneratorAccessor from mod fabric-registry-sync-v0
+[19:11:27] [main/INFO]: Mixing GameRulesBooleanRuleAccessor from fabric-game-rule-api-v1.mixins.json into net.minecraft.class_1928$class_4310
+[19:11:27] [main/INFO]: Renaming @Invoker method invokeCreate(ZLjava/util/function/BiConsumer;)Lnet/minecraft/class_1928$class_4314; to invokeCreate$fabric-game-rule-api-v1_$md$3b8686$0 in fabric-game-rule-api-v1.mixins.json:GameRulesBooleanRuleAccessor from mod fabric-game-rule-api-v1
+[19:11:27] [main/INFO]: Mixing GameRulesAccessor from fabric-game-rule-api-v1.mixins.json into net.minecraft.class_1928
+[19:11:27] [main/INFO]: Renaming @Invoker method callRegister(Ljava/lang/String;Lnet/minecraft/class_1928$class_5198;Lnet/minecraft/class_1928$class_4314;)Lnet/minecraft/class_1928$class_4313; to callRegister$fabric-game-rule-api-v1_$md$3b8686$0 in fabric-game-rule-api-v1.mixins.json:GameRulesAccessor from mod fabric-game-rule-api-v1
+[19:11:27] [main/INFO]: Renaming @Accessor method getRuleTypes()Ljava/util/Map; to getRuleTypes$fabric-game-rule-api-v1_$md$3b8686$1 in fabric-game-rule-api-v1.mixins.json:GameRulesAccessor from mod fabric-game-rule-api-v1
+[19:11:27] [main/INFO]: Mixing GameRulesKeyMixin from fabric-game-rule-api-v1.mixins.json into net.minecraft.class_1928$class_4313
+[19:11:27] [main/INFO]: Mixing modification.MinecraftServerMixin from fabric-biome-api-v1.mixins.json into net.minecraft.server.MinecraftServer
+[19:11:27] [main/INFO]: Mixing MinecraftServerMixin from fabric-lifecycle-events-v1.mixins.json into net.minecraft.server.MinecraftServer
+[19:11:27] [main/INFO]: Renaming synthetic method lambda$endResourceReload$0(Ljava/lang/Void;Ljava/lang/Throwable;)Ljava/lang/Void; to md3b8686$fabric-lifecycle-events-v1$lambda$endResourceReload$0$0 in fabric-lifecycle-events-v1.mixins.json:MinecraftServerMixin from mod fabric-lifecycle-events-v1
+[19:11:27] [main/INFO]: Mixing MinecraftServerMixin from fabric-message-api-v1.mixins.json into net.minecraft.server.MinecraftServer
+[19:11:27] [main/INFO]: Renaming synthetic method lambda$onGetChatDecorator$0(Lnet/minecraft/class_3222;Lnet/minecraft/class_2561;)Lnet/minecraft/class_2561; to md3b8686$fabric-message-api-v1$lambda$onGetChatDecorator$0$1 in fabric-message-api-v1.mixins.json:MinecraftServerMixin from mod fabric-message-api-v1
+[19:11:27] [main/INFO]: Mixing MinecraftServerMixin from fabric-resource-loader-v0.mixins.json into net.minecraft.server.MinecraftServer
+[19:11:27] [main/INFO]: Renaming synthetic method lambda$init$0(Lnet/minecraft/class_3262;)Ljava/util/stream/Stream; to md3b8686$fabric-resource-loader-v0$lambda$init$0$2 in fabric-resource-loader-v0.mixins.json:MinecraftServerMixin from mod fabric-resource-loader-v0
+[19:11:27] [main/INFO]: Mixing MixinMinecraftServer from xaerohud.mixins.json into net.minecraft.server.MinecraftServer
+[19:11:27] [main/INFO]: Mixing MixinMinecraftServer from xaeroworldmap.mixins.json into net.minecraft.server.MinecraftServer
+[19:11:27] [main/INFO]: Mixing MixinFabricMinecraftServer from xaeroworldmap.fabric.mixins.json into net.minecraft.server.MinecraftServer
+[19:11:27] [main/INFO]: Mixing GameRulesIntRuleAccessor from fabric-game-rule-api-v1.mixins.json into net.minecraft.class_1928$class_4312
+[19:11:27] [main/INFO]: Mixing client.item.UnbakedBasicItemModelMixin from fabric-renderer-api-v1.mixins.json into net.minecraft.class_10430$class_10431
+[19:11:27] [main/INFO]: Mixing client.item.BasicItemModelMixin from fabric-renderer-api-v1.mixins.json into net.minecraft.class_10430
+[19:11:27] [main/INFO]: Mixing SpecialModelTypesMixin from fabric-rendering-v1.mixins.json into net.minecraft.class_10517
+[19:11:27] [main/WARN]: Write access to @Mutable @Final field field_55454:Ljava/util/Map; in fabric-rendering-v1.mixins.json:SpecialModelTypesMixin from mod fabric-rendering-v1::handler$zlb001$fabric-rendering-v1$onReturnClinit
+[19:11:27] [main/INFO]: Mixing TexturedRenderLayersMixin from fabric-object-builder-v1.client.mixins.json into net.minecraft.class_4722
+[19:11:27] [main/INFO]: Mixing client.SpriteAtlasTextureMixin from fabric-renderer-api-v1.mixins.json into net.minecraft.class_1059
+[19:11:27] [main/WARN]: @Shadow field fabric-renderer-api-v1.mixins.json:client.SpriteAtlasTextureMixin from mod fabric-renderer-api-v1::field_5280 is decorated with @Final but target is not final
+[19:11:27] [main/INFO]: Mixing MixinSpriteAtlasTexture from xaerohud.mixins.json into net.minecraft.class_1059
+[19:11:27] [main/INFO]: Mixing MixinFabricSpriteAtlasTexture from xaeroworldmap.fabric.mixins.json into net.minecraft.class_1059
+[19:11:27] [main/INFO]: Mixing MixinRenderPipelines from mixin.voxelmap.json into net.minecraft.class_10799
+[19:11:27] [main/INFO]: Mixing MixinRenderPipelines from mixin.voxelmap.fabric.json into net.minecraft.class_10799
+[19:11:27] [main/INFO]: Mixing VoxelMapWorldAccessor from server_waypoint-voxelmap.mixins.json into com.mamiyaotaru.voxelmap.VoxelMap
+[19:11:27] [main/WARN]: server_waypoint-voxelmap.mixins.json:VoxelMapWorldAccessor from mod server_waypoint: Class version 65 required is higher than the class version supported by the current version of Mixin (JAVA_17 supports class version 61)
+[19:11:27] [main/INFO]: Mixing ClientWorldMixin from fabric-lifecycle-events-v1.client.mixins.json into net.minecraft.class_638
+[19:11:27] [main/INFO]: Mixing ClientWorldMixin from fabric-rendering-v1.mixins.json into net.minecraft.class_638
+[19:11:27] [main/INFO]: Renaming synthetic method lambda$new$1(Lnet/minecraft/class_6539;)Lnet/minecraft/class_4700; to md3b8686$fabric-rendering-v1$lambda$new$1$0 in fabric-rendering-v1.mixins.json:ClientWorldMixin from mod fabric-rendering-v1
+[19:11:27] [main/INFO]: Renaming synthetic method lambda$new$0(Lnet/minecraft/class_6539;Lnet/minecraft/class_2338;)I to md3b8686$fabric-rendering-v1$lambda$new$0$1 in fabric-rendering-v1.mixins.json:ClientWorldMixin from mod fabric-rendering-v1
+[19:11:27] [main/INFO]: Mixing MixinClientWorld from xaerohud.mixins.json into net.minecraft.class_638
+[19:11:27] [main/INFO]: Mixing MixinClientWorld from xaeroworldmap.mixins.json into net.minecraft.class_638
+[19:11:27] [main/INFO]: Mixing MixinCompositeState from xaerohud.mixins.json into net.minecraft.class_1921$class_4688
+[19:11:27] [main/WARN]: @Shadow target xaerohud.mixins.json:MixinCompositeState from mod xaerominimap::field_21422 is final but shadow is not decorated with @Final
+[19:11:27] [main/WARN]: @Shadow target xaerohud.mixins.json:MixinCompositeState from mod xaerominimap::field_57931 is final but shadow is not decorated with @Final
+[19:11:27] [main/INFO]: Mixing ItemRendererAccessor from fabric-renderer-indigo.mixins.json into net.minecraft.class_918
+[19:11:27] [main/INFO]: Renaming @Invoker method fabric_getDynamicDisplayGlintConsumer(Lnet/minecraft/class_4597;Lnet/minecraft/class_1921;Lnet/minecraft/class_4587$class_4665;)Lnet/minecraft/class_4588; to fabric_getDynamicDisplayGlintConsumer$fabric-renderer-indigo_$md$3b8686$0 in fabric-renderer-indigo.mixins.json:ItemRendererAccessor from mod fabric-renderer-indigo
+[19:11:27] [main/INFO]: Mixing KeyedResourceReloadListenerClientMixin from fabric-resource-loader-v0.client.mixins.json into net.minecraft.class_918
+[19:11:27] [main/INFO]: Mixing WaypointBlockItemAlphaMixin from server_waypoint-common.mixins.json into net.minecraft.class_918
+[19:11:27] [main/INFO]: Mixing InGameHudMixin from fabric-rendering-v1.mixins.json into net.minecraft.class_329
+[19:11:27] [main/INFO]: Mixing GameHudMixin from server_waypoint-common.mixins.json into net.minecraft.class_329
+[19:11:27] [main/INFO]: Mixing MixinInGameHud from mixin.voxelmap.json into net.minecraft.class_329
+[19:11:27] [main/INFO]: Mixing MixinInGameHud from xaerohud.mixins.json into net.minecraft.class_329
+[19:11:27] [main/INFO]: Mixing MixinOptionalGui from xaeroworldmap.fabric.mixins.json into net.minecraft.class_329
+[19:11:27] [main/INFO]: Mixing KeyBindingAccessor from fabric-events-interaction-v0.client.mixins.json into net.minecraft.class_304
+[19:11:27] [main/INFO]: Mixing KeyBindingAccessor from fabric-key-binding-api-v1.mixins.json into net.minecraft.class_304
+[19:11:27] [main/INFO]: Renaming @Accessor method fabric_getCategoryMap()Ljava/util/Map; to fabric_getCategoryMap$fabric-key-binding-api-v1_$md$3b8686$0 in fabric-key-binding-api-v1.mixins.json:KeyBindingAccessor from mod fabric-key-binding-api-v1
+[19:11:27] [main/INFO]: Mixing BoundKeyAccessor from server_waypoint-common.mixins.json into net.minecraft.class_304
+[19:11:27] [main/INFO]: Mixing MixinKeyMapping from xaerohud.mixins.json into net.minecraft.class_304
+[19:11:27] [main/INFO]: Mixing AtlasSourceManagerAccessor from fabric-rendering-v1.mixins.json into net.minecraft.class_7952
+[19:11:27] [main/INFO]: Renaming @Accessor method getAtlasSourceCodecs()Lnet/minecraft/class_5699$class_10388; to getAtlasSourceCodecs$fabric-rendering-v1_$md$3b8686$0 in fabric-rendering-v1.mixins.json:AtlasSourceManagerAccessor from mod fabric-rendering-v1
+[19:11:27] [main/INFO]: Mixing DefaultAttributeRegistryAccessor from fabric-object-builder-v1.mixins.json into net.minecraft.class_5135
+[19:11:27] [main/INFO]: Renaming @Accessor method getRegistry()Ljava/util/Map; to getRegistry$fabric-object-builder-api-v1_$md$3b8686$0 in fabric-object-builder-v1.mixins.json:DefaultAttributeRegistryAccessor from mod fabric-object-builder-api-v1
+[19:11:27] [main/INFO]: Mixing DefaultAttributeRegistryMixin from fabric-object-builder-v1.mixins.json into net.minecraft.class_5135
+[19:11:27] [main/WARN]: Write access to @Mutable @Final field field_23730:Ljava/util/Map; in fabric-object-builder-v1.mixins.json:DefaultAttributeRegistryMixin from mod fabric-object-builder-api-v1::handler$zhl000$fabric-object-builder-api-v1$injectAttributes
+[19:11:27] [Render thread/INFO]: Mixing MinecraftClientMixin from fabric-data-generation-api-v1.client.mixins.json into net.minecraft.class_310
+[19:11:27] [Render thread/INFO]: Mixing MinecraftClientMixin from fabric-events-interaction-v0.client.mixins.json into net.minecraft.class_310
+[19:11:27] [Render thread/INFO]: Mixing MinecraftClientMixin from fabric-lifecycle-events-v1.client.mixins.json into net.minecraft.class_310
+[19:11:27] [Render thread/INFO]: Mixing accessor.MinecraftClientAccessor from fabric-networking-api-v1.client.mixins.json into net.minecraft.class_310
+[19:11:27] [Render thread/INFO]: Mixing MinecraftClientMixin from fabric-registry-sync-v0.client.mixins.json into net.minecraft.class_310
+[19:11:27] [Render thread/INFO]: Mixing MinecraftClientMixin from fabric-screen-api-v1.mixins.json into net.minecraft.class_310
+[19:11:27] [Render thread/INFO]: Mixing MinecraftClientMixin from server_waypoint-common.mixins.json into net.minecraft.class_310
+[19:11:27] [Render thread/INFO]: Renaming synthetic method lambda$setWorld$0(L_959/server_waypoint/common/client/WaypointClientMod;)V to md3b8686$server_waypoint$lambda$setWorld$0$0 in server_waypoint-common.mixins.json:MinecraftClientMixin from mod server_waypoint
+[19:11:27] [Render thread/INFO]: Mixing APIMixinMinecraftClient from mixin.voxelmap.json into net.minecraft.class_310
+[19:11:27] [Render thread/INFO]: Mixing MixinMinecraftClient from xaerohud.mixins.json into net.minecraft.class_310
+[19:11:27] [Render thread/INFO]: Mixing MixinMinecraftClient from xaeroworldmap.mixins.json into net.minecraft.class_310
+[19:11:27] [Render thread/INFO]: Mixing MixinFabricMinecraftClient from xaeroworldmap.fabric.mixins.json into net.minecraft.class_310
+[19:11:27] [Render thread/INFO]: Mixing MixinClientPlayerEntity from xaerohud.mixins.json into net.minecraft.class_746
+[19:11:27] [Render thread/INFO]: Mixing MixinLocalPlayer from xaerohud.mixins.json into net.minecraft.class_746
+[19:11:27] [Render thread/INFO]: Mixing MixinAbstractClientPlayerEntity from xaerohud.mixins.json into net.minecraft.class_742
+[19:11:27] [Render thread/INFO]: Mixing MixinFabricAbstractClientPlayerEntity from xaeroworldmap.fabric.mixins.json into net.minecraft.class_742
+[19:11:27] [Render thread/INFO]: Mixing ScreenAccessor from fabric-screen-api-v1.mixins.json into net.minecraft.class_437
+[19:11:27] [Render thread/INFO]: Mixing ScreenMixin from fabric-screen-api-v1.mixins.json into net.minecraft.class_437
+[19:11:27] [Render thread/INFO]: Mixing HandledScreenMixin from fabric-screen-api-v1.mixins.json into net.minecraft.class_465
+[19:11:27] [Render thread/INFO]: Mixing VanillaResourcePackProviderMixin from fabric-resource-loader-v0.client.mixins.json into net.minecraft.class_7678
+[19:11:27] [Render thread/INFO]: Mixing ResourcePackManagerMixin from fabric-resource-loader-v0.mixins.json into net.minecraft.class_3283
+[19:11:27] [Render thread/INFO]: Renaming synthetic method lambda$handleAutoDisable$0(Ljava/util/Set;Lnet/minecraft/class_3288;)Z to md3b8686$fabric-resource-loader-v0$lambda$handleAutoDisable$0$0 in fabric-resource-loader-v0.mixins.json:ResourcePackManagerMixin from mod fabric-resource-loader-v0
+[19:11:27] [Render thread/WARN]: Write access to @Mutable @Final field field_14227:Ljava/util/Set; in fabric-resource-loader-v0.mixins.json:ResourcePackManagerMixin from mod fabric-resource-loader-v0::handler$zln000$fabric-resource-loader-v0$construct
+[19:11:27] [Render thread/INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, name=PROD]
+[19:11:27] [Render thread/INFO]: Setting user: SwLiveTest
+[19:11:27] [Render thread/INFO]: Mixing SoundInstanceMixin from fabric-sound-api-v1.mixins.json into net.minecraft.class_1113
+[19:11:27] [Render thread/INFO]: Mixing ServerConfigurationNetworkHandlerMixin from fabric-networking-api-v1.mixins.json into net.minecraft.class_8610
+[19:11:27] [Render thread/INFO]: Renaming synthetic method lambda$bindChannelInfo$0(Lnet/minecraft/class_9129;)Lnet/minecraft/class_9129; to md3b8686$fabric-networking-api-v1$lambda$bindChannelInfo$0$0 in fabric-networking-api-v1.mixins.json:ServerConfigurationNetworkHandlerMixin from mod fabric-networking-api-v1
+[19:11:27] [Render thread/INFO]: Mixing ServerConfigurationNetworkHandlerMixin from fabric-resource-loader-v0.mixins.json into net.minecraft.class_8610
+[19:11:27] [Render thread/INFO]: Mixing ServerCommonNetworkHandlerMixin from fabric-networking-api-v1.mixins.json into net.minecraft.class_8609
+[19:11:27] [Render thread/INFO]: Mixing accessor.ServerCommonNetworkHandlerAccessor from fabric-networking-api-v1.mixins.json into net.minecraft.class_8609
+[19:11:27] [Render thread/INFO]: Mixing CustomPayloadS2CPacketAccessor from fabric-data-attachment-api-v1.mixins.json into net.minecraft.class_2817
+[19:11:27] [Render thread/INFO]: Mixing CustomPayloadC2SPacketMixin from fabric-networking-api-v1.mixins.json into net.minecraft.class_2817
+[19:11:27] [Render thread/INFO]: Renaming synthetic method lambda$wrapCodec$0(Lnet/minecraft/class_2540;Lnet/minecraft/class_2960;)Lnet/minecraft/class_8710$class_9155; to md3b8686$fabric-networking-api-v1$lambda$wrapCodec$0$0 in fabric-networking-api-v1.mixins.json:CustomPayloadC2SPacketMixin from mod fabric-networking-api-v1
+[19:11:27] [Render thread/INFO]: Mixing CustomPayloadPacketCodecMixin from fabric-networking-api-v1.mixins.json into net.minecraft.class_8710$1
+[19:11:27] [Render thread/INFO]: Mixing ServerPlayNetworkHandlerMixin from fabric-networking-api-v1.mixins.json into net.minecraft.class_3244
+[19:11:27] [Render thread/INFO]: Mixing ServerPlayNetworkHandlerMixin from fabric-events-interaction-v0.mixins.json into net.minecraft.class_3244
+[19:11:27] [Render thread/WARN]: @Shadow field fabric-events-interaction-v0.mixins.json:ServerPlayNetworkHandlerMixin from mod fabric-events-interaction-v0::field_14140 is decorated with @Final but target is not final
+[19:11:27] [Render thread/INFO]: Mixing LootTableBuilderMixin from fabric-loot-api-v2.mixins.json into net.minecraft.class_52$class_53
+[19:11:27] [Render thread/INFO]: Mixing LootTableBuilderMixin from fabric-loot-api-v3.mixins.json into net.minecraft.class_52$class_53
+[19:11:27] [Render thread/WARN]: Write access to @Mutable @Final field field_949:Lcom/google/common/collect/ImmutableList$Builder; in fabric-loot-api-v3.mixins.json:LootTableBuilderMixin from mod fabric-loot-api-v3::modifyPools
+[19:11:28] [Render thread/INFO]: Internal translations: es_es, zh_tw, zh_hk, en_us, zh_cn, he_il
+[19:11:28] [Render thread/INFO]: Mixing CommandSourceStackAccessor from server_waypoint-common.mixins.json into net.minecraft.class_2168
+[19:11:28] [Render thread/INFO]: fabric-permissions-api is not loaded, use vanilla permission system
+[19:11:28] [Render thread/INFO]: found xaero's mod, force disabling sendXaerosWorldId
+[19:11:28] [Render thread/INFO]: Mixing ClientConnectionMixin from fabric-data-attachment-api-v1.mixins.json into net.minecraft.class_2535
+[19:11:28] [Render thread/INFO]: Mixing ClientConnectionMixin from fabric-networking-api-v1.mixins.json into net.minecraft.class_2535
+[19:11:28] [Render thread/INFO]: Renaming synthetic method lambda$fabric_getPendingChannelsNames$0(Lnet/minecraft/class_2539;)Ljava/util/Collection; to md3b8686$fabric-networking-api-v1$lambda$fabric_getPendingChannelsNames$0$0 in fabric-networking-api-v1.mixins.json:ClientConnectionMixin from mod fabric-networking-api-v1
+[19:11:28] [Render thread/INFO]: Mixing ingredient.ClientConnectionMixin from fabric-recipe-api-v1.mixins.json into net.minecraft.class_2535
+[19:11:28] [Render thread/INFO]: Mixing ClientPlayNetworkHandlerMixin from fabric-message-api-v1.client.mixins.json into net.minecraft.class_634
+[19:11:28] [Render thread/INFO]: Mixing ClientPlayNetworkHandlerMixin from fabric-networking-api-v1.client.mixins.json into net.minecraft.class_634
+[19:11:28] [Render thread/INFO]: Mixing ClientPlayNetworkHandlerMixin from fabric-command-api-v2.client.mixins.json into net.minecraft.class_634
+[19:11:28] [Render thread/INFO]: Mixing ClientPlayNetworkHandlerMixin from fabric-data-attachment-api-v1.client.mixins.json into net.minecraft.class_634
+[19:11:28] [Render thread/INFO]: Mixing ClientPlayNetworkHandlerMixin from fabric-lifecycle-events-v1.client.mixins.json into net.minecraft.class_634
+[19:11:28] [Render thread/INFO]: Mixing ClientPlayNetworkHandlerMixin from server_waypoint-common.mixins.json into net.minecraft.class_634
+[19:11:28] [Render thread/INFO]: Mixing APIMixinNetHandlerPlayClient from mixin.voxelmap.json into net.minecraft.class_634
+[19:11:28] [Render thread/INFO]: Mixing MixinClientPlayNetworkHandler from xaerohud.mixins.json into net.minecraft.class_634
+[19:11:28] [Render thread/INFO]: Mixing MixinClientPlayNetworkHandler from xaeroworldmap.mixins.json into net.minecraft.class_634
+[19:11:28] [Render thread/INFO]: Mixing MixinFabricClientPacketListener from xaeroworldmap.fabric.mixins.json into net.minecraft.class_634
+[19:11:28] [Render thread/INFO]: Mixing accessor.ClientCommonNetworkHandlerAccessor from fabric-networking-api-v1.client.mixins.json into net.minecraft.class_8673
+[19:11:28] [Render thread/INFO]: Mixing ClientCommonNetworkHandlerMixin from fabric-networking-api-v1.client.mixins.json into net.minecraft.class_8673
+[19:11:28] [Render thread/INFO]: Mixing ClientConfigurationNetworkHandlerMixin from fabric-networking-api-v1.client.mixins.json into net.minecraft.class_8674
+[19:11:28] [Render thread/INFO]: Mixing ClientConfigurationNetworkHandlerMixin from fabric-lifecycle-events-v1.client.mixins.json into net.minecraft.class_8674
+[19:11:28] [Render thread/INFO]: Mixing accessor.ClientConfigurationNetworkHandlerAccessor from fabric-networking-api-v1.client.mixins.json into net.minecraft.class_8674
+[19:11:28] [Render thread/INFO]: Mixing accessor.ClientLoginNetworkHandlerAccessor from fabric-networking-api-v1.client.mixins.json into net.minecraft.class_635
+[19:11:28] [Render thread/INFO]: Mixing ClientLoginNetworkHandlerMixin from fabric-networking-api-v1.client.mixins.json into net.minecraft.class_635
+[19:11:28] [Render thread/INFO]: [Indigo] Registering Indigo renderer!
+[19:11:28] [Render thread/INFO]: Loading Xaero's Minimap - Stage 1/2
+[19:11:28] [Render thread/INFO]: Mixing ButtonOnPressAccessor from server_waypoint-common.mixins.json into net.minecraft.class_4185
+[19:11:28] [Render thread/INFO]: Mixing MixinCyclingButtonWidget from xaerohud.mixins.json into net.minecraft.class_5676
+[19:11:28] [Render thread/INFO]: Mixing MixinCyclingButtonWidget from xaeroworldmap.mixins.json into net.minecraft.class_5676
+[19:11:28] [Render thread/INFO]: Mixing MixinBufferSource from xaerohud.mixins.json into net.minecraft.class_4597$class_4598
+[19:11:28] [Render thread/INFO]: Mixing xaeros_minimap.XaerosMinimapGuiWaypointsAccessor from server_waypoint-common.mixins.json into xaero.common.gui.GuiWaypoints
+[19:11:28] [Render thread/INFO]: Mixing xaeros_minimap.XaerosMinimapGuiWaypointsMixin from server_waypoint-common.mixins.json into xaero.common.gui.GuiWaypoints
+[19:11:28] [Render thread/INFO]: Renaming synthetic method lambda$sw$routeServerEdit$0(Lnet/minecraft/class_4185$class_4241;Lnet/minecraft/class_4185;)V to md3b8686$server_waypoint$lambda$sw$routeServerEdit$0$0 in server_waypoint-common.mixins.json:xaeros_minimap.XaerosMinimapGuiWaypointsMixin from mod server_waypoint
+[19:11:28] [Render thread/INFO]: Mixing xaeros_minimap.XaerosMinimapWaypointMapRendererMixin from server_waypoint-common.mixins.json into xaero.hud.minimap.waypoint.render.WaypointMapRenderer
+[19:11:28] [Render thread/INFO]: Mixing xaeros_minimap.XaerosMinimapWaypointMixin from server_waypoint-common.mixins.json into xaero.common.minimap.waypoints.Waypoint
+[19:11:28] [Render thread/INFO]: Loading Xaero's World Map - Stage 1/2
+[19:11:28] [Render thread/INFO]: Mixing xaeros_worldmap.XaeroWorldMapGuiMapMixin from server_waypoint-common.mixins.json into xaero.map.gui.GuiMap
+[19:11:28] [Render thread/WARN]: io exception while checking patreon: Online mod data expired! Date: Wed Oct 28 10:27:27 EDT 2026
+[19:11:28] [Render thread/ERROR]: io exception while checking versions: Online mod data expired! Date: Wed Oct 28 10:27:27 EDT 2026
+[19:11:28] [Render thread/INFO]: Mixing SimpleRegistryTagLookup2Accessor from fabric-tag-api-v1.mixins.json into net.minecraft.class_2370$class_10105$2
+[19:11:28] [Render thread/INFO]: Mixing GameOptionsMixin from fabric-key-binding-api-v1.mixins.json into net.minecraft.class_315
+[19:11:28] [Render thread/WARN]: @Shadow field fabric-key-binding-api-v1.mixins.json:GameOptionsMixin from mod fabric-key-binding-api-v1::field_1839 is decorated with @Final but target is not final
+[19:11:28] [Render thread/INFO]: Mixing GameOptionsMixin from fabric-resource-loader-v0.client.mixins.json into net.minecraft.class_315
+[19:11:28] [Render thread/WARN]: Write access to @Mutable @Final field field_1839:[Lnet/minecraft/class_304; in fabric-key-binding-api-v1.mixins.json:GameOptionsMixin from mod fabric-key-binding-api-v1::handler$zeo000$fabric-key-binding-api-v1$loadHook
+[19:11:28] [Render thread/INFO]: Mixing APIMixinChatListenerHud from mixin.voxelmap.json into net.minecraft.class_338
+[19:11:28] [Render thread/INFO]: Mixing MixinChatHud from mixin.voxelmap.json into net.minecraft.class_338
+[19:11:28] [Render thread/INFO]: Mixing ResourcePackProfileMixin from fabric-resource-conditions-api-v1.mixins.json into net.minecraft.class_3288
+[19:11:28] [Render thread/INFO]: Mixing ResourcePackProfileMixin from fabric-resource-loader-v0.mixins.json into net.minecraft.class_3288
+[19:11:28] [Render thread/INFO]: Renaming synthetic method lambda$static$0(Ljava/util/Set;)Z to md3b8686$fabric-resource-loader-v0$lambda$static$0$0 in fabric-resource-loader-v0.mixins.json:ResourcePackProfileMixin from mod fabric-resource-loader-v0
+[19:11:28] [Render thread/WARN]: @At("STORE" implicit List) has invalid IMPLICIT discriminator for opcode 6 in net/minecraft/class_3288::method_45274(Lnet/minecraft/class_9224;Lnet/minecraft/class_3288$class_7680;I)Lnet/minecraft/class_3288$class_7679;: Found 0 candidate variables but exactly 1 is required.
+[19:11:28] [Render thread/WARN]: @At("STORE" implicit List) has invalid IMPLICIT discriminator for opcode 13 in net/minecraft/class_3288::method_45274(Lnet/minecraft/class_9224;Lnet/minecraft/class_3288$class_7680;I)Lnet/minecraft/class_3288$class_7679;: Found 0 candidate variables but exactly 1 is required.
+[19:11:28] [Render thread/WARN]: @At("STORE" implicit List) has invalid IMPLICIT discriminator for opcode 28 in net/minecraft/class_3288::method_45274(Lnet/minecraft/class_9224;Lnet/minecraft/class_3288$class_7680;I)Lnet/minecraft/class_3288$class_7679;: Found 0 candidate variables but exactly 1 is required.
+[19:11:28] [Render thread/WARN]: @At("STORE" implicit List) has invalid IMPLICIT discriminator for opcode 47 in net/minecraft/class_3288::method_45274(Lnet/minecraft/class_9224;Lnet/minecraft/class_3288$class_7680;I)Lnet/minecraft/class_3288$class_7679;: Found 0 candidate variables but exactly 1 is required.
+[19:11:28] [Render thread/WARN]: @At("STORE" implicit List) has invalid IMPLICIT discriminator for opcode 60 in net/minecraft/class_3288::method_45274(Lnet/minecraft/class_9224;Lnet/minecraft/class_3288$class_7680;I)Lnet/minecraft/class_3288$class_7679;: Found 0 candidate variables but exactly 1 is required.
+[19:11:28] [Render thread/WARN]: @At("STORE" implicit List) has invalid IMPLICIT discriminator for opcode 67 in net/minecraft/class_3288::method_45274(Lnet/minecraft/class_9224;Lnet/minecraft/class_3288$class_7680;I)Lnet/minecraft/class_3288$class_7679;: Found 0 candidate variables but exactly 1 is required.
+[19:11:28] [Render thread/WARN]: @At("STORE" implicit List) has invalid IMPLICIT discriminator for opcode 73 in net/minecraft/class_3288::method_45274(Lnet/minecraft/class_9224;Lnet/minecraft/class_3288$class_7680;I)Lnet/minecraft/class_3288$class_7679;: Found 0 candidate variables but exactly 1 is required.
+[19:11:28] [Render thread/WARN]: @At("STORE" implicit List) has invalid IMPLICIT discriminator for opcode 80 in net/minecraft/class_3288::method_45274(Lnet/minecraft/class_9224;Lnet/minecraft/class_3288$class_7680;I)Lnet/minecraft/class_3288$class_7679;: Found 0 candidate variables but exactly 1 is required.
+[19:11:28] [Render thread/WARN]: @At("STORE" implicit List) has invalid IMPLICIT discriminator for opcode 120 in net/minecraft/class_3288::method_45274(Lnet/minecraft/class_9224;Lnet/minecraft/class_3288$class_7680;I)Lnet/minecraft/class_3288$class_7679;: Found 0 candidate variables but exactly 1 is required.
+[19:11:28] [Render thread/WARN]: @At("STORE" implicit List) has invalid IMPLICIT discriminator for opcode 131 in net/minecraft/class_3288::method_45274(Lnet/minecraft/class_9224;Lnet/minecraft/class_3288$class_7680;I)Lnet/minecraft/class_3288$class_7679;: Found 0 candidate variables but exactly 1 is required.
+[19:11:28] [Render thread/WARN]: @At("STORE" implicit List) has invalid IMPLICIT discriminator for opcode 143 in net/minecraft/class_3288::method_45274(Lnet/minecraft/class_9224;Lnet/minecraft/class_3288$class_7680;I)Lnet/minecraft/class_3288$class_7679;: Found 0 candidate variables but exactly 1 is required.
+[19:11:28] [Render thread/INFO]: Mixing GameOptionsWriteVisitorMixin from fabric-resource-loader-v0.client.mixins.json into net.minecraft.class_315$3
+[19:11:28] [Render thread/INFO]: Backend library: LWJGL version 3.3.3-snapshot
+[19:11:29] [Render thread/INFO]: Mixing MouseMixin from fabric-screen-api-v1.mixins.json into net.minecraft.class_312
+[19:11:29] [Render thread/INFO]: Mixing KeyboardMixin from fabric-screen-api-v1.mixins.json into net.minecraft.class_309
+[19:11:29] [Render thread/INFO]: Mixing MixinKeyboard from mixin.voxelmap.json into net.minecraft.class_309
+[19:11:29] [Render thread/INFO]: Mixing MixinGlBuffer from xaeroworldmap.mixins.json into net.minecraft.class_10859
+[19:11:29] [Render thread/WARN]: @Shadow target xaeroworldmap.mixins.json:MixinGlBuffer from mod xaeroworldmap::field_57842 is final but shadow is not decorated with @Final
+[19:11:29] [Render thread/INFO]: Using optional rendering extensions: 
+[19:11:29] [Render thread/INFO]: Mixing LifecycledResourceManagerImplMixin from fabric-resource-loader-v0.mixins.json into net.minecraft.class_6861
+[19:11:29] [Render thread/WARN]: Removed resource pack voxelmap from options because it is no longer compatible
+[19:11:29] [Render thread/WARN]: Removed resource pack xaerominimap from options because it is no longer compatible
+[19:11:29] [Render thread/WARN]: Removed resource pack xaeroworldmap from options because it is no longer compatible
+[19:11:29] [Render thread/INFO]: Mixing KeyedResourceReloadListenerClientMixin from fabric-resource-loader-v0.client.mixins.json into net.minecraft.class_1076
+[19:11:29] [Render thread/INFO]: Mixing KeyedResourceReloadListenerClientMixin from fabric-resource-loader-v0.client.mixins.json into net.minecraft.class_1060
+[19:11:29] [Render thread/INFO]: Mixing ResourceFinderAccessor from fabric-loot-api-v3.mixins.json into net.minecraft.class_7654
+[19:11:29] [Render thread/INFO]: Mixing ResourceFinderAccessor from fabric-resource-conditions-api-v1.mixins.json into net.minecraft.class_7654
+[19:11:29] [Render thread/INFO]: Mixing KeyedResourceReloadListenerClientMixin from fabric-resource-loader-v0.client.mixins.json into net.minecraft.class_1144
+[19:11:29] [Render thread/INFO]: Mixing modification.DynamicRegistryManagerImmutableImplMixin from fabric-biome-api-v1.mixins.json into net.minecraft.class_5455$class_6891
+[19:11:29] [Render thread/INFO]: Mixing SoundSystemMixin from fabric-sound-api-v1.mixins.json into net.minecraft.class_1140
+[19:11:29] [Render thread/INFO]: Mixing FontManagerMixin from fabric-resource-loader-v0.client.mixins.json into net.minecraft.class_378
+[19:11:29] [Render thread/INFO]: Mixing BlockColorsMixin from fabric-registry-sync-v0.client.mixins.json into net.minecraft.class_324
+[19:11:29] [Render thread/INFO]: Mixing BlockColorsMixin from fabric-rendering-v1.mixins.json into net.minecraft.class_324
+[19:11:29] [Render thread/INFO]: Mixing BakedModelManagerMixin from fabric-model-loading-api-v1.mixins.json into net.minecraft.class_1092
+[19:11:29] [Render thread/INFO]: Renaming synthetic method lambda$hookModelBaking$3(Ljava/util/function/Function;Ljava/lang/Void;)Ljava/util/concurrent/CompletableFuture; to md3b8686$fabric-model-loading-api-v1$lambda$hookModelBaking$3$0 in fabric-model-loading-api-v1.mixins.json:BakedModelManagerMixin from mod fabric-model-loading-api-v1
+[19:11:29] [Render thread/INFO]: Renaming synthetic method lambda$hookBlockStateModels$2(Lnet/minecraft/class_9824$class_10095;Lnet/fabricmc/fabric/impl/client/model/loading/ModelLoadingEventDispatcher;)Lnet/minecraft/class_9824$class_10095; to md3b8686$fabric-model-loading-api-v1$lambda$hookBlockStateModels$2$1 in fabric-model-loading-api-v1.mixins.json:BakedModelManagerMixin from mod fabric-model-loading-api-v1
+[19:11:29] [Render thread/INFO]: Renaming synthetic method lambda$hookModels$1(Ljava/util/Map;Lnet/fabricmc/fabric/impl/client/model/loading/ModelLoadingEventDispatcher;)Ljava/util/Map; to md3b8686$fabric-model-loading-api-v1$lambda$hookModels$1$2 in fabric-model-loading-api-v1.mixins.json:BakedModelManagerMixin from mod fabric-model-loading-api-v1
+[19:11:29] [Render thread/INFO]: Renaming synthetic method lambda$resetEventDispatcherFuture$0(Ljava/lang/Void;)Ljava/lang/Void; to md3b8686$fabric-model-loading-api-v1$lambda$resetEventDispatcherFuture$0$3 in fabric-model-loading-api-v1.mixins.json:BakedModelManagerMixin from mod fabric-model-loading-api-v1
+[19:11:29] [Render thread/INFO]: Mixing KeyedResourceReloadListenerClientMixin from fabric-resource-loader-v0.client.mixins.json into net.minecraft.class_1092
+[19:11:29] [Render thread/INFO]: Mixing client.block.particle.BlockModelsMixin from fabric-renderer-api-v1.mixins.json into net.minecraft.class_773
+[19:11:29] [Render thread/INFO]: Mixing JsonDataLoaderMixin from fabric-loot-api-v3.mixins.json into net.minecraft.class_4309
+[19:11:29] [Render thread/INFO]: Mixing JsonDataLoaderMixin from fabric-resource-conditions-api-v1.mixins.json into net.minecraft.class_4309
+[19:11:29] [Render thread/INFO]: Mixing ItemRenderStateMixin from fabric-renderer-indigo.mixins.json into net.minecraft.class_10444
+[19:11:29] [Render thread/INFO]: Mixing client.item.LayerRenderStateMixin from fabric-renderer-api-v1.mixins.json into net.minecraft.class_10444$class_10446
+[19:11:29] [Render thread/INFO]: Mixing LayerRenderStateMixin from fabric-renderer-indigo.mixins.json into net.minecraft.class_10444$class_10446
+[19:11:29] [Render thread/INFO]: Mixing ModelBakerMixin from fabric-model-loading-api-v1.mixins.json into net.minecraft.class_1088
+[19:11:29] [Render thread/INFO]: Renaming synthetic method lambda$hookBlockModelBake$0(Ljava/util/function/BiFunction;Lnet/minecraft/class_2680;Lnet/minecraft/class_1087$class_9979;)Lnet/minecraft/class_1087; to md3b8686$fabric-model-loading-api-v1$lambda$hookBlockModelBake$0$0 in fabric-model-loading-api-v1.mixins.json:ModelBakerMixin from mod fabric-model-loading-api-v1
+[19:11:29] [Render thread/INFO]: Mixing client.block.render.BlockRenderManagerMixin from fabric-renderer-api-v1.mixins.json into net.minecraft.class_776
+[19:11:29] [Render thread/INFO]: Mixing BlockRenderManagerAccessor from fabric-renderer-indigo.mixins.json into net.minecraft.class_776
+[19:11:29] [Render thread/INFO]: Mixing BlockRenderManagerMixin from fabric-renderer-indigo.mixins.json into net.minecraft.class_776
+[19:11:29] [Render thread/INFO]: Renaming synthetic method lambda$renderProxy$1(Lnet/minecraft/class_4597;Lnet/minecraft/class_1921;)Lnet/minecraft/class_4588; to md3b8686$fabric-renderer-indigo$lambda$renderProxy$1$0 in fabric-renderer-indigo.mixins.json:BlockRenderManagerMixin from mod fabric-renderer-indigo
+[19:11:29] [Render thread/INFO]: Renaming synthetic method lambda$afterGetModel$0(Lnet/minecraft/class_4588;Lnet/minecraft/class_1921;)Lnet/minecraft/class_4588; to md3b8686$fabric-renderer-indigo$lambda$afterGetModel$0$1 in fabric-renderer-indigo.mixins.json:BlockRenderManagerMixin from mod fabric-renderer-indigo
+[19:11:29] [Render thread/INFO]: Mixing KeyedResourceReloadListenerClientMixin from fabric-resource-loader-v0.client.mixins.json into net.minecraft.class_776
+[19:11:29] [Render thread/INFO]: Mixing client.block.render.BlockModelRendererMixin from fabric-renderer-api-v1.mixins.json into net.minecraft.class_778
+[19:11:29] [Render thread/INFO]: Mixing BlockModelRendererMixin from fabric-renderer-indigo.mixins.json into net.minecraft.class_778
+[19:11:29] [Render thread/INFO]: Renaming synthetic method lambda$render$0(Lnet/minecraft/class_4588;Lnet/minecraft/class_1921;)Lnet/minecraft/class_4588; to md3b8686$fabric-renderer-indigo$lambda$render$0$0 in fabric-renderer-indigo.mixins.json:BlockModelRendererMixin from mod fabric-renderer-indigo
+[19:11:29] [Render thread/INFO]: Mixing FluidRendererMixin from fabric-rendering-fluids-v1.mixins.json into net.minecraft.class_775
+[19:11:29] [Render thread/INFO]: Mixing HeldItemRendererMixin from fabric-item-api-v1.client.mixins.json into net.minecraft.class_759
+[19:11:29] [Render thread/INFO]: Mixing ParticleManagerMixin from fabric-particles-v1.client.mixins.json into net.minecraft.class_702
+[19:11:29] [Render thread/INFO]: Mixing ParticleManagerAccessor from fabric-particles-v1.client.mixins.json into net.minecraft.class_702
+[19:11:29] [Render thread/INFO]: Mixing ParticleManagerMixin from fabric-registry-sync-v0.client.mixins.json into net.minecraft.class_702
+[19:11:29] [Render thread/INFO]: Mixing BlockDustParticleMixin from fabric-particles-v1.client.mixins.json into net.minecraft.class_727
+[19:11:29] [Render thread/INFO]: Mixing client.block.particle.BlockDustParticleMixin from fabric-renderer-api-v1.mixins.json into net.minecraft.class_727
+[19:11:29] [Render thread/INFO]: Mixing ParticleManagerAccessor$SimpleSpriteProviderAccessor from fabric-particles-v1.client.mixins.json into net.minecraft.class_702$class_4090
+[19:11:29] [Render thread/INFO]: Mixing client.block.particle.BlockMarkerParticleMixin from fabric-renderer-api-v1.mixins.json into net.minecraft.class_6734
+[19:11:29] [Render thread/INFO]: Mixing GameRendererMixin from fabric-screen-api-v1.mixins.json into net.minecraft.class_757
+[19:11:29] [Render thread/INFO]: Mixing GameRendererMixin from server_waypoint-common.mixins.json into net.minecraft.class_757
+[19:11:29] [Render thread/INFO]: Mixing GameRendererAccessor from server_waypoint-common.mixins.json into net.minecraft.class_757
+[19:11:29] [Render thread/INFO]: Mixing MixinGameRenderer from xaerohud.mixins.json into net.minecraft.class_757
+[19:11:29] [Render thread/WARN]: @Shadow target xaerohud.mixins.json:MixinGameRenderer from mod xaerominimap::field_4015 is final but shadow is not decorated with @Final
+[19:11:29] [Render thread/INFO]: Mixing MixinFabricGameRenderer from xaeroworldmap.fabric.mixins.json into net.minecraft.class_757
+[19:11:29] [Render thread/WARN]: @Shadow target xaeroworldmap.fabric.mixins.json:MixinFabricGameRenderer from mod xaeroworldmap::field_4015 is final but shadow is not decorated with @Final
+[19:11:29] [Render thread/INFO]: Mixing WorldRendererMixin from fabric-rendering-v1.mixins.json into net.minecraft.class_761
+[19:11:29] [Render thread/INFO]: Renaming synthetic method lambda$beforeClouds$0()V to md3b8686$fabric-rendering-v1$lambda$beforeClouds$0$0 in fabric-rendering-v1.mixins.json:WorldRendererMixin from mod fabric-rendering-v1
+[19:11:29] [Render thread/INFO]: Mixing KeyedResourceReloadListenerClientMixin from fabric-resource-loader-v0.client.mixins.json into net.minecraft.class_761
+[19:11:29] [Render thread/INFO]: Mixing WorldRendererMixin from server_waypoint-common.mixins.json into net.minecraft.class_761
+[19:11:29] [Render thread/INFO]: Mixing MixinWorldRenderer from mixin.voxelmap.json into net.minecraft.class_761
+[19:11:29] [Render thread/INFO]: Mixing MixinLevelRenderer from xaerohud.mixins.json into net.minecraft.class_761
+[19:11:29] [Render thread/INFO]: Mixing LayeredDrawerAccessor from fabric-rendering-v1.mixins.json into net.minecraft.class_9080
+[19:11:29] [Render thread/INFO]: Mixing LayeredDrawerMixin from fabric-rendering-v1.mixins.json into net.minecraft.class_9080
+[19:11:29] [Render thread/INFO]: Mixing DebugHudMixin from fabric-renderer-api-v1.debughud.mixins.json into net.minecraft.class_340
+[19:11:29] [Render thread/INFO]: Mixing MixinBossBarHud from xaerohud.mixins.json into net.minecraft.class_337
+[19:11:30] [Render thread/INFO]: Mixing ResourceMixin from fabric-resource-loader-v0.mixins.json into net.minecraft.class_3298
+[19:11:30] [Download-2/INFO]: Could not authorize you against Realms server: java.lang.RuntimeException: Failed to parse into SignedJWT: 0
+[19:11:30] [Download-2/ERROR]: Failed to fetch Realms feature flags
+net.minecraft.class_4355: Realms authentication error with message 'java.lang.RuntimeException: Failed to parse into SignedJWT: 0'
+	at knot/net.minecraft.class_4341.method_20998(class_4341.java:495) ~[client-intermediary.jar:?]
+	at knot/net.minecraft.class_4341.method_68466(class_4341.java:177) ~[client-intermediary.jar:?]
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1768) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144) ~[?:?]
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642) ~[?:?]
+	at java.base/java.lang.Thread.run(Thread.java:1583) [?:?]
+[19:11:30] [Render thread/INFO]: Mixing MessageHandlerMixin from fabric-message-api-v1.client.mixins.json into net.minecraft.class_7594
+[19:11:30] [Render thread/INFO]: Mixing MixinChatListener from xaerohud.mixins.json into net.minecraft.class_7594
+[19:11:30] [Render thread/INFO]: Mixing MixinChatListener from xaeroworldmap.mixins.json into net.minecraft.class_7594
+[19:11:30] [Render thread/INFO]: Mixing MixinFabricChatListener from xaeroworldmap.fabric.mixins.json into net.minecraft.class_7594
+[19:11:30] [Render thread/INFO]: Reloading ResourceManager: vanilla, fabric, fabric-api, fabric-api-base, fabric-api-lookup-api-v1, fabric-biome-api-v1, fabric-block-api-v1, fabric-block-view-api-v2, fabric-blockrenderlayer-v1, fabric-client-tags-api-v1, fabric-command-api-v1, fabric-command-api-v2, fabric-commands-v0, fabric-content-registries-v0, fabric-convention-tags-v1, fabric-convention-tags-v2, fabric-crash-report-info-v1, fabric-data-attachment-api-v1, fabric-data-generation-api-v1, fabric-dimensions-v1, fabric-entity-events-v1, fabric-events-interaction-v0, fabric-game-rule-api-v1, fabric-item-api-v1, fabric-item-group-api-v1, fabric-key-binding-api-v1, fabric-keybindings-v0, fabric-lifecycle-events-v1, fabric-loot-api-v2, fabric-loot-api-v3, fabric-message-api-v1, fabric-model-loading-api-v1, fabric-networking-api-v1, fabric-object-builder-api-v1, fabric-particles-v1, fabric-recipe-api-v1, fabric-registry-sync-v0, fabric-renderer-api-v1, fabric-renderer-indigo, fabric-rendering-data-attachment-v1, fabric-rendering-fluids-v1, fabric-rendering-v1, fabric-resource-conditions-api-v1, fabric-resource-loader-v0, fabric-screen-api-v1, fabric-screen-handler-api-v1, fabric-sound-api-v1, fabric-tag-api-v1, fabric-transfer-api-v1, fabric-transitive-access-wideners-v1, fabricloader, server_waypoint, voxelmap, xaerominimap, xaeroworldmap
+[19:11:30] [Render thread/INFO]: Mixing SimpleResourceReloadMixin from fabric-resource-loader-v0.mixins.json into net.minecraft.class_4014
+[19:11:30] [ForkJoinPool.commonPool-worker-1/INFO]: Mixing client.block.model.BlockStateModelMixin from fabric-renderer-api-v1.mixins.json into net.minecraft.class_1087
+[19:11:30] [Worker-Main-1/INFO]: Mixing EntityModelsMixin from fabric-rendering-v1.mixins.json into net.minecraft.class_5600
+[19:11:30] [Worker-Main-7/INFO]: Found unifont_all_no_pua-16.0.01.hex, loading
+[19:11:30] [Worker-Main-1/INFO]: Mixing MixinModel from xaerohud.mixins.json into net.minecraft.class_3879
+[19:11:30] [Worker-Main-6/INFO]: Mixing client.block.model.BlockModelPartMixin from fabric-renderer-api-v1.mixins.json into net.minecraft.class_10889
+[19:11:30] [Render thread/INFO]: server_waypoint client initialized
+[19:11:30] [Worker-Main-6/INFO]: Mixing client.block.model.SimpleBlockStateModelMixin from fabric-renderer-api-v1.mixins.json into net.minecraft.class_10893
+[19:11:30] [Render thread/INFO]: waypoint renderer initialized
+[19:11:30] [Render thread/INFO]: Loading Xaero's World Map - Stage 2/2
+[19:11:30] [Worker-Main-1/INFO]: Mixing EntityModelLayersMixin from fabric-object-builder-v1.client.mixins.json into net.minecraft.class_5602
+[19:11:30] [Worker-Main-1/INFO]: Renaming synthetic method lambda$createHangingSign$0(Lnet/minecraft/class_7761$class_10381;Ljava/lang/String;)Ljava/lang/String; to md3b8686$fabric-object-builder-api-v1$lambda$createHangingSign$0$0 in fabric-object-builder-v1.client.mixins.json:EntityModelLayersMixin from mod fabric-object-builder-api-v1
+[19:11:30] [Worker-Main-1/INFO]: Mixing EntityModelLayersAccessor from fabric-rendering-v1.mixins.json into net.minecraft.class_5602
+[19:11:30] [Worker-Main-1/INFO]: Renaming @Accessor method getLayers()Ljava/util/Set; to getLayers$fabric-rendering-v1_$md$3b8686$1 in fabric-rendering-v1.mixins.json:EntityModelLayersAccessor from mod fabric-rendering-v1
+[19:11:30] [Render thread/INFO]: New world map region cache hash code: 800731696
+[19:11:30] [Render thread/INFO]: Registered player tracker system: map_synced
+[19:11:30] [Render thread/INFO]: Xaero's WorldMap Mod: Xaero's minimap found!
+[19:11:30] [Render thread/INFO]: Mixing xaeros_worldmap.XaerosWorldMapWaypointReaderMixin from server_waypoint-common.mixins.json into xaero.map.mods.gui.WaypointReader
+[19:11:30] [Render thread/INFO]: Registered player tracker system: minimap_synced
+[19:11:30] [Render thread/INFO]: No Optifine!
+[19:11:30] [Render thread/INFO]: Xaero's World Map: No Vivecraft!
+[19:11:30] [Worker-Main-4/INFO]: Mixing JsonUnbakedModelAccessor from fabric-model-loading-api-v1.mixins.json into net.minecraft.class_793
+[19:11:30] [Worker-Main-4/INFO]: Mixing JsonUnbakedModelMixin from fabric-model-loading-api-v1.mixins.json into net.minecraft.class_793
+[19:11:30] [Render thread/WARN]: Unable to read property: level with value: "0" for blockstate: {Name:"minecraft:water_cauldron",Properties:{level:"0"}}
+[19:11:30] [Render thread/INFO]: Loading Xaero's Minimap - Stage 2/2
+[19:11:30] [Worker-Main-1/INFO]: Mixing MixinModelPart from xaerohud.mixins.json into net.minecraft.class_630
+[19:11:30] [Worker-Main-3/INFO]: Found unifont_jp_patch-16.0.01.hex, loading
+[19:11:30] [Render thread/WARN]: io exception while checking versions: Online mod data expired! Date: Wed Oct 28 10:27:27 EDT 2026
+[19:11:30] [Render thread/INFO]: Registered player tracker system: minimap_synced
+[19:11:30] [Render thread/INFO]: Xaero's Minimap: World Map found!
+[19:11:30] [Render thread/INFO]: No Optifine!
+[19:11:30] [Render thread/INFO]: Xaero's Minimap: No Vivecraft!
+[19:11:30] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/editor-prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[19:11:30] [Attach Listener/INFO]: Mixing ClientPlayerInteractionManagerMixin from fabric-events-interaction-v0.client.mixins.json into net.minecraft.class_636
+[19:11:30] [Attach Listener/INFO]: Renaming synthetic method lambda$interactItem$2(Lnet/minecraft/class_1268;Lnet/minecraft/class_1657;I)Lnet/minecraft/class_2596; to md3b8686$fabric-events-interaction-v0$lambda$interactItem$2$0 in fabric-events-interaction-v0.client.mixins.json:ClientPlayerInteractionManagerMixin from mod fabric-events-interaction-v0
+[19:11:30] [Attach Listener/INFO]: Renaming synthetic method lambda$interactBlock$1(Lnet/minecraft/class_1268;Lnet/minecraft/class_3965;I)Lnet/minecraft/class_2596; to md3b8686$fabric-events-interaction-v0$lambda$interactBlock$1$1 in fabric-events-interaction-v0.client.mixins.json:ClientPlayerInteractionManagerMixin from mod fabric-events-interaction-v0
+[19:11:30] [Attach Listener/INFO]: Renaming synthetic method lambda$fabric_fireAttackBlockCallback$0(Lnet/minecraft/class_2338;Lnet/minecraft/class_2350;I)Lnet/minecraft/class_2596; to md3b8686$fabric-events-interaction-v0$lambda$fabric_fireAttackBlockCallback$0$2 in fabric-events-interaction-v0.client.mixins.json:ClientPlayerInteractionManagerMixin from mod fabric-events-interaction-v0
+[19:11:30] [Attach Listener/INFO]: Mixing ClientPlayerInteractionManagerMixin from fabric-item-api-v1.client.mixins.json into net.minecraft.class_636
+[19:11:30] [Render thread/INFO]: Mixing VoxelMapWaypointContainerMixin from server_waypoint-voxelmap.mixins.json into com.mamiyaotaru.voxelmap.util.WaypointContainer
+[19:11:30] [Render thread/INFO]: Mixing LivingEntityRendererAccessor from fabric-rendering-v1.mixins.json into net.minecraft.class_922
+[19:11:31] [Render thread/INFO]: Created: 16x16 mobsmap-atlas
+[19:11:31] [Render thread/INFO]: Mixing VoxelMapPersistentMapMixin from server_waypoint-voxelmap.mixins.json into com.mamiyaotaru.voxelmap.persistent.GuiPersistentMap
+[19:11:31] [Render thread/INFO]: Mixing VoxelMapGuiPersistentMapMixin from server_waypoint-voxelmap.mixins.json into com.mamiyaotaru.voxelmap.persistent.GuiPersistentMap
+[19:11:31] [Render thread/INFO]: Mixing VoxelMapGuiWaypointsMixin from server_waypoint-voxelmap.mixins.json into com.mamiyaotaru.voxelmap.gui.GuiWaypoints
+[19:11:31] [Render thread/INFO]: Mixing VoxelMapGuiAddWaypointMixin from server_waypoint-voxelmap.mixins.json into com.mamiyaotaru.voxelmap.gui.GuiAddWaypoint
+[19:11:31] [Render thread/WARN]: CATEGORY ORDER IS 10
+[19:11:31] [Render thread/INFO]: Created: 256x256 waypoints-atlas
+[19:11:31] [Render thread/INFO]: Created: 256x128 chooser-atlas
+[19:11:31] [Render thread/INFO]: Created: 64x32 pings-atlas
+[19:11:31] [Worker-Main-8/INFO]: Mixing client.block.model.MultipartBlockStateModelMixin from fabric-renderer-api-v1.mixins.json into net.minecraft.class_10895
+[19:11:31] [Worker-Main-8/INFO]: Mixing client.block.model.WeightedBlockStateModelMixin from fabric-renderer-api-v1.mixins.json into net.minecraft.class_1097
+[19:11:31] [Worker-Main-9/INFO]: Mixing client.block.model.GeometryBakedModelMixin from fabric-renderer-api-v1.mixins.json into net.minecraft.class_10801
+[19:11:31] [Worker-Main-1/INFO]: Mixing client.block.model.MultipartBakedModelAccessor from fabric-renderer-api-v1.mixins.json into net.minecraft.class_10895$class_1095
+[19:11:31] [Render thread/WARN]: Found unknown and unsupported uniform Sampler1 in minecraft:pipeline/armor_translucent
+[19:11:31] [Render thread/WARN]: Found unknown and unsupported uniform Sampler1 in minecraft:pipeline/armor_decal_cutout_no_cull
+[19:11:31] [Render thread/WARN]: Found unknown and unsupported uniform Sampler1 in minecraft:pipeline/entity_no_outline
+[19:11:31] [Render thread/WARN]: Found unknown and unsupported uniform Sampler1 in minecraft:pipeline/breeze_wind
+[19:11:31] [Render thread/WARN]: Found unknown and unsupported uniform Sampler2 in minecraft:pipeline/eyes
+[19:11:31] [Render thread/WARN]: Found unknown and unsupported uniform Sampler1 in minecraft:pipeline/eyes
+[19:11:31] [Render thread/WARN]: Found unknown and unsupported uniform Sampler1 in minecraft:pipeline/armor_cutout_no_cull
+[19:11:31] [Render thread/WARN]: Found unknown and unsupported uniform Sampler2 in minecraft:pipeline/energy_swirl
+[19:11:31] [Render thread/WARN]: Found unknown and unsupported uniform Sampler1 in minecraft:pipeline/energy_swirl
+[19:11:31] [Render thread/INFO]: OpenAL initialized on device Bose QC45
+[19:11:31] [Render thread/INFO]: Sound engine started
+[19:11:31] [Render thread/INFO]: Created: 1024x512x4 minecraft:textures/atlas/blocks.png-atlas
+[19:11:31] [Render thread/INFO]: Created: 256x256x4 minecraft:textures/atlas/signs.png-atlas
+[19:11:31] [Render thread/INFO]: Created: 512x512x4 minecraft:textures/atlas/shield_patterns.png-atlas
+[19:11:31] [Render thread/INFO]: Created: 512x512x4 minecraft:textures/atlas/banner_patterns.png-atlas
+[19:11:31] [Render thread/INFO]: Created: 2048x1024x4 minecraft:textures/atlas/armor_trims.png-atlas
+[19:11:31] [Render thread/INFO]: Created: 256x256x4 minecraft:textures/atlas/chest.png-atlas
+[19:11:31] [Render thread/INFO]: Created: 128x64x4 minecraft:textures/atlas/decorated_pot.png-atlas
+[19:11:31] [Render thread/INFO]: Created: 512x256x4 minecraft:textures/atlas/beds.png-atlas
+[19:11:31] [Render thread/INFO]: Created: 512x256x4 minecraft:textures/atlas/shulker_boxes.png-atlas
+[19:11:31] [Render thread/INFO]: Created: 64x64x0 minecraft:textures/atlas/map_decorations.png-atlas
+[19:11:31] [Render thread/INFO]: Mixing EntityRenderersMixin from fabric-rendering-v1.mixins.json into net.minecraft.class_5619
+[19:11:31] [Render thread/INFO]: Renaming synthetic method lambda$onRegisterRenderers$0(Lnet/minecraft/class_1299;Lnet/minecraft/class_5617;)V to md3b8686$fabric-rendering-v1$lambda$onRegisterRenderers$0$0 in fabric-rendering-v1.mixins.json:EntityRenderersMixin from mod fabric-rendering-v1
+[19:11:31] [Render thread/INFO]: Mixing ArmorFeatureRendererMixin from fabric-rendering-v1.mixins.json into net.minecraft.class_970
+[19:11:31] [Render thread/INFO]: Mixing client.block.render.FallingBlockEntityRendererMixin from fabric-renderer-api-v1.mixins.json into net.minecraft.class_901
+[19:11:31] [Render thread/INFO]: Renaming synthetic method lambda$render$0(Lnet/minecraft/class_4597;Lnet/minecraft/class_1921;)Lnet/minecraft/class_4588; to md3b8686$fabric-renderer-api-v1$lambda$render$0$0 in fabric-renderer-api-v1.mixins.json:client.block.render.FallingBlockEntityRendererMixin from mod fabric-renderer-api-v1
+[19:11:31] [Render thread/INFO]: Mixing client.block.render.ItemFrameEntityRendererMixin from fabric-renderer-api-v1.mixins.json into net.minecraft.class_915
+[19:11:31] [Render thread/INFO]: Renaming synthetic method lambda$renderProxy$0(Lnet/minecraft/class_4588;Lnet/minecraft/class_1921;)Lnet/minecraft/class_4588; to md3b8686$fabric-renderer-api-v1$lambda$renderProxy$0$0 in fabric-renderer-api-v1.mixins.json:client.block.render.ItemFrameEntityRendererMixin from mod fabric-renderer-api-v1
+[19:11:31] [Render thread/INFO]: Mixing client.block.render.MooshroomMushroomFeatureRendererMixin from fabric-renderer-api-v1.mixins.json into net.minecraft.class_991
+[19:11:31] [Render thread/INFO]: Renaming synthetic method lambda$renderProxy$0(Lnet/minecraft/class_4588;Lnet/minecraft/class_1921;)Lnet/minecraft/class_4588; to md3b8686$fabric-renderer-api-v1$lambda$renderProxy$0$0 in fabric-renderer-api-v1.mixins.json:client.block.render.MooshroomMushroomFeatureRendererMixin from mod fabric-renderer-api-v1
+[19:11:31] [Render thread/INFO]: Mixing client.block.render.SnowGolemPumpkinFeatureRendererMixin from fabric-renderer-api-v1.mixins.json into net.minecraft.class_996
+[19:11:31] [Render thread/INFO]: Renaming synthetic method lambda$renderProxy$1(Lnet/minecraft/class_4597;Lnet/minecraft/class_1921;)Lnet/minecraft/class_4588; to md3b8686$fabric-renderer-api-v1$lambda$renderProxy$1$0 in fabric-renderer-api-v1.mixins.json:client.block.render.SnowGolemPumpkinFeatureRendererMixin from mod fabric-renderer-api-v1
+[19:11:31] [Render thread/INFO]: Renaming synthetic method lambda$renderProxy$0(Lnet/minecraft/class_4588;Lnet/minecraft/class_1921;)Lnet/minecraft/class_4588; to md3b8686$fabric-renderer-api-v1$lambda$renderProxy$0$1 in fabric-renderer-api-v1.mixins.json:client.block.render.SnowGolemPumpkinFeatureRendererMixin from mod fabric-renderer-api-v1
+[19:11:31] [Render thread/INFO]: Mixing CapeFeatureRendererMixin from fabric-rendering-v1.mixins.json into net.minecraft.class_972
+[19:11:31] [Render thread/INFO]: Mixing BlockEntityRendererFactoriesMixin from fabric-rendering-v1.mixins.json into net.minecraft.class_5616
+[19:11:31] [Render thread/INFO]: Renaming synthetic method lambda$init$0(Lnet/minecraft/class_2591;Lnet/minecraft/class_5614;)V to md3b8686$fabric-rendering-v1$lambda$init$0$0 in fabric-rendering-v1.mixins.json:BlockEntityRendererFactoriesMixin from mod fabric-rendering-v1
+[19:11:31] [Render thread/INFO]: Mixing client.block.render.PistonBlockEntityRendererMixin from fabric-renderer-api-v1.mixins.json into net.minecraft.class_835
+[19:11:31] [Render thread/INFO]: Renaming synthetic method lambda$renderModel$0(Lnet/minecraft/class_4597;Lnet/minecraft/class_1921;)Lnet/minecraft/class_4588; to md3b8686$fabric-renderer-api-v1$lambda$renderModel$0$0 in fabric-renderer-api-v1.mixins.json:client.block.render.PistonBlockEntityRendererMixin from mod fabric-renderer-api-v1
+[19:11:31] [Render thread/INFO]: Created: 512x256x0 minecraft:textures/atlas/particles.png-atlas
+[19:11:31] [Render thread/INFO]: Created: 512x256x0 minecraft:textures/atlas/paintings.png-atlas
+[19:11:31] [Render thread/INFO]: Created: 256x128x0 minecraft:textures/atlas/mob_effects.png-atlas
+[19:11:31] [Render thread/INFO]: Created: 1024x512x0 minecraft:textures/atlas/gui.png-atlas
+[19:11:36] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/editor-prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[19:11:41] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/editor-prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[19:11:46] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/editor-prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[19:11:51] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/editor-prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[19:11:51] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/editor-prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[19:11:51] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/editor-prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[19:11:51] [Attach Listener/INFO]: Mixing xaeros_minimap.XaerosMinimapDropDownWidgetMixin from server_waypoint-common.mixins.json into xaero.common.gui.dropdown.DropDownWidget
+[19:11:51] [Attach Listener/INFO]: Mixing VoxelMapGuiListWaypointsMixin from server_waypoint-voxelmap.mixins.json into com.mamiyaotaru.voxelmap.gui.GuiSlotWaypoints
+[19:11:51] [Attach Listener/INFO]: Mixing VoxelMapGuiListWaypointsItemMixin from server_waypoint-voxelmap.mixins.json into com.mamiyaotaru.voxelmap.gui.GuiSlotWaypoints$WaypointItem
+[19:11:51] [Attach Listener/INFO]: Mixing MapItemSavedDataAccessor from server_waypoint-common.mixins.json into net.minecraft.class_22
+[19:11:51] [Attach Listener/INFO]: Mixing PlayerManagerMixin from fabric-entity-events-v1.mixins.json into net.minecraft.class_3324
+[19:11:51] [Attach Listener/INFO]: Mixing PlayerManagerMixin from fabric-lifecycle-events-v1.mixins.json into net.minecraft.class_3324
+[19:11:51] [Attach Listener/INFO]: Mixing PlayerManagerMixin from fabric-message-api-v1.mixins.json into net.minecraft.class_3324
+[19:11:51] [Attach Listener/INFO]: Mixing PlayerManagerMixin from fabric-networking-api-v1.mixins.json into net.minecraft.class_3324
+[19:11:51] [Attach Listener/INFO]: Mixing PlayerManagerMixin from server_waypoint-common.mixins.json into net.minecraft.class_3324
+[19:11:51] [Attach Listener/INFO]: Mixing MixinPlayerList from xaerohud.mixins.json into net.minecraft.class_3324
+[19:11:51] [Attach Listener/INFO]: Mixing MixinPlayerList from xaeroworldmap.mixins.json into net.minecraft.class_3324
+[19:11:51] [Attach Listener/INFO]: Mixing MixinFabricPlayerList from xaeroworldmap.fabric.mixins.json into net.minecraft.class_3324
+[19:11:51] [Attach Listener/INFO]: Mixing EditBoxAccessor from server_waypoint-common.mixins.json into net.minecraft.class_342
+[19:11:51] [Attach Listener/INFO]: Mixing EditBoxTextShadowMixin from server_waypoint-common.mixins.json into net.minecraft.class_342
+[19:11:51] [Attach Listener/INFO]: Mixing WorldSessionMixin from server_waypoint-common.mixins.json into net.minecraft.class_7975
+[19:11:51] [Attach Listener/INFO]: Mixing xaeros_minimap.XaerosMinimapGuiWaypointsListMixin from server_waypoint-common.mixins.json into xaero.common.gui.GuiWaypoints$List
+[19:11:51] [Attach Listener/INFO]: Mixing xaeros_minimap.MinimapWorldStateUpdaterMixin from server_waypoint-common.mixins.json into xaero.hud.minimap.world.state.MinimapWorldStateUpdater
+[19:11:51] [Attach Listener/INFO]: Mixing xaeros_worldmap.XaerosWorldMapWaypointMixin from server_waypoint-common.mixins.json into xaero.map.mods.gui.Waypoint
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_7788
+[19:11:51] [Attach Listener/INFO]: Mixing loot.BlockLootTableGeneratorAccessor from fabric-data-generation-api-v1.mixins.json into net.minecraft.class_7788
+[19:11:51] [Attach Listener/INFO]: Mixing loot.BlockLootTableGeneratorMixin from fabric-data-generation-api-v1.mixins.json into net.minecraft.class_7788
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_7744
+[19:11:51] [Attach Listener/INFO]: Mixing HangingSignEditScreenMixin from fabric-object-builder-v1.client.mixins.json into net.minecraft.class_7744
+[19:11:51] [Attach Listener/INFO]: Renaming synthetic method lambda$init$0(Ljava/lang/String;)Ljava/lang/String; to md3b8686$fabric-object-builder-api-v1$lambda$init$0$0 in fabric-object-builder-v1.client.mixins.json:HangingSignEditScreenMixin from mod fabric-object-builder-api-v1
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_5684
+[19:11:51] [Attach Listener/INFO]: Mixing TooltipComponentMixin from fabric-rendering-v1.mixins.json into net.minecraft.class_5684
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_7789
+[19:11:51] [Attach Listener/INFO]: Mixing loot.EntityLootTableGeneratorAccessor from fabric-data-generation-api-v1.mixins.json into net.minecraft.class_7789
+[19:11:51] [Attach Listener/INFO]: Mixing loot.EntityLootTableGeneratorMixin from fabric-data-generation-api-v1.mixins.json into net.minecraft.class_7789
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_3065
+[19:11:51] [Attach Listener/INFO]: Mixing GameRuleCommandAccessor from fabric-game-rule-api-v1.mixins.json into net.minecraft.class_3065
+[19:11:51] [Attach Listener/INFO]: Renaming @Invoker method invokeExecuteSet(Lcom/mojang/brigadier/context/CommandContext;Lnet/minecraft/class_1928$class_4313;)I to invokeExecuteSet$fabric-game-rule-api-v1_$md$3b8686$0 in fabric-game-rule-api-v1.mixins.json:GameRuleCommandAccessor from mod fabric-game-rule-api-v1
+[19:11:51] [Attach Listener/INFO]: Renaming @Invoker method invokeExecuteQuery(Lnet/minecraft/class_2168;Lnet/minecraft/class_1928$class_4313;)I to invokeExecuteQuery$fabric-game-rule-api-v1_$md$3b8686$1 in fabric-game-rule-api-v1.mixins.json:GameRuleCommandAccessor from mod fabric-game-rule-api-v1
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_3898$class_3208
+[19:11:51] [Attach Listener/INFO]: Mixing accessor.EntityTrackerAccessor from fabric-networking-api-v1.mixins.json into net.minecraft.class_3898$class_3208
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_5235$class_5241$1
+[19:11:51] [Attach Listener/INFO]: Mixing RuleListWidgetVisitorMixin from fabric-game-rule-api-v1.client.mixins.json into net.minecraft.class_5235$class_5241$1
+[19:11:51] [Attach Listener/INFO]: Renaming synthetic method lambda$visitEnum$1(Lnet/minecraft/class_1928$class_4313;Lnet/minecraft/class_2561;Ljava/util/List;Ljava/lang/String;Lnet/fabricmc/fabric/api/gamerule/v1/rule/EnumRule;)Lnet/minecraft/class_5235$class_5240; to md3b8686$fabric-game-rule-api-v1$lambda$visitEnum$1$0 in fabric-game-rule-api-v1.client.mixins.json:RuleListWidgetVisitorMixin from mod fabric-game-rule-api-v1
+[19:11:51] [Attach Listener/INFO]: Renaming synthetic method lambda$visitDouble$0(Lnet/minecraft/class_2561;Ljava/util/List;Ljava/lang/String;Lnet/fabricmc/fabric/api/gamerule/v1/rule/DoubleRule;)Lnet/minecraft/class_5235$class_5240; to md3b8686$fabric-game-rule-api-v1$lambda$visitDouble$0$1 in fabric-game-rule-api-v1.client.mixins.json:RuleListWidgetVisitorMixin from mod fabric-game-rule-api-v1
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_2170
+[19:11:51] [Attach Listener/INFO]: Mixing CommandManagerMixin from fabric-command-api-v2.mixins.json into net.minecraft.class_2170
+[19:11:51] [Attach Listener/INFO]: Mixing CommandManagerMixin from fabric-networking-api-v1.mixins.json into net.minecraft.class_2170
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_1887$class_9700
+[19:11:51] [Attach Listener/INFO]: Mixing EnchantmentBuilderAccessor from fabric-item-api-v1.mixins.json into net.minecraft.class_1887$class_9700
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_2899
+[19:11:51] [Attach Listener/INFO]: Mixing LoginQueryRequestS2CPacketMixin from fabric-networking-api-v1.mixins.json into net.minecraft.class_2899
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_2852
+[19:11:51] [Attach Listener/INFO]: Mixing SerializedChunkMixin from fabric-data-attachment-api-v1.mixins.json into net.minecraft.class_2852
+[19:11:51] [Attach Listener/INFO]: Mixing SerializedChunkMixin from fabric-registry-sync-v0.mixins.json into net.minecraft.class_2852
+[19:11:51] [Attach Listener/INFO]: Mixing WrapperProtoChunkMixin from fabric-data-attachment-api-v1.mixins.json into net.minecraft.class_2821
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_7782
+[19:11:51] [Attach Listener/INFO]: Mixing SerializableRegistriesMixin from fabric-registry-sync-v0.mixins.json into net.minecraft.class_7782
+[19:11:51] [Attach Listener/INFO]: Mixing RegistryLoaderMixin from fabric-item-api-v1.mixins.json into net.minecraft.class_7655
+[19:11:51] [Attach Listener/INFO]: Mixing RegistryLoaderMixin from fabric-registry-sync-v0.mixins.json into net.minecraft.class_7655
+[19:11:51] [Attach Listener/INFO]: Renaming synthetic method lambda$static$0()Ljava/lang/Boolean; to md3b8686$fabric-registry-sync-v0$lambda$static$0$0 in fabric-registry-sync-v0.mixins.json:RegistryLoaderMixin from mod fabric-registry-sync-v0
+[19:11:51] [Attach Listener/INFO]: Mixing RegistryLoaderMixin from fabric-resource-conditions-api-v1.mixins.json into net.minecraft.class_7655
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_55$class_56
+[19:11:51] [Attach Listener/INFO]: Mixing LootPoolBuilderMixin from fabric-loot-api-v2.mixins.json into net.minecraft.class_55$class_56
+[19:11:51] [Attach Listener/INFO]: Mixing LootPoolBuilderMixin from fabric-loot-api-v3.mixins.json into net.minecraft.class_55$class_56
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_412
+[19:11:51] [Attach Listener/INFO]: Mixing accessor.ConnectScreenAccessor from fabric-networking-api-v1.client.mixins.json into net.minecraft.class_412
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_9247
+[19:11:51] [Attach Listener/INFO]: Mixing ClientDataPackManagerMixin from fabric-resource-loader-v0.client.mixins.json into net.minecraft.class_9247
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_853
+[19:11:51] [Attach Listener/INFO]: Mixing ChunkRendererRegionMixin from fabric-block-view-api-v2.client.mixins.json into net.minecraft.class_853
+[19:11:51] [Attach Listener/INFO]: Mixing ChunkRendererRegionMixin from fabric-renderer-indigo.mixins.json into net.minecraft.class_853
+[19:11:51] [Attach Listener/INFO]: Mixing ChunkRendererRegionMixin from fabric-rendering-data-attachment-v1.client.mixins.json into net.minecraft.class_853
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_3225
+[19:11:51] [Attach Listener/INFO]: Mixing ServerPlayerInteractionManagerMixin from fabric-events-interaction-v0.mixins.json into net.minecraft.class_3225
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_3027
+[19:11:51] [Attach Listener/INFO]: Mixing DatapackCommandMixin from fabric-resource-loader-v0.mixins.json into net.minecraft.class_3027
+[19:11:51] [Attach Listener/INFO]: Renaming synthetic method lambda$filterDisabledPackSuggestions$2(Lnet/minecraft/class_3288;)Z to md3b8686$fabric-resource-loader-v0$lambda$filterDisabledPackSuggestions$2$0 in fabric-resource-loader-v0.mixins.json:DatapackCommandMixin from mod fabric-resource-loader-v0
+[19:11:51] [Attach Listener/INFO]: Renaming synthetic method lambda$filterEnabledPackSuggestions$1(Lnet/minecraft/class_3288;)Z to md3b8686$fabric-resource-loader-v0$lambda$filterEnabledPackSuggestions$1$1 in fabric-resource-loader-v0.mixins.json:DatapackCommandMixin from mod fabric-resource-loader-v0
+[19:11:51] [Attach Listener/INFO]: Renaming synthetic method lambda$static$0(Ljava/lang/Object;)Lcom/mojang/brigadier/Message; to md3b8686$fabric-resource-loader-v0$lambda$static$0$2 in fabric-resource-loader-v0.mixins.json:DatapackCommandMixin from mod fabric-resource-loader-v0
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_5369
+[19:11:51] [Attach Listener/INFO]: Mixing ResourcePackOrganizerMixin from fabric-resource-loader-v0.client.mixins.json into net.minecraft.class_5369
+[19:11:51] [Attach Listener/INFO]: Renaming synthetic method lambda$removeHiddenPacksRefresh$3(Lnet/minecraft/class_3288;)Z to md3b8686$fabric-resource-loader-v0$lambda$removeHiddenPacksRefresh$3$0 in fabric-resource-loader-v0.client.mixins.json:ResourcePackOrganizerMixin from mod fabric-resource-loader-v0
+[19:11:51] [Attach Listener/INFO]: Renaming synthetic method lambda$removeHiddenPacksRefresh$2(Lnet/minecraft/class_3288;)Z to md3b8686$fabric-resource-loader-v0$lambda$removeHiddenPacksRefresh$2$1 in fabric-resource-loader-v0.client.mixins.json:ResourcePackOrganizerMixin from mod fabric-resource-loader-v0
+[19:11:51] [Attach Listener/INFO]: Renaming synthetic method lambda$removeHiddenPacksInit$1(Lnet/minecraft/class_3288;)Z to md3b8686$fabric-resource-loader-v0$lambda$removeHiddenPacksInit$1$2 in fabric-resource-loader-v0.client.mixins.json:ResourcePackOrganizerMixin from mod fabric-resource-loader-v0
+[19:11:51] [Attach Listener/INFO]: Renaming synthetic method lambda$removeHiddenPacksInit$0(Lnet/minecraft/class_3288;)Z to md3b8686$fabric-resource-loader-v0$lambda$removeHiddenPacksInit$0$3 in fabric-resource-loader-v0.client.mixins.json:ResourcePackOrganizerMixin from mod fabric-resource-loader-v0
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_6850
+[19:11:51] [Attach Listener/INFO]: Mixing ChunkRendererRegionBuilderMixin from fabric-block-view-api-v2.client.mixins.json into net.minecraft.class_6850
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_3069
+[19:11:51] [Attach Listener/INFO]: Mixing HelpCommandAccessor from fabric-command-api-v2.mixins.json into net.minecraft.class_3069
+[19:11:51] [Attach Listener/INFO]: Renaming @Accessor method getFailedException()Lcom/mojang/brigadier/exceptions/SimpleCommandExceptionType; to getFailedException$fabric-command-api-v2_$md$3b8686$0 in fabric-command-api-v2.mixins.json:HelpCommandAccessor from mod fabric-command-api-v2
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_2408
+[19:11:51] [Attach Listener/INFO]: Mixing DataCacheMixin from fabric-data-generation-api-v1.mixins.json into net.minecraft.class_2408
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_2405
+[19:11:51] [Attach Listener/INFO]: Mixing DataProviderMixin from fabric-data-generation-api-v1.mixins.json into net.minecraft.class_2405
+[19:11:51] [Attach Listener/INFO]: Mixing DataProviderMixin from fabric-resource-conditions-api-v1.mixins.json into net.minecraft.class_2405
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_3853$class_4162
+[19:11:51] [Attach Listener/INFO]: Mixing TradeOffersTypeAwareBuyForOneEmeraldFactoryMixin from fabric-object-builder-v1.mixins.json into net.minecraft.class_3853$class_4162
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_9173$class_9174
+[19:11:51] [Attach Listener/INFO]: Mixing ClientRegistriesDynamicRegistriesAccessor from fabric-registry-sync-v0.client.mixins.json into net.minecraft.class_9173$class_9174
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_5235$class_5241
+[19:11:51] [Attach Listener/INFO]: Mixing EditGameRulesScreenRuleListWidgetMixin from fabric-game-rule-api-v1.client.mixins.json into net.minecraft.class_5235$class_5241
+[19:11:51] [Attach Listener/INFO]: Renaming synthetic method lambda$ignoreKeysWithCustomCategories$2(Ljava/util/Map$Entry;Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;Lnet/fabricmc/fabric/api/gamerule/v1/CustomGameRuleCategory;)V to md3b8686$fabric-game-rule-api-v1$lambda$ignoreKeysWithCustomCategories$2$0 in fabric-game-rule-api-v1.client.mixins.json:EditGameRulesScreenRuleListWidgetMixin from mod fabric-game-rule-api-v1
+[19:11:51] [Attach Listener/INFO]: Renaming synthetic method lambda$ignoreKeysWithCustomCategories$1(Lnet/fabricmc/fabric/api/gamerule/v1/CustomGameRuleCategory;)Ljava/util/List; to md3b8686$fabric-game-rule-api-v1$lambda$ignoreKeysWithCustomCategories$1$1 in fabric-game-rule-api-v1.client.mixins.json:EditGameRulesScreenRuleListWidgetMixin from mod fabric-game-rule-api-v1
+[19:11:51] [Attach Listener/INFO]: Renaming synthetic method lambda$initializeFabricGameruleCategories$0(Lnet/minecraft/class_5235;Lnet/fabricmc/fabric/api/gamerule/v1/CustomGameRuleCategory;Ljava/util/List;)V to md3b8686$fabric-game-rule-api-v1$lambda$initializeFabricGameruleCategories$0$2 in fabric-game-rule-api-v1.client.mixins.json:EditGameRulesScreenRuleListWidgetMixin from mod fabric-game-rule-api-v1
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_3231
+[19:11:51] [Attach Listener/INFO]: Mixing EntityTrackerEntryMixin from fabric-networking-api-v1.mixins.json into net.minecraft.class_3231
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_7237
+[19:11:51] [Attach Listener/INFO]: Mixing SaveLoadingMixin from fabric-registry-sync-v0.mixins.json into net.minecraft.class_7237
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_4243
+[19:11:51] [Attach Listener/INFO]: Mixing GiveGiftsToHeroTaskAccessor from fabric-content-registries-v0.mixins.json into net.minecraft.class_4243
+[19:11:51] [Attach Listener/INFO]: Renaming @Accessor method fabric_getGifts()Ljava/util/Map; to fabric_getGifts$fabric-content-registries-v0_$md$3b8686$0 in fabric-content-registries-v0.mixins.json:GiveGiftsToHeroTaskAccessor from mod fabric-content-registries-v0
+[19:11:51] [Attach Listener/INFO]: Mixing GiveGiftsToHeroTaskMixin from fabric-content-registries-v0.mixins.json into net.minecraft.class_4243
+[19:11:51] [Attach Listener/WARN]: Write access to @Mutable @Final field field_18984:Ljava/util/Map; in fabric-content-registries-v0.mixins.json:GiveGiftsToHeroTaskMixin from mod fabric-content-registries-v0::handler$zzp000$fabric-content-registries-v0$makeMutable
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_1890
+[19:11:51] [Attach Listener/INFO]: Mixing EnchantmentHelperMixin from fabric-item-api-v1.mixins.json into net.minecraft.class_1890
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_481
+[19:11:51] [Attach Listener/INFO]: Mixing CreativeInventoryScreenMixin from fabric-item-group-api-v1.client.mixins.json into net.minecraft.class_481
+[19:11:51] [Attach Listener/INFO]: Renaming synthetic method lambda$getItemGroupsOnPage$3(Lnet/minecraft/class_1761;Lnet/minecraft/class_1761;)I to md3b8686$fabric-item-group-api-v1$lambda$getItemGroupsOnPage$3$0 in fabric-item-group-api-v1.client.mixins.json:CreativeInventoryScreenMixin from mod fabric-item-group-api-v1
+[19:11:51] [Attach Listener/INFO]: Renaming synthetic method lambda$getItemGroupsOnPage$2(ILnet/minecraft/class_1761;)Z to md3b8686$fabric-item-group-api-v1$lambda$getItemGroupsOnPage$2$1 in fabric-item-group-api-v1.client.mixins.json:CreativeInventoryScreenMixin from mod fabric-item-group-api-v1
+[19:11:51] [Attach Listener/INFO]: Renaming synthetic method lambda$hasGroupForPage$1(ILnet/minecraft/class_1761;)Z to md3b8686$fabric-item-group-api-v1$lambda$hasGroupForPage$1$2 in fabric-item-group-api-v1.client.mixins.json:CreativeInventoryScreenMixin from mod fabric-item-group-api-v1
+[19:11:51] [Attach Listener/INFO]: Renaming synthetic method lambda$updateSelection$0(Lnet/minecraft/class_1761;Lnet/minecraft/class_1761;)I to md3b8686$fabric-item-group-api-v1$lambda$updateSelection$0$3 in fabric-item-group-api-v1.client.mixins.json:CreativeInventoryScreenMixin from mod fabric-item-group-api-v1
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_6306
+[19:11:51] [Attach Listener/INFO]: Mixing TestServerMixin from fabric-resource-loader-v0.mixins.json into net.minecraft.class_6306
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_3244$1
+[19:11:51] [Attach Listener/INFO]: Mixing ServerPlayNetworkHandlerInteractEntityHandlerMixin from fabric-events-interaction-v0.mixins.json into net.minecraft.class_3244$1
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_8608
+[19:11:51] [Attach Listener/INFO]: Mixing ChunkDataSenderMixin from fabric-data-attachment-api-v1.mixins.json into net.minecraft.class_8608
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_5294
+[19:11:51] [Attach Listener/INFO]: Mixing DimensionEffectsAccessor from fabric-rendering-v1.mixins.json into net.minecraft.class_5294
+[19:11:51] [Attach Listener/INFO]: Renaming @Accessor method getIdentifierMap()Lit/unimi/dsi/fastutil/objects/Object2ObjectMap; to getIdentifierMap$fabric-rendering-v1_$md$3b8686$0 in fabric-rendering-v1.mixins.json:DimensionEffectsAccessor from mod fabric-rendering-v1
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_2821
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_4603
+[19:11:51] [Attach Listener/INFO]: Mixing client.block.particle.InGameOverlayRendererMixin from fabric-renderer-api-v1.mixins.json into net.minecraft.class_4603
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_2985
+[19:11:51] [Attach Listener/INFO]: Mixing PlayerAdvancementTrackerMixin from fabric-events-interaction-v0.mixins.json into net.minecraft.class_2985
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_2545
+[19:11:51] [Attach Listener/INFO]: Mixing ingredient.EncoderHandlerMixin from fabric-recipe-api-v1.mixins.json into net.minecraft.class_2545
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_1258
+[19:11:51] [Attach Listener/INFO]: Mixing DoubleInventoryAccessor from fabric-transfer-api-v1.mixins.json into net.minecraft.class_1258
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_9895
+[19:11:51] [Attach Listener/INFO]: Mixing FuelRegistryMixin from fabric-content-registries-v0.mixins.json into net.minecraft.class_9895
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_9136
+[19:11:51] [Attach Listener/INFO]: Mixing PacketCodecDispatcherMixin from fabric-networking-api-v1.mixins.json into net.minecraft.class_9136
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_32$class_5143
+[19:11:51] [Attach Listener/INFO]: Mixing MixinLevelStorageAccess from xaerohud.mixins.json into net.minecraft.class_32$class_5143
+[19:11:51] [Attach Listener/INFO]: Mixing MixinLevelStorageAccess from xaeroworldmap.mixins.json into net.minecraft.class_32$class_5143
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_2826$class_6869
+[19:11:51] [Attach Listener/INFO]: Mixing ChunkSectionBlockStateCounterMixin from fabric-block-api-v1.mixins.json into net.minecraft.class_2826$class_6869
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_8600
+[19:11:51] [Attach Listener/INFO]: Mixing DebugConfigCommandMixin from fabric-networking-api-v1.mixins.json into net.minecraft.class_8600
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_9810
+[19:11:51] [Attach Listener/INFO]: Mixing SectionBuilderMixin from fabric-renderer-indigo.mixins.json into net.minecraft.class_9810
+[19:11:51] [Attach Listener/INFO]: Renaming synthetic method lambda$hookBuild$0(Ljava/util/Map;Lnet/minecraft/class_750;Lnet/minecraft/class_1921;)Lnet/minecraft/class_287; to md3b8686$fabric-renderer-indigo$lambda$hookBuild$0$0 in fabric-renderer-indigo.mixins.json:SectionBuilderMixin from mod fabric-renderer-indigo
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_525
+[19:11:51] [Attach Listener/INFO]: Mixing CreateWorldScreenMixin from fabric-resource-loader-v0.client.mixins.json into net.minecraft.class_525
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_637
+[19:11:51] [Attach Listener/INFO]: Mixing ClientCommandSourceMixin from fabric-command-api-v2.client.mixins.json into net.minecraft.class_637
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_4916$class_10407
+[19:11:51] [Attach Listener/INFO]: Mixing ModelProviderItemAssetsMixin from fabric-data-generation-api-v1.client.mixins.json into net.minecraft.class_4916$class_10407
+[19:11:51] [Attach Listener/INFO]: Renaming synthetic method lambda$filterItemsForProcessingMod$0(Ljava/util/function/Predicate;Lnet/minecraft/class_6880$class_6883;)Z to md3b8686$fabric-data-generation-api-v1$lambda$filterItemsForProcessingMod$0$0 in fabric-data-generation-api-v1.client.mixins.json:ModelProviderItemAssetsMixin from mod fabric-data-generation-api-v1
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_4916
+[19:11:51] [Attach Listener/INFO]: Mixing ModelProviderMixin from fabric-data-generation-api-v1.client.mixins.json into net.minecraft.class_4916
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_9173
+[19:11:51] [Attach Listener/INFO]: Mixing ClientRegistriesMixin from fabric-registry-sync-v0.client.mixins.json into net.minecraft.class_9173
+[19:11:51] [Attach Listener/INFO]: Renaming synthetic method lambda$skipEmptyRegistries$0(Ljava/util/Map;Lnet/minecraft/class_7655$class_7657;)Z to md3b8686$fabric-registry-sync-v0$lambda$skipEmptyRegistries$0$0 in fabric-registry-sync-v0.client.mixins.json:ClientRegistriesMixin from mod fabric-registry-sync-v0
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_4916$class_10406
+[19:11:51] [Attach Listener/INFO]: Mixing ModelProviderBlockDefinitionsMixin from fabric-data-generation-api-v1.client.mixins.json into net.minecraft.class_4916$class_10406
+[19:11:51] [Attach Listener/INFO]: Renaming synthetic method lambda$filterBlocksForProcessingMod$0(Ljava/util/function/Predicate;Lnet/minecraft/class_6880$class_6883;)Z to md3b8686$fabric-data-generation-api-v1$lambda$filterBlocksForProcessingMod$0$0 in fabric-data-generation-api-v1.client.mixins.json:ModelProviderBlockDefinitionsMixin from mod fabric-data-generation-api-v1
+[19:11:51] [Attach Listener/INFO]: Force-loading class net.minecraft.class_2658
+[19:11:51] [Attach Listener/INFO]: Mixing CustomPayloadS2CPacketMixin from fabric-networking-api-v1.mixins.json into net.minecraft.class_2658
+[19:11:51] [Attach Listener/INFO]: Renaming synthetic method lambda$wrapConfigCodec$1(Lnet/minecraft/class_2540;Lnet/minecraft/class_2960;)Lnet/minecraft/class_8710$class_9155; to md3b8686$fabric-networking-api-v1$lambda$wrapConfigCodec$1$0 in fabric-networking-api-v1.mixins.json:CustomPayloadS2CPacketMixin from mod fabric-networking-api-v1
+[19:11:51] [Attach Listener/INFO]: Renaming synthetic method lambda$wrapPlayCodec$0(Lnet/minecraft/class_9129;Lnet/minecraft/class_2960;)Lnet/minecraft/class_8710$class_9155; to md3b8686$fabric-networking-api-v1$lambda$wrapPlayCodec$0$1 in fabric-networking-api-v1.mixins.json:CustomPayloadS2CPacketMixin from mod fabric-networking-api-v1
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_8931
+[19:11:52] [Attach Listener/INFO]: Mixing ExperimentalRegistriesValidatorMixin from fabric-registry-sync-v0.mixins.json into net.minecraft.class_8931
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_7723
+[19:11:52] [Attach Listener/INFO]: Mixing DimensionOptionsRegistryHolderMixin from fabric-dimensions-v1.mixins.json into net.minecraft.class_7723
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_3065$1
+[19:11:52] [Attach Listener/INFO]: Mixing GameRuleCommandVisitorMixin from fabric-game-rule-api-v1.mixins.json into net.minecraft.class_3065$1
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.server.Main
+[19:11:52] [Attach Listener/INFO]: Mixing MainMixin from fabric-registry-sync-v0.mixins.json into net.minecraft.server.Main
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_9220
+[19:11:52] [Attach Listener/INFO]: Mixing SelectKnownPacksC2SPacketMixin from fabric-resource-loader-v0.mixins.json into net.minecraft.class_9220
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_3248
+[19:11:52] [Attach Listener/INFO]: Mixing ServerLoginNetworkHandlerMixin from fabric-networking-api-v1.mixins.json into net.minecraft.class_3248
+[19:11:52] [Attach Listener/INFO]: Mixing accessor.ServerLoginNetworkHandlerAccessor from fabric-networking-api-v1.mixins.json into net.minecraft.class_3248
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_9223
+[19:11:52] [Attach Listener/INFO]: Mixing SynchronizeRegistriesTaskMixin from fabric-resource-loader-v0.mixins.json into net.minecraft.class_9223
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_631
+[19:11:52] [Attach Listener/INFO]: Mixing ClientChunkManagerMixin from fabric-lifecycle-events-v1.client.mixins.json into net.minecraft.class_631
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_1863
+[19:11:52] [Attach Listener/INFO]: Mixing ServerRecipeManagerMixin from fabric-recipe-api-v1.mixins.json into net.minecraft.class_1863
+[19:11:52] [Attach Listener/INFO]: Mixing KeyedResourceReloadListenerMixin from fabric-resource-loader-v0.mixins.json into net.minecraft.class_1863
+[19:11:52] [Attach Listener/INFO]: Mixing ServerRecipeManagerMixin from fabric-resource-loader-v0.mixins.json into net.minecraft.class_1863
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_5349
+[19:11:52] [Attach Listener/INFO]: Mixing KeyedResourceReloadListenerMixin from fabric-resource-loader-v0.mixins.json into net.minecraft.class_5349
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_3048
+[19:11:52] [Attach Listener/INFO]: Mixing EnchantCommandMixin from fabric-item-api-v1.mixins.json into net.minecraft.class_3048
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_2474
+[19:11:52] [Attach Listener/INFO]: Mixing TagProviderMixin from fabric-data-generation-api-v1.mixins.json into net.minecraft.class_2474
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_4696
+[19:11:52] [Attach Listener/INFO]: Mixing RenderLayersMixin from fabric-blockrenderlayer-v1.mixins.json into net.minecraft.class_4696
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_638$class_5612
+[19:11:52] [Attach Listener/INFO]: Mixing ClientWorldClientEntityHandlerMixin from fabric-lifecycle-events-v1.client.mixins.json into net.minecraft.class_638$class_5612
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_26
+[19:11:52] [Attach Listener/INFO]: Mixing PersistentStateManagerMixin from fabric-object-builder-v1.mixins.json into net.minecraft.class_26
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_6544$class_6552
+[19:11:52] [Attach Listener/INFO]: Mixing MultiNoiseUtilMultiNoiseSamplerMixin from fabric-biome-api-v1.mixins.json into net.minecraft.class_6544$class_6552
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_2826
+[19:11:52] [Attach Listener/INFO]: Mixing ChunkSectionMixin from fabric-block-api-v1.mixins.json into net.minecraft.class_2826
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_9383
+[19:11:52] [Attach Listener/INFO]: Mixing ReloadableRegistriesMixin from fabric-resource-conditions-api-v1.mixins.json into net.minecraft.class_9383
+[19:11:52] [Attach Listener/INFO]: Mixing ReloadableRegistriesMixin from fabric-loot-api-v3.mixins.json into net.minecraft.class_9383
+[19:11:52] [Attach Listener/INFO]: Renaming synthetic method lambda$modifyLootTable$1(Lnet/minecraft/class_6903;Lnet/minecraft/class_2960;Ljava/lang/Object;)Ljava/lang/Object; to md3b8686$fabric-loot-api-v3$lambda$modifyLootTable$1$0 in fabric-loot-api-v3.mixins.json:ReloadableRegistriesMixin from mod fabric-loot-api-v3
+[19:11:52] [Attach Listener/INFO]: Renaming synthetic method lambda$removeOps$0(Lnet/minecraft/class_6903;Ljava/util/List;)Ljava/util/List; to md3b8686$fabric-loot-api-v3$lambda$removeOps$0$1 in fabric-loot-api-v3.mixins.json:ReloadableRegistriesMixin from mod fabric-loot-api-v3
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_2989
+[19:11:52] [Attach Listener/INFO]: Mixing KeyedResourceReloadListenerMixin from fabric-resource-loader-v0.mixins.json into net.minecraft.class_2989
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_1845$class_9665
+[19:11:52] [Attach Listener/INFO]: Mixing BrewingRecipeRegistryBuilderMixin from fabric-content-registries-v0.mixins.json into net.minecraft.class_1845$class_9665
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_3218$class_5526
+[19:11:52] [Attach Listener/INFO]: Mixing ServerWorldServerEntityHandlerMixin from fabric-lifecycle-events-v1.mixins.json into net.minecraft.class_3218$class_5526
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_7138
+[19:11:52] [Attach Listener/INFO]: Mixing NoiseConfigMixin from fabric-biome-api-v1.mixins.json into net.minecraft.class_7138
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_2408$class_7405
+[19:11:52] [Attach Listener/INFO]: Mixing DataCacheCachedDataMixin from fabric-data-generation-api-v1.mixins.json into net.minecraft.class_2408$class_7405
+[19:11:52] [Attach Listener/INFO]: Renaming synthetic method lambda$sortPaths$0(Ljava/nio/file/Path;)Ljava/lang/String; to md3b8686$fabric-data-generation-api-v1$lambda$sortPaths$0$0 in fabric-data-generation-api-v1.mixins.json:DataCacheCachedDataMixin from mod fabric-data-generation-api-v1
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_7655
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_9316
+[19:11:52] [Attach Listener/INFO]: Mixing PathContextMixin from fabric-content-registries-v0.mixins.json into net.minecraft.class_9316
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_3495
+[19:11:52] [Attach Listener/INFO]: Mixing TagBuilderMixin from fabric-data-generation-api-v1.mixins.json into net.minecraft.class_3495
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_6568
+[19:11:52] [Attach Listener/INFO]: Mixing ChunkNoiseSamplerMixin from fabric-biome-api-v1.mixins.json into net.minecraft.class_6568
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_8703
+[19:11:52] [Attach Listener/INFO]: Mixing VarIntsAccessor from fabric-data-attachment-api-v1.mixins.json into net.minecraft.class_8703
+[19:11:52] [Attach Listener/INFO]: Renaming @Accessor method getMaxByteSize()I to getMaxByteSize$fabric-data-attachment-api-v1_$md$3b8686$0 in fabric-data-attachment-api-v1.mixins.json:VarIntsAccessor from mod fabric-data-attachment-api-v1
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_5350
+[19:11:52] [Attach Listener/INFO]: Mixing DataPackContentsMixin from fabric-tag-api-v1.mixins.json into net.minecraft.class_5350
+[19:11:52] [Attach Listener/INFO]: Mixing DataPackContentsMixin from fabric-lifecycle-events-v1.mixins.json into net.minecraft.class_5350
+[19:11:52] [Attach Listener/INFO]: Mixing DataPackContentsMixin from fabric-resource-conditions-api-v1.mixins.json into net.minecraft.class_5350
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_3898
+[19:11:52] [Attach Listener/INFO]: Mixing ServerChunkLoadingManagerMixin from fabric-lifecycle-events-v1.mixins.json into net.minecraft.class_3898
+[19:11:52] [Attach Listener/INFO]: Mixing accessor.ServerChunkLoadingManagerAccessor from fabric-networking-api-v1.mixins.json into net.minecraft.class_3898
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_4983
+[19:11:52] [Attach Listener/INFO]: Mixing FarmerWorkTaskAccessor from fabric-content-registries-v0.mixins.json into net.minecraft.class_4983
+[19:11:52] [Attach Listener/INFO]: Renaming @Accessor method fabric_setCompostables(Ljava/util/List;)V to fabric_setCompostables$fabric-content-registries-v0_$md$3b8686$0 in fabric-content-registries-v0.mixins.json:FarmerWorkTaskAccessor from mod fabric-content-registries-v0
+[19:11:52] [Attach Listener/INFO]: Renaming @Accessor method fabric_getCompostable()Ljava/util/List; to fabric_getCompostable$fabric-content-registries-v0_$md$3b8686$1 in fabric-content-registries-v0.mixins.json:FarmerWorkTaskAccessor from mod fabric-content-registries-v0
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_3178
+[19:11:52] [Attach Listener/INFO]: Mixing DedicatedServerWatchdogMixin from fabric-crash-report-info-v1.mixins.json into net.minecraft.class_3178
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_5235
+[19:11:52] [Attach Listener/INFO]: Mixing EditGameRulesScreenAccessor from fabric-game-rule-api-v1.client.mixins.json into net.minecraft.class_5235
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_14
+[19:11:52] [Attach Listener/INFO]: Mixing LandPathNodeMakerMixin from fabric-content-registries-v0.mixins.json into net.minecraft.class_14
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_3806
+[19:11:52] [Attach Listener/INFO]: Mixing ServerPropertiesHandlerMixin from fabric-resource-loader-v0.mixins.json into net.minecraft.class_3806
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_2913
+[19:11:52] [Attach Listener/INFO]: Mixing LoginQueryResponseC2SPacketMixin from fabric-networking-api-v1.mixins.json into net.minecraft.class_2913
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_55
+[19:11:52] [Attach Listener/INFO]: Mixing LootPoolAccessor from fabric-loot-api-v3.mixins.json into net.minecraft.class_55
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_2637
+[19:11:52] [Attach Listener/INFO]: Mixing MixinChunkDeltaUpdateS2CPacket from xaerohud.mixins.json into net.minecraft.class_2637
+[19:11:52] [Attach Listener/WARN]: @Shadow target xaerohud.mixins.json:MixinChunkDeltaUpdateS2CPacket from mod xaerominimap::field_26345 is final but shadow is not decorated with @Final
+[19:11:52] [Attach Listener/INFO]: Mixing MixinChunkDeltaUpdateS2CPacketAccessor from xaeroworldmap.mixins.json into net.minecraft.class_2637
+[19:11:52] [Attach Listener/WARN]: @Shadow target xaeroworldmap.mixins.json:MixinChunkDeltaUpdateS2CPacketAccessor from mod xaeroworldmap::field_26345 is final but shadow is not decorated with @Final
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_2370$3
+[19:11:52] [Attach Listener/INFO]: Mixing SimpleRegistry3Mixin from fabric-tag-api-v1.mixins.json into net.minecraft.class_2370$3
+[19:11:52] [Attach Listener/INFO]: Force-loading class net.minecraft.class_2370$2
+[19:11:52] [Attach Listener/INFO]: Mixing SimpleRegistry2Mixin from fabric-tag-api-v1.mixins.json into net.minecraft.class_2370$2
+[19:11:52] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/editor-prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[19:11:52] [Render thread/INFO]: Found new data pack fabric, loading it automatically
+[19:11:52] [Render thread/INFO]: Found new data pack fabric-convention-tags-v2, loading it automatically
+[19:11:52] [Render thread/INFO]: Loaded 1373 recipes
+[19:11:52] [Render thread/INFO]: Loaded 1484 advancements
+[19:11:53] [Render thread/INFO]: Applied 0 biome modifications to 0 of 65 new biomes in 605.1 μs
+[19:11:53] [Server thread/INFO]: Created config file at: /Volumes/ssd/sw-private-task8-20261031/editor-results/1.21.5-Fabric/game/config/server_waypoint/config.json
+[19:11:53] [Server thread/INFO]: Loaded 0 languages: 
+[19:11:53] [Server thread/INFO]: Created waypoints directory at: /Volumes/ssd/sw-private-task8-20261031/editor-results/1.21.5-Fabric/game/saves/live-editor-verification/./server_waypoint/waypoints
+[19:11:53] [Server thread/INFO]: Starting integrated minecraft server version 1.21.5
+[19:11:53] [Server thread/INFO]: Generating keypair
+[19:11:54] [Server thread/INFO]: Preparing start region for dimension minecraft:overworld
+[19:11:54] [Render thread/INFO]: Preparing spawn area: 2%
+[19:11:55] [Render thread/INFO]: Preparing spawn area: 2%
+[19:11:55] [Render thread/INFO]: Preparing spawn area: 24%
+[19:11:56] [Render thread/INFO]: Preparing spawn area: 51%
+[19:11:56] [Render thread/INFO]: Time elapsed: 1702 ms
+[19:11:56] [Server thread/INFO]: Changing view distance to 2, from 10
+[19:11:56] [Server thread/INFO]: Changing simulation distance to 5, from 0
+[19:11:57] [Server thread/INFO]: SwLiveTest[local:E:9aea8c9f] logged in with entity id 15 at (122.5, 103.0, 10.5)
+[19:11:57] [Render thread/INFO]: New Xaero hud session initialized!
+[19:11:57] [Render thread/INFO]: New world map session initialized!
+[19:11:57] [Render thread/INFO]: dimensionName: minecraft:overworld, state: NOT_READY
+[19:11:57] [Render thread/INFO]: join server
+[19:11:57] [Render thread/INFO]: Created waypoints directory at: /Volumes/ssd/sw-private-task8-20261031/editor-results/1.21.5-Fabric/game/saves/live-editor-verification/./server_waypoint/client-local/673e4b54-076e-3b81-a3cc-b55892822159/profiles/07e6403a-265c-4647-9ce0-7086a1aebff7
+[19:11:57] [Render thread/INFO]: Reloading radar icon resources...
+[19:11:57] [Render thread/INFO]: Reloaded radar icon resources!
+[19:11:57] [Server thread/INFO]: SwLiveTest joined the game
+[19:11:57] [Server thread/INFO]: client join with protocol version: 3
+[19:11:57] [Render thread/INFO]: [System] [CHAT] §ENo waypoints exist for this world/server.
+[19:11:57] [Render thread/INFO]: Loaded 2 advancements
+[19:11:57] [Render thread/INFO]: Minimap updated server level id: 1796577229 for world ResourceKey[minecraft:dimension / minecraft:overworld]
+[19:11:57] [Render thread/INFO]: Created waypoints directory at: /Volumes/ssd/sw-private-task8-20261031/editor-results/1.21.5-Fabric/game/server_waypoint/private-cache/673e4b54-076e-3b81-a3cc-b55892822159/d1e49ac43dac0c4c5934aa14771777a1a0394b6d7b9942818fafaabe2179b955/2016977371
+[19:11:57] [Server thread/INFO]: Created waypoints directory at: /Volumes/ssd/sw-private-task8-20261031/editor-results/1.21.5-Fabric/game/saves/live-editor-verification/./server_waypoint/private-waypoints/673e4b54-076e-3b81-a3cc-b55892822159
+[19:11:58] [SW live verification/INFO]: [STDOUT]: SW_LIVE WORLD playerDim=ResourceKey[minecraft:dimension / minecraft:overworld] transport=SYNC_FINISHED
+[19:11:58] [SW live verification/INFO]: [STDOUT]: SW_LIVE PASS create
+[19:11:58] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/editor-prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[19:11:58] [Server thread/INFO]: Saved 1 waypoint lists to file: /Volumes/ssd/sw-private-task8-20261031/editor-results/1.21.5-Fabric/game/saves/live-editor-verification/./server_waypoint/waypoints/minecraft$the_nether.json
+[19:11:58] [Server thread/INFO]: Saved 1 waypoint lists to file: /Volumes/ssd/sw-private-task8-20261031/editor-results/1.21.5-Fabric/game/saves/live-editor-verification/./server_waypoint/waypoints/minecraft$overworld.json
+[19:11:58] [Server thread/INFO]: [STDOUT]: SW_LIVE SERVER_STORE /Volumes/ssd/sw-private-task8-20261031/editor-results/1.21.5-Fabric/game/saves/live-editor-verification/./server_waypoint/waypoints
+[19:11:58] [Render thread/INFO]: Waypoint set Bases not found in dimension ResourceKey[minecraft:dimension / minecraft:overworld], creating new one.
+[19:11:58] [Render thread/INFO]: [System] [CHAT] Waypoint [FX] Fancy map-fixture has been added to Xaero's minimap
+[19:11:58] [Render thread/INFO]: [System] [CHAT] Waypoint [FX] Fancy map-fixture has been added to VoxelMap
+[19:11:58] [Render thread/INFO]: [System] [CHAT] Waypoint [FX] Fancy voxel-fixture has been added to Xaero's minimap
+[19:11:58] [Render thread/INFO]: [System] [CHAT] Waypoint [FX] Fancy voxel-fixture has been added to VoxelMap
+[19:11:58] [Render thread/INFO]: Waypoint set Bases not found in dimension ResourceKey[minecraft:dimension / minecraft:the_nether], creating new one.
+[19:11:58] [Render thread/INFO]: [System] [CHAT] Waypoint [FX] Fancy map-fixture has been added to Xaero's minimap
+[19:11:58] [Render thread/INFO]: [System] [CHAT] Waypoint [FX] Fancy map-fixture has been added to VoxelMap
+[19:11:58] [Render thread/INFO]: [System] [CHAT] Waypoint [FX] Fancy voxel-fixture has been added to Xaero's minimap
+[19:11:58] [Render thread/INFO]: [System] [CHAT] Waypoint [FX] Fancy voxel-fixture has been added to VoxelMap
+[19:11:58] [Render thread/INFO]: [System] [CHAT] All waypoints on this server have been added to Xaero's minimap successfully
+[19:11:58] [SW live verification/INFO]: [STDOUT]: SW_LIVE PASS seed
+[19:11:58] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/editor-prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[19:11:58] [Render thread/INFO]: [STDOUT]: SW_LIVE ENTRY Minimap Add/Edit opens complete server editor for selected owning dimension
+[19:11:58] [Render thread/INFO]: [STDOUT]: SW_LIVE ENTRY Minimap personal and multiple selection preserve native editor
+[19:11:58] [Render thread/INFO]: [System] [CHAT] All waypoints on this server have been added to VoxelMap successfully
+[19:11:58] [Render thread/INFO]: [STDOUT]: SW_LIVE ENTRY Voxel popup Edit and empty-location Add use server forms
+[19:11:58] [Server thread/INFO]: action=share player=SwLiveTest player_id=673e4b54-076e-3b81-a3cc-b55892822159 sender=SwLiveTest sender_id=673e4b54-076e-3b81-a3cc-b55892822159 outcome=received dimension=minecraft:overworld waypoint=share^min^test
+[19:11:58] [Server thread/INFO]: [Not Secure] <SwLiveTest> xaero-waypoint:share^min^test:ST:19:66:-23:12:false:0:Internal-overworld
+[19:11:58] [Server thread/INFO]: Saving and pausing game...
+[19:11:59] [Render thread/INFO]: [System] [CHAT] Shared waypoint [ST] share^min^test in Overworld\nSave it to  Display Bases
+[19:11:59] [Render thread/INFO]: [System] [CHAT] SwLiveTest shared a waypoint called "share-test" from overworld! [Add]
+[19:11:59] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Live editor verification]'/minecraft:overworld
+[19:11:59] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Live editor verification]'/minecraft:the_end
+[19:11:59] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Live editor verification]'/minecraft:the_nether
+[19:11:59] [Server thread/INFO]: action=share player=SwLiveTest player_id=673e4b54-076e-3b81-a3cc-b55892822159 sender=SwLiveTest sender_id=673e4b54-076e-3b81-a3cc-b55892822159 outcome=received dimension=rnal waypoint=sw␟Bases␟map^min^fixture
+[19:11:59] [Server thread/INFO]: [Not Secure] <SwLiveTest> xaero-waypoint:sw␟Bases␟map^min^fixture:MF:999:1:999:12:false:0:Internal
+[19:11:59] [Render thread/INFO]: [System] [CHAT] ✘ This server has no dimension rnal.
+[19:11:59] [Render thread/INFO]: [System] [CHAT] SwLiveTest shared a waypoint called "sw␟Bases␟map-fixture" from overworld! [Add]
+[19:12:00] [Server thread/INFO]: [Not Secure] <SwLiveTest> [name:sw␟Bases␟voxel-fixture, x:999, y:1, z:999, dim:minecraft:overworld]
+[19:12:00] [Render thread/INFO]: [ModifiedbyVoxelMap] [CHAT] <SwLiveTest> [name:sw␟Bases␟voxel-fixture, x:999, y:1, z:999, dim:minecraft:overworld]
+[19:12:00] [Server thread/INFO]: [Not Secure] <SwLiveTest>  [name:voxel-share, x:-19, y:67, z:23, dim:minecraft:overworld, icon:star]
+[19:12:00] [Render thread/INFO]: [ModifiedbyVoxelMap] [CHAT] <SwLiveTest>  [name:voxel-share, x:-19, y:67, z:23, dim:minecraft:overworld, icon:star]
+[19:12:00] [Server thread/INFO]: Saving and pausing game...
+[19:12:00] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Live editor verification]'/minecraft:overworld
+[19:12:00] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Live editor verification]'/minecraft:the_end
+[19:12:00] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Live editor verification]'/minecraft:the_nether
+[19:12:01] [Render thread/INFO]: Command: msg SwLiveTest  [x:-19, y:67, z:23]
+[19:12:01] [Render thread/INFO]: [ModifiedbyVoxelMap] [CHAT] You whisper to SwLiveTest:  [x:-19, y:67, z:23]
+[19:12:01] [Render thread/INFO]: [ModifiedbyVoxelMap] [CHAT] SwLiveTest whispers to you:  [x:-19, y:67, z:23]
+[19:12:01] [Render thread/INFO]: [STDOUT]: SW_LIVE ENTRY Voxel public/private share prompts, decline, defaults, and encoded identity suppression
+[19:12:01] [SW live verification/INFO]: [STDOUT]: SW_LIVE ENTRY Xaero share confirmation, defaults, and encoded identity suppression
+[19:12:01] [SW live verification/INFO]: [STDOUT]: SW_LIVE PASS entrypoints
+[19:12:01] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/editor-prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[19:12:01] [Render thread/INFO]: [System] [CHAT] All waypoints on this server have been added to VoxelMap successfully
+[19:12:02] [Server thread/INFO]: Saving and pausing game...
+[19:12:02] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Live editor verification]'/minecraft:overworld
+[19:12:02] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Live editor verification]'/minecraft:the_end
+[19:12:02] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Live editor verification]'/minecraft:the_nether
+[19:12:02] [Render thread/INFO]: [STDOUT]: SW_LIVE MAP owner=xaero.hud.minimap.world.MinimapWorld@6ed9e4ee viewed=xaero.hud.minimap.world.MinimapWorld@6ed9e4ee
+[19:12:02] [SW live verification/INFO]: [STDOUT]: SW_LIVE PASS map
+[19:12:03] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/editor-prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[19:12:03] [Render thread/INFO]: [System] [CHAT] All waypoints on this server have been added to Xaero's minimap successfully
+[19:12:03] [Render thread/INFO]: [STDOUT]: SW_LIVE MAP save submitted via screen mouse click; pending unpaused
+[19:12:03] [Server thread/INFO]: Saved 1 waypoint lists to file: /Volumes/ssd/sw-private-task8-20261031/editor-results/1.21.5-Fabric/game/saves/live-editor-verification/./server_waypoint/waypoints/minecraft$overworld.json
+[19:12:03] [Server thread/INFO]: action=edit player=SwLiveTest player_id=673e4b54-076e-3b81-a3cc-b55892822159 sender=SwLiveTest sender_id=673e4b54-076e-3b81-a3cc-b55892822159 outcome=success via=gui dimension=minecraft:overworld list=Bases waypoint=map-fixture new_waypoint=map-fixture
+[19:12:03] [Render thread/INFO]: [System] [CHAT] Waypoint [FX] Fancy map-fixture has been updated on Xaero's minimap
+[19:12:03] [Render thread/INFO]: [System] [CHAT] Waypoint [FX] Fancy map-fixture has been updated on VoxelMap
+[19:12:03] [Render thread/INFO]: [STDOUT]: SW_LIVE MAP save acknowledged; Overworld y=76; Nether unchanged; metadata intact
+[19:12:03] [SW live verification/INFO]: [STDOUT]: SW_LIVE PASS map-save
+[19:12:03] [Server thread/INFO]: Saving and pausing game...
+[19:12:03] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Live editor verification]'/minecraft:overworld
+[19:12:03] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Live editor verification]'/minecraft:the_end
+[19:12:03] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Live editor verification]'/minecraft:the_nether
+[19:12:03] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/editor-prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[19:12:03] [Render thread/INFO]: [System] [CHAT] All waypoints on this server have been added to Xaero's minimap successfully
+[19:12:03] [Render thread/INFO]: [STDOUT]: SW_LIVE SELECTED minimap Nether live-editor-verification/dim%-1/waypoints
+[19:12:05] [Render thread/INFO]: [STDOUT]: SW_LIVE DIMENSIONS player=ResourceKey[minecraft:dimension / minecraft:overworld] owner=ResourceKey[minecraft:dimension / minecraft:the_nether] viewed=ResourceKey[minecraft:dimension / minecraft:overworld]
+[19:12:05] [SW live verification/INFO]: [STDOUT]: SW_LIVE PASS select-nether
+[19:12:05] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/editor-prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[19:12:05] [Server thread/INFO]: Saved 1 waypoint lists to file: /Volumes/ssd/sw-private-task8-20261031/editor-results/1.21.5-Fabric/game/saves/live-editor-verification/./server_waypoint/waypoints/minecraft$the_nether.json
+[19:12:05] [Server thread/INFO]: action=edit player=SwLiveTest player_id=673e4b54-076e-3b81-a3cc-b55892822159 sender=SwLiveTest sender_id=673e4b54-076e-3b81-a3cc-b55892822159 outcome=success via=gui dimension=minecraft:the_nether list=Bases waypoint=map-fixture new_waypoint=map-fixture
+[19:12:05] [Render thread/INFO]: [System] [CHAT] Waypoint [FX] Fancy map-fixture has been updated on Xaero's minimap
+[19:12:05] [Render thread/INFO]: [System] [CHAT] Waypoint [FX] Fancy map-fixture has been updated on VoxelMap
+[19:12:05] [Server thread/INFO]: Saving and pausing game...
+[19:12:05] [Render thread/INFO]: [STDOUT]: SW_LIVE MAP cross-dimension Save acknowledged; player Overworld; owner Nether; OW untouched
+[19:12:05] [SW live verification/INFO]: [STDOUT]: SW_LIVE PASS map-nether-save
+[19:12:05] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Live editor verification]'/minecraft:overworld
+[19:12:05] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Live editor verification]'/minecraft:the_end
+[19:12:05] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Live editor verification]'/minecraft:the_nether
+[19:12:05] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/editor-prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[19:12:05] [Render thread/INFO]: [System] [CHAT] All waypoints on this server have been added to VoxelMap successfully
+[19:12:05] [Server thread/INFO]: Saved 1 waypoint lists to file: /Volumes/ssd/sw-private-task8-20261031/editor-results/1.21.5-Fabric/game/saves/live-editor-verification/./server_waypoint/waypoints/minecraft$the_nether.json
+[19:12:05] [Server thread/INFO]: action=edit player=SwLiveTest player_id=673e4b54-076e-3b81-a3cc-b55892822159 sender=SwLiveTest sender_id=673e4b54-076e-3b81-a3cc-b55892822159 outcome=success via=gui dimension=minecraft:the_nether list=Bases waypoint=voxel-fixture new_waypoint=voxel-fixture
+[19:12:05] [Render thread/INFO]: [System] [CHAT] Waypoint [FX] Fancy voxel-fixture has been updated on Xaero's minimap
+[19:12:05] [Render thread/INFO]: [System] [CHAT] Waypoint [FX] Fancy voxel-fixture has been updated on VoxelMap
+[19:12:05] [Render thread/INFO]: [STDOUT]: SW_LIVE VOXEL cross-dimension save acknowledged; metadata preserved; Cancel preserved store and parent
+[19:12:05] [SW live verification/INFO]: [STDOUT]: SW_LIVE PASS voxel-save
+[19:12:05] [Server thread/INFO]: Saving and pausing game...
+[19:12:05] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Live editor verification]'/minecraft:overworld
+[19:12:05] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Live editor verification]'/minecraft:the_end
+[19:12:05] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Live editor verification]'/minecraft:the_nether
+[19:12:05] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/editor-prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[19:12:05] [Render thread/INFO]: [STDOUT]: SW_LIVE VOXEL native editor and Cancel passed stale
+[19:12:05] [Render thread/INFO]: [STDOUT]: SW_LIVE VOXEL native editor and Cancel passed ambiguous
+[19:12:05] [Render thread/INFO]: [STDOUT]: SW_LIVE VOXEL native editor and Cancel passed personal
+[19:12:05] [SW live verification/INFO]: [STDOUT]: SW_LIVE PASS voxel-fallback
+[19:12:06] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/editor-prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[19:12:06] [Render thread/INFO]: [System] [CHAT] All waypoints on this server have been added to Xaero's minimap successfully
+[19:12:07] [Render thread/INFO]: [STDOUT]: SW_LIVE NATIVE before Save y=78 formY=78 originalY=77
+[19:12:07] [Render thread/INFO]: [System] [CHAT] All waypoints on this server have been added to Xaero's minimap successfully
+[19:12:07] [Render thread/INFO]: [STDOUT]: SW_LIVE XAERO native edit and Save preserved raw set ownership with same-label personal set; opening without personal set passed
+[19:12:07] [SW live verification/INFO]: [STDOUT]: SW_LIVE PASS native-xaero
+[19:12:07] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/editor-prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[19:12:07] [Server thread/INFO]: Saved 1 waypoint lists to file: /Volumes/ssd/sw-private-task8-20261031/editor-results/1.21.5-Fabric/game/saves/live-editor-verification/./server_waypoint/waypoints/minecraft$the_nether.json
+[19:12:07] [Server thread/INFO]: action=edit player=SwLiveTest player_id=673e4b54-076e-3b81-a3cc-b55892822159 sender=SwLiveTest sender_id=673e4b54-076e-3b81-a3cc-b55892822159 outcome=success via=gui dimension=minecraft:the_nether list=Bases waypoint=voxel-fixture new_waypoint=voxel-fixture
+[19:12:07] [Render thread/INFO]: [System] [CHAT] Waypoint [FX] voxel-fixture has been updated on Xaero's minimap
+[19:12:07] [Render thread/INFO]: [System] [CHAT] Waypoint [FX] voxel-fixture has been updated on VoxelMap
+[19:12:07] [Render thread/INFO]: [STDOUT]: SW_LIVE VOXEL explicit clear Save acknowledged; display/keywords/description/icon cleared; other fields preserved
+[19:12:07] [SW live verification/INFO]: [STDOUT]: SW_LIVE PASS voxel-clear
+[19:12:07] [Server thread/INFO]: Saving and pausing game...
+[19:12:07] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Live editor verification]'/minecraft:overworld
+[19:12:07] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Live editor verification]'/minecraft:the_end
+[19:12:07] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Live editor verification]'/minecraft:the_nether
+[19:12:07] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/editor-prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[19:12:07] [Render thread/INFO]: [System] [CHAT] All waypoints on this server have been added to Xaero's minimap successfully
+[19:12:08] [Render thread/INFO]: [STDOUT]: SW_LIVE MAP Edit Cancel discarded changes; personal Add used owning Nether and native coordinates; Cancel returned to map
+[19:12:08] [SW live verification/INFO]: [STDOUT]: SW_LIVE PASS map-cancel-add
+[19:12:08] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/editor-prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[19:12:08] [Render thread/INFO]: [System] [CHAT] All waypoints on this server have been added to Xaero's minimap successfully
+[19:12:09] [Render thread/INFO]: Command: wp add minecraft:the_nether Bases 17 85 -19 live-added LA BD1663 0 true
+[19:12:09] [Render thread/INFO]: [STDOUT]: SW_LIVE MAP Add-to-server submitted; idle pause=true
+[19:12:09] [Server thread/INFO]: Saved 1 waypoint lists to file: /Volumes/ssd/sw-private-task8-20261031/editor-results/1.21.5-Fabric/game/saves/live-editor-verification/./server_waypoint/waypoints/minecraft$the_nether.json
+[19:12:09] [Server thread/INFO]: action=add player=SwLiveTest player_id=673e4b54-076e-3b81-a3cc-b55892822159 sender=SwLiveTest sender_id=673e4b54-076e-3b81-a3cc-b55892822159 outcome=success dimension=minecraft:the_nether list=Bases waypoint=live-added
+[19:12:09] [Render thread/INFO]: [System] [CHAT] Waypoint [LA] live-added has been added to Xaero's minimap
+[19:12:09] [Render thread/INFO]: [System] [CHAT] Waypoint [LA] live-added has been added to VoxelMap
+[19:12:09] [Render thread/INFO]: [System] [CHAT] ✔ Added [LA] live-added to Display Bases   Details · Navigate · Undo
+[19:12:09] [Render thread/INFO]: [STDOUT]: SW_LIVE MAP Add-to-server completed through real command and synced-data return; owner Nether, coordinates preserved
+[19:12:09] [SW live verification/INFO]: [STDOUT]: SW_LIVE PASS map-add-save
+[19:12:09] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/editor-prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[19:12:10] [Render thread/INFO]: [System] [CHAT] Waypoint [FX] Fancy stale-target has been added to Xaero's minimap
+[19:12:10] [Render thread/INFO]: [System] [CHAT] Waypoint [FX] Fancy stale-target has been added to VoxelMap
+[19:12:10] [Render thread/INFO]: [System] [CHAT] All waypoints on this server have been added to Xaero's minimap successfully
+[19:12:10] [Server thread/INFO]: Saving and pausing game...
+[19:12:10] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Live editor verification]'/minecraft:overworld
+[19:12:10] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Live editor verification]'/minecraft:the_end
+[19:12:10] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Live editor verification]'/minecraft:the_nether
+[19:12:11] [Render thread/INFO]: [System] [CHAT] Waypoint stale-target has been removed from Xaero's minimap
+[19:12:11] [Render thread/INFO]: [System] [CHAT] Waypoint stale-target has been removed from VoxelMap
+[19:12:11] [Server thread/INFO]: Saving and pausing game...
+[19:12:11] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Live editor verification]'/minecraft:overworld
+[19:12:11] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Live editor verification]'/minecraft:the_end
+[19:12:11] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Live editor verification]'/minecraft:the_nether
+[19:12:12] [Render thread/INFO]: [STDOUT]: SW_LIVE ALERT children=[net.minecraft.class_4185]
+[19:12:12] [Render thread/INFO]: [STDOUT]: SW_LIVE MAP stale target disabled; previously-open option showed not-found AlertScreen and returned to map
+[19:12:12] [SW live verification/INFO]: [STDOUT]: SW_LIVE PASS map-stale
+[19:12:12] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/editor-prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[19:12:12] [Render thread/INFO]: Waypoint set gui.xaero_default not found in dimension ResourceKey[minecraft:dimension / minecraft:overworld], creating new one.
+[19:12:12] [Render thread/INFO]: [System] [CHAT] Waypoint [FX] Fancy default-live has been added to Xaero's minimap
+[19:12:12] [Render thread/INFO]: [System] [CHAT] Waypoint [FX] Fancy default-live has been added to VoxelMap
+[19:12:12] [Render thread/INFO]: [System] [CHAT] All waypoints on this server have been added to Xaero's minimap successfully
+[19:12:12] [Render thread/INFO]: [STDOUT]: SW_LIVE DEFAULT_SET UI toggle=false and Sync now confirmation handled native clicks
+[19:12:12] [Render thread/INFO]: [System] [CHAT] All waypoints on this server have been added to Xaero's minimap successfully
+[19:12:12] [Render thread/INFO]: [STDOUT]: SW_LIVE DEFAULT_SET UI toggle=true and Sync now confirmation handled native clicks
+[19:12:12] [Render thread/WARN]: Skipping Xaero's Minimap sync for list gui.xaero_default because waypoint ambiguous␟name would have an ambiguous generated name.
+[19:12:12] [Render thread/INFO]: [System] [CHAT] Some waypoints could not be synced to Xaero's minimap
+[19:12:12] [Render thread/INFO]: [STDOUT]: SW_LIVE DEFAULT_SET Off preserves personal entries; On replaces default; both native map editors route to server; highlighting and export identity pass
+[19:12:12] [Render thread/INFO]: [System] [CHAT] Waypoint [FX] Fancy incremental has been added to Xaero's minimap
+[19:12:12] [Render thread/INFO]: [System] [CHAT] Waypoint [FX] Fancy renamed has been updated on Xaero's minimap
+[19:12:12] [Render thread/INFO]: [System] [CHAT] Waypoint renamed has been removed from Xaero's minimap
+[19:12:12] [Render thread/INFO]: [System] [CHAT] All waypoints on this server have been added to Xaero's minimap successfully
+[19:12:12] [Render thread/INFO]: [STDOUT]: SW_LIVE DEFAULT_SET UI toggle=false and Sync now confirmation handled native clicks
+[19:12:12] [Render thread/INFO]: [System] [CHAT] All waypoints on this server have been added to Xaero's minimap successfully
+[19:12:12] [Render thread/INFO]: [STDOUT]: SW_LIVE DEFAULT_SET UI toggle=true and Sync now confirmation handled native clicks
+[19:12:12] [Render thread/INFO]: [System] [CHAT] Waypoint default-live has been removed from Xaero's minimap
+[19:12:12] [Render thread/INFO]: [System] [CHAT] Waypoint default-live has been removed from VoxelMap
+[19:12:12] [Render thread/INFO]: [System] [CHAT] Waypoint list "gui.xaero_default" has been removed from Xaero's minimap
+[19:12:12] [Render thread/INFO]: [STDOUT]: SW_LIVE DEFAULT_SET incremental add/rename/remove, both mode transitions, list deletion and personal-set preservation pass
+[19:12:12] [SW live verification/INFO]: [STDOUT]: SW_LIVE PASS default-set
+[19:12:12] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/editor-prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[19:12:12] [Server thread/INFO]: Saved 1 waypoint lists to file: /Volumes/ssd/sw-private-task8-20261031/editor-results/1.21.5-Fabric/game/saves/live-editor-verification/./server_waypoint/waypoints/minecraft$the_nether.json
+[19:12:12] [Server thread/INFO]: Saved 1 waypoint lists to file: /Volumes/ssd/sw-private-task8-20261031/editor-results/1.21.5-Fabric/game/saves/live-editor-verification/./server_waypoint/waypoints/minecraft$overworld.json
+[19:12:12] [Render thread/INFO]: Xaero hud session finalized.
+[19:12:12] [Render thread/INFO]: Finalizing world map session...
+[19:12:12] [Thread-3/INFO]: World map force-cleaned!
+[19:12:12] [Server thread/INFO]: SwLiveTest lost connection: Disconnected
+[19:12:12] [Server thread/INFO]: SwLiveTest left the game
+[19:12:12] [Server thread/INFO]: Stopping singleplayer server as player logged out
+[19:12:12] [Render thread/INFO]: World map session finalized.
+[19:12:12] [Server thread/INFO]: Saved 1 waypoint lists to file: /Volumes/ssd/sw-private-task8-20261031/editor-results/1.21.5-Fabric/game/saves/live-editor-verification/./server_waypoint/waypoints/minecraft$the_nether.json
+[19:12:12] [Server thread/INFO]: Saved 1 waypoint lists to file: /Volumes/ssd/sw-private-task8-20261031/editor-results/1.21.5-Fabric/game/saves/live-editor-verification/./server_waypoint/waypoints/minecraft$overworld.json
+[19:12:12] [Server thread/INFO]: Saved config file: /Volumes/ssd/sw-private-task8-20261031/editor-results/1.21.5-Fabric/game/config/server_waypoint/config.json
+[19:12:12] [Server thread/INFO]: Stopping server
+[19:12:12] [Server thread/INFO]: Saving players
+[19:12:12] [Server thread/INFO]: Saving worlds
+[19:12:12] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Live editor verification]'/minecraft:overworld
+[19:12:13] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Live editor verification]'/minecraft:the_end
+[19:12:13] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Live editor verification]'/minecraft:the_nether
+[19:12:13] [Server thread/INFO]: ThreadedAnvilChunkStorage (live-editor-verification): All chunks are saved
+[19:12:13] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[19:12:13] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[19:12:13] [Server thread/INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+[19:12:13] [SW live verification/INFO]: [STDOUT]: SW_LIVE PASS close
+[19:12:13] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/editor-prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[19:12:13] [Render thread/INFO]: Found new data pack fabric, loading it automatically
+[19:12:13] [Render thread/INFO]: Found new data pack fabric-convention-tags-v2, loading it automatically
+[19:12:13] [Render thread/INFO]: Loaded 1373 recipes
+[19:12:13] [Render thread/INFO]: Loaded 1484 advancements
+[19:12:13] [Render thread/INFO]: Applied 0 biome modifications to 0 of 65 new biomes in 182.7 μs
+[19:12:13] [Server thread/INFO]: Loaded config Config{serverId=2016977371, defaultPageLimit=10, defaultNavigationMethods=[ACTIONBAR], CommandPermission=CommandPermission{privateList=0, privateAdd=0, privateEdit=0, privateRemove=0, privateNavigate=0, privateTp=2, add=0, edit=0, remove=0, navigate=0, tp=2, reload=2, upload=2, uploadDelete=4, remoteList=0, remoteTp=2}, Features={addWaypointFromChatSharing=true, sendXaerosWorldId=true, compressChunkedMessages=true}}
+[19:12:13] [Server thread/INFO]: Loaded 0 languages: 
+[19:12:13] [Server thread/INFO]: Loaded 1 lists and 2 waypoints from file: /Volumes/ssd/sw-private-task8-20261031/editor-results/1.21.5-Fabric/game/saves/live-editor-verification/./server_waypoint/waypoints/minecraft$overworld.json
+[19:12:13] [Server thread/INFO]: Loaded 1 lists and 3 waypoints from file: /Volumes/ssd/sw-private-task8-20261031/editor-results/1.21.5-Fabric/game/saves/live-editor-verification/./server_waypoint/waypoints/minecraft$the_nether.json
+[19:12:13] [Server thread/INFO]: Starting integrated minecraft server version 1.21.5
+[19:12:13] [Server thread/INFO]: Generating keypair
+[19:12:13] [Server thread/INFO]: Preparing start region for dimension minecraft:overworld
+[19:12:14] [Render thread/INFO]: Preparing spawn area: 0%
+[19:12:14] [Render thread/INFO]: Preparing spawn area: 0%
+[19:12:14] [Server thread/INFO]: Changing view distance to 2, from 10
+[19:12:14] [Server thread/INFO]: Changing simulation distance to 5, from 0
+[19:12:14] [Render thread/INFO]: Time elapsed: 599 ms
+[19:12:14] [Server thread/INFO]: SwLiveTest[local:E:42aeb1b0] logged in with entity id 274 at (122.5, 103.0, 10.5)
+[19:12:14] [Render thread/INFO]: New Xaero hud session initialized!
+[19:12:14] [Render thread/INFO]: New world map session initialized!
+[19:12:14] [Render thread/INFO]: dimensionName: minecraft:overworld, state: NOT_READY
+[19:12:14] [Render thread/INFO]: join server
+[19:12:14] [Server thread/INFO]: SwLiveTest joined the game
+[19:12:14] [Server thread/INFO]: client join with protocol version: 3
+[19:12:14] [Render thread/INFO]: Loaded 2 advancements
+[19:12:14] [Render thread/INFO]: Minimap updated server level id: 1796577229 for world ResourceKey[minecraft:dimension / minecraft:overworld]
+[19:12:14] [SW live verification/INFO]: [STDOUT]: SW_LIVE PASS load
+[19:12:14] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/editor-prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[19:12:14] [Render thread/INFO]: [STDOUT]: SW_LIVE PERSISTENCE actual world reopen loaded both edited dimensions with cleared metadata and untouched OW Voxel fixture
+[19:12:14] [SW live verification/INFO]: [STDOUT]: SW_LIVE PASS persisted
+[19:12:15] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/editor-prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[19:12:15] [Render thread/INFO]: [STDOUT]: SW_LIVE DEFAULT_SET world reload retained personal default contents, other personal set, mode cleanup, and saved setting
+[19:12:15] [SW live verification/INFO]: [STDOUT]: SW_LIVE PASS default-persisted
+[19:12:15] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/editor-prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[19:12:15] [Server thread/INFO]: Saved 1 waypoint lists to file: /Volumes/ssd/sw-private-task8-20261031/editor-results/1.21.5-Fabric/game/saves/live-editor-verification/./server_waypoint/waypoints/minecraft$the_nether.json
+[19:12:15] [Server thread/INFO]: Saved 1 waypoint lists to file: /Volumes/ssd/sw-private-task8-20261031/editor-results/1.21.5-Fabric/game/saves/live-editor-verification/./server_waypoint/waypoints/minecraft$overworld.json
+[19:12:15] [Server thread/INFO]: SwLiveTest lost connection: Disconnected
+[19:12:15] [Server thread/INFO]: SwLiveTest left the game
+[19:12:15] [Server thread/INFO]: Stopping singleplayer server as player logged out
+[19:12:15] [Render thread/INFO]: Xaero hud session finalized.
+[19:12:15] [Render thread/INFO]: Finalizing world map session...
+[19:12:15] [Thread-3/INFO]: World map force-cleaned!
+[19:12:15] [Server thread/INFO]: Saved 1 waypoint lists to file: /Volumes/ssd/sw-private-task8-20261031/editor-results/1.21.5-Fabric/game/saves/live-editor-verification/./server_waypoint/waypoints/minecraft$the_nether.json
+[19:12:15] [Server thread/INFO]: Saved 1 waypoint lists to file: /Volumes/ssd/sw-private-task8-20261031/editor-results/1.21.5-Fabric/game/saves/live-editor-verification/./server_waypoint/waypoints/minecraft$overworld.json
+[19:12:15] [Server thread/INFO]: Saved config file: /Volumes/ssd/sw-private-task8-20261031/editor-results/1.21.5-Fabric/game/config/server_waypoint/config.json
+[19:12:15] [Server thread/INFO]: Stopping server
+[19:12:15] [Server thread/INFO]: Saving players
+[19:12:15] [Server thread/INFO]: Saving worlds
+[19:12:15] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Live editor verification]'/minecraft:overworld
+[19:12:15] [Render thread/INFO]: World map session finalized.
+[19:12:15] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Live editor verification]'/minecraft:the_end
+[19:12:15] [Server thread/INFO]: Saving chunks for level 'ServerLevel[Live editor verification]'/minecraft:the_nether
+[19:12:15] [Server thread/INFO]: ThreadedAnvilChunkStorage (live-editor-verification): All chunks are saved
+[19:12:15] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[19:12:15] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[19:12:15] [Server thread/INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+[19:12:15] [SW live verification/INFO]: [STDOUT]: SW_LIVE PASS close
+[19:12:15] [Attach Listener/INFO]: [STDERR]: WARNING: A Java agent has been loaded dynamically (/Volumes/ssd/sw-private-task8-20261031/editor-prepared/agent.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[19:12:15] [Render thread/INFO]: Stopping!
+[19:12:15] [Render thread/INFO]: Saving all world maps
+[19:12:15] [Render thread/INFO]: Save queue flushed!

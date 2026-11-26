@@ -1,0 +1,21 @@
+{
+  "chat": [
+    {
+      "text": "עדכוני נקודות הציון נשלחו",
+      "commands": []
+    },
+    {
+      "text": "הצטרף למשחק WPProxy",
+      "commands": [
+        "/tell WPProxy "
+      ]
+    }
+  ],
+  "position": [
+    5.5,
+    74.0,
+    -4.5,
+    "minecraft:overworld"
+  ],
+  "screen": "null"
+}

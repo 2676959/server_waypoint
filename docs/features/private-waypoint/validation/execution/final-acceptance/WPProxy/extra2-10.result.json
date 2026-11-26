@@ -1,0 +1,18 @@
+{
+  "chat": [
+    {
+      "text": "✔ Removed [BA] Base from Homes   Restore",
+      "commands": [
+        "/wp private list minecraft:overworld Homes",
+        "/wp private restore mi83dgnNGuWhy8C-Mb_oXkYy"
+      ]
+    }
+  ],
+  "position": [
+    8.5,
+    173.0,
+    9.5,
+    "minecraft:overworld"
+  ],
+  "screen": "_959.server_waypoint.common.client.gui.screens.WaypointManagerScreen"
+}

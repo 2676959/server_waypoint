@@ -1,0 +1,17 @@
+{
+  "chat": [
+    {
+      "text": "✘ ב-Homes כבר יש נקודה בשם Base. פרטים",
+      "commands": [
+        "/wp details waypoint minecraft:overworld Homes Base"
+      ]
+    }
+  ],
+  "position": [
+    5.5,
+    74.0,
+    -4.5,
+    "minecraft:overworld"
+  ],
+  "screen": "null"
+}

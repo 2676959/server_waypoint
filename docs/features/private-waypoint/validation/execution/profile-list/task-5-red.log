@@ -1,0 +1,288 @@
+Configuration on demand is an incubating feature.
+Running Stonecutter 0.9.7
+
+> Configure project :mods:26.1.2-fabric
+Fabric Loom: 1.15.5
+
+> Task :cross-server:updateModInfo UP-TO-DATE
+> Task :common:processResources UP-TO-DATE
+> Task :mods:26.1.2-fabric:stonecutterPrepare UP-TO-DATE
+> Task :mods:26.1.2-fabric:stonecutterGenerate UP-TO-DATE
+> Task :cross-server:compileJava UP-TO-DATE
+> Task :mods:26.1.2-fabric:processResources UP-TO-DATE
+> Task :cross-server:processResources NO-SOURCE
+> Task :cross-server:classes UP-TO-DATE
+> Task :cross-server:jar UP-TO-DATE
+> Task :mods:26.1.2-fabric:processTestResources UP-TO-DATE
+> Task :common:compileJava UP-TO-DATE
+> Task :common:classes UP-TO-DATE
+> Task :common:jar UP-TO-DATE
+> Task :mods:26.1.2-fabric:compileJava UP-TO-DATE
+> Task :mods:26.1.2-fabric:classes UP-TO-DATE
+
+> Task :mods:26.1.2-fabric:compileTestJava FAILED
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenTest.java:15: error: cannot find symbol
+        assertEquals("Creative", LocalWaypointProfilesScreen.ProfileNames.clean("  Creative "));
+                                                            ^
+  symbol:   variable ProfileNames
+  location: class LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenTest.java:16: error: cannot find symbol
+        assertNull(LocalWaypointProfilesScreen.ProfileNames.clean("   "));
+                                              ^
+  symbol:   variable ProfileNames
+  location: class LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenTest.java:17: error: cannot find symbol
+        assertEquals("W".repeat(128), LocalWaypointProfilesScreen.ProfileNames.clean(" " + "W".repeat(128) + " "));
+                                                                 ^
+  symbol:   variable ProfileNames
+  location: class LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenTest.java:18: error: cannot find symbol
+        assertNull(LocalWaypointProfilesScreen.ProfileNames.clean("W".repeat(129)));
+                                              ^
+  symbol:   variable ProfileNames
+  location: class LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenTest.java:24: error: cannot find symbol
+        assertEquals(FIRST, LocalWaypointProfilesScreen.ProfileNames.conflict(profiles, " survival WORLD ", null));
+                                                       ^
+  symbol:   variable ProfileNames
+  location: class LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenTest.java:25: error: cannot find symbol
+        assertNull(LocalWaypointProfilesScreen.ProfileNames.conflict(profiles, "SURVIVAL WORLD", FIRST.id()));
+                                              ^
+  symbol:   variable ProfileNames
+  location: class LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenTest.java:26: error: cannot find symbol
+        assertEquals(SECOND, LocalWaypointProfilesScreen.ProfileNames.conflict(profiles, "creative", FIRST.id()));
+                                                        ^
+  symbol:   variable ProfileNames
+  location: class LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:65: error: incompatible types: WaypointClientMod cannot be converted to Screen
+        screen = new LocalWaypointProfilesScreen(client, () -> closed = true);
+                                                 ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:73: error: cannot find symbol
+        screen.commandField().setValue("{x} ~");
+              ^
+  symbol:   method commandField()
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:74: error: cannot find symbol
+        assertEquals(List.of(0xFF7B72, 0xFF7B72, 0xFF7B72), colors(screen.commandField().formatShown("{x}", 0)));
+                                                                         ^
+  symbol:   method commandField()
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:80: error: incompatible types: WaypointClientMod cannot be converted to Screen
+        var empty = new LocalWaypointProfilesScreen(client, () -> closed = true);
+                                                    ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:89: error: cannot find symbol
+        screen.row(original).use().onClick(0, 0);
+              ^
+  symbol:   method row(UUID)
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:92: error: cannot find symbol
+        assertEquals(screen.row(original).rename(), screen.getFocused());
+                           ^
+  symbol:   method row(UUID)
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:97: error: cannot find symbol
+        assertEquals(Component.translatable("waypoint.profile.list_section", "test"), screen.listTitle());
+                                                                                            ^
+  symbol:   method listTitle()
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:98: error: cannot find symbol
+        assertEquals(Component.translatable("waypoint.profile.in_use.manual"), screen.activeStatus());
+                                                                                     ^
+  symbol:   method activeStatus()
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:101: error: incompatible types: WaypointClientMod cannot be converted to Screen
+        var reopened = new LocalWaypointProfilesScreen(client, () -> { });
+                                                       ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:108: error: cannot find symbol
+        screen.row(original).rename().onClick(0, 0);
+              ^
+  symbol:   method row(UUID)
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:109: error: cannot find symbol
+        assertEquals(LocalWaypointProfilesScreen.Dialog.RENAME, screen.openDialog());
+                                                ^
+  symbol:   variable Dialog
+  location: class LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:109: error: cannot find symbol
+        assertEquals(LocalWaypointProfilesScreen.Dialog.RENAME, screen.openDialog());
+                                                                      ^
+  symbol:   method openDialog()
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:110: error: cannot find symbol
+        assertEquals(screen.nameField(), screen.getFocused());
+                           ^
+  symbol:   method nameField()
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:111: error: cannot find symbol
+        screen.nameField().setValue(" survival ");
+              ^
+  symbol:   method nameField()
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:112: error: cannot find symbol
+        assertFalse(screen.dialogWidget().getConfirmButton().active);
+                          ^
+  symbol:   method dialogWidget()
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:113: error: cannot find symbol
+        assertTrue(screen.dialogLines().contains(Component.translatable("waypoint.profile.name.taken", "Survival")));
+                         ^
+  symbol:   method dialogLines()
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:114: error: cannot find symbol
+        screen.nameField().setValue("DEFAULT");
+              ^
+  symbol:   method nameField()
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:115: error: cannot find symbol
+        screen.dialogWidget().getConfirmButton().onClick(0, 0);
+              ^
+  symbol:   method dialogWidget()
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:119: error: cannot find symbol
+        assertNull(screen.openDialog());
+                         ^
+  symbol:   method openDialog()
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:120: error: cannot find symbol
+        assertEquals(screen.row(original).rename(), screen.getFocused());
+                           ^
+  symbol:   method row(UUID)
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:125: error: cannot find symbol
+        screen.newProfileButton().onClick(0, 0);
+              ^
+  symbol:   method newProfileButton()
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:126: error: cannot find symbol
+        screen.nameField().setValue("   ");
+              ^
+  symbol:   method nameField()
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:127: error: cannot find symbol
+        assertFalse(screen.dialogWidget().getConfirmButton().active);
+                          ^
+  symbol:   method dialogWidget()
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:128: error: cannot find symbol
+        screen.nameField().setValue("Exploration");
+              ^
+  symbol:   method nameField()
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:129: error: cannot find symbol
+        screen.setFocused(screen.nameField());
+                                ^
+  symbol:   method nameField()
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:133: error: cannot find symbol
+        assertEquals(screen.row(client.localProfiles().active().id()).rename(), screen.getFocused());
+                           ^
+  symbol:   method row(UUID)
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:139: error: cannot find symbol
+        screen.row(original).delete().onClick(0, 0);
+              ^
+  symbol:   method row(UUID)
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:140: error: cannot find symbol
+        assertEquals(screen.dialogWidget().getCancelButton(), screen.getFocused());
+                           ^
+  symbol:   method dialogWidget()
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:141: error: cannot find symbol
+        assertFalse(screen.dialogLines().contains(Component.translatable("waypoint.profile.delete.active_note")));
+                          ^
+  symbol:   method dialogLines()
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:142: error: cannot find symbol
+        screen.dialogWidget().getConfirmButton().onClick(0, 0);
+              ^
+  symbol:   method dialogWidget()
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:146: error: cannot find symbol
+        assertEquals(screen.row(active).rename(), screen.getFocused());
+                           ^
+  symbol:   method row(UUID)
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:151: error: cannot find symbol
+        screen.row(survival).delete().onClick(0, 0);
+              ^
+  symbol:   method row(UUID)
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:152: error: cannot find symbol
+        assertTrue(screen.dialogLines().contains(Component.translatable("waypoint.profile.delete.active_note")));
+                         ^
+  symbol:   method dialogLines()
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:153: error: cannot find symbol
+        screen.dialogWidget().getConfirmButton().onClick(0, 0);
+              ^
+  symbol:   method dialogWidget()
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:161: error: incompatible types: WaypointClientMod cannot be converted to Screen
+        var only = new LocalWaypointProfilesScreen(client, () -> { });
+                                                   ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:172: error: incompatible types: WaypointClientMod cannot be converted to Screen
+        var duplicates = new LocalWaypointProfilesScreen(client, () -> { });
+                                                         ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:181: error: cannot find symbol
+        assertFalse(screen.row(original).use().active);
+                          ^
+  symbol:   method row(UUID)
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:182: error: cannot find symbol
+        assertTrue(screen.statusIsError());
+                         ^
+  symbol:   method statusIsError()
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:183: error: cannot find symbol
+        screen.row(original).use().onClick(0, 0);
+              ^
+  symbol:   method row(UUID)
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:191: error: incompatible types: WaypointClientMod cannot be converted to Screen
+            var sized = new LocalWaypointProfilesScreen(client, () -> { });
+                                                        ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenInteractionTest.java:215: error: cannot find symbol
+        assertEquals(Component.translatable(key, args), screen.statusMessage());
+                                                              ^
+  symbol:   method statusMessage()
+  location: variable screen of type LocalWaypointProfilesScreen
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/widgets/SettingsListWidgetTest.java:69: error: incompatible types: WidgetStack cannot be converted to AbstractWidget
+        SettingsListWidget.Row row = row(button(false), null).action(composite(rename, delete), shown::get);
+                                                                              ^
+/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/widgets/SettingsListWidgetTest.java:93: error: cannot find symbol
+        control.setWidth(list.getRowWidth());
+                             ^
+  symbol:   method getRowWidth()
+  location: variable list of type SettingsListWidget
+Note: Some messages have been simplified; recompile with -Xdiags:verbose to get full output
+50 errors
+
+[Incubating] Problems report is available at: file:///Volumes/ssd/fabric_mods_repo/server_waypoint/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':mods:26.1.2-fabric:compileTestJava' (registered by plugin class 'org.gradle.api.plugins.JavaBasePlugin').
+> Compilation failed; see the compiler output below.
+  /Volumes/ssd/fabric_mods_repo/server_waypoint/mods/src/test/java/_959/server_waypoint/common/client/gui/screens/LocalWaypointProfilesScreenTest.java:15: error: cannot find symbol
+          assertEquals("Creative", LocalWaypointProfilesScreen.ProfileNames.clean("  Creative "));
+                                                              ^
+    symbol:   variable ProfileNames
+    location: class LocalWaypointProfilesScreen
+  50 errors
+
+* Try:
+> Check your code and dependencies to fix the compilation error(s)
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.5.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 1s
+12 actionable tasks: 1 executed, 11 up-to-date

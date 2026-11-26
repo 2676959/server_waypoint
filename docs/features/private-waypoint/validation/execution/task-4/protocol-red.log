@@ -1,0 +1,90 @@
+Configuration on demand is an incubating feature.
+Running Stonecutter 0.9.7
+> Task :common:processResources UP-TO-DATE
+> Task :cross-server:updateModInfo UP-TO-DATE
+> Task :common:processTestResources NO-SOURCE
+> Task :cross-server:compileJava UP-TO-DATE
+> Task :cross-server:processResources NO-SOURCE
+> Task :cross-server:classes UP-TO-DATE
+> Task :cross-server:jar UP-TO-DATE
+> Task :common:compileJava UP-TO-DATE
+> Task :common:classes UP-TO-DATE
+
+> Task :common:compileTestJava FAILED
+/Volumes/ssd/fabric_mods_repo/server_waypoint/common/src/test/java/_959/server_waypoint/core/network/codec/WaypointScopeCodecTest.java:28: error: constructor WaypointListUpdateMessage in record WaypointListUpdateMessage cannot be applied to given types;
+                    new WaypointListUpdateMessage(scope, "overworld", "Old", list),
+                    ^
+  required: String,String,WaypointList
+  found:    WaypointScope,String,String,WaypointList
+  reason: actual and formal argument lists differ in length
+/Volumes/ssd/fabric_mods_repo/server_waypoint/common/src/test/java/_959/server_waypoint/core/network/codec/WaypointScopeCodecTest.java:29: error: constructor WaypointModificationMessage in record WaypointModificationMessage cannot be applied to given types;
+                    new WaypointModificationMessage(scope, "overworld", "Homes", "Homes", "Base", null,
+                    ^
+  required: String,String,String,String,SimpleWaypoint,WaypointModificationType,int
+  found:    WaypointScope,String,String,String,String,<null>,WaypointModificationType,int
+  reason: actual and formal argument lists differ in length
+/Volumes/ssd/fabric_mods_repo/server_waypoint/common/src/test/java/_959/server_waypoint/core/network/codec/WaypointScopeCodecTest.java:31: error: constructor WaypointEditRequestMessage in record WaypointEditRequestMessage cannot be applied to given types;
+                    new WaypointEditRequestMessage(scope, 1, "overworld", "Homes", "Base", 7, WaypointPatch.empty()),
+                    ^
+  required: long,String,String,String,int,WaypointPatch
+  found:    WaypointScope,int,String,String,String,int,WaypointPatch
+  reason: actual and formal argument lists differ in length
+/Volumes/ssd/fabric_mods_repo/server_waypoint/common/src/test/java/_959/server_waypoint/core/network/codec/WaypointScopeCodecTest.java:32: error: constructor WaypointEditResultMessage in record WaypointEditResultMessage cannot be applied to given types;
+                    new WaypointEditResultMessage(scope, 1, EditResultStatus.PERMISSION_DENIED,
+                    ^
+  required: long,EditResultStatus,String,String,String,SimpleWaypoint,int
+  found:    WaypointScope,int,EditResultStatus,String,String,String,<null>,int
+  reason: actual and formal argument lists differ in length
+/Volumes/ssd/fabric_mods_repo/server_waypoint/common/src/test/java/_959/server_waypoint/core/network/codec/WaypointScopeCodecTest.java:34: error: constructor ClientUpdateRequestMessage in record ClientUpdateRequestMessage cannot be applied to given types;
+                    new ClientUpdateRequestMessage(scope, List.of()),
+                    ^
+  required: List<DimensionSyncIdentifier>
+  found:    WaypointScope,List<Object>
+  reason: actual and formal argument lists differ in length
+/Volumes/ssd/fabric_mods_repo/server_waypoint/common/src/test/java/_959/server_waypoint/core/network/codec/WaypointScopeCodecTest.java:35: error: cannot find symbol
+                    new WaypointCollectionStateMessage(scope, false));
+                        ^
+  symbol:   class WaypointCollectionStateMessage
+  location: class WaypointScopeCodecTest
+/Volumes/ssd/fabric_mods_repo/server_waypoint/common/src/test/java/_959/server_waypoint/core/network/codec/WaypointScopeCodecTest.java:26: error: method world in record WaypointData cannot be applied to given types;
+                    WaypointData.world(scope, List.of(new DimensionWaypointData("overworld", List.of(list)))),
+                                ^
+  required: Collection<DimensionWaypointData>
+  found:    WaypointScope,List<DimensionWaypointData>
+  reason: actual and formal argument lists differ in length
+/Volumes/ssd/fabric_mods_repo/server_waypoint/common/src/test/java/_959/server_waypoint/core/network/codec/WaypointScopeCodecTest.java:27: error: method updates in record WaypointData cannot be applied to given types;
+                    WaypointData.updates(scope, List.of(new DimensionWaypointData("gone", List.of()))),
+                                ^
+  required: Collection<DimensionWaypointData>
+  found:    WaypointScope,List<DimensionWaypointData>
+  reason: actual and formal argument lists differ in length
+/Volumes/ssd/fabric_mods_repo/server_waypoint/common/src/test/java/_959/server_waypoint/core/network/codec/WaypointScopeCodecTest.java:59: error: no suitable method found for upload(WaypointScope,UUID,UploadStatus,List<Object>)
+        assertThrows(IllegalArgumentException.class, () -> WaypointData.upload(WaypointScope.PRIVATE,
+                                                                       ^
+    method WaypointData.upload(UUID,UploadStatus,Collection<DimensionWaypointData>) is not applicable
+      (actual and formal argument lists differ in length)
+    method WaypointData.upload() is not applicable
+      (actual and formal argument lists differ in length)
+9 errors
+
+[Incubating] Problems report is available at: file:///Volumes/ssd/fabric_mods_repo/server_waypoint/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':common:compileTestJava' (registered by plugin class 'org.gradle.api.plugins.JavaBasePlugin').
+> Compilation failed; see the compiler output below.
+  /Volumes/ssd/fabric_mods_repo/server_waypoint/common/src/test/java/_959/server_waypoint/core/network/codec/WaypointScopeCodecTest.java:28: error: constructor WaypointListUpdateMessage in record WaypointListUpdateMessage cannot be applied to given types;
+                      new WaypointListUpdateMessage(scope, "overworld", "Old", list),
+                      ^
+    required: String,String,WaypointList
+    found:    WaypointScope,String,String,WaypointList
+    reason: actual and formal argument lists differ in length
+  9 errors
+
+* Try:
+> Check your code and dependencies to fix the compilation error(s)
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+
+BUILD FAILED in 1s
+6 actionable tasks: 1 executed, 5 up-to-date

@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "fallback": "1a018852-b2fe-4661-9780-d7499905eb36",
+  "profiles": [
+    {
+      "id": "1a018852-b2fe-4661-9780-d7499905eb36",
+      "name": "Default",
+      "teleportCommand": "/execute in {dimension} run tp @s {x} {y} {z} {yaw} ~"
+    },
+    {
+      "id": "ee8acd66-0166-4d95-a630-a1edd8fda71e",
+      "name": "Second backend at the same address",
+      "teleportCommand": "/execute in {dimension} run tp @s {x} {y} {z} {yaw} ~"
+    }
+  ],
+  "bindings": {}
+}

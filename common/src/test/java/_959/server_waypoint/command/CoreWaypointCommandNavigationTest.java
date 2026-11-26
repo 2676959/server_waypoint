@@ -202,7 +202,8 @@ class CoreWaypointCommandNavigationTest {
                     "map",
                     "bossbar",
                     "actionbar",
-                    "text_display"
+                    "text_display",
+                    "world_marker"
                   ]
                 }
                 """));
@@ -210,6 +211,39 @@ class CoreWaypointCommandNavigationTest {
         this.dispatcher.execute("wp navigate overworld bases Home", this.source);
 
         assertEquals(NavigationMethod.definedMethods(), this.session().enabledMethods());
+    }
+
+    @Test
+    void worldMarkerSizeCommandUsesTheCurrentPlayersNavigationSession() throws CommandSyntaxException {
+        String command = "wp navigate config world_marker size";
+        this.dispatcher.execute(command + " 2", this.source);
+        assertEquals(List.of("wp.error.not_navigating"), this.sender.errorKeys());
+
+        this.dispatcher.execute("wp navigate overworld bases Home world_marker", this.source);
+        assertEquals(1.0F, this.session().worldMarkerSize());
+        this.dispatcher.execute(command + " 2", this.source);
+        assertTrue(this.sender.messageKeys().contains("wp.world_marker.size"));
+        assertEquals(2.0F, this.session().worldMarkerSize());
+        assertThrows(CommandSyntaxException.class, () -> this.dispatcher.execute(command + " 0", this.source));
+        assertThrows(CommandSyntaxException.class, () -> this.dispatcher.execute(command + " 5", this.source));
+        this.dispatcher.execute("wp navigate overworld bases Mine world_marker", this.source);
+        assertEquals(2.0F, this.session().worldMarkerSize());
+    }
+
+    @Test
+    void worldMarkerDistanceCommandValidatesTheProjectionRadius() throws CommandSyntaxException {
+        String command = "wp navigate config world_marker distance";
+        this.dispatcher.execute("wp navigate overworld bases Home world_marker", this.source);
+        assertEquals(12.0F, this.session().worldMarkerDistance());
+        this.dispatcher.execute(command, this.source);
+        assertTrue(this.sender.messageKeys().contains("wp.world_marker.distance"));
+        this.dispatcher.execute(command + " 8.5", this.source);
+        assertEquals(8.5F, this.session().worldMarkerDistance());
+        this.dispatcher.execute("wp navigate config world_marker size 2", this.source);
+        this.dispatcher.execute("wp navigate overworld bases Mine world_marker", this.source);
+        assertEquals(8.5F, this.session().worldMarkerDistance());
+        assertThrows(CommandSyntaxException.class, () -> this.dispatcher.execute(command + " 0", this.source));
+        assertThrows(CommandSyntaxException.class, () -> this.dispatcher.execute(command + " 33", this.source));
     }
 
     @Test
@@ -678,6 +712,11 @@ class CoreWaypointCommandNavigationTest {
         }
 
         @Override
+        protected boolean isOperator(TestSource source, TestPlayer player) {
+            return false;
+        }
+
+        @Override
         protected String getPlayerName(TestPlayer player) {
             return "player";
         }
@@ -753,6 +792,11 @@ class CoreWaypointCommandNavigationTest {
     }
 
     private static final class TestPermissionKeys extends PermissionKeys<String> {
+        @Override
+        protected PermissionKey createPrivatePermissionKey(String action) {
+            return new PermissionKey("server_waypoint.command.private." + action);
+        }
+
         @Override
         protected PermissionKey createAddPermissionKey() {
             return new PermissionKey("add");

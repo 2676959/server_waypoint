@@ -2,6 +2,7 @@ package _959.server_waypoint.command;
 
 import _959.server_waypoint.core.waypoint.WaypointSorting.SortMode;
 import _959.server_waypoint.text.chat.ListView;
+import _959.server_waypoint.navigation.*;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -56,6 +57,25 @@ class ListCommandOptionsTest {
         System.out.printf("Command branch nodes: local=%d, remote=%d%n", local, remote);
         assertTrue(local <= 2048, "Local list expanded to " + local + " nodes");
         assertTrue(remote <= 2048, "Remote commands expanded to " + remote + " nodes");
+    }
+
+    @Test
+    void privateAndCompleteEmptyCatalogTreesStayWithinBudgetBeforeAndAfterCopy(@TempDir Path directory) {
+        var dispatcher = new CommandHarness(directory, allNavigationMethods()).dispatcher;
+        var wp = dispatcher.getRoot().getChild("wp");
+        var privateRoot = wp.getChild("private");
+        int privateList = count(privateRoot.getChild("list"));
+        int privateNodes = count(privateRoot);
+        int total = count(dispatcher.getRoot());
+        int copiedPrivate = count(copy(privateRoot));
+        int copiedTotal = count(copy(dispatcher.getRoot()));
+        System.out.printf("Empty catalog nodes: privateList=%d private=%d copiedPrivate=%d total=%d copiedTotal=%d%n",
+                privateList, privateNodes, copiedPrivate, total, copiedTotal);
+        assertTrue(privateList <= 1536, "Private list exceeded its compact grammar budget: " + privateList);
+        assertTrue(privateNodes <= 1536, "Private commands exceeded their budget: " + privateNodes);
+        assertTrue(copiedPrivate <= 1536, "Expanded Private copy exceeded its budget: " + copiedPrivate);
+        assertTrue(total <= 4608, "Complete command registration exceeded its budget: " + total);
+        assertTrue(copiedTotal <= 4608, "Expanded complete copy exceeded its budget: " + copiedTotal);
     }
 
     @Test
@@ -129,6 +149,30 @@ class ListCommandOptionsTest {
             assertEquals(input.indexOf("invalid"), failure.getCursor());
             assertNull(selected);
         }
+    }
+
+    private static NavigationService<Object> allNavigationMethods() {
+        var platform = new NavigationPlatform<Object>() {
+            @Override public java.util.UUID playerUuid(Object player) { return new java.util.UUID(0, 0); }
+            @Override public void executePlayer(java.util.UUID player, java.util.function.Consumer<Object> task) {}
+            @Override public NavigationSnapshot snapshot(Object player,
+                    NavigationTarget target) {
+                return NavigationSnapshot.wrongDimension();
+            }
+        };
+        var handlers = NavigationMethod.definedMethods().stream()
+                .map(method -> new NavigationMethodHandler<Object>() {
+                    @Override public NavigationMethod method() { return method; }
+                    @Override public NavigationResult enable(Object player,
+                            NavigationSession session,
+                            NavigationSnapshot snapshot) {
+                        return NavigationResult.success();
+                    }
+                    @Override public void update(Object player, NavigationSession session,
+                            NavigationSnapshot snapshot) {}
+                    @Override public void disable(Object player, NavigationSession session) {}
+                }).toList();
+        return new NavigationService<>(platform, handlers);
     }
 
     private static List<String> suggestions(CommandDispatcher<String> dispatcher, String input) {

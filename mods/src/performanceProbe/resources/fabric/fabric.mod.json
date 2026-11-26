@@ -1,0 +1,23 @@
+{
+    "schemaVersion": 1,
+    "id": "server_waypoint_performance_probe",
+    "version": "1.0.0",
+    "name": "Server Waypoint Performance Probe",
+    "description": "Test-only native probe. Not a release mod.",
+    "license": "MIT",
+    "environment": "*",
+    "entrypoints": {
+        "main": [
+            "_959.server_waypoint.perf.mods.fabric.FabricPerformanceProbe"
+        ]
+    },
+    "depends": {
+        "fabricloader": ">=0.16.0",
+        "minecraft": "1.21.11",
+        "java": ">=21",
+        "fabric-api": "*"
+    },
+    "suggests": {
+        "server_waypoint": "*"
+    }
+}

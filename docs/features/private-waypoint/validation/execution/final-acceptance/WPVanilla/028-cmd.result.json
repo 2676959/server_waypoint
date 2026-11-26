@@ -1,0 +1,25 @@
+{
+  "chat": [
+    {
+      "commands": [
+        "/wp private details waypoint minecraft:overworld Homes Base",
+        "/wp private navigate use compass",
+        "/wp private navigate use map",
+        "/wp private navigate use bossbar",
+        "/wp private navigate disable actionbar",
+        "/wp private navigate disable actionbar",
+        "/wp private navigate use text_display",
+        "/wp private navigate disable",
+        "/wp private list"
+      ],
+      "text": "✔ Started navigating\nNavigating to [BA] Base · 80 m\nCompass · Map · Bossbar · ✔ Actionbar · Text display\nStop · Change target\n"
+    }
+  ],
+  "position": [
+    1.5,
+    73.0,
+    9.5,
+    "minecraft:overworld"
+  ],
+  "screen": "null"
+}

@@ -1,0 +1,5 @@
+FAIL 26.1.2-Fabric errors=2 warnings=48 complete: Runtime errors or crash reports; see diagnostics.json
+  ERROR Failed to fetch user properties (game/logs/latest.log:550)
+  ERROR Couldn't connect to realms (game/logs/latest.log:841)
+  WARN Compatibility level JAVA_25 specified by fabric-api-lookup-api-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13). (game/logs/latest.log:54)
+Report: /Volumes/ssd/sw-private-task8-20261031/results/report.md

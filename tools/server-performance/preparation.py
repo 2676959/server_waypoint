@@ -8,7 +8,7 @@ from contracts import atomic_write, load_release, load_runtimes
 from controller import create_root, preparation_transition
 from environment import collect_environment
 from models import Status
-from preflight import check_runtime
+from preflight import check_runtime, required_capabilities
 from selection import select_cases
 from worlds import prepare_world
 
@@ -54,30 +54,38 @@ def input_hashes():
 
 
 def requires_world(case):
+    if case.feature in ("navigation", "map-terrain", "protection"):
+        return True
     return case.feature in ("idle", "world-container", "inventory-regression", "storage", "commands") and (case.clients == 0 or case.feature in ("storage", "commands"))
 
 
 def prepare(args):
-    root = create_root(args.output)
     runtimes = load_runtimes(args.runtime_lock)
-    cases = select_cases(TOOLS / "config/features.json", TOOLS / "config/scenarios.json", runtimes, args.suite, tuple(args.tiers.split(",")), tuple(filter(None, args.targets.split(","))), tuple(filter(None, args.scenarios.split(","))), tuple(filter(None, args.variants.split(","))))
+    families = args.scenarios
+    if families is None:
+        families = "" if args.suite == "minimal-critical" else "idle,world-container,inventory-regression"
+    cases = select_cases(TOOLS / "config/features.json", TOOLS / "config/scenarios.json", runtimes, args.suite, tuple(args.tiers.split(",")), tuple(filter(None, args.targets.split(","))), tuple(filter(None, families.split(","))), tuple(filter(None, args.variants.split(","))), mode=args.mode)
     selected = [r for r in runtimes if r.id in {case.runtime for case in cases}]
+    artifacts = tuple(a for a in load_release(args.release_manifest) if a.name in {r.artifact for r in selected})
+    if len(artifacts) != len({r.artifact for r in selected}):
+        raise ValueError("selected runtime has no immutable artifact")
+    expected_provenance = "candidate" if args.mode == "candidate" else "published"
+    if any(a.provenance != expected_provenance for a in artifacts):
+        raise ValueError(f"{args.mode} execution requires {expected_provenance} artifact provenance")
+    root = create_root(args.output)
     blockers = []
     for runtime in selected:
-        decision = check_runtime(runtime, root / "doctor", frozenset({"fixture", "tick-processing", "profile"}))
+        decision = check_runtime(runtime, root / "doctor", required_capabilities(args.suite) if args.suite == "minimal-critical" else frozenset({"fixture", "tick-processing", "profile"}))
         blockers.extend(decision.reasons)
         if runtime.id != "paper-1.21.11":
             blockers.append(f"adapter pending: {runtime.id}")
     if blockers:
         atomic_write(root / "blockers.json", {"schemaVersion": 1, "reasons": blockers})
         raise ValueError("; ".join(blockers))
-    artifacts = tuple(a for a in load_release(args.release_manifest) if a.name in {r.artifact for r in selected})
-    if len(artifacts) != len({r.artifact for r in selected}):
-        raise ValueError("selected runtime has no immutable artifact")
     stage_artifacts(artifacts, args.cache, root / "artifacts")
     for name, source in (("runtime-lock.json", args.runtime_lock), ("release.json", args.release_manifest), ("budgets.json", TOOLS / "config/budgets.json")):
         shutil.copyfile(source, root / name)
-    atomic_write(root / "selection.json", {"schemaVersion": 1, "partial": args.suite != "all" or bool(args.targets or args.scenarios or args.variants), "cases": cases})
+    atomic_write(root / "selection.json", {"schemaVersion": 1, "suite": args.suite, "partial": args.suite != "all" or bool(args.targets or args.scenarios or args.variants), "cases": cases})
     preparation_transition(root, "ARTIFACTS_VERIFIED")
     worlds = {}
     for runtime in selected:

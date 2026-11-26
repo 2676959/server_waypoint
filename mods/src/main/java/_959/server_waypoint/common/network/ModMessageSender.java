@@ -14,15 +14,20 @@ import _959.server_waypoint.common.util.TextHelper;
 import _959.server_waypoint.common.util.PlayerLocaleHelper;
 import _959.server_waypoint.mixin.CommandSourceStackAccessor;
 import _959.server_waypoint.text.chat.Chat;
+import _959.server_waypoint.text.chat.ChatIcons;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.translation.GlobalTranslator;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -181,6 +186,44 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
         return WaypointServerMod.MINECRAFT_SERVER == null
                 ? java.util.List.of(player)
                 : WaypointServerMod.MINECRAFT_SERVER.getPlayerList().getPlayers();
+    }
+
+    @Override
+    public boolean isBroadcastOperator(ServerPlayer player) {
+        MinecraftServer server = WaypointServerMod.MINECRAFT_SERVER;
+        return server != null && isOperator(server, player);
+    }
+
+    public static boolean isOperator(MinecraftServer server, ServerPlayer player) {
+        return server.getPlayerList().isOp(
+                /*? if >=1.21.9 {*/ player.nameAndId() /*?} else {*//* player.getGameProfile() *//*?}*/
+        );
+    }
+
+    @Override
+    public Map<String, String> broadcastDimensionTypes(ServerPlayer player) {
+        MinecraftServer server = WaypointServerMod.MINECRAFT_SERVER;
+        return server == null ? Map.of() : dimensionTypes(server);
+    }
+
+    public static Map<String, String> dimensionTypes(MinecraftServer server) {
+        Map<String, String> types = new LinkedHashMap<>();
+        for (ServerLevel level : server.getAllLevels()) {
+            //? if >= 1.21.11 {
+            String dimension = level.dimension().identifier().toString();
+            String type = level.dimensionTypeRegistration().unwrapKey().map(key -> key.identifier().toString()).orElse("");
+            //?} else {
+            /*String dimension = level.dimension().location().toString();
+            String type = level.dimensionTypeRegistration().unwrapKey().map(key -> key.location().toString()).orElse("");
+            *///?}
+            types.put(dimension, type);
+        }
+        return types;
+    }
+
+    @Override
+    public ChatIcons broadcastChatIcons() {
+        return CommandChatIcons.INSTANCE;
     }
 
     @Override

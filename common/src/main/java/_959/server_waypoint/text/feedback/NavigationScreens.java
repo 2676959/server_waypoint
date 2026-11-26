@@ -20,6 +20,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import static _959.server_waypoint.util.StringCommandBuilder.navigateCmd;
+import static _959.server_waypoint.util.StringCommandBuilder.commandPrefix;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
 import static net.kyori.adventure.text.format.NamedTextColor.AQUA;
@@ -45,7 +46,9 @@ public final class NavigationScreens {
     /** Navigating to [MH] Main Home · 25 m, the methods as toggles, then Stop · Change target. */
     public static Component panel(DimensionStyle dims, PlacedWaypoint target, Set<NavigationMethod> enabled,
                                   Set<NavigationMethod> supported, @Nullable Component updated) {
+        dims = dims.withScope(target.collectionKey().scope());
         Viewer viewer = dims.viewer();
+        String prefix = commandPrefix(target.collectionKey().scope());
         ChatLines lines = new ChatLines();
         if (updated != null) {
             lines.add(Chat.ok(updated));
@@ -59,22 +62,26 @@ public final class NavigationScreens {
                 continue;
             }
             Component name = methodName(method);
+            if (method == NavigationMethod.WORLD_MARKER && !methods.isEmpty()) {
+                lines.add(Chat.join(methods));
+                methods.clear();
+            }
             methods.add(enabled.contains(method)
                     ? Chat.link(viewer, Chat.concat(text(Chat.CHECK + " "), name), GREEN,
-                    Click.run("/wp navigate disable " + method.id()),
+                    Click.run(prefix + " navigate disable " + method.id()),
                     Tooltip.of("wp.navigation.method.on", name).hint("wp.hint.turn_off"))
-                    : Chat.link(viewer, name, GRAY, Click.run("/wp navigate use " + method.id()),
+                    : Chat.link(viewer, name, GRAY, Click.run(prefix + " navigate use " + method.id()),
                     Tooltip.of("wp.navigation.method.off", name).hint("wp.hint.turn_on")));
         }
         lines.add(Chat.join(methods));
         List<Component> actions = new ArrayList<>();
-        actions.add(Chat.control(viewer, translatable("wp.navigation.stop"), RED, Click.run("/wp navigate disable"),
+        actions.add(Chat.control(viewer, translatable("wp.navigation.stop"), RED, Click.run(prefix + " navigate disable"),
                 Tooltip.of("wp.navigation.stop.tooltip")));
-        actions.add(Chat.control(viewer, translatable("wp.navigation.change_target"), AQUA, Click.run("/wp list"),
+        actions.add(Chat.control(viewer, translatable("wp.navigation.change_target"), AQUA, Click.run(prefix + " list"),
                 Tooltip.of("wp.navigation.change_target.tooltip")));
         if (enabled.contains(NavigationMethod.TEXT_DISPLAY)) {
             actions.add(Chat.control(viewer, translatable("wp.navigation.adjust"), YELLOW,
-                    Click.run("/wp navigate config text_display"), Tooltip.of("wp.navigation.adjust.tooltip")));
+                    Click.run(prefix + " navigate config text_display"), Tooltip.of("wp.navigation.adjust.tooltip")));
         }
         if (!Chat.isEmpty(actions)) {
             lines.add(Chat.join(actions));
@@ -100,8 +107,9 @@ public final class NavigationScreens {
     /** ✔ Stopped navigating   Resume */
     public static Component stopped(DimensionStyle dims, @Nullable PlacedWaypoint previous) {
         Viewer viewer = dims.viewer();
+        if (previous != null) viewer = viewer.withScope(previous.collectionKey().scope());
         Component resume = previous == null ? null : Chat.control(viewer, translatable("wp.navigation.resume"), LIGHT_PURPLE,
-                Click.run(navigateCmd(previous.dimension(), previous.list().name(), previous.waypoint().name())),
+                Click.run(navigateCmd(previous.collectionKey().scope(), previous.dimension(), previous.list().name(), previous.waypoint().name())),
                 Tooltip.of("wp.navigation.resume.tooltip",
                         WaypointRefs.label(previous.waypoint().displayName(), previous.waypoint().name())));
         return Chat.ok(translatable("wp.navigation.stopped"), java.util.Arrays.asList(resume));

@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class UploadScreensTest {
     @Test
     void thePanelOffersEveryMapModWithItsThreeModes() {
-        Component panel = UploadScreens.panel(Fixtures.player());
+        Component panel = UploadScreens.panel(Fixtures.player(), UploadTarget.supportedTargets());
 
         assertEquals(List.of(
                 "Upload from your map mod",
@@ -42,7 +42,7 @@ class UploadScreensTest {
         Viewer uploader = new Viewer(EnumSet.of(Viewer.Permission.UPLOAD), true, false, Fixtures.OVERWORLD,
                 new WaypointPos(0, 64, 0), 0F);
 
-        assertEquals("Xaero's Minimap  Merge · Prefer mine", lines(UploadScreens.panel(uploader)).get(1));
+        assertEquals("Xaero's Minimap  Merge · Prefer mine", lines(UploadScreens.panel(uploader, UploadTarget.supportedTargets())).get(1));
     }
 
     @Test

@@ -1,0 +1,1803 @@
+{
+    "schemaVersion": 1,
+    "scope": "experimental-candidate-packet-and-handler-smoke",
+    "count": 2,
+    "artifactSha256": "30cad0f407f9a5896a96e28136845320c23dac1ccfccb9ee56d6e1098c3a3376",
+    "serverSha256": "82a487ab8c2d0f6f072b8dbaedc9218c85ae3a7d167808124462b248955beec3",
+    "probeSha256": "81cbf5ecb5c66d15bed936c9585c2495a8523707370faa9dc60ea0ea16176d22",
+    "botSha256": "3dc5c64efd7110947fa0bc7134c9564c378162e5e9479886697c745cfa90b05d",
+    "phases": {
+        "stationary": {
+            "before": {
+                "origin": "installed-release-native-navigation-state",
+                "tick": 64,
+                "supportedMethods": [
+                    "compass",
+                    "map",
+                    "bossbar",
+                    "actionbar",
+                    "text_display",
+                    "world_marker"
+                ],
+                "players": [
+                    {
+                        "name": "swp_reader_00",
+                        "uuid": "d54464ac-d6fc-35ed-87c3-0d0aaff9b6f5",
+                        "dimension": "minecraft:overworld",
+                        "dead": false,
+                        "health": 20.0,
+                        "entityId": 1,
+                        "heldSlot": 0,
+                        "position": [
+                            300,
+                            -61,
+                            300
+                        ],
+                        "methods": [
+                            "world_marker"
+                        ],
+                        "target": {
+                            "dimension": "minecraft:overworld",
+                            "list": "marker_fixture",
+                            "waypoint": "a",
+                            "displayName": "Target A",
+                            "rgb": 4508927,
+                            "position": [
+                                320,
+                                -61,
+                                320
+                            ]
+                        },
+                        "ordinary": {},
+                        "items": [],
+                        "worldMarker": {
+                            "updates": 6,
+                            "spawns": 1,
+                            "moves": 4,
+                            "metadata": 1,
+                            "removals": 0,
+                            "updateNanos": 4985999,
+                            "billboard": "CENTER",
+                            "flags": 7,
+                            "entityId": 3,
+                            "text": "Target A\n28m\n\u25c6",
+                            "teleportDuration": 1,
+                            "position": [
+                                308.9845156812679,
+                                -59.2187941993104,
+                                308.9845156812679
+                            ],
+                            "inWorld": false
+                        }
+                    },
+                    {
+                        "name": "swp_reader_01",
+                        "uuid": "1872e660-e201-34eb-97f3-e59d02e44bc5",
+                        "dimension": "minecraft:overworld",
+                        "dead": false,
+                        "health": 20.0,
+                        "entityId": 2,
+                        "heldSlot": 0,
+                        "position": [
+                            300,
+                            -61,
+                            300
+                        ],
+                        "methods": [
+                            "world_marker"
+                        ],
+                        "target": {
+                            "dimension": "minecraft:overworld",
+                            "list": "marker_fixture",
+                            "waypoint": "a",
+                            "displayName": "Target A",
+                            "rgb": 4508927,
+                            "position": [
+                                320,
+                                -61,
+                                320
+                            ]
+                        },
+                        "ordinary": {},
+                        "items": [],
+                        "worldMarker": {
+                            "updates": 4,
+                            "spawns": 1,
+                            "moves": 2,
+                            "metadata": 1,
+                            "removals": 0,
+                            "updateNanos": 536749,
+                            "billboard": "CENTER",
+                            "flags": 7,
+                            "entityId": 4,
+                            "text": "Target A\n28m\n\u25c6",
+                            "teleportDuration": 1,
+                            "position": [
+                                308.9845156812679,
+                                -59.2187941993104,
+                                308.9845156812679
+                            ],
+                            "inWorld": false
+                        }
+                    }
+                ],
+                "resources": {
+                    "sessions": 2,
+                    "tasks": 2,
+                    "entities": 2,
+                    "bossbars": 0,
+                    "items": 0,
+                    "mapTargets": 0,
+                    "mapCacheEntries": 0,
+                    "targetIndexEntries": 1,
+                    "tickCounters": 1
+                }
+            },
+            "after": {
+                "origin": "installed-release-native-navigation-state",
+                "tick": 225,
+                "supportedMethods": [
+                    "compass",
+                    "map",
+                    "bossbar",
+                    "actionbar",
+                    "text_display",
+                    "world_marker"
+                ],
+                "players": [
+                    {
+                        "name": "swp_reader_00",
+                        "uuid": "d54464ac-d6fc-35ed-87c3-0d0aaff9b6f5",
+                        "dimension": "minecraft:overworld",
+                        "dead": false,
+                        "health": 20.0,
+                        "entityId": 1,
+                        "heldSlot": 0,
+                        "position": [
+                            300,
+                            -61,
+                            300
+                        ],
+                        "methods": [
+                            "world_marker"
+                        ],
+                        "target": {
+                            "dimension": "minecraft:overworld",
+                            "list": "marker_fixture",
+                            "waypoint": "a",
+                            "displayName": "Target A",
+                            "rgb": 4508927,
+                            "position": [
+                                320,
+                                -61,
+                                320
+                            ]
+                        },
+                        "ordinary": {},
+                        "items": [],
+                        "worldMarker": {
+                            "updates": 167,
+                            "spawns": 1,
+                            "moves": 165,
+                            "metadata": 1,
+                            "removals": 0,
+                            "updateNanos": 33179746,
+                            "billboard": "CENTER",
+                            "flags": 7,
+                            "entityId": 3,
+                            "text": "Target A\n28m\n\u25c6",
+                            "teleportDuration": 1,
+                            "position": [
+                                308.9845156812679,
+                                -59.2187941993104,
+                                308.9845156812679
+                            ],
+                            "inWorld": false
+                        }
+                    },
+                    {
+                        "name": "swp_reader_01",
+                        "uuid": "1872e660-e201-34eb-97f3-e59d02e44bc5",
+                        "dimension": "minecraft:overworld",
+                        "dead": false,
+                        "health": 20.0,
+                        "entityId": 2,
+                        "heldSlot": 0,
+                        "position": [
+                            300,
+                            -61,
+                            300
+                        ],
+                        "methods": [
+                            "world_marker"
+                        ],
+                        "target": {
+                            "dimension": "minecraft:overworld",
+                            "list": "marker_fixture",
+                            "waypoint": "a",
+                            "displayName": "Target A",
+                            "rgb": 4508927,
+                            "position": [
+                                320,
+                                -61,
+                                320
+                            ]
+                        },
+                        "ordinary": {},
+                        "items": [],
+                        "worldMarker": {
+                            "updates": 165,
+                            "spawns": 1,
+                            "moves": 163,
+                            "metadata": 1,
+                            "removals": 0,
+                            "updateNanos": 9965583,
+                            "billboard": "CENTER",
+                            "flags": 7,
+                            "entityId": 4,
+                            "text": "Target A\n28m\n\u25c6",
+                            "teleportDuration": 1,
+                            "position": [
+                                308.9845156812679,
+                                -59.2187941993104,
+                                308.9845156812679
+                            ],
+                            "inWorld": false
+                        }
+                    }
+                ],
+                "resources": {
+                    "sessions": 2,
+                    "tasks": 2,
+                    "entities": 2,
+                    "bossbars": 0,
+                    "items": 0,
+                    "mapTargets": 0,
+                    "mapCacheEntries": 0,
+                    "targetIndexEntries": 1,
+                    "tickCounters": 2
+                }
+            }
+        },
+        "head-turn": {
+            "before": {
+                "origin": "installed-release-native-navigation-state",
+                "tick": 225,
+                "supportedMethods": [
+                    "compass",
+                    "map",
+                    "bossbar",
+                    "actionbar",
+                    "text_display",
+                    "world_marker"
+                ],
+                "players": [
+                    {
+                        "name": "swp_reader_00",
+                        "uuid": "d54464ac-d6fc-35ed-87c3-0d0aaff9b6f5",
+                        "dimension": "minecraft:overworld",
+                        "dead": false,
+                        "health": 20.0,
+                        "entityId": 1,
+                        "heldSlot": 0,
+                        "position": [
+                            300,
+                            -61,
+                            300
+                        ],
+                        "methods": [
+                            "world_marker"
+                        ],
+                        "target": {
+                            "dimension": "minecraft:overworld",
+                            "list": "marker_fixture",
+                            "waypoint": "a",
+                            "displayName": "Target A",
+                            "rgb": 4508927,
+                            "position": [
+                                320,
+                                -61,
+                                320
+                            ]
+                        },
+                        "ordinary": {},
+                        "items": [],
+                        "worldMarker": {
+                            "updates": 167,
+                            "spawns": 1,
+                            "moves": 165,
+                            "metadata": 1,
+                            "removals": 0,
+                            "updateNanos": 33179746,
+                            "billboard": "CENTER",
+                            "flags": 7,
+                            "entityId": 3,
+                            "text": "Target A\n28m\n\u25c6",
+                            "teleportDuration": 1,
+                            "position": [
+                                308.9845156812679,
+                                -59.2187941993104,
+                                308.9845156812679
+                            ],
+                            "inWorld": false
+                        }
+                    },
+                    {
+                        "name": "swp_reader_01",
+                        "uuid": "1872e660-e201-34eb-97f3-e59d02e44bc5",
+                        "dimension": "minecraft:overworld",
+                        "dead": false,
+                        "health": 20.0,
+                        "entityId": 2,
+                        "heldSlot": 0,
+                        "position": [
+                            300,
+                            -61,
+                            300
+                        ],
+                        "methods": [
+                            "world_marker"
+                        ],
+                        "target": {
+                            "dimension": "minecraft:overworld",
+                            "list": "marker_fixture",
+                            "waypoint": "a",
+                            "displayName": "Target A",
+                            "rgb": 4508927,
+                            "position": [
+                                320,
+                                -61,
+                                320
+                            ]
+                        },
+                        "ordinary": {},
+                        "items": [],
+                        "worldMarker": {
+                            "updates": 165,
+                            "spawns": 1,
+                            "moves": 163,
+                            "metadata": 1,
+                            "removals": 0,
+                            "updateNanos": 9965583,
+                            "billboard": "CENTER",
+                            "flags": 7,
+                            "entityId": 4,
+                            "text": "Target A\n28m\n\u25c6",
+                            "teleportDuration": 1,
+                            "position": [
+                                308.9845156812679,
+                                -59.2187941993104,
+                                308.9845156812679
+                            ],
+                            "inWorld": false
+                        }
+                    }
+                ],
+                "resources": {
+                    "sessions": 2,
+                    "tasks": 2,
+                    "entities": 2,
+                    "bossbars": 0,
+                    "items": 0,
+                    "mapTargets": 0,
+                    "mapCacheEntries": 0,
+                    "targetIndexEntries": 1,
+                    "tickCounters": 2
+                }
+            },
+            "after": {
+                "origin": "installed-release-native-navigation-state",
+                "tick": 242,
+                "supportedMethods": [
+                    "compass",
+                    "map",
+                    "bossbar",
+                    "actionbar",
+                    "text_display",
+                    "world_marker"
+                ],
+                "players": [
+                    {
+                        "name": "swp_reader_00",
+                        "uuid": "d54464ac-d6fc-35ed-87c3-0d0aaff9b6f5",
+                        "dimension": "minecraft:overworld",
+                        "dead": false,
+                        "health": 20.0,
+                        "entityId": 1,
+                        "heldSlot": 0,
+                        "position": [
+                            300,
+                            -61,
+                            300
+                        ],
+                        "methods": [
+                            "world_marker"
+                        ],
+                        "target": {
+                            "dimension": "minecraft:overworld",
+                            "list": "marker_fixture",
+                            "waypoint": "a",
+                            "displayName": "Target A",
+                            "rgb": 4508927,
+                            "position": [
+                                320,
+                                -61,
+                                320
+                            ]
+                        },
+                        "ordinary": {},
+                        "items": [],
+                        "worldMarker": {
+                            "updates": 184,
+                            "spawns": 1,
+                            "moves": 182,
+                            "metadata": 1,
+                            "removals": 0,
+                            "updateNanos": 34263207,
+                            "billboard": "CENTER",
+                            "flags": 7,
+                            "entityId": 3,
+                            "text": "Target A\n28m\n\u25c6",
+                            "teleportDuration": 1,
+                            "position": [
+                                308.9845156812679,
+                                -59.2187941993104,
+                                308.9845156812679
+                            ],
+                            "inWorld": false
+                        }
+                    },
+                    {
+                        "name": "swp_reader_01",
+                        "uuid": "1872e660-e201-34eb-97f3-e59d02e44bc5",
+                        "dimension": "minecraft:overworld",
+                        "dead": false,
+                        "health": 20.0,
+                        "entityId": 2,
+                        "heldSlot": 0,
+                        "position": [
+                            300,
+                            -61,
+                            300
+                        ],
+                        "methods": [
+                            "world_marker"
+                        ],
+                        "target": {
+                            "dimension": "minecraft:overworld",
+                            "list": "marker_fixture",
+                            "waypoint": "a",
+                            "displayName": "Target A",
+                            "rgb": 4508927,
+                            "position": [
+                                320,
+                                -61,
+                                320
+                            ]
+                        },
+                        "ordinary": {},
+                        "items": [],
+                        "worldMarker": {
+                            "updates": 182,
+                            "spawns": 1,
+                            "moves": 180,
+                            "metadata": 1,
+                            "removals": 0,
+                            "updateNanos": 10274377,
+                            "billboard": "CENTER",
+                            "flags": 7,
+                            "entityId": 4,
+                            "text": "Target A\n28m\n\u25c6",
+                            "teleportDuration": 1,
+                            "position": [
+                                308.9845156812679,
+                                -59.2187941993104,
+                                308.9845156812679
+                            ],
+                            "inWorld": false
+                        }
+                    }
+                ],
+                "resources": {
+                    "sessions": 2,
+                    "tasks": 2,
+                    "entities": 2,
+                    "bossbars": 0,
+                    "items": 0,
+                    "mapTargets": 0,
+                    "mapCacheEntries": 0,
+                    "targetIndexEntries": 1,
+                    "tickCounters": 2
+                }
+            }
+        },
+        "walking": {
+            "before": {
+                "origin": "installed-release-native-navigation-state",
+                "tick": 242,
+                "supportedMethods": [
+                    "compass",
+                    "map",
+                    "bossbar",
+                    "actionbar",
+                    "text_display",
+                    "world_marker"
+                ],
+                "players": [
+                    {
+                        "name": "swp_reader_00",
+                        "uuid": "d54464ac-d6fc-35ed-87c3-0d0aaff9b6f5",
+                        "dimension": "minecraft:overworld",
+                        "dead": false,
+                        "health": 20.0,
+                        "entityId": 1,
+                        "heldSlot": 0,
+                        "position": [
+                            300,
+                            -61,
+                            300
+                        ],
+                        "methods": [
+                            "world_marker"
+                        ],
+                        "target": {
+                            "dimension": "minecraft:overworld",
+                            "list": "marker_fixture",
+                            "waypoint": "a",
+                            "displayName": "Target A",
+                            "rgb": 4508927,
+                            "position": [
+                                320,
+                                -61,
+                                320
+                            ]
+                        },
+                        "ordinary": {},
+                        "items": [],
+                        "worldMarker": {
+                            "updates": 184,
+                            "spawns": 1,
+                            "moves": 182,
+                            "metadata": 1,
+                            "removals": 0,
+                            "updateNanos": 34263207,
+                            "billboard": "CENTER",
+                            "flags": 7,
+                            "entityId": 3,
+                            "text": "Target A\n28m\n\u25c6",
+                            "teleportDuration": 1,
+                            "position": [
+                                308.9845156812679,
+                                -59.2187941993104,
+                                308.9845156812679
+                            ],
+                            "inWorld": false
+                        }
+                    },
+                    {
+                        "name": "swp_reader_01",
+                        "uuid": "1872e660-e201-34eb-97f3-e59d02e44bc5",
+                        "dimension": "minecraft:overworld",
+                        "dead": false,
+                        "health": 20.0,
+                        "entityId": 2,
+                        "heldSlot": 0,
+                        "position": [
+                            300,
+                            -61,
+                            300
+                        ],
+                        "methods": [
+                            "world_marker"
+                        ],
+                        "target": {
+                            "dimension": "minecraft:overworld",
+                            "list": "marker_fixture",
+                            "waypoint": "a",
+                            "displayName": "Target A",
+                            "rgb": 4508927,
+                            "position": [
+                                320,
+                                -61,
+                                320
+                            ]
+                        },
+                        "ordinary": {},
+                        "items": [],
+                        "worldMarker": {
+                            "updates": 182,
+                            "spawns": 1,
+                            "moves": 180,
+                            "metadata": 1,
+                            "removals": 0,
+                            "updateNanos": 10274377,
+                            "billboard": "CENTER",
+                            "flags": 7,
+                            "entityId": 4,
+                            "text": "Target A\n28m\n\u25c6",
+                            "teleportDuration": 1,
+                            "position": [
+                                308.9845156812679,
+                                -59.2187941993104,
+                                308.9845156812679
+                            ],
+                            "inWorld": false
+                        }
+                    }
+                ],
+                "resources": {
+                    "sessions": 2,
+                    "tasks": 2,
+                    "entities": 2,
+                    "bossbars": 0,
+                    "items": 0,
+                    "mapTargets": 0,
+                    "mapCacheEntries": 0,
+                    "targetIndexEntries": 1,
+                    "tickCounters": 2
+                }
+            },
+            "after": {
+                "origin": "installed-release-native-navigation-state",
+                "tick": 313,
+                "supportedMethods": [
+                    "compass",
+                    "map",
+                    "bossbar",
+                    "actionbar",
+                    "text_display",
+                    "world_marker"
+                ],
+                "players": [
+                    {
+                        "name": "swp_reader_00",
+                        "uuid": "d54464ac-d6fc-35ed-87c3-0d0aaff9b6f5",
+                        "dimension": "minecraft:overworld",
+                        "dead": false,
+                        "health": 20.0,
+                        "entityId": 1,
+                        "heldSlot": 0,
+                        "position": [
+                            291,
+                            -61,
+                            291
+                        ],
+                        "methods": [
+                            "world_marker"
+                        ],
+                        "target": {
+                            "dimension": "minecraft:overworld",
+                            "list": "marker_fixture",
+                            "waypoint": "a",
+                            "displayName": "Target A",
+                            "rgb": 4508927,
+                            "position": [
+                                320,
+                                -61,
+                                320
+                            ]
+                        },
+                        "ordinary": {},
+                        "items": [],
+                        "worldMarker": {
+                            "updates": 255,
+                            "spawns": 1,
+                            "moves": 253,
+                            "metadata": 14,
+                            "removals": 0,
+                            "updateNanos": 59044788,
+                            "billboard": "CENTER",
+                            "flags": 7,
+                            "entityId": 3,
+                            "text": "Target A\n41m\n\u25c6",
+                            "teleportDuration": 1,
+                            "position": [
+                                299.8294520013052,
+                                -59.26941113965803,
+                                299.8294520013052
+                            ],
+                            "inWorld": false
+                        }
+                    },
+                    {
+                        "name": "swp_reader_01",
+                        "uuid": "1872e660-e201-34eb-97f3-e59d02e44bc5",
+                        "dimension": "minecraft:overworld",
+                        "dead": false,
+                        "health": 20.0,
+                        "entityId": 2,
+                        "heldSlot": 0,
+                        "position": [
+                            291,
+                            -61,
+                            291
+                        ],
+                        "methods": [
+                            "world_marker"
+                        ],
+                        "target": {
+                            "dimension": "minecraft:overworld",
+                            "list": "marker_fixture",
+                            "waypoint": "a",
+                            "displayName": "Target A",
+                            "rgb": 4508927,
+                            "position": [
+                                320,
+                                -61,
+                                320
+                            ]
+                        },
+                        "ordinary": {},
+                        "items": [],
+                        "worldMarker": {
+                            "updates": 253,
+                            "spawns": 1,
+                            "moves": 251,
+                            "metadata": 14,
+                            "removals": 0,
+                            "updateNanos": 20290124,
+                            "billboard": "CENTER",
+                            "flags": 7,
+                            "entityId": 4,
+                            "text": "Target A\n41m\n\u25c6",
+                            "teleportDuration": 1,
+                            "position": [
+                                299.8294520013052,
+                                -59.26941113965803,
+                                299.8294520013052
+                            ],
+                            "inWorld": false
+                        }
+                    }
+                ],
+                "resources": {
+                    "sessions": 2,
+                    "tasks": 2,
+                    "entities": 2,
+                    "bossbars": 0,
+                    "items": 0,
+                    "mapTargets": 0,
+                    "mapCacheEntries": 0,
+                    "targetIndexEntries": 1,
+                    "tickCounters": 2
+                }
+            }
+        }
+    },
+    "ownerIsolation": {
+        "swp_reader_00": {
+            "actionbar": [],
+            "actionbarUpdates": 0,
+            "bossbars": {},
+            "chat": [
+                {
+                    "sequence": 1,
+                    "text": "swp_reader_00 joined the game"
+                },
+                {
+                    "sequence": 2,
+                    "text": "swp_reader_01 joined the game"
+                },
+                {
+                    "sequence": 3,
+                    "text": "[Server: Made swp_reader_00 a server operator]"
+                },
+                {
+                    "sequence": 4,
+                    "text": "[Server: Teleported swp_reader_00 to 300.500000, -61.000000, 300.500000]"
+                },
+                {
+                    "sequence": 5,
+                    "text": "[Server: Made swp_reader_01 a server operator]"
+                },
+                {
+                    "sequence": 6,
+                    "text": "[Server: Teleported swp_reader_01 to 300.500000, -61.000000, 300.500000]"
+                },
+                {
+                    "sequence": 9,
+                    "text": "\u2714 Started navigating\nNavigating to [A] Target A \u00b7 28 m\nCompass \u00b7 Map \u00b7 Bossbar \u00b7 Actionbar \u00b7 Text display\n\u2714 World marker\nStop \u00b7 Change target\n"
+                }
+            ],
+            "clippedText": 0,
+            "dimension": "minecraft:overworld",
+            "droppedHistory": 0,
+            "evictedMaps": 0,
+            "maps": [],
+            "passengerUpdates": 0,
+            "passengers": {},
+            "sequence": 9,
+            "textDisplays": {
+                "3": {
+                    "sequence": 8,
+                    "text": "Target A\n28m\n\u25c6"
+                }
+            }
+        },
+        "swp_reader_01": {
+            "actionbar": [],
+            "actionbarUpdates": 0,
+            "bossbars": {},
+            "chat": [
+                {
+                    "sequence": 1,
+                    "text": "swp_reader_01 joined the game"
+                },
+                {
+                    "sequence": 2,
+                    "text": "[Server: Made swp_reader_01 a server operator]"
+                },
+                {
+                    "sequence": 3,
+                    "text": "[Server: Teleported swp_reader_01 to 300.500000, -61.000000, 300.500000]"
+                }
+            ],
+            "clippedText": 0,
+            "dimension": "minecraft:overworld",
+            "droppedHistory": 0,
+            "evictedMaps": 0,
+            "maps": [],
+            "passengerUpdates": 0,
+            "passengers": {},
+            "sequence": 3,
+            "textDisplays": {}
+        }
+    },
+    "retargetIsolation": {
+        "swp_reader_00": {
+            "actionbar": [],
+            "actionbarUpdates": 0,
+            "bossbars": {},
+            "chat": [
+                {
+                    "sequence": 1,
+                    "text": "swp_reader_00 joined the game"
+                },
+                {
+                    "sequence": 2,
+                    "text": "swp_reader_01 joined the game"
+                },
+                {
+                    "sequence": 3,
+                    "text": "[Server: Made swp_reader_00 a server operator]"
+                },
+                {
+                    "sequence": 4,
+                    "text": "[Server: Teleported swp_reader_00 to 300.500000, -61.000000, 300.500000]"
+                },
+                {
+                    "sequence": 5,
+                    "text": "[Server: Made swp_reader_01 a server operator]"
+                },
+                {
+                    "sequence": 6,
+                    "text": "[Server: Teleported swp_reader_01 to 300.500000, -61.000000, 300.500000]"
+                },
+                {
+                    "sequence": 9,
+                    "text": "\u2714 Started navigating\nNavigating to [A] Target A \u00b7 28 m\nCompass \u00b7 Map \u00b7 Bossbar \u00b7 Actionbar \u00b7 Text display\n\u2714 World marker\nStop \u00b7 Change target\n"
+                },
+                {
+                    "sequence": 10,
+                    "text": "[swp_reader_00: Teleported swp_reader_00 to 300.500000, -61.000000, 300.500000]"
+                },
+                {
+                    "sequence": 11,
+                    "text": "[swp_reader_01: Teleported swp_reader_01 to 300.500000, -61.000000, 300.500000]"
+                },
+                {
+                    "sequence": 26,
+                    "text": "\u2714 Changed the target and the methods\nNavigating to [B] Target B \u00b7 864 m\nCompass \u00b7 Map \u00b7 Bossbar \u00b7 Actionbar \u00b7 Text display\n\u2714 World marker\nStop \u00b7 Change target\n"
+                }
+            ],
+            "clippedText": 0,
+            "dimension": "minecraft:overworld",
+            "droppedHistory": 0,
+            "evictedMaps": 0,
+            "maps": [],
+            "passengerUpdates": 0,
+            "passengers": {},
+            "sequence": 26,
+            "textDisplays": {
+                "3": {
+                    "sequence": 25,
+                    "text": "Target B\n864m\n\u25c6"
+                }
+            }
+        },
+        "swp_reader_01": {
+            "actionbar": [],
+            "actionbarUpdates": 0,
+            "bossbars": {},
+            "chat": [
+                {
+                    "sequence": 1,
+                    "text": "swp_reader_01 joined the game"
+                },
+                {
+                    "sequence": 2,
+                    "text": "[Server: Made swp_reader_01 a server operator]"
+                },
+                {
+                    "sequence": 3,
+                    "text": "[Server: Teleported swp_reader_01 to 300.500000, -61.000000, 300.500000]"
+                },
+                {
+                    "sequence": 6,
+                    "text": "\u2714 Started navigating\nNavigating to [A] Target A \u00b7 28 m\nCompass \u00b7 Map \u00b7 Bossbar \u00b7 Actionbar \u00b7 Text display\n\u2714 World marker\nStop \u00b7 Change target\n"
+                },
+                {
+                    "sequence": 7,
+                    "text": "[swp_reader_00: Teleported swp_reader_00 to 300.500000, -61.000000, 300.500000]"
+                },
+                {
+                    "sequence": 8,
+                    "text": "[swp_reader_01: Teleported swp_reader_01 to 300.500000, -61.000000, 300.500000]"
+                }
+            ],
+            "clippedText": 0,
+            "dimension": "minecraft:overworld",
+            "droppedHistory": 0,
+            "evictedMaps": 0,
+            "maps": [],
+            "passengerUpdates": 0,
+            "passengers": {},
+            "sequence": 21,
+            "textDisplays": {
+                "4": {
+                    "sequence": 21,
+                    "text": "Target A\n41m\n\u25c6"
+                }
+            }
+        }
+    },
+    "diagnosticCommand": {
+        "executions": [
+            {
+                "command": "wp navigate config world_marker",
+                "actor": "swp_reader_00",
+                "registered": true,
+                "dispatchDurationNs": 426250,
+                "allocatedBytes": 96536,
+                "allocationScope": "server-thread",
+                "clock": "server-monotonic",
+                "trigger": "native-command-dispatch"
+            }
+        ],
+        "completion": "next-owner-tick-after-native-command-queue",
+        "callbacks": [],
+        "droppedCallbacks": 0
+    },
+    "combinedDisplays": {
+        "native": {
+            "origin": "installed-release-native-navigation-state",
+            "tick": 321,
+            "supportedMethods": [
+                "compass",
+                "map",
+                "bossbar",
+                "actionbar",
+                "text_display",
+                "world_marker"
+            ],
+            "players": [
+                {
+                    "name": "swp_reader_00",
+                    "uuid": "d54464ac-d6fc-35ed-87c3-0d0aaff9b6f5",
+                    "dimension": "minecraft:overworld",
+                    "dead": false,
+                    "health": 20.0,
+                    "entityId": 1,
+                    "heldSlot": 0,
+                    "position": [
+                        291,
+                        -61,
+                        291
+                    ],
+                    "methods": [
+                        "text_display",
+                        "world_marker"
+                    ],
+                    "target": {
+                        "dimension": "minecraft:overworld",
+                        "list": "marker_fixture",
+                        "waypoint": "b",
+                        "displayName": "Target B",
+                        "rgb": 4508927,
+                        "position": [
+                            -320,
+                            -61,
+                            -320
+                        ]
+                    },
+                    "ordinary": {},
+                    "items": [],
+                    "text": "Target B \u2014 \u2191\n864m | \u23fa0m",
+                    "textDisplayId": 5,
+                    "worldMarker": {
+                        "updates": 264,
+                        "spawns": 1,
+                        "moves": 261,
+                        "metadata": 15,
+                        "removals": 0,
+                        "updateNanos": 60727370,
+                        "billboard": "CENTER",
+                        "flags": 7,
+                        "entityId": 3,
+                        "text": "Target B\n864m\n\u25c6",
+                        "teleportDuration": 1,
+                        "position": [
+                            282.8592504081564,
+                            -59.37472139092831,
+                            282.8592504081564
+                        ],
+                        "inWorld": false
+                    }
+                },
+                {
+                    "name": "swp_reader_01",
+                    "uuid": "1872e660-e201-34eb-97f3-e59d02e44bc5",
+                    "dimension": "minecraft:overworld",
+                    "dead": false,
+                    "health": 20.0,
+                    "entityId": 2,
+                    "heldSlot": 0,
+                    "position": [
+                        291,
+                        -61,
+                        291
+                    ],
+                    "methods": [
+                        "world_marker"
+                    ],
+                    "target": {
+                        "dimension": "minecraft:overworld",
+                        "list": "marker_fixture",
+                        "waypoint": "a",
+                        "displayName": "Target A",
+                        "rgb": 4508927,
+                        "position": [
+                            320,
+                            -61,
+                            320
+                        ]
+                    },
+                    "ordinary": {},
+                    "items": [],
+                    "worldMarker": {
+                        "updates": 261,
+                        "spawns": 1,
+                        "moves": 259,
+                        "metadata": 14,
+                        "removals": 0,
+                        "updateNanos": 20562124,
+                        "billboard": "CENTER",
+                        "flags": 7,
+                        "entityId": 4,
+                        "text": "Target A\n41m\n\u25c6",
+                        "teleportDuration": 1,
+                        "position": [
+                            299.8294520013052,
+                            -59.26941113965803,
+                            299.8294520013052
+                        ],
+                        "inWorld": false
+                    }
+                }
+            ],
+            "resources": {
+                "sessions": 2,
+                "tasks": 2,
+                "entities": 3,
+                "bossbars": 0,
+                "items": 0,
+                "mapTargets": 0,
+                "mapCacheEntries": 0,
+                "targetIndexEntries": 2,
+                "tickCounters": 1
+            }
+        },
+        "client": {
+            "swp_reader_00": {
+                "actionbar": [],
+                "actionbarUpdates": 0,
+                "bossbars": {},
+                "chat": [
+                    {
+                        "sequence": 1,
+                        "text": "swp_reader_00 joined the game"
+                    },
+                    {
+                        "sequence": 2,
+                        "text": "swp_reader_01 joined the game"
+                    },
+                    {
+                        "sequence": 3,
+                        "text": "[Server: Made swp_reader_00 a server operator]"
+                    },
+                    {
+                        "sequence": 4,
+                        "text": "[Server: Teleported swp_reader_00 to 300.500000, -61.000000, 300.500000]"
+                    },
+                    {
+                        "sequence": 5,
+                        "text": "[Server: Made swp_reader_01 a server operator]"
+                    },
+                    {
+                        "sequence": 6,
+                        "text": "[Server: Teleported swp_reader_01 to 300.500000, -61.000000, 300.500000]"
+                    },
+                    {
+                        "sequence": 9,
+                        "text": "\u2714 Started navigating\nNavigating to [A] Target A \u00b7 28 m\nCompass \u00b7 Map \u00b7 Bossbar \u00b7 Actionbar \u00b7 Text display\n\u2714 World marker\nStop \u00b7 Change target\n"
+                    },
+                    {
+                        "sequence": 10,
+                        "text": "[swp_reader_00: Teleported swp_reader_00 to 300.500000, -61.000000, 300.500000]"
+                    },
+                    {
+                        "sequence": 11,
+                        "text": "[swp_reader_01: Teleported swp_reader_01 to 300.500000, -61.000000, 300.500000]"
+                    },
+                    {
+                        "sequence": 26,
+                        "text": "\u2714 Changed the target and the methods\nNavigating to [B] Target B \u00b7 864 m\nCompass \u00b7 Map \u00b7 Bossbar \u00b7 Actionbar \u00b7 Text display\n\u2714 World marker\nStop \u00b7 Change target\n"
+                    },
+                    {
+                        "sequence": 27,
+                        "text": "Marker: 260 updates, 1 spawns\nPackets: 257 moves, 15 metadata, 0 removals\nMean handler time: 232 \u00b5s/update"
+                    },
+                    {
+                        "sequence": 30,
+                        "text": "\u2714 Text display on\nNavigating to [B] Target B \u00b7 864 m\nCompass \u00b7 Map \u00b7 Bossbar \u00b7 Actionbar \u00b7 \u2714 Text display\n\u2714 World marker\nStop \u00b7 Change target \u00b7 Adjust text display\n"
+                    }
+                ],
+                "clippedText": 0,
+                "dimension": "minecraft:overworld",
+                "droppedHistory": 0,
+                "evictedMaps": 0,
+                "maps": [],
+                "passengerUpdates": 1,
+                "passengers": {
+                    "1": [
+                        5
+                    ]
+                },
+                "sequence": 30,
+                "textDisplays": {
+                    "3": {
+                        "sequence": 25,
+                        "text": "Target B\n864m\n\u25c6"
+                    },
+                    "5": {
+                        "sequence": 29,
+                        "text": "Target B \u2014 \u2191\n864m | \u23fa0m"
+                    }
+                }
+            },
+            "swp_reader_01": {
+                "actionbar": [],
+                "actionbarUpdates": 0,
+                "bossbars": {},
+                "chat": [
+                    {
+                        "sequence": 1,
+                        "text": "swp_reader_01 joined the game"
+                    },
+                    {
+                        "sequence": 2,
+                        "text": "[Server: Made swp_reader_01 a server operator]"
+                    },
+                    {
+                        "sequence": 3,
+                        "text": "[Server: Teleported swp_reader_01 to 300.500000, -61.000000, 300.500000]"
+                    },
+                    {
+                        "sequence": 6,
+                        "text": "\u2714 Started navigating\nNavigating to [A] Target A \u00b7 28 m\nCompass \u00b7 Map \u00b7 Bossbar \u00b7 Actionbar \u00b7 Text display\n\u2714 World marker\nStop \u00b7 Change target\n"
+                    },
+                    {
+                        "sequence": 7,
+                        "text": "[swp_reader_00: Teleported swp_reader_00 to 300.500000, -61.000000, 300.500000]"
+                    },
+                    {
+                        "sequence": 8,
+                        "text": "[swp_reader_01: Teleported swp_reader_01 to 300.500000, -61.000000, 300.500000]"
+                    }
+                ],
+                "clippedText": 0,
+                "dimension": "minecraft:overworld",
+                "droppedHistory": 0,
+                "evictedMaps": 0,
+                "maps": [],
+                "passengerUpdates": 0,
+                "passengers": {},
+                "sequence": 21,
+                "textDisplays": {
+                    "4": {
+                        "sequence": 21,
+                        "text": "Target A\n41m\n\u25c6"
+                    }
+                }
+            }
+        }
+    },
+    "disableMarkerKeepsHud": {
+        "native": {
+            "origin": "installed-release-native-navigation-state",
+            "tick": 325,
+            "supportedMethods": [
+                "compass",
+                "map",
+                "bossbar",
+                "actionbar",
+                "text_display",
+                "world_marker"
+            ],
+            "players": [
+                {
+                    "name": "swp_reader_00",
+                    "uuid": "d54464ac-d6fc-35ed-87c3-0d0aaff9b6f5",
+                    "dimension": "minecraft:overworld",
+                    "dead": false,
+                    "health": 20.0,
+                    "entityId": 1,
+                    "heldSlot": 0,
+                    "position": [
+                        291,
+                        -61,
+                        291
+                    ],
+                    "methods": [
+                        "text_display"
+                    ],
+                    "target": {
+                        "dimension": "minecraft:overworld",
+                        "list": "marker_fixture",
+                        "waypoint": "b",
+                        "displayName": "Target B",
+                        "rgb": 4508927,
+                        "position": [
+                            -320,
+                            -61,
+                            -320
+                        ]
+                    },
+                    "ordinary": {},
+                    "items": [],
+                    "text": "Target B \u2014 \u2191\n864m | \u23fa0m",
+                    "textDisplayId": 5,
+                    "worldMarker": {}
+                },
+                {
+                    "name": "swp_reader_01",
+                    "uuid": "1872e660-e201-34eb-97f3-e59d02e44bc5",
+                    "dimension": "minecraft:overworld",
+                    "dead": false,
+                    "health": 20.0,
+                    "entityId": 2,
+                    "heldSlot": 0,
+                    "position": [
+                        291,
+                        -61,
+                        291
+                    ],
+                    "methods": [
+                        "world_marker"
+                    ],
+                    "target": {
+                        "dimension": "minecraft:overworld",
+                        "list": "marker_fixture",
+                        "waypoint": "a",
+                        "displayName": "Target A",
+                        "rgb": 4508927,
+                        "position": [
+                            320,
+                            -61,
+                            320
+                        ]
+                    },
+                    "ordinary": {},
+                    "items": [],
+                    "worldMarker": {
+                        "updates": 265,
+                        "spawns": 1,
+                        "moves": 263,
+                        "metadata": 14,
+                        "removals": 0,
+                        "updateNanos": 20644791,
+                        "billboard": "CENTER",
+                        "flags": 7,
+                        "entityId": 4,
+                        "text": "Target A\n41m\n\u25c6",
+                        "teleportDuration": 1,
+                        "position": [
+                            299.8294520013052,
+                            -59.26941113965803,
+                            299.8294520013052
+                        ],
+                        "inWorld": false
+                    }
+                }
+            ],
+            "resources": {
+                "sessions": 2,
+                "tasks": 2,
+                "entities": 2,
+                "bossbars": 0,
+                "items": 0,
+                "mapTargets": 0,
+                "mapCacheEntries": 0,
+                "targetIndexEntries": 2,
+                "tickCounters": 2
+            }
+        },
+        "client": {
+            "swp_reader_00": {
+                "actionbar": [],
+                "actionbarUpdates": 0,
+                "bossbars": {},
+                "chat": [
+                    {
+                        "sequence": 1,
+                        "text": "swp_reader_00 joined the game"
+                    },
+                    {
+                        "sequence": 2,
+                        "text": "swp_reader_01 joined the game"
+                    },
+                    {
+                        "sequence": 3,
+                        "text": "[Server: Made swp_reader_00 a server operator]"
+                    },
+                    {
+                        "sequence": 4,
+                        "text": "[Server: Teleported swp_reader_00 to 300.500000, -61.000000, 300.500000]"
+                    },
+                    {
+                        "sequence": 5,
+                        "text": "[Server: Made swp_reader_01 a server operator]"
+                    },
+                    {
+                        "sequence": 6,
+                        "text": "[Server: Teleported swp_reader_01 to 300.500000, -61.000000, 300.500000]"
+                    },
+                    {
+                        "sequence": 9,
+                        "text": "\u2714 Started navigating\nNavigating to [A] Target A \u00b7 28 m\nCompass \u00b7 Map \u00b7 Bossbar \u00b7 Actionbar \u00b7 Text display\n\u2714 World marker\nStop \u00b7 Change target\n"
+                    },
+                    {
+                        "sequence": 10,
+                        "text": "[swp_reader_00: Teleported swp_reader_00 to 300.500000, -61.000000, 300.500000]"
+                    },
+                    {
+                        "sequence": 11,
+                        "text": "[swp_reader_01: Teleported swp_reader_01 to 300.500000, -61.000000, 300.500000]"
+                    },
+                    {
+                        "sequence": 26,
+                        "text": "\u2714 Changed the target and the methods\nNavigating to [B] Target B \u00b7 864 m\nCompass \u00b7 Map \u00b7 Bossbar \u00b7 Actionbar \u00b7 Text display\n\u2714 World marker\nStop \u00b7 Change target\n"
+                    },
+                    {
+                        "sequence": 27,
+                        "text": "Marker: 260 updates, 1 spawns\nPackets: 257 moves, 15 metadata, 0 removals\nMean handler time: 232 \u00b5s/update"
+                    },
+                    {
+                        "sequence": 30,
+                        "text": "\u2714 Text display on\nNavigating to [B] Target B \u00b7 864 m\nCompass \u00b7 Map \u00b7 Bossbar \u00b7 Actionbar \u00b7 \u2714 Text display\n\u2714 World marker\nStop \u00b7 Change target \u00b7 Adjust text display\n"
+                    },
+                    {
+                        "sequence": 31,
+                        "text": "\u2714 World marker off\nNavigating to [B] Target B \u00b7 864 m\nCompass \u00b7 Map \u00b7 Bossbar \u00b7 Actionbar \u00b7 \u2714 Text display\nWorld marker\nStop \u00b7 Change target \u00b7 Adjust text display\n"
+                    }
+                ],
+                "clippedText": 0,
+                "dimension": "minecraft:overworld",
+                "droppedHistory": 0,
+                "evictedMaps": 0,
+                "maps": [],
+                "passengerUpdates": 2,
+                "passengers": {
+                    "1": [
+                        5
+                    ]
+                },
+                "sequence": 31,
+                "textDisplays": {
+                    "5": {
+                        "sequence": 29,
+                        "text": "Target B \u2014 \u2191\n864m | \u23fa0m"
+                    }
+                }
+            },
+            "swp_reader_01": {
+                "actionbar": [],
+                "actionbarUpdates": 0,
+                "bossbars": {},
+                "chat": [
+                    {
+                        "sequence": 1,
+                        "text": "swp_reader_01 joined the game"
+                    },
+                    {
+                        "sequence": 2,
+                        "text": "[Server: Made swp_reader_01 a server operator]"
+                    },
+                    {
+                        "sequence": 3,
+                        "text": "[Server: Teleported swp_reader_01 to 300.500000, -61.000000, 300.500000]"
+                    },
+                    {
+                        "sequence": 6,
+                        "text": "\u2714 Started navigating\nNavigating to [A] Target A \u00b7 28 m\nCompass \u00b7 Map \u00b7 Bossbar \u00b7 Actionbar \u00b7 Text display\n\u2714 World marker\nStop \u00b7 Change target\n"
+                    },
+                    {
+                        "sequence": 7,
+                        "text": "[swp_reader_00: Teleported swp_reader_00 to 300.500000, -61.000000, 300.500000]"
+                    },
+                    {
+                        "sequence": 8,
+                        "text": "[swp_reader_01: Teleported swp_reader_01 to 300.500000, -61.000000, 300.500000]"
+                    }
+                ],
+                "clippedText": 0,
+                "dimension": "minecraft:overworld",
+                "droppedHistory": 0,
+                "evictedMaps": 0,
+                "maps": [],
+                "passengerUpdates": 0,
+                "passengers": {},
+                "sequence": 21,
+                "textDisplays": {
+                    "4": {
+                        "sequence": 21,
+                        "text": "Target A\n41m\n\u25c6"
+                    }
+                }
+            }
+        }
+    },
+    "disableHudKeepsMarker": {
+        "native": {
+            "origin": "installed-release-native-navigation-state",
+            "tick": 332,
+            "supportedMethods": [
+                "compass",
+                "map",
+                "bossbar",
+                "actionbar",
+                "text_display",
+                "world_marker"
+            ],
+            "players": [
+                {
+                    "name": "swp_reader_00",
+                    "uuid": "d54464ac-d6fc-35ed-87c3-0d0aaff9b6f5",
+                    "dimension": "minecraft:overworld",
+                    "dead": false,
+                    "health": 20.0,
+                    "entityId": 1,
+                    "heldSlot": 0,
+                    "position": [
+                        291,
+                        -61,
+                        291
+                    ],
+                    "methods": [
+                        "world_marker"
+                    ],
+                    "target": {
+                        "dimension": "minecraft:overworld",
+                        "list": "marker_fixture",
+                        "waypoint": "b",
+                        "displayName": "Target B",
+                        "rgb": 4508927,
+                        "position": [
+                            -320,
+                            -61,
+                            -320
+                        ]
+                    },
+                    "ordinary": {},
+                    "items": [],
+                    "worldMarker": {
+                        "updates": 7,
+                        "spawns": 1,
+                        "moves": 5,
+                        "metadata": 1,
+                        "removals": 0,
+                        "updateNanos": 965624,
+                        "billboard": "CENTER",
+                        "flags": 7,
+                        "entityId": 6,
+                        "text": "Target B\n864m\n\u25c6",
+                        "teleportDuration": 1,
+                        "position": [
+                            282.8592504081564,
+                            -59.37472139092831,
+                            282.8592504081564
+                        ],
+                        "inWorld": false
+                    }
+                },
+                {
+                    "name": "swp_reader_01",
+                    "uuid": "1872e660-e201-34eb-97f3-e59d02e44bc5",
+                    "dimension": "minecraft:overworld",
+                    "dead": false,
+                    "health": 20.0,
+                    "entityId": 2,
+                    "heldSlot": 0,
+                    "position": [
+                        291,
+                        -61,
+                        291
+                    ],
+                    "methods": [
+                        "world_marker"
+                    ],
+                    "target": {
+                        "dimension": "minecraft:overworld",
+                        "list": "marker_fixture",
+                        "waypoint": "a",
+                        "displayName": "Target A",
+                        "rgb": 4508927,
+                        "position": [
+                            320,
+                            -61,
+                            320
+                        ]
+                    },
+                    "ordinary": {},
+                    "items": [],
+                    "worldMarker": {
+                        "updates": 272,
+                        "spawns": 1,
+                        "moves": 270,
+                        "metadata": 14,
+                        "removals": 0,
+                        "updateNanos": 20820208,
+                        "billboard": "CENTER",
+                        "flags": 7,
+                        "entityId": 4,
+                        "text": "Target A\n41m\n\u25c6",
+                        "teleportDuration": 1,
+                        "position": [
+                            299.8294520013052,
+                            -59.26941113965803,
+                            299.8294520013052
+                        ],
+                        "inWorld": false
+                    }
+                }
+            ],
+            "resources": {
+                "sessions": 2,
+                "tasks": 2,
+                "entities": 2,
+                "bossbars": 0,
+                "items": 0,
+                "mapTargets": 0,
+                "mapCacheEntries": 0,
+                "targetIndexEntries": 2,
+                "tickCounters": 2
+            }
+        },
+        "client": {
+            "swp_reader_00": {
+                "actionbar": [],
+                "actionbarUpdates": 0,
+                "bossbars": {},
+                "chat": [
+                    {
+                        "sequence": 1,
+                        "text": "swp_reader_00 joined the game"
+                    },
+                    {
+                        "sequence": 2,
+                        "text": "swp_reader_01 joined the game"
+                    },
+                    {
+                        "sequence": 3,
+                        "text": "[Server: Made swp_reader_00 a server operator]"
+                    },
+                    {
+                        "sequence": 4,
+                        "text": "[Server: Teleported swp_reader_00 to 300.500000, -61.000000, 300.500000]"
+                    },
+                    {
+                        "sequence": 5,
+                        "text": "[Server: Made swp_reader_01 a server operator]"
+                    },
+                    {
+                        "sequence": 6,
+                        "text": "[Server: Teleported swp_reader_01 to 300.500000, -61.000000, 300.500000]"
+                    },
+                    {
+                        "sequence": 9,
+                        "text": "\u2714 Started navigating\nNavigating to [A] Target A \u00b7 28 m\nCompass \u00b7 Map \u00b7 Bossbar \u00b7 Actionbar \u00b7 Text display\n\u2714 World marker\nStop \u00b7 Change target\n"
+                    },
+                    {
+                        "sequence": 10,
+                        "text": "[swp_reader_00: Teleported swp_reader_00 to 300.500000, -61.000000, 300.500000]"
+                    },
+                    {
+                        "sequence": 11,
+                        "text": "[swp_reader_01: Teleported swp_reader_01 to 300.500000, -61.000000, 300.500000]"
+                    },
+                    {
+                        "sequence": 26,
+                        "text": "\u2714 Changed the target and the methods\nNavigating to [B] Target B \u00b7 864 m\nCompass \u00b7 Map \u00b7 Bossbar \u00b7 Actionbar \u00b7 Text display\n\u2714 World marker\nStop \u00b7 Change target\n"
+                    },
+                    {
+                        "sequence": 27,
+                        "text": "Marker: 260 updates, 1 spawns\nPackets: 257 moves, 15 metadata, 0 removals\nMean handler time: 232 \u00b5s/update"
+                    },
+                    {
+                        "sequence": 30,
+                        "text": "\u2714 Text display on\nNavigating to [B] Target B \u00b7 864 m\nCompass \u00b7 Map \u00b7 Bossbar \u00b7 Actionbar \u00b7 \u2714 Text display\n\u2714 World marker\nStop \u00b7 Change target \u00b7 Adjust text display\n"
+                    },
+                    {
+                        "sequence": 31,
+                        "text": "\u2714 World marker off\nNavigating to [B] Target B \u00b7 864 m\nCompass \u00b7 Map \u00b7 Bossbar \u00b7 Actionbar \u00b7 \u2714 Text display\nWorld marker\nStop \u00b7 Change target \u00b7 Adjust text display\n"
+                    },
+                    {
+                        "sequence": 34,
+                        "text": "\u2714 World marker on\nNavigating to [B] Target B \u00b7 864 m\nCompass \u00b7 Map \u00b7 Bossbar \u00b7 Actionbar \u00b7 \u2714 Text display\n\u2714 World marker\nStop \u00b7 Change target \u00b7 Adjust text display\n"
+                    },
+                    {
+                        "sequence": 35,
+                        "text": "\u2714 Text display off\nNavigating to [B] Target B \u00b7 864 m\nCompass \u00b7 Map \u00b7 Bossbar \u00b7 Actionbar \u00b7 Text display\n\u2714 World marker\nStop \u00b7 Change target\n"
+                    }
+                ],
+                "clippedText": 0,
+                "dimension": "minecraft:overworld",
+                "droppedHistory": 0,
+                "evictedMaps": 0,
+                "maps": [],
+                "passengerUpdates": 4,
+                "passengers": {
+                    "1": []
+                },
+                "sequence": 35,
+                "textDisplays": {
+                    "6": {
+                        "sequence": 33,
+                        "text": "Target B\n864m\n\u25c6"
+                    }
+                }
+            },
+            "swp_reader_01": {
+                "actionbar": [],
+                "actionbarUpdates": 0,
+                "bossbars": {},
+                "chat": [
+                    {
+                        "sequence": 1,
+                        "text": "swp_reader_01 joined the game"
+                    },
+                    {
+                        "sequence": 2,
+                        "text": "[Server: Made swp_reader_01 a server operator]"
+                    },
+                    {
+                        "sequence": 3,
+                        "text": "[Server: Teleported swp_reader_01 to 300.500000, -61.000000, 300.500000]"
+                    },
+                    {
+                        "sequence": 6,
+                        "text": "\u2714 Started navigating\nNavigating to [A] Target A \u00b7 28 m\nCompass \u00b7 Map \u00b7 Bossbar \u00b7 Actionbar \u00b7 Text display\n\u2714 World marker\nStop \u00b7 Change target\n"
+                    },
+                    {
+                        "sequence": 7,
+                        "text": "[swp_reader_00: Teleported swp_reader_00 to 300.500000, -61.000000, 300.500000]"
+                    },
+                    {
+                        "sequence": 8,
+                        "text": "[swp_reader_01: Teleported swp_reader_01 to 300.500000, -61.000000, 300.500000]"
+                    }
+                ],
+                "clippedText": 0,
+                "dimension": "minecraft:overworld",
+                "droppedHistory": 0,
+                "evictedMaps": 0,
+                "maps": [],
+                "passengerUpdates": 0,
+                "passengers": {},
+                "sequence": 21,
+                "textDisplays": {
+                    "4": {
+                        "sequence": 21,
+                        "text": "Target A\n41m\n\u25c6"
+                    }
+                }
+            }
+        }
+    },
+    "stopped": {
+        "origin": "installed-release-native-navigation-state",
+        "tick": 338,
+        "supportedMethods": [
+            "compass",
+            "map",
+            "bossbar",
+            "actionbar",
+            "text_display",
+            "world_marker"
+        ],
+        "players": [
+            {
+                "name": "swp_reader_00",
+                "uuid": "d54464ac-d6fc-35ed-87c3-0d0aaff9b6f5",
+                "dimension": "minecraft:overworld",
+                "dead": false,
+                "health": 20.0,
+                "entityId": 1,
+                "heldSlot": 0,
+                "position": [
+                    291,
+                    -61,
+                    291
+                ],
+                "methods": [],
+                "ordinary": {},
+                "items": [],
+                "worldMarker": {}
+            },
+            {
+                "name": "swp_reader_01",
+                "uuid": "1872e660-e201-34eb-97f3-e59d02e44bc5",
+                "dimension": "minecraft:overworld",
+                "dead": false,
+                "health": 20.0,
+                "entityId": 2,
+                "heldSlot": 0,
+                "position": [
+                    291,
+                    -61,
+                    291
+                ],
+                "methods": [],
+                "ordinary": {},
+                "items": [],
+                "worldMarker": {}
+            }
+        ],
+        "resources": {
+            "sessions": 0,
+            "tasks": 2,
+            "entities": 0,
+            "bossbars": 0,
+            "items": 0,
+            "mapTargets": 0,
+            "mapCacheEntries": 0,
+            "targetIndexEntries": 0,
+            "tickCounters": 0
+        }
+    },
+    "disconnected": {
+        "origin": "installed-release-native-navigation-state",
+        "tick": 389,
+        "supportedMethods": [
+            "compass",
+            "map",
+            "bossbar",
+            "actionbar",
+            "text_display",
+            "world_marker"
+        ],
+        "players": [],
+        "resources": {
+            "sessions": 0,
+            "tasks": 0,
+            "entities": 0,
+            "bossbars": 0,
+            "items": 0,
+            "mapTargets": 0,
+            "mapCacheEntries": 0,
+            "targetIndexEntries": 0,
+            "tickCounters": 0
+        }
+    },
+    "passed": true
+}

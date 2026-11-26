@@ -1,5 +1,6 @@
 package _959.server_waypoint.text.feedback;
 
+import _959.server_waypoint.core.collection.WaypointScope;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
@@ -45,6 +46,27 @@ public final class WaypointRefs {
     public static Component reference(DimensionStyle dims, String dimension, WaypointList list, SimpleWaypoint waypoint) {
         return Chat.concat(initials(dims, dimension, list, waypoint), text(" "),
                 name(dims, dimension, list, waypoint, NamedTextColor.WHITE, true));
+    }
+
+    /** Collection-aware reference for navigation and source-aware feedback. */
+    public static Component reference(DimensionStyle dims, WaypointScope scope, String dimension,
+                                      WaypointList list, SimpleWaypoint waypoint) {
+        dims = dims.withScope(scope);
+        if (scope == WaypointScope.SHARED) {
+            return reference(dims, dimension, list, waypoint);
+        }
+        Viewer viewer = dims.viewer();
+        String prefix = _959.server_waypoint.util.StringCommandBuilder.commandPrefix(scope);
+        Component initials = viewer.can(Viewer.Permission.TP)
+                ? Chat.link(viewer, marker(viewer, waypoint), TextColor.color(waypoint.rgb()),
+                        Click.run(prefix + tpCmd(dimension, list.name(), waypoint.name()).substring(_959.server_waypoint.util.StringCommandBuilder.WAYPOINT_COMMAND_WITH_SLASH.length())),
+                        teleportTooltip(dims, dimension, waypoint))
+                : Chat.hover(viewer, Chat.colored(marker(viewer, waypoint), TextColor.color(waypoint.rgb())),
+                        waypointTooltip(dims, dimension, waypoint, null));
+        Component name = Chat.link(viewer, label(viewer, waypoint.displayName(), waypoint.name()), NamedTextColor.WHITE,
+                Click.run(prefix + detailsWaypointCmd(dimension, list.name(), waypoint.name()).substring(_959.server_waypoint.util.StringCommandBuilder.WAYPOINT_COMMAND_WITH_SLASH.length())),
+                waypointTooltip(dims, dimension, waypoint, "wp.hint.details"));
+        return Chat.concat(initials, text(" "), name);
     }
 
     /** [AB] Name whose name shows its tooltip without a click, for titles and pickers. */

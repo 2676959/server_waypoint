@@ -1,0 +1,5 @@
+All six client locale JSONs parse without duplicate keys; new storage key exists with no placeholders: en_us, es_es, he_il, zh_cn, zh_hk, zh_tw
+Changed documentation links resolve.
+Touched Java files have no tabs or trailing whitespace; new code uses four-space indentation.
+Active Stonecutter targets unchanged. New inline/line scopes generated and compiled for Fabric, Forge, NeoForge at old/current versions.
+git diff --check passed.

@@ -270,3 +270,24 @@ fn same_dimension_respawn_preserves_level_entities_but_world_change_discards_the
         "vanilla replaces ClientLevel on world change"
     );
 }
+
+#[test]
+fn packet_only_item_display_spawn_and_removal_are_observed() {
+    use azalea::protocol::packets::game::{ClientboundAddEntity, ClientboundRemoveEntities};
+    use azalea::registry::builtin::EntityKind;
+    use azalea::world::MinecraftEntityId;
+    let mut state = Effects::default();
+    state.observe(&Packet::AddEntity(ClientboundAddEntity {
+        id: MinecraftEntityId(91),
+        uuid: "00000000-0000-0000-0000-000000000091".parse().unwrap(),
+        entity_type: EntityKind::ItemDisplay,
+        position: Default::default(), movement: Default::default(),
+        x_rot: 0, y_rot: 0, y_head_rot: 0, data: 0,
+    })).unwrap();
+    assert!(state.snapshot()["itemDisplays"]["91"].is_object());
+    assert!(state.snapshot()["textDisplays"].as_object().unwrap().is_empty());
+    state.observe(&Packet::RemoveEntities(ClientboundRemoveEntities {
+        entity_ids: vec![MinecraftEntityId(91)],
+    })).unwrap();
+    assert!(state.snapshot()["itemDisplays"].as_object().unwrap().is_empty());
+}

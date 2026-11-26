@@ -5,6 +5,7 @@
 - Libraries: Use GSON for JSON processing.
 - Translations: Entries in `common/src/main/resources/lang` rendered by `AdventureTranslator` use Java `MessageFormat`. Use zero-based placeholders such as `{0}` and `{1}`, never printf placeholders such as `%s` or `%1$s`. Keep placeholder indices consistent across translations and escape literal apostrophes as `''` in `MessageFormat` patterns.
 - Do not commit the changes you made directly, except if you are asked to do this.
+- When writing commit messages, follow the Conventional Commits 1.0.0 summary in [`docs/tips/commit-messages.md`](docs/tips/commit-messages.md).
 - When implementing new features or making changes on existing features, do not write any code for handling backward compatibility unless you are asked to do this.
 
 # Project Structure
@@ -48,6 +49,7 @@ Projects "paper" and "mods" are independent projects to each other.
 - When adding or changing a Stonecutter swap or replacement, update the inventory below in the same change. Keep identifiers in `snake_case` and reuse existing identifiers when they already describe the fragment.
 - Replacement tokens such as `//~ id` must stay before any non-empty, non-comment line in a file. Do not move or delete them as ordinary comments.
 - After editing Stonecutter comments, check the touched file for balanced `//? if`, `//?}`, `/*?`, `/*?}*/`, and `*//*?` markers, then run the relevant Stonecutter/Gradle check when practical.
+- A mixin whose target class exists only in some versions or loaders gets a whole-file `//? if`, and its name joins the `uncompiledMixins` filter in every `mods/*.gradle.kts`. Never keep an empty `@Pseudo` stub for the other targets: Mixin still logs a warning for every target class it cannot load. Map-mod mixins belong in their mod's sub-package of `_959.server_waypoint.mixin`, which `MapModMixinPlugin` skips unless that mod is installed; register any new sub-package there.
 
 # Stonecutter Swaps And Replacements
 

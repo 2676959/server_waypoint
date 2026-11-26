@@ -1,0 +1,25 @@
+{
+  "chat": [
+    {
+      "text": "✔ הניווט התחיל\nמנווטים אל [BA] Base · 27 מ׳\nמצפן · מפה · ✔ פס בוס · פס פעולות · תצוגת טקסט\nעצירה · החלפת יעד\n",
+      "commands": [
+        "/wp private details waypoint minecraft:overworld Homes Base",
+        "/wp private navigate use compass",
+        "/wp private navigate use map",
+        "/wp private navigate disable bossbar",
+        "/wp private navigate disable bossbar",
+        "/wp private navigate use actionbar",
+        "/wp private navigate use text_display",
+        "/wp private navigate disable",
+        "/wp private list"
+      ]
+    }
+  ],
+  "position": [
+    5.5,
+    74.0,
+    -4.5,
+    "minecraft:overworld"
+  ],
+  "screen": "null"
+}

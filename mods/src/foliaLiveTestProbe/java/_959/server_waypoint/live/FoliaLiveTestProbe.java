@@ -1,5 +1,6 @@
 package _959.server_waypoint.live;
 
+import _959.server_waypoint.core.collection.WaypointScope;
 import _959.server_waypoint.ProtocolVersion;
 import _959.server_waypoint.core.network.DecodingContext;
 import _959.server_waypoint.core.network.SinglePacketMessageEncoder;
@@ -256,7 +257,7 @@ public final class FoliaLiveTestProbe implements ClientModInitializer {
                     List.of(new WaypointList(listName, WaypointList.SERVER_N, waypoints))
             ));
         }
-        return WaypointData.upload(request.requestId(), UploadStatus.SUCCESS, dimensions);
+        return WaypointData.upload(WaypointScope.SHARED, request.requestId(), UploadStatus.SUCCESS, dimensions);
     }
 
     private void drainFrames(Minecraft client) {

@@ -12,7 +12,8 @@ final class ClientSynchronizationTrackerTest {
         int[] stateAffectingTypes = {
                 ChunkedMessageRegistry.WAYPOINT_DATA.id(),
                 ChunkedMessageRegistry.WAYPOINT_MODIFICATION.id(),
-                ChunkedMessageRegistry.WAYPOINT_LIST_UPDATE.id()
+                ChunkedMessageRegistry.WAYPOINT_LIST_UPDATE.id(),
+                ChunkedMessageRegistry.WAYPOINT_COLLECTION_STATE.id()
         };
 
         for (int messageTypeId : stateAffectingTypes) {

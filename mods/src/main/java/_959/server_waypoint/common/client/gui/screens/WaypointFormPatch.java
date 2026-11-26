@@ -69,6 +69,12 @@ final class WaypointFormPatch {
     ) {
     }
 
+    /** Copy Add keeps a deliberately empty saved override; clearing a named override uses the new identifier. */
+    static String draftDisplayName(@Nullable Saved saved, String field, String name) {
+        if (!field.isEmpty()) return field;
+        return saved != null && "".equals(saved.displayNameOverride()) ? "" : name;
+    }
+
     static WaypointPatch build(Saved saved, Values values) {
         return new WaypointPatch(
                 changed(saved.name(), values.name()),

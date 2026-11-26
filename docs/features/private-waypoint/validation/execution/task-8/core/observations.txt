@@ -1,0 +1,44 @@
+Real integrated server: Shared/Private commands synchronized; Local saved; Combined retains 3 distinct Homes/Base selections
+opened view SHARED 427x240
+opened view PRIVATE 427x240
+opened view LOCAL 427x240
+opened view COMBINED 427x240
+Private-to-Local copy cancel creates nothing; explicit save makes independent destination
+Profile switch rejects captured old destination; original data retained after select/delete
+saved /Volumes/ssd/sw-private-task8-20261031/results/26.1.2-Fabric/task8-shared.png
+saved /Volumes/ssd/sw-private-task8-20261031/results/26.1.2-Fabric/task8-private.png
+saved /Volumes/ssd/sw-private-task8-20261031/results/26.1.2-Fabric/task8-local.png
+saved /Volumes/ssd/sw-private-task8-20261031/results/26.1.2-Fabric/task8-combined.png
+GUI scale 4, nothing selected: screen 427x240, panels from x 26 y 17, content y 21-218
+  profile [26,4 117x11] 'Local profile: Default', status [149,6 251x9]
+  search [56,21 165x11], add [225,21 11x11], list column right edge 236
+  details [246,21 150x197], copy [316,207 80x11 hidden inactive], details right edge 396
+saved /Volumes/ssd/sw-private-task8-20261031/results/26.1.2-Fabric/manager-scale4-no-selection.png
+waypoint row 1, row height 20, list [56,36 180x182]
+selected after clicking the waypoint row: WaypointSelection[identity=ClientWaypointSelection[source=LOCAL, generation=5, profileId=e7cf46f9-4a51-4647-b07f-ca874221fdfd, dimensionName=minecraft:overworld, listIdentifier=Copies, waypointIdentifier=Base], dimensionName=minecraft:overworld, listName=Copies, listDisplayName=Copies, waypoint=SimpleWaypoint{name='Base', displayName='Base', initials='B', pos=WaypointPos[x=30, y=80, z=-30], rgb=3368652, yaw=90, global=false, keywords=[], description='', icon=null}]
+GUI scale 4, a waypoint selected: screen 427x240, panels from x 26 y 17, content y 21-218
+  profile [26,4 117x11] 'Local profile: Default', status [149,6 251x9]
+  search [56,21 165x11], add [225,21 11x11], list column right edge 236
+  details [246,21 150x182], copy [316,207 80x11], details right edge 396
+profile button tooltip: 'Local waypoint profiles'
+add button tooltip: 'Add'
+saved /Volumes/ssd/sw-private-task8-20261031/results/26.1.2-Fabric/manager-scale4-selected.png
+profileButton opened LocalWaypointProfilesScreen
+saved /Volumes/ssd/sw-private-task8-20261031/results/26.1.2-Fabric/opened-by-profileButton.png
+copyButton opened WaypointAddScreen
+saved /Volumes/ssd/sw-private-task8-20261031/results/26.1.2-Fabric/opened-by-copyButton.png
+addWaypointButton opened WaypointAddScreen
+saved /Volumes/ssd/sw-private-task8-20261031/results/26.1.2-Fabric/opened-by-addWaypointButton.png
+GUI scale 4, back from the forms: screen 427x240, panels from x 26 y 17, content y 21-218
+  profile [26,4 117x11] 'Local profile: Default', status [149,6 251x9]
+  search [56,21 165x11], add [225,21 11x11], list column right edge 236
+  details [246,21 150x182], copy [316,207 80x11], details right edge 396
+long name: profile button [26,4 369x11] 'Local profile: A very long profile name for the survival world we sha…', line right edge 400
+long name tooltip: 'Local profile: A very long profile name for the survival world we share with friends'
+saved /Volumes/ssd/sw-private-task8-20261031/results/26.1.2-Fabric/manager-scale4-long-profile.png
+GUI scale 1, a waypoint selected: screen 1708x960, panels from x 492 y 276, content y 280-680
+  profile [492,263 117x11] 'Local profile: Default', status [615,265 601x9]
+  search [522,280 345x11], add [871,280 11x11], list column right edge 882
+  details [892,280 320x385], copy [1132,669 80x11], details right edge 1212
+saved /Volumes/ssd/sw-private-task8-20261031/results/26.1.2-Fabric/manager-scale1-selected.png
+Shared, Private and Local duplicate identifiers restored after world close/reload

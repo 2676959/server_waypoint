@@ -73,6 +73,29 @@ class ContractsTest(unittest.TestCase):
         self.assertEqual(128, offered[("world-container", "container-stone")])
         self.assertEqual(0, offered[("idle", "empty")])
 
+    def test_navigation_families_use_tier_owner_counts(self):
+        from contracts import load_runtimes
+        from selection import select_cases
+        runtimes = load_runtimes(CONFIG / "runtimes.json")
+        cases = expand_cases(CONFIG / "features.json", CONFIG / "scenarios.json", runtimes, "audit", ("small", "medium", "stress"))
+        families = {"navigation", "map-terrain", "protection"}
+        selected = [case for case in cases if case.feature in families]
+        self.assertEqual(14 * 3 * len(runtimes), len(selected))
+        owners = {"small": 1, "medium": 10, "stress": 50}
+        rates = {"small": 10, "medium": 50, "stress": 100}
+        for case in selected:
+            self.assertEqual(owners[case.tier], case.clients, case.id)
+            self.assertEqual(rates[case.tier], case.offered_rate, case.id)
+            self.assertEqual(30, case.warmup_seconds, case.id)
+            self.assertEqual(60, case.measurement_seconds, case.id)
+            self.assertEqual(3, case.repeats, case.id)
+        paper = select_cases(
+            CONFIG / "features.json", CONFIG / "scenarios.json", runtimes, "all", ("small", "medium"),
+            targets=("paper-1.21.11",), families=tuple(sorted(families)))
+        self.assertEqual(28, len(paper))
+        viewers = [case for case in paper if case.feature == "map-terrain" and case.variant == "multiple-viewers"]
+        self.assertEqual({("small", 1), ("medium", 10)}, {(case.tier, case.clients) for case in viewers})
+
     def test_client_only_mixins_have_source_backed_exclusions(self):
         value = contracts.read_document(CONFIG / "features.json")
         entries = [entry for entry in value["entrypoints"] if entry["source"].endswith("/GameRendererMixin.java")]
