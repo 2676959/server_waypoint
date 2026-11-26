@@ -316,6 +316,9 @@ tasks.test {
 
 tasks.shadowJar {
     relocate("com.southernstorm.noise", "_959.server_waypoint.internal.noisekk")
+    // Avoid split packages with mods that load their own Adventure modules.
+    relocate("net.kyori", "_959.server_waypoint.internal.kyori")
+    mergeServiceFiles()
     dependencies {
         include(dependency("org.signal.forks:noise-java:.*"))
     }
